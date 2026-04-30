@@ -9,17 +9,18 @@ use rand::Rng;
 // ECOSYSTEM CONFIGURATION
 // ==========================================
 const SAMPLE_RATE: u32 = 48000;
-const DURATION_SECONDS: f32 = 300.0; 
+const DURATION_SECONDS: f32 = 60.0; 
 const CHUNK_SIZE: usize = 2048;
 const TAPE_LEN: usize = 512;
-const CA_CHANNELS: usize = 32; 
+const CA_CHANNELS: usize = 144; 
 const CA_HIDDEN_MULT: usize = 16;
-const KAN_BASIS_FUNCTIONS: usize = 64;
-const MEMORY_DIM: usize = 64;
+const KAN_BASIS_FUNCTIONS: usize = 128;
+const MEMORY_DIM: usize = 256;
+
 
 const BASE_FREQ_L: f32 = 41.0;
 const BASE_FREQ_R: f32 = 69.0;
-const METABOLIC_DECAY: f32 = 0.9995; // Increased to prevent rapid death
+const METABOLIC_DECAY: f32 = 0.9999; // Increased for higher stability in large manifolds
 const FREQ_GLIDE_SPEED: f32 = 0.0554;
 const BASE_LR: f64 = 1e-3;
 
@@ -117,6 +118,7 @@ fn conv1d_circular(
 struct NeuralCA1D {
     rule: Box<dyn Fn(&Tensor) -> CResult<Tensor>>,
     mutate: Linear,
+    ln: candle_nn::LayerNorm,
 }
 
 impl NeuralCA1D {
@@ -124,25 +126,57 @@ impl NeuralCA1D {
         let hidden_dim = channels * hidden_mult;
         let rule = conv1d_circular(channels, hidden_dim, 5, vb.pp("rule"))?;
         let mutate = candle_nn::linear(hidden_dim, channels, vb.pp("mutate"))?;
-        Ok(Self { rule, mutate })
+        let ln = candle_nn::layer_norm(channels, 1e-5, vb.pp("ln"))?;
+        Ok(Self { rule, mutate, ln })
     }
 
-    fn forward(&self, x: &Tensor, macro_mod: Option<&Tensor>) -> CResult<Tensor> {
+    fn forward(&self, x: &Tensor, macro_mod: Option<&Tensor>, metabolic_field: Option<&Tensor>) -> CResult<Tensor> {
         let neighborhood = (self.rule)(x)?.sin()?;
         let neighborhood_t = neighborhood.transpose(1, 2)?;
         let delta = self.mutate.forward(&neighborhood_t)?.transpose(1, 2)?.tanh()?;
         
-        let decay = if let Some(m_mod) = macro_mod {
+        let decay = if let Some(m_field) = metabolic_field {
+             // Dynamic metabolism: decay is influenced by local field density
+             m_field.broadcast_as(x.shape())?
+        } else if let Some(m_mod) = macro_mod {
              let sig = candle_nn::ops::sigmoid(&m_mod.unsqueeze(D::Minus1)?)?;
-             sig.affine(METABOLIC_DECAY as f64, 0.0)?
+             // Stabilized decay: modulation stays very close to 1.0
+             sig.affine((1.0 - METABOLIC_DECAY) as f64, (2.0 * METABOLIC_DECAY - 1.0) as f64)?
         } else {
             Tensor::new(METABOLIC_DECAY, x.device())?.broadcast_as(x.shape())?
         };
 
+        let res = ((x.broadcast_mul(&decay)?) + (delta * 0.25)?)?; 
+        
+        // Recurrent Normalization: Stabilize the manifold
+        let res_t = res.transpose(1, 2)?;
+        let normalized = self.ln.forward(&res_t)?.transpose(1, 2)?;
+        
         let anti_stagnation = (Tensor::randn_like(x, 0.0, 1.0)? * 0.005)?;
-        let res = ((x.broadcast_mul(&decay)?) + (delta * 0.15)?)?; // Reduced delta impact for stability
-        let res = (res + anti_stagnation)?;
-        res.clamp(-1.0, 1.0)
+        (normalized + anti_stagnation)?.clamp(-1.0, 1.0)
+    }
+}
+
+// ==========================================
+// 2. TAPE CODEC (Dual-Lane: Value + Gradient)
+// ==========================================
+struct TapeCodec;
+impl TapeCodec {
+    fn encode(values: &[f32], gradients: &[f32]) -> String {
+        let chars = [" ", "·", "▪", "▒", "▓", "█"];
+        let g_chars = [" ", "↘", "→", "↗", "↑", "!" ];
+        let mut tape = String::new();
+        for (v, g) in values.iter().zip(gradients.iter()) {
+            let v_idx = (((v + 1.0) * 0.5) * (chars.len() - 1) as f32).round() as usize;
+            let g_idx = (((g.abs() * 5.0).min(1.0)) * (g_chars.len() - 1) as f32).round() as usize;
+            tape.push_str(chars[v_idx.min(chars.len()-1)]);
+            if g.abs() > 0.05 {
+                tape.push_str(g_chars[g_idx.min(g_chars.len()-1)]);
+            } else {
+                tape.push_str(" ");
+            }
+        }
+        tape
     }
 }
 
@@ -275,13 +309,15 @@ impl AudioUncertaintyState {
 struct GRUCell {
     w_ih: Linear,
     w_hh: Linear,
+    ln: candle_nn::LayerNorm,
 }
 
 impl GRUCell {
     fn new(input_size: usize, hidden_size: usize, vb: VBV) -> Result<Self> {
         let w_ih = candle_nn::linear(input_size, 3 * hidden_size, vb.pp("w_ih"))?;
         let w_hh = candle_nn::linear(hidden_size, 3 * hidden_size, vb.pp("w_hh"))?;
-        Ok(Self { w_ih, w_hh })
+        let ln = candle_nn::layer_norm(hidden_size, 1e-5, vb.pp("ln"))?;
+        Ok(Self { w_ih, w_hh, ln })
     }
 
     fn forward(&self, x: &Tensor, h: &Tensor) -> CResult<Tensor> {
@@ -298,7 +334,7 @@ impl GRUCell {
         let update_gate = candle_nn::ops::sigmoid(&i_z.add(&h_z)?)?;
         let new_gate = i_n.add(&reset_gate.broadcast_mul(&h_n)?)?.tanh()?;
         let h_next = (update_gate.affine(-1.0, 1.0)?.broadcast_mul(&new_gate)? + update_gate.broadcast_mul(h)?)?;
-        Ok(h_next)
+        self.ln.forward(&h_next)
     }
 }
 
@@ -351,10 +387,12 @@ impl ComplexAudioEcosystem {
     ) -> Result<(Tensor, Tensor, Tensor, Tensor, f32, f32, f32, f32, f32)> {
         let mut next_macro_tape = macro_tape.clone();
         if force_macro_update {
-            next_macro_tape = self.macro_ca.forward(macro_tape, None).map_err(anyhow::Error::msg)?;
+            let m_field = macro_tape.abs().map_err(anyhow::Error::msg)?.affine(-0.01, METABOLIC_DECAY as f64).map_err(anyhow::Error::msg)?;
+            next_macro_tape = self.macro_ca.forward(macro_tape, None, Some(&m_field)).map_err(anyhow::Error::msg)?;
         }
         let macro_mod = (self.memory_to_macro.forward(hidden_mem).map_err(anyhow::Error::msg)? + next_macro_tape.mean(D::Minus1).map_err(anyhow::Error::msg)?)?;
-        let next_micro_tape = self.micro_ca.forward(micro_tape, Some(&macro_mod)).map_err(anyhow::Error::msg)?;
+        let micro_m_field = micro_tape.abs().map_err(anyhow::Error::msg)?.affine(-0.01, METABOLIC_DECAY as f64).map_err(anyhow::Error::msg)?;
+        let next_micro_tape = self.micro_ca.forward(micro_tape, Some(&macro_mod), Some(&micro_m_field)).map_err(anyhow::Error::msg)?;
         let tape_features = next_micro_tape.mean(D::Minus1).map_err(anyhow::Error::msg)?;
         let next_hidden_mem = self.gru_memory.forward(&tape_features, hidden_mem).map_err(anyhow::Error::msg)?;
         let movement = next_micro_tape.sub(micro_tape).map_err(anyhow::Error::msg)?.abs().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
@@ -447,7 +485,12 @@ fn main() -> Result<()> {
     println!("=== TITAN AUDIO ECOSYSTEM: RUST EDITION ===");
 
     let target_loader = TargetAudioLoader::new("/sdcard/Download")?;
-    let varmap = VarMap::new();
+    let mut varmap = VarMap::new();
+    let model_path = "/sdcard/Download/titan_model.safetensors";
+    if std::path::Path::new(model_path).exists() {
+        println!("--> Loading existing model from {}", model_path);
+        varmap.load(model_path).map_err(anyhow::Error::msg)?;
+    }
     let vb = VBV::from_varmap(&varmap, DType::F32, &device);
     let mut model = ComplexAudioEcosystem::new(vb.pp("model"))?;
     let defib_ctrl = DefibrillatorController::new(vb.pp("defib"))?;
@@ -466,6 +509,9 @@ fn main() -> Result<()> {
     let mut audio_frames: Vec<i16> = Vec::with_capacity(total_chunks * CHUNK_SIZE * 2);
     let mut topology_history = Vec::new();
     let mut uncertainty_trace = Vec::new();
+    
+    let mut burst_ticks = 0;
+    let mut burst_energy = 0.0f32;
 
     for step in 0..total_chunks {
         let aperture = uncertainty.branch_aperture();
@@ -474,17 +520,28 @@ fn main() -> Result<()> {
 
         // Losses
         let target_chunk = target_loader.sample_chunk(&device)?;
-        let mimic_loss = stereo_chunk.mean(0)?.sub(&target_chunk.reshape((CHUNK_SIZE,))?)?.sqr()?.mean_all()?;
-        let var_loss = var_all(&stereo_chunk).map_err(anyhow::Error::msg)?.neg().map_err(anyhow::Error::msg)?;
+        let audio_for_loss = stereo_chunk.tanh().map_err(anyhow::Error::msg)?;
+        let mimic_loss = audio_for_loss.mean(0).map_err(anyhow::Error::msg)?.sub(&target_chunk.reshape((CHUNK_SIZE,)).map_err(anyhow::Error::msg)?)?.sqr().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?;
+        let var_loss = var_all(&audio_for_loss).map_err(anyhow::Error::msg)?.neg().map_err(anyhow::Error::msg)?;
         let movement_loss = Tensor::new(movement, &device).map_err(anyhow::Error::msg)?.neg().map_err(anyhow::Error::msg)?;
-        let diff = stereo_chunk.narrow(1, 1, CHUNK_SIZE - 1).map_err(anyhow::Error::msg)?.sub(&stereo_chunk.narrow(1, 0, CHUNK_SIZE - 1).map_err(anyhow::Error::msg)?)?;
+        let diff = audio_for_loss.narrow(1, 1, CHUNK_SIZE - 1).map_err(anyhow::Error::msg)?.sub(&audio_for_loss.narrow(1, 0, CHUNK_SIZE - 1).map_err(anyhow::Error::msg)?)?;
         let roughness_loss = diff.sqr().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?;
+        let reg_loss = stereo_chunk.sqr().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?;
+        
+        // Energy loss to keep volume up (Target RMS ~0.25)
+        let rms = audio_for_loss.sqr().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?.sqrt().map_err(anyhow::Error::msg)?;
+        let energy_loss = rms.sub(&Tensor::new(0.25f32, &device).map_err(anyhow::Error::msg)?)?.sqr().map_err(anyhow::Error::msg)?;
 
         let arb_features = Tensor::new(&[0.5, mimic_loss.to_scalar::<f32>().unwrap_or(0.0), movement / 0.3, 0.0, 0.0, 0.0, uncertainty.spectral, uncertainty.movement, uncertainty.mimic, uncertainty.compositional, aperture, step as f32 / total_chunks as f32], &device).map_err(anyhow::Error::msg)?.unsqueeze(0).map_err(anyhow::Error::msg)?;
         let loss_weights = arbiter.forward(&arb_features)?;
         let lw = loss_weights.reshape((6,))?.to_vec1::<f32>().map_err(anyhow::Error::msg)?;
 
-        let total_loss = (mimic_loss.affine(lw[1] as f64, 0.0).map_err(anyhow::Error::msg)? + var_loss.affine(lw[0] as f64, 0.0).map_err(anyhow::Error::msg)? + movement_loss.affine(lw[2] as f64, 0.0).map_err(anyhow::Error::msg)? + roughness_loss.affine(lw[3] as f64, 0.0).map_err(anyhow::Error::msg)?)?;
+        let total_loss = (mimic_loss.affine(lw[1] as f64, 0.0).map_err(anyhow::Error::msg)? 
+            + var_loss.affine(lw[0] as f64, 0.0).map_err(anyhow::Error::msg)? 
+            + movement_loss.affine(lw[2] as f64, 0.0).map_err(anyhow::Error::msg)? 
+            + roughness_loss.affine(lw[3] as f64, 0.0).map_err(anyhow::Error::msg)?
+            + reg_loss.affine(0.01, 0.0).map_err(anyhow::Error::msg)?
+            + energy_loss.affine(2.0, 0.0).map_err(anyhow::Error::msg)?)?; 
         optimizer.backward_step(&total_loss).map_err(anyhow::Error::msg)?;
 
         micro_tape = next_micro_tape.detach().map_err(anyhow::Error::msg)?;
@@ -499,14 +556,30 @@ fn main() -> Result<()> {
 
         let defib_features = Tensor::new(&[movement, 0.1, mimic_drift, 0.5, aperture, 0.0, step as f32 / total_chunks as f32], &device).map_err(anyhow::Error::msg)?.unsqueeze(0).map_err(anyhow::Error::msg)?;
         let (thresh, n_scale, lr_mult) = defib_ctrl.forward(&defib_features)?;
-        if movement < thresh || mimic_drift > 0.8 {
-            let noise = (Tensor::randn_like(&micro_tape, 0.0, 1.0).map_err(anyhow::Error::msg)?.affine(n_scale as f64, 0.0))?;
-            micro_tape = (micro_tape + noise).map_err(anyhow::Error::msg)?.clamp(-1.0, 1.0).map_err(anyhow::Error::msg)?;
-            optimizer.set_learning_rate(BASE_LR * lr_mult as f64);
-            if step % 20 == 0 { println!("[DEFIBRILLATOR FIRED] at chunk {}", step); }
-        } else { optimizer.set_learning_rate(BASE_LR); }
+        
+        // Rhythmic Pacemaker Logic: Creates a multi-chunk "beat" sequence
+        if (movement < thresh || mimic_drift > 0.8) && burst_ticks == 0 {
+            burst_ticks = 8; // Burst lasts 8 chunks
+            burst_energy = n_scale;
+        }
 
-        let audio_data = stereo_chunk.tanh().map_err(anyhow::Error::msg)?.affine(32767.0, 0.0).map_err(anyhow::Error::msg)?;
+        if burst_ticks > 0 {
+            let env = (burst_ticks as f32 / 8.0).sqrt(); // Decay envelope for the burst
+            let noise = (Tensor::randn_like(&micro_tape, 0.0, 1.0).map_err(anyhow::Error::msg)?.affine((burst_energy * env) as f64, 0.0))?;
+            micro_tape = (micro_tape + noise).map_err(anyhow::Error::msg)?.clamp(-1.0, 1.0).map_err(anyhow::Error::msg)?;
+            optimizer.set_learning_rate(BASE_LR * (1.0 + (lr_mult - 1.0) * env) as f64);
+            if step % 20 == 0 { println!("[PACEMAKER BURST] step {} (env: {:.2})", step, env); }
+            burst_ticks -= 1;
+        } else { 
+            optimizer.set_learning_rate(BASE_LR); 
+        }
+
+        // Volume normalization/boost: Ensures at least 25% peak volume
+        let audio_t = stereo_chunk.tanh().map_err(anyhow::Error::msg)?;
+        let abs_max = audio_t.abs().map_err(anyhow::Error::msg)?.flatten_all().map_err(anyhow::Error::msg)?.max(0).map_err(anyhow::Error::msg)?.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
+        let boost = if abs_max < 0.25 { 0.25 / (abs_max + 1e-6) } else { 1.0 };
+        let audio_data = audio_t.affine(boost as f64 * 32767.0, 0.0).map_err(anyhow::Error::msg)?;
+        
         let audio_l = audio_data.narrow(0, 0, 1).map_err(anyhow::Error::msg)?.to_vec2::<f32>().map_err(anyhow::Error::msg)?[0].clone();
         let audio_r = audio_data.narrow(0, 1, 1).map_err(anyhow::Error::msg)?.to_vec2::<f32>().map_err(anyhow::Error::msg)?[0].clone();
         for i in 0..CHUNK_SIZE { audio_frames.push(audio_l[i] as i16); audio_frames.push(audio_r[i] as i16); }
@@ -516,7 +589,16 @@ fn main() -> Result<()> {
             topology_history.push(topology_state);
             uncertainty_trace.push(serde_json::json!({"step": step, "spectral": uncertainty.spectral, "movement": uncertainty.movement, "compositional": uncertainty.compositional, "aperture": aperture}));
         }
-        if step % 50 == 0 { println!("Chunk {}/{} | Move: {:.3} | Mimic: {:.3} | Aperture: {:.2}", step, total_chunks, movement, mimic_drift, aperture); }
+        if step % 50 == 0 { 
+            println!("Chunk {}/{} | Move: {:.3} | Mimic: {:.3} | Aperture: {:.2}", step, total_chunks, movement, mimic_drift, aperture);
+            if let Ok(v) = micro_tape.narrow(1, 0, 1).unwrap_or(micro_tape.clone()).narrow(2, 0, 64).unwrap_or(micro_tape.clone()).reshape((64,)) {
+                if let Ok(vals) = v.to_vec1::<f32>() {
+                    let mut grads = vec![0.0; 64];
+                    for i in 0..63 { grads[i] = vals[i+1] - vals[i]; }
+                    println!("Tape: [{}]", TapeCodec::encode(&vals, &grads));
+                }
+            }
+        }
     }
 
     // Save CSVs
@@ -534,5 +616,11 @@ fn main() -> Result<()> {
     for sample in audio_frames { writer.write_sample(sample)?; }
     writer.finalize()?;
     println!("Audio saved to /sdcard/Download/rust_ecosystem_out.wav");
+
+    // Save model weights
+    varmap.save(model_path).map_err(anyhow::Error::msg)?;
+    let metadata = std::fs::metadata(model_path)?;
+    println!("Model saved to {}. Size: {:.2} MB", model_path, metadata.len() as f32 / 1_048_576.0);
+
     Ok(())
 }
