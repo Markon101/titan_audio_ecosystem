@@ -1,0 +1,10 @@
+# Generated artifacts
+target/
+*.wav
+*.csv
+
+# Safetensors models
+*.safetensors
+
+# OS files
+.DS_Store
