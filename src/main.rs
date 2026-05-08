@@ -1,6 +1,6 @@
-use anyhow::{Result, Context};
+use anyhow::Result;
 use candle_core::{Device, Tensor, DType, D, Result as CResult};
-use candle_nn::{Linear, Conv1d, Conv1dConfig, VarBuilder as VBV, VarMap, Optimizer, AdamW, Module};
+use candle_nn::{Linear, Conv1dConfig, VarBuilder as VBV, VarMap, Optimizer, AdamW, Module};
 use std::collections::VecDeque;
 use rustfft::{FftPlanner, num_complex::Complex};
 use rand::Rng;
@@ -9,7 +9,7 @@ use rand::Rng;
 // ECOSYSTEM CONFIGURATION
 // ==========================================
 const SAMPLE_RATE: u32 = 48000;
-const DURATION_SECONDS: f32 = 60.0; 
+const DURATION_SECONDS: f32 = 127.0; 
 const CHUNK_SIZE: usize = 2048;
 const TAPE_LEN: usize = 512;
 const CA_CHANNELS: usize = 144; 
@@ -384,15 +384,39 @@ impl ComplexAudioEcosystem {
         phase_c_l: f32, phase_c_r: f32,
         phase_m_l: f32, phase_m_r: f32,
         force_macro_update: bool,
-    ) -> Result<(Tensor, Tensor, Tensor, Tensor, f32, f32, f32, f32, f32)> {
+        mimic_loss_val: f32,
+    ) -> Result<(Tensor, Tensor, Tensor, Tensor, f32, f32, f32, f32, f32, f32)> {
         let mut next_macro_tape = macro_tape.clone();
         if force_macro_update {
             let m_field = macro_tape.abs().map_err(anyhow::Error::msg)?.affine(-0.01, METABOLIC_DECAY as f64).map_err(anyhow::Error::msg)?;
             next_macro_tape = self.macro_ca.forward(macro_tape, None, Some(&m_field)).map_err(anyhow::Error::msg)?;
         }
+        
+        // Metabolic Downward Causation: Macro activation defines the update rate
+        let macro_activation = next_macro_tape.abs().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
+        let metabolic_rate = (macro_activation * 5.0).clamp(0.01, 1.0);
+
         let macro_mod = (self.memory_to_macro.forward(hidden_mem).map_err(anyhow::Error::msg)? + next_macro_tape.mean(D::Minus1).map_err(anyhow::Error::msg)?)?;
         let micro_m_field = micro_tape.abs().map_err(anyhow::Error::msg)?.affine(-0.01, METABOLIC_DECAY as f64).map_err(anyhow::Error::msg)?;
-        let next_micro_tape = self.micro_ca.forward(micro_tape, Some(&macro_mod), Some(&micro_m_field)).map_err(anyhow::Error::msg)?;
+        let raw_next_micro = self.micro_ca.forward(micro_tape, Some(&macro_mod), Some(&micro_m_field)).map_err(anyhow::Error::msg)?;
+        
+        // Apply metabolic interpolation
+        let next_micro_tape = (micro_tape.affine((1.0 - metabolic_rate) as f64, 0.0).map_err(anyhow::Error::msg)? + raw_next_micro.affine(metabolic_rate as f64, 0.0).map_err(anyhow::Error::msg)?)?.clamp(-1.0, 1.0).map_err(anyhow::Error::msg)?;
+
+        // IT-FM: Geometric Phase Manifold
+        // Extract Global Phase Angle Theta from the 144-channel tape (treated as 72 complex pairs)
+        // Average over the time dimension (D::Minus1) to get a [1, 144] feature vector
+        let micro_avg = next_micro_tape.mean(D::Minus1)?;
+        let micro_flat = micro_avg.reshape((CA_CHANNELS,))?;
+        let micro_vec = micro_flat.to_vec1::<f32>()?;
+        let mut sum_real = 0.0f32;
+        let mut sum_imag = 0.0f32;
+        for i in (0..CA_CHANNELS).step_by(2) {
+            sum_real += micro_vec[i];
+            sum_imag += micro_vec[i+1];
+        }
+        let theta = sum_imag.atan2(sum_real + 1e-6);
+
         let tape_features = next_micro_tape.mean(D::Minus1).map_err(anyhow::Error::msg)?;
         let next_hidden_mem = self.gru_memory.forward(&tape_features, hidden_mem).map_err(anyhow::Error::msg)?;
         let movement = next_micro_tape.sub(micro_tape).map_err(anyhow::Error::msg)?.abs().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
@@ -418,8 +442,11 @@ impl ComplexAudioEcosystem {
         let phases_m_r = (t_steps.affine((2.0 * std::f32::consts::PI * mod_freq_r) as f64, phase_m_r as f64))?;
         let modulator_l = phases_m_l.sin().map_err(anyhow::Error::msg)?.affine(fm_idx_l as f64, 0.0)?;
         let modulator_r = phases_m_r.sin().map_err(anyhow::Error::msg)?.affine(fm_idx_r as f64, 0.0)?;
-        let phases_c_l = (t_steps.affine((2.0 * std::f32::consts::PI * self.current_freq_l) as f64, phase_c_l as f64)? + modulator_l)?; 
-        let phases_c_r = (t_steps.affine((2.0 * std::f32::consts::PI * self.current_freq_r) as f64, phase_c_r as f64)? + modulator_r)?;
+        
+        // Phase-Locked IT-FM: Inject Theta into the carrier phase
+        let phases_c_l = (t_steps.affine((2.0 * std::f32::consts::PI * self.current_freq_l) as f64, (phase_c_l + theta) as f64)? + modulator_l)?; 
+        let phases_c_r = (t_steps.affine((2.0 * std::f32::consts::PI * self.current_freq_r) as f64, (phase_c_r + theta) as f64)? + modulator_r)?;
+        
         let next_phase_c_l = phases_c_l.narrow(0, CHUNK_SIZE - 1, 1).map_err(anyhow::Error::msg)?.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)? % (2.0 * std::f32::consts::PI);
         let next_phase_c_r = phases_c_r.narrow(0, CHUNK_SIZE - 1, 1).map_err(anyhow::Error::msg)?.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)? % (2.0 * std::f32::consts::PI);
         let next_phase_m_l = phases_m_l.narrow(0, CHUNK_SIZE - 1, 1).map_err(anyhow::Error::msg)?.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)? % (2.0 * std::f32::consts::PI);
@@ -440,7 +467,7 @@ impl ComplexAudioEcosystem {
         let audio_l = audio_l.affine((gain_l * 1.414) as f64, 0.0).map_err(anyhow::Error::msg)?;
         let audio_r = audio_r.affine((gain_r * 1.414) as f64, 0.0).map_err(anyhow::Error::msg)?;
         let stereo_chunk = Tensor::cat(&[&audio_l, &audio_r], 0).map_err(anyhow::Error::msg)?.reshape((2, CHUNK_SIZE)).map_err(anyhow::Error::msg)?;
-        Ok((stereo_chunk, next_micro_tape, next_macro_tape, next_hidden_mem, next_phase_c_l, next_phase_c_r, next_phase_m_l, next_phase_m_r, movement))
+        Ok((stereo_chunk, next_micro_tape, next_macro_tape, next_hidden_mem, next_phase_c_l, next_phase_c_r, next_phase_m_l, next_phase_m_r, movement, theta))
     }
 }
 
@@ -480,13 +507,13 @@ impl AudioArbiter {
 }
 
 fn main() -> Result<()> {
-    rayon::ThreadPoolBuilder::new().num_threads(6).build_global()?;
+    rayon::ThreadPoolBuilder::new().num_threads(8).build_global()?;
     let device = Device::Cpu; 
-    println!("=== TITAN AUDIO ECOSYSTEM: RUST EDITION ===");
+    println!("=== TITAN AUDIO ECOSYSTEM: RUST EDITION (RESONANT BETA) ===");
 
     let target_loader = TargetAudioLoader::new("/sdcard/Download")?;
     let mut varmap = VarMap::new();
-    let model_path = "/sdcard/Download/titan_model.safetensors";
+    let model_path = "/sdcard/Download/titan_model_beta.safetensors";
     if std::path::Path::new(model_path).exists() {
         println!("--> Loading existing model from {}", model_path);
         varmap.load(model_path).map_err(anyhow::Error::msg)?;
@@ -512,11 +539,16 @@ fn main() -> Result<()> {
     
     let mut burst_ticks = 0;
     let mut burst_energy = 0.0f32;
+    let mut phi = 0.0f32;
 
     for step in 0..total_chunks {
         let aperture = uncertainty.branch_aperture();
         let force_macro = rand::thread_rng().gen_range(0.0..1.0) < (0.2 + aperture * 0.6);
-        let (stereo_chunk, next_micro_tape, next_macro_tape, next_hidden_mem, nc_l, nc_r, nm_l, nm_r, movement) = model.forward(&micro_tape, &macro_tape, &hidden_mem, phase_c_l, phase_c_r, phase_m_l, phase_m_r, force_macro)?;
+        
+        // Tracking mimic_loss from the PREVIOUS step for thermodynamic modulation
+        let prev_mimic_loss = if step == 0 { 0.5f32 } else { uncertainty.mimic / 10.0 };
+        
+        let (stereo_chunk, next_micro_tape, next_macro_tape, next_hidden_mem, nc_l, nc_r, nm_l, nm_r, movement, theta) = model.forward(&micro_tape, &macro_tape, &hidden_mem, phase_c_l, phase_c_r, phase_m_l, phase_m_r, force_macro, prev_mimic_loss)?;
 
         // Losses
         let target_chunk = target_loader.sample_chunk(&device)?;
@@ -528,7 +560,6 @@ fn main() -> Result<()> {
         let roughness_loss = diff.sqr().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?;
         let reg_loss = stereo_chunk.sqr().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?;
         
-        // Energy loss to keep volume up (Target RMS ~0.25)
         let rms = audio_for_loss.sqr().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?.sqrt().map_err(anyhow::Error::msg)?;
         let energy_loss = rms.sub(&Tensor::new(0.25f32, &device).map_err(anyhow::Error::msg)?)?.sqr().map_err(anyhow::Error::msg)?;
 
@@ -552,26 +583,35 @@ fn main() -> Result<()> {
         let m_sig = movement_mon.analyze(movement)?;
         let s_sig = spectral_mon.analyze(&stereo_chunk)?;
         let mimic_drift = mimic_loss.to_scalar::<f32>().unwrap_or(0.0);
-        uncertainty.update(&s_sig, &m_sig, Some(&serde_json::json!({"drift": mimic_drift})));
+        uncertainty.update(&s_sig, &m_sig, Some(&serde_json::json!({"drift": mimic_drift, "theta": theta})));
 
-        let defib_features = Tensor::new(&[movement, 0.1, mimic_drift, 0.5, aperture, 0.0, step as f32 / total_chunks as f32], &device).map_err(anyhow::Error::msg)?.unsqueeze(0).map_err(anyhow::Error::msg)?;
+        // Phi Gating: Integrated Information Potential
+        let entropy = s_sig["signal"].as_f64().unwrap_or(0.0) as f32;
+        // Harmonic Resonance (R): Approx as (1 - entropy / max_entropy) * movement_coherence
+        let resonance = (1.0 - (entropy / 8.0)).max(0.0) * (1.0 + m_sig["trend"].as_f64().unwrap_or(0.0) as f32 * 10.0).max(0.1);
+        phi = (entropy * resonance).clamp(0.0, 10.0);
+
+        let defib_features = Tensor::new(&[movement, 0.1, mimic_drift, 0.5, aperture, phi / 10.0, step as f32 / total_chunks as f32], &device).map_err(anyhow::Error::msg)?.unsqueeze(0).map_err(anyhow::Error::msg)?;
         let (thresh, n_scale, lr_mult) = defib_ctrl.forward(&defib_features)?;
         
-        // Rhythmic Pacemaker Logic: Creates a multi-chunk "beat" sequence
         if (movement < thresh || mimic_drift > 0.8) && burst_ticks == 0 {
-            burst_ticks = 8; // Burst lasts 8 chunks
+            burst_ticks = 8;
             burst_energy = n_scale;
         }
 
         if burst_ticks > 0 {
-            let env = (burst_ticks as f32 / 8.0).sqrt(); // Decay envelope for the burst
+            let env = (burst_ticks as f32 / 8.0).sqrt(); 
             let noise = (Tensor::randn_like(&micro_tape, 0.0, 1.0).map_err(anyhow::Error::msg)?.affine((burst_energy * env) as f64, 0.0))?;
             micro_tape = (micro_tape + noise).map_err(anyhow::Error::msg)?.clamp(-1.0, 1.0).map_err(anyhow::Error::msg)?;
-            optimizer.set_learning_rate(BASE_LR * (1.0 + (lr_mult - 1.0) * env) as f64);
-            if step % 20 == 0 { println!("[PACEMAKER BURST] step {} (env: {:.2})", step, env); }
+            
+            // Phi-Gated Learning Rate: Higher Phi -> Lower Learning Rate (preserving "beauty")
+            let phi_gate = 1.0 / (1.0 + phi);
+            optimizer.set_learning_rate(BASE_LR * (1.0 + (lr_mult - 1.0) * env) as f64 * phi_gate as f64);
+            if step % 20 == 0 { println!("[PACEMAKER BURST] step {} (env: {:.2}, phi_gate: {:.2})", step, env, phi_gate); }
             burst_ticks -= 1;
         } else { 
-            optimizer.set_learning_rate(BASE_LR); 
+            let phi_gate = 1.0 / (1.0 + phi);
+            optimizer.set_learning_rate(BASE_LR * phi_gate as f64); 
         }
 
         // Volume normalization/boost: Ensures at least 25% peak volume
