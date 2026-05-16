@@ -9,10 +9,10 @@ use rand::Rng;
 // ECOSYSTEM CONFIGURATION
 // ==========================================
 const SAMPLE_RATE: u32 = 48000;
-const DURATION_SECONDS: f32 = 120.0; 
+const DURATION_SECONDS: f32 = 10.0; 
 const CHUNK_SIZE: usize = 2048;
 const TAPE_LEN: usize = 1024;
-const CA_CHANNELS: usize = 144; 
+const CA_CHANNELS: usize = 144;
 const CA_HIDDEN_MULT: usize = 32;
 const KAN_BASIS_FUNCTIONS: usize = 256;
 const MEMORY_DIM: usize = 448;
@@ -23,7 +23,7 @@ const BASE_FREQ_R: f32 = 69.0;
 const METABOLIC_DECAY: f32 = 0.9999; // Increased for higher stability in large manifolds
 const FREQ_GLIDE_SPEED: f32 = 0.0454;
 const BASE_LR: f64 = 1e-3;
-const RESONANT_AUTONOMY: f32 = 0.5; // 0.1: Mimicry, 0.9: Chaos
+const RESONANT_AUTONOMY: f32 = 0.2; // 0.1: Mimicry, 0.9: Chaos
 
 // ==========================================
 // TARGET AUDIO LOADER
