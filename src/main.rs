@@ -9,13 +9,13 @@ use rand::Rng;
 // ECOSYSTEM CONFIGURATION
 // ==========================================
 const SAMPLE_RATE: u32 = 48000;
-const DURATION_SECONDS: f32 = 10.0; 
+const DURATION_SECONDS: f32 = 160.0; 
 const CHUNK_SIZE: usize = 2048;
-const TAPE_LEN: usize = 1024;
-const CA_CHANNELS: usize = 144;
+const TAPE_LEN: usize = 512;
+const CA_CHANNELS: usize = 32;
 const CA_HIDDEN_MULT: usize = 32;
-const KAN_BASIS_FUNCTIONS: usize = 256;
-const MEMORY_DIM: usize = 448;
+const KAN_BASIS_FUNCTIONS: usize = 72;
+const MEMORY_DIM: usize = 128;
 
 
 const BASE_FREQ_L: f32 = 48.0;
@@ -544,7 +544,7 @@ fn main() -> Result<()> {
     let device = Device::Cpu; 
     println!("=== TITAN AUDIO ECOSYSTEM: RUST EDITION (RESONANT BETA) ===");
 
-    let target_loader = TargetAudioLoader::new("/sdcard/Download")?;
+    let target_loader = TargetAudioLoader::new("/sdcard/Download/OLD_WAVS")?;
     let mut varmap = VarMap::new();
     let model_path = "/sdcard/Download/titan_model_beta.safetensors";
     if std::path::Path::new(model_path).exists() {
