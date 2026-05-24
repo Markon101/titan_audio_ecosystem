@@ -8,3 +8,8 @@ target/
 
 # OS files
 .DS_Store
+
+# Tool and env metadata
+.antigravitycli/
+.virtfs_metadata/
+.env

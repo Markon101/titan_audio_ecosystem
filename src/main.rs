@@ -1,6 +1,6 @@
-use anyhow::{Result, Context};
+use anyhow::Result;
 use candle_core::{Device, Tensor, DType, D, Result as CResult};
-use candle_nn::{Linear, Conv1d, Conv1dConfig, VarBuilder as VBV, VarMap, Optimizer, AdamW, Module};
+use candle_nn::{Linear, Conv1dConfig, VarBuilder as VBV, VarMap, Optimizer, AdamW, Module};
 use std::collections::VecDeque;
 use rustfft::{FftPlanner, num_complex::Complex};
 use rand::Rng;
@@ -9,20 +9,20 @@ use rand::Rng;
 // ECOSYSTEM CONFIGURATION
 // ==========================================
 const SAMPLE_RATE: u32 = 48000;
-const DURATION_SECONDS: f32 = 60.0; 
+const DURATION_SECONDS: f32 = 420.0; 
 const CHUNK_SIZE: usize = 2048;
 const TAPE_LEN: usize = 512;
-const CA_CHANNELS: usize = 144; 
-const CA_HIDDEN_MULT: usize = 16;
-const KAN_BASIS_FUNCTIONS: usize = 128;
+const CA_CHANNELS: usize = 144;
+const CA_HIDDEN_MULT: usize = 64;
+const KAN_BASIS_FUNCTIONS: usize = 144;
 const MEMORY_DIM: usize = 256;
 
-
-const BASE_FREQ_L: f32 = 41.0;
+const BASE_FREQ_L: f32 = 49.0;
 const BASE_FREQ_R: f32 = 69.0;
-const METABOLIC_DECAY: f32 = 0.9999; // Increased for higher stability in large manifolds
+const METABOLIC_DECAY: f32 = 0.99999; 
 const FREQ_GLIDE_SPEED: f32 = 0.0554;
-const BASE_LR: f64 = 1e-3;
+const BASE_LR: f64 = 1e-4;
+const RESONANT_AUTONOMY: f32 = 0.314; 
 
 // ==========================================
 // TARGET AUDIO LOADER
@@ -41,9 +41,10 @@ impl TargetAudioLoader {
             if p.extension().map_or(false, |ext| ext == "wav") && p.file_name().unwrap() != "rust_ecosystem_out.wav" {
                 println!("--> Loading target audio: {:?}", p);
                 let mut reader = hound::WavReader::open(p)?;
-                let samples: Vec<f32> = reader.samples::<i16>().map(|s| s.unwrap_or(0) as f32 / 32768.0).collect();
-                if !samples.is_empty() {
-                    buffers.push(samples);
+                let samples: Vec<i16> = reader.samples::<i16>().map(|s| s.unwrap_or(0)).collect();
+                let f32_samples: Vec<f32> = samples.iter().map(|&s| s as f32 / 32768.0).collect();
+                if !f32_samples.is_empty() {
+                    buffers.push(f32_samples);
                 }
             }
         }
@@ -113,7 +114,7 @@ fn conv1d_circular(
 }
 
 // ==========================================
-// 1. NEURAL CA (1D)
+// 1. NEURAL CA (1D Scale-Invariant Fractal)
 // ==========================================
 struct NeuralCA1D {
     rule: Box<dyn Fn(&Tensor) -> CResult<Tensor>>,
@@ -133,27 +134,42 @@ impl NeuralCA1D {
     fn forward(&self, x: &Tensor, macro_mod: Option<&Tensor>, metabolic_field: Option<&Tensor>) -> CResult<Tensor> {
         let neighborhood = (self.rule)(x)?.sin()?;
         let neighborhood_t = neighborhood.transpose(1, 2)?;
-        let delta = self.mutate.forward(&neighborhood_t)?.transpose(1, 2)?.tanh()?;
+        let mut delta = self.mutate.forward(&neighborhood_t)?.transpose(1, 2)?.tanh()?;
         
-        let decay = if let Some(m_field) = metabolic_field {
-             // Dynamic metabolism: decay is influenced by local field density
-             m_field.broadcast_as(x.shape())?
+        if x.dim(D::Minus1)? >= 4 {
+            let half_len = x.dim(D::Minus1)? / 2;
+            let coarse_x = x.narrow(D::Minus1, 0, half_len)?;
+            let coarse_rule = (self.rule)(&coarse_x)?.sin()?;
+            let coarse_delta = self.mutate.forward(&coarse_rule.transpose(1, 2)?)?.transpose(1, 2)?.tanh()?;
+            let upscale_coarse = coarse_delta.repeat(&[1, 1, 2])?;
+            if upscale_coarse.shape() == delta.shape() {
+                let d_scaled = delta.affine(0.618, 0.0)?;
+                let u_scaled = upscale_coarse.affine(0.382, 0.0)?;
+                delta = d_scaled.add(&u_scaled)?;
+            }
+        }
+
+        let (decay, evolution_speed) = if let Some(m_field) = metabolic_field {
+             (m_field.broadcast_as(x.shape())?, Tensor::new(0.25f32, x.device())?.broadcast_as(x.shape())?)
         } else if let Some(m_mod) = macro_mod {
-             let sig = candle_nn::ops::sigmoid(&m_mod.unsqueeze(D::Minus1)?)?;
-             // Stabilized decay: modulation stays very close to 1.0
-             sig.affine((1.0 - METABOLIC_DECAY) as f64, (2.0 * METABOLIC_DECAY - 1.0) as f64)?
+             let sig = candle_nn::ops::sigmoid(m_mod)?;
+             let d = sig.affine((1.0 - METABOLIC_DECAY) as f64, (2.0 * METABOLIC_DECAY - 1.0) as f64)?;
+             let s = sig.affine(0.5, 0.05)?; 
+             (d, s)
         } else {
-            Tensor::new(METABOLIC_DECAY, x.device())?.broadcast_as(x.shape())?
+            (Tensor::new(METABOLIC_DECAY, x.device())?.broadcast_as(x.shape())?, Tensor::new(0.25f32, x.device())?.broadcast_as(x.shape())?)
         };
 
-        let res = ((x.broadcast_mul(&decay)?) + (delta * 0.25)?)?; 
+        let decayed_x = x.broadcast_mul(&decay)?;
+        let evolved_delta = delta.broadcast_mul(&evolution_speed)?;
+        let res = decayed_x.add(&evolved_delta)?;
         
-        // Recurrent Normalization: Stabilize the manifold
         let res_t = res.transpose(1, 2)?;
         let normalized = self.ln.forward(&res_t)?.transpose(1, 2)?;
         
-        let anti_stagnation = (Tensor::randn_like(x, 0.0, 1.0)? * 0.005)?;
-        (normalized + anti_stagnation)?.clamp(-1.0, 1.0)
+        let rand_noise = Tensor::randn_like(x, 0.0, 1.0)?;
+        let anti_stagnation = rand_noise.affine(0.005, 0.0)?;
+        normalized.add(&anti_stagnation)?.clamp(-1.0f32, 1.0f32)
     }
 }
 
@@ -181,7 +197,7 @@ impl TapeCodec {
 }
 
 // ==========================================
-// 2. KAN LAYER
+// 3. KAN LAYER (Recursive Fused Wavefolder)
 // ==========================================
 struct KANLayer {
     centers: Tensor,
@@ -201,19 +217,29 @@ impl KANLayer {
         Ok(Self { centers, weights, variance })
     }
 
-    fn forward(&self, x: &Tensor) -> CResult<Tensor> {
+    fn forward(&self, x: &Tensor, work: f32) -> CResult<Tensor> {
         let x_expanded = x.unsqueeze(D::Minus1)?;
         let diff = x_expanded.broadcast_sub(&self.centers)?;
-        let var_sq = (self.variance.powf(2.0)? + 1e-4)?;
+        
+        let work_mod = ((-5.0 * work).exp() as f64).max(0.1);
+        let var_sq = (self.variance.powf(2.0)?.affine(work_mod, 1e-4))?;
+        
         let phi = diff.powf(2.0)?.broadcast_div(&var_sq)?.neg()?.exp()?;
         let weights_reshaped = self.weights.reshape((self.weights.dim(0)?, self.weights.dim(2)?))?;
         let folded = phi.matmul(&weights_reshaped.transpose(0, 1)?.unsqueeze(0)?)?;
-        Ok(folded)
+        
+        let secondary_diff = folded.broadcast_sub(&self.centers)?;
+        let secondary_phi = secondary_diff.powf(2.0)?.broadcast_div(&var_sq)?.neg()?.exp()?;
+        let refined_fold = secondary_phi.matmul(&weights_reshaped.transpose(0, 1)?.unsqueeze(0)?)?;
+
+        let f_scaled = folded.affine(0.7, 0.0)?;
+        let r_scaled = refined_fold.affine(0.3, 0.0)?;
+        f_scaled.add(&r_scaled)
     }
 }
 
 // ==========================================
-// 3. MONITOR AGENTS
+// 4. MONITOR AGENTS
 // ==========================================
 struct SpectralEntropyMonitor {
     history: VecDeque<f32>,
@@ -274,20 +300,26 @@ impl MovementCoherenceMonitor {
 }
 
 // ==========================================
-// 4. AUDIO UNCERTAINTY STATE
+// 5. AUDIO UNCERTAINTY STATE
 // ==========================================
 struct AudioUncertaintyState {
     spectral: f32,
     movement: f32,
     mimic: f32,
     compositional: f32,
+    phi: f32,
 }
 
 impl AudioUncertaintyState {
-    fn new() -> Self { Self { spectral: 0.0, movement: 0.0, mimic: 0.0, compositional: 0.0 } }
+    fn new() -> Self { Self { spectral: 0.0, movement: 0.0, mimic: 0.0, compositional: 0.0, phi: 0.0 } }
     fn update(&mut self, spectral_sig: &serde_json::Value, movement_sig: &serde_json::Value, mimic_sig: Option<&serde_json::Value>) {
         let s_sig = spectral_sig["signal"].as_f64().unwrap_or(0.0) as f32;
+        let avg_s = spectral_sig["avg"].as_f64().unwrap_or(1.0) as f32;
         let m_trend = movement_sig["trend"].as_f64().unwrap_or(0.0) as f32;
+        
+        let resonance = (avg_s / (s_sig + 1e-6)).clamp(0.1, 5.0);
+        self.phi = (s_sig * resonance).clamp(0.0, 10.0);
+
         self.spectral = (1.0 - (s_sig / 8.0)).max(0.0);
         self.movement = (-m_trend * 200.0).max(0.0);
         if let Some(ms) = mimic_sig {
@@ -304,7 +336,7 @@ impl AudioUncertaintyState {
 }
 
 // ==========================================
-// 5. GRU CELL
+// 6. GRU CELL
 // ==========================================
 struct GRUCell {
     w_ih: Linear,
@@ -339,7 +371,7 @@ impl GRUCell {
 }
 
 // ==========================================
-// 6. COMPLEX AUDIO ECOSYSTEM
+// 7. COMPLEX AUDIO ECOSYSTEM (Titan GPU Model)
 // ==========================================
 struct ComplexAudioEcosystem {
     micro_ca: NeuralCA1D,
@@ -351,14 +383,15 @@ struct ComplexAudioEcosystem {
     fm_mod_index: candle_nn::Sequential,
     wavefolder_l: KANLayer,
     wavefolder_r: KANLayer,
-    current_freq_l: f32,
-    current_freq_r: f32,
+    current_freq_l: Tensor,
+    current_freq_r: Tensor,
     base_freq_l: Tensor,
     base_freq_r: Tensor,
 }
 
 impl ComplexAudioEcosystem {
     fn new(vb: VBV) -> Result<Self> {
+        let dev = vb.device();
         let micro_ca = NeuralCA1D::new(CA_CHANNELS, CA_HIDDEN_MULT, vb.pp("micro_ca"))?;
         let macro_ca = NeuralCA1D::new(CA_CHANNELS, CA_HIDDEN_MULT, vb.pp("macro_ca"))?;
         let gru_memory = GRUCell::new(CA_CHANNELS, MEMORY_DIM, vb.pp("gru_memory"))?;
@@ -370,9 +403,13 @@ impl ComplexAudioEcosystem {
         let wavefolder_r = KANLayer::new(1, 1, KAN_BASIS_FUNCTIONS, vb.pp("wavefolder_r"))?;
         let base_freq_l = vb.get_with_hints((1,), "base_freq_l", candle_nn::Init::Const(BASE_FREQ_L as f64))?;
         let base_freq_r = vb.get_with_hints((1,), "base_freq_r", candle_nn::Init::Const(BASE_FREQ_R as f64))?;
+        
+        let current_freq_l = Tensor::new(&[BASE_FREQ_L], dev)?;
+        let current_freq_r = Tensor::new(&[BASE_FREQ_R], dev)?;
+
         Ok(Self {
             micro_ca, macro_ca, gru_memory, memory_to_macro, spatial_panner, fm_mod_ratio, fm_mod_index,
-            wavefolder_l, wavefolder_r, current_freq_l: BASE_FREQ_L, current_freq_r: BASE_FREQ_R, base_freq_l, base_freq_r,
+            wavefolder_l, wavefolder_r, current_freq_l, current_freq_r, base_freq_l, base_freq_r,
         })
     }
 
@@ -384,68 +421,148 @@ impl ComplexAudioEcosystem {
         phase_c_l: f32, phase_c_r: f32,
         phase_m_l: f32, phase_m_r: f32,
         force_macro_update: bool,
-    ) -> Result<(Tensor, Tensor, Tensor, Tensor, f32, f32, f32, f32, f32)> {
+        mimic_loss_val: f32,
+    ) -> Result<(Tensor, Tensor, Tensor, Tensor, f32, f32, f32, f32, f32, f32)> {
+        let dev = micro_tape.device();
         let mut next_macro_tape = macro_tape.clone();
         if force_macro_update {
             let m_field = macro_tape.abs().map_err(anyhow::Error::msg)?.affine(-0.01, METABOLIC_DECAY as f64).map_err(anyhow::Error::msg)?;
             next_macro_tape = self.macro_ca.forward(macro_tape, None, Some(&m_field)).map_err(anyhow::Error::msg)?;
         }
+        
+        let macro_activation = next_macro_tape.abs().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?;
+        let metabolic_rate = (macro_activation * 5.0).map_err(anyhow::Error::msg)?.clamp(0.01f32, 1.0f32)?;
+
         let macro_mod = (self.memory_to_macro.forward(hidden_mem).map_err(anyhow::Error::msg)? + next_macro_tape.mean(D::Minus1).map_err(anyhow::Error::msg)?)?;
         let micro_m_field = micro_tape.abs().map_err(anyhow::Error::msg)?.affine(-0.01, METABOLIC_DECAY as f64).map_err(anyhow::Error::msg)?;
-        let next_micro_tape = self.micro_ca.forward(micro_tape, Some(&macro_mod), Some(&micro_m_field)).map_err(anyhow::Error::msg)?;
+        let raw_next_micro = self.micro_ca.forward(micro_tape, Some(&macro_mod), Some(&micro_m_field)).map_err(anyhow::Error::msg)?;
+        
+        let one_t = Tensor::new(1.0f32, dev)?;
+        let active_decay = one_t.sub(&metabolic_rate)?;
+        let decayed_micro = micro_tape.broadcast_mul(&active_decay)?;
+        let evolved_micro = raw_next_micro.broadcast_mul(&metabolic_rate)?;
+        let next_micro_tape = decayed_micro.add(&evolved_micro)?.clamp(-1.0f32, 1.0f32)?;
+
+        let micro_avg = next_micro_tape.mean(D::Minus1)?;
+        let micro_flat = micro_avg.reshape((CA_CHANNELS,))?;
+        
+        let micro_reshaped = micro_flat.reshape((CA_CHANNELS / 2, 2)).map_err(anyhow::Error::msg)?;
+        let component_sums = micro_reshaped.sum(0).map_err(anyhow::Error::msg)?.to_vec1::<f32>().map_err(anyhow::Error::msg)?;
+        let sum_real = component_sums[0];
+        let sum_imag = component_sums[1];
+        let theta = sum_imag.atan2(sum_real + 1e-6);
+
         let tape_features = next_micro_tape.mean(D::Minus1).map_err(anyhow::Error::msg)?;
         let next_hidden_mem = self.gru_memory.forward(&tape_features, hidden_mem).map_err(anyhow::Error::msg)?;
-        let movement = next_micro_tape.sub(micro_tape).map_err(anyhow::Error::msg)?.abs().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
-        let pop_l = next_micro_tape.narrow(1, 0, 1).map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
-        let pop_r = next_micro_tape.narrow(1, 1, 1).map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
-        let b_freq_l = self.base_freq_l.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)?.abs();
-        let b_freq_r = self.base_freq_r.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)?.abs();
-        let target_freq_l = (b_freq_l + pop_l * 200.0 + movement * 100.0).clamp(20.0, 4000.0);
-        let target_freq_r = (b_freq_r + pop_r * 200.0 - movement * 100.0).clamp(20.0, 4000.0);
-        self.current_freq_l = self.current_freq_l * (1.0 - FREQ_GLIDE_SPEED) + target_freq_l * FREQ_GLIDE_SPEED;
-        self.current_freq_r = self.current_freq_r * (1.0 - FREQ_GLIDE_SPEED) + target_freq_r * FREQ_GLIDE_SPEED;
+        
+        let movement = next_micro_tape.sub(micro_tape).map_err(anyhow::Error::msg)?.abs().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?;
+        let movement_val = movement.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
+        
+        let pop_l = next_micro_tape.narrow(1, 0, 1).map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?;
+        let pop_r = next_micro_tape.narrow(1, 1, 1).map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?;
+        let pop_l_val = pop_l.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
+        let pop_r_val = pop_r.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
+        
+        let formant_freqs = [
+            (300.0 + pop_l_val * 700.0, 300.0 + pop_r_val * 700.0),   
+            (800.0 + movement_val * 1700.0, 800.0 + movement_val * 1700.0), 
+            (2000.0 - pop_l_val * 500.0, 2000.0 - pop_r_val * 500.0), 
+        ];
+
+        let t_steps = (Tensor::arange(0.0f32, CHUNK_SIZE as f32, dev).map_err(anyhow::Error::msg)?.affine(1.0 / SAMPLE_RATE as f64, 0.0))?;
+        
         let fm_ratios = (self.fm_mod_ratio.forward(&next_hidden_mem).map_err(anyhow::Error::msg)?.affine(4.0, 0.0))?;
         let fm_indices = (self.fm_mod_index.forward(&next_hidden_mem).map_err(anyhow::Error::msg)?.affine(5.0, 0.0))?;
-        let device = micro_tape.device();
-        let t_steps = (Tensor::arange(0.0f32, CHUNK_SIZE as f32, device).map_err(anyhow::Error::msg)?.affine(1.0 / SAMPLE_RATE as f64, 0.0))?;
-        let fm_ratio_l = fm_ratios.narrow(1, 0, 1).map_err(anyhow::Error::msg)?.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
-        let fm_ratio_r = fm_ratios.narrow(1, 1, 1).map_err(anyhow::Error::msg)?.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
-        let fm_idx_l = fm_indices.narrow(1, 0, 1).map_err(anyhow::Error::msg)?.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
-        let fm_idx_r = fm_indices.narrow(1, 1, 1).map_err(anyhow::Error::msg)?.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
-        let mod_freq_l = self.current_freq_l * fm_ratio_l;
-        let mod_freq_r = self.current_freq_r * fm_ratio_r;
-        let phases_m_l = (t_steps.affine((2.0 * std::f32::consts::PI * mod_freq_l) as f64, phase_m_l as f64))?;
-        let phases_m_r = (t_steps.affine((2.0 * std::f32::consts::PI * mod_freq_r) as f64, phase_m_r as f64))?;
-        let modulator_l = phases_m_l.sin().map_err(anyhow::Error::msg)?.affine(fm_idx_l as f64, 0.0)?;
-        let modulator_r = phases_m_r.sin().map_err(anyhow::Error::msg)?.affine(fm_idx_r as f64, 0.0)?;
-        let phases_c_l = (t_steps.affine((2.0 * std::f32::consts::PI * self.current_freq_l) as f64, phase_c_l as f64)? + modulator_l)?; 
-        let phases_c_r = (t_steps.affine((2.0 * std::f32::consts::PI * self.current_freq_r) as f64, phase_c_r as f64)? + modulator_r)?;
+        
+        // FIX: Explicitly reshape the narrowed matrices [1, 1] down into 1D vectors [1] to allow clean matching
+        let fm_ratio_l = fm_ratios.narrow(1, 0, 1)?.reshape((1,))?;
+        let fm_ratio_r = fm_ratios.narrow(1, 1, 1)?.reshape((1,))?;
+        let fm_idx_l = fm_indices.narrow(1, 0, 1)?.reshape((1,))?;
+        let fm_idx_r = fm_indices.narrow(1, 1, 1)?.reshape((1,))?;
+
+        let mut final_audio_l = Tensor::zeros((1, CHUNK_SIZE), DType::F32, dev).map_err(anyhow::Error::msg)?;
+        let mut final_audio_r = Tensor::zeros((1, CHUNK_SIZE), DType::F32, dev).map_err(anyhow::Error::msg)?;
+
+        let scaled_pop_l = pop_l.affine(200.0, 0.0)?;
+        let scaled_pop_r = pop_r.affine(200.0, 0.0)?;
+        let scaled_move = movement.affine(100.0, 0.0)?;
+        
+        let target_freq_l = self.base_freq_l.broadcast_add(&scaled_pop_l)?.broadcast_add(&scaled_move)?.clamp(20.0f32, 4000.0f32)?;
+        let target_freq_r = self.base_freq_r.broadcast_add(&scaled_pop_r)?.broadcast_sub(&scaled_move)?.clamp(20.0f32, 4000.0f32)?;
+        
+        // FIX: Allocate glide buffers as explicit 1D arrays to prevent shape mismatches against frequencies
+        let glide_speed = Tensor::new(&[FREQ_GLIDE_SPEED], dev)?;
+        let one_minus_glide = Tensor::new(&[1.0 - FREQ_GLIDE_SPEED], dev)?;
+        
+        let left_glide = self.current_freq_l.broadcast_mul(&one_minus_glide)?;
+        let left_target = target_freq_l.broadcast_mul(&glide_speed)?;
+        self.current_freq_l = left_glide.add(&left_target)?.detach();
+
+        let right_glide = self.current_freq_r.broadcast_mul(&one_minus_glide)?;
+        let right_target = target_freq_r.broadcast_mul(&glide_speed)?;
+        self.current_freq_r = right_glide.add(&right_target)?.detach();
+
+        let mod_freq_l = self.current_freq_l.broadcast_mul(&fm_ratio_l)?;
+        let mod_freq_r = self.current_freq_r.broadcast_mul(&fm_ratio_r)?;
+        
+        let mod_freq_l_val = mod_freq_l.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
+        let mod_freq_r_val = mod_freq_r.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
+        let fm_idx_l_val = fm_idx_l.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
+        let fm_idx_r_val = fm_idx_r.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
+        let current_freq_l_val = self.current_freq_l.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
+        let current_freq_r_val = self.current_freq_r.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
+
+        let phases_m_l = (t_steps.affine((2.0 * std::f32::consts::PI * mod_freq_l_val) as f64, phase_m_l as f64))?;
+        let phases_m_r = (t_steps.affine((2.0 * std::f32::consts::PI * mod_freq_r_val) as f64, phase_m_r as f64))?;
+        let modulator_l = phases_m_l.sin()?.affine(fm_idx_l_val as f64, 0.0)?;
+        let modulator_r = phases_m_r.sin()?.affine(fm_idx_r_val as f64, 0.0)?;
+        
+        let phases_c_l = t_steps.affine((2.0 * std::f32::consts::PI * current_freq_l_val) as f64, (phase_c_l + theta) as f64)?;
+        let phases_c_l = phases_c_l.add(&modulator_l)?;
+        
+        let phases_c_r = t_steps.affine((2.0 * std::f32::consts::PI * current_freq_r_val) as f64, (phase_c_r + theta) as f64)?;
+        let phases_c_r = phases_c_r.add(&modulator_r)?;
+        
+        let sin_l = phases_c_l.sin()?.unsqueeze(0)?;
+        let sin_r = phases_c_r.sin()?.unsqueeze(0)?;
+        final_audio_l = final_audio_l.add(&sin_l)?;
+        final_audio_r = final_audio_r.add(&sin_r)?;
+
+        for (f_l, f_r) in formant_freqs.iter() {
+            let p_l = t_steps.affine((2.0 * std::f32::consts::PI * f_l) as f64, (phase_c_l + theta) as f64)?;
+            let p_r = t_steps.affine((2.0 * std::f32::consts::PI * f_r) as f64, (phase_c_r + theta) as f64)?;
+            
+            let voice_l = p_l.sin()?.unsqueeze(0)?.affine(0.3, 0.0)?;
+            let voice_r = p_r.sin()?.unsqueeze(0)?.affine(0.3, 0.0)?;
+            final_audio_l = final_audio_l.add(&voice_l)?;
+            final_audio_r = final_audio_r.add(&voice_r)?;
+        }
+
         let next_phase_c_l = phases_c_l.narrow(0, CHUNK_SIZE - 1, 1).map_err(anyhow::Error::msg)?.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)? % (2.0 * std::f32::consts::PI);
         let next_phase_c_r = phases_c_r.narrow(0, CHUNK_SIZE - 1, 1).map_err(anyhow::Error::msg)?.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)? % (2.0 * std::f32::consts::PI);
         let next_phase_m_l = phases_m_l.narrow(0, CHUNK_SIZE - 1, 1).map_err(anyhow::Error::msg)?.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)? % (2.0 * std::f32::consts::PI);
         let next_phase_m_r = phases_m_r.narrow(0, CHUNK_SIZE - 1, 1).map_err(anyhow::Error::msg)?.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)? % (2.0 * std::f32::consts::PI);
-        let osc_l = phases_c_l.sin().map_err(anyhow::Error::msg)?.unsqueeze(0).map_err(anyhow::Error::msg)?;
-        let osc_r = phases_c_r.sin().map_err(anyhow::Error::msg)?.unsqueeze(0).map_err(anyhow::Error::msg)?;
-        let audio_l = self.wavefolder_l.forward(&osc_l).map_err(anyhow::Error::msg)?;
-        let audio_r = self.wavefolder_r.forward(&osc_r).map_err(anyhow::Error::msg)?;
-        let filter_openness = (next_hidden_mem.abs().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)? * 5.0 + movement).clamp(0.4, 1.0);
+
+        let audio_l = self.wavefolder_l.forward(&final_audio_l, mimic_loss_val).map_err(anyhow::Error::msg)?;
+        let audio_r = self.wavefolder_r.forward(&final_audio_r, mimic_loss_val).map_err(anyhow::Error::msg)?;
+        
+        let filter_openness = (next_hidden_mem.abs().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?.to_scalar::<f32>().map_err(anyhow::Error::msg)? * 5.0 + movement_val).clamp(0.4, 1.0);
         let audio_l = audio_l.affine(filter_openness as f64, 0.0).map_err(anyhow::Error::msg)?;
         let audio_r = audio_r.affine(filter_openness as f64, 0.0).map_err(anyhow::Error::msg)?;
         
-        // Panning: Max 75% to one side
         let pan_raw = self.spatial_panner.forward(&next_hidden_mem).map_err(anyhow::Error::msg)?.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
-        let pan = pan_raw.clamp(-0.5, 0.5); // Maps to roughly 0.25 - 0.75 range
+        let pan = pan_raw.clamp(-0.5, 0.5); 
         let gain_l = (0.5 * (1.0 - pan)).sqrt();
         let gain_r = (0.5 * (1.0 + pan)).sqrt();
         let audio_l = audio_l.affine((gain_l * 1.414) as f64, 0.0).map_err(anyhow::Error::msg)?;
         let audio_r = audio_r.affine((gain_r * 1.414) as f64, 0.0).map_err(anyhow::Error::msg)?;
         let stereo_chunk = Tensor::cat(&[&audio_l, &audio_r], 0).map_err(anyhow::Error::msg)?.reshape((2, CHUNK_SIZE)).map_err(anyhow::Error::msg)?;
-        Ok((stereo_chunk, next_micro_tape, next_macro_tape, next_hidden_mem, next_phase_c_l, next_phase_c_r, next_phase_m_l, next_phase_m_r, movement))
+        Ok((stereo_chunk, next_micro_tape, next_macro_tape, next_hidden_mem, next_phase_c_l, next_phase_c_r, next_phase_m_l, next_phase_m_r, movement_val, theta))
     }
 }
 
 // ==========================================
-// 7. DEFIBRILLATOR CONTROLLER
+// 8. DEFIBRILLATOR CONTROLLER
 // ==========================================
 struct DefibrillatorController { net: candle_nn::Sequential }
 impl DefibrillatorController {
@@ -464,7 +581,7 @@ impl DefibrillatorController {
 }
 
 // ==========================================
-// 8. AUDIO ARBITER
+// 9. AUDIO ARBITER
 // ==========================================
 struct AudioArbiter { net: candle_nn::Sequential }
 impl AudioArbiter {
@@ -479,16 +596,25 @@ impl AudioArbiter {
     }
 }
 
+// ==========================================
+// MAIN INDUSTRIAL RUNTIME LOGIC
+// ==========================================
 fn main() -> Result<()> {
     rayon::ThreadPoolBuilder::new().num_threads(6).build_global()?;
-    let device = Device::Cpu; 
-    println!("=== TITAN AUDIO ECOSYSTEM: RUST EDITION ===");
+    
+    let device = Device::new_cuda(0).unwrap_or(Device::Cpu);
+    if device.is_cuda() {
+        println!("--> Success: Running on GPU Workstation (CUDA Accelerated Platform)");
+    } else {
+        println!("--> Fallback: GPU not detected, leveraging local host CPU layer");
+    }
+    println!("=== TITAN AUDIO ECOSYSTEM: RUST EDITION (RESONANT BETA) ===");
 
-    let target_loader = TargetAudioLoader::new("/sdcard/Download")?;
+    let target_loader = TargetAudioLoader::new("/home/anon/Downloads/")?;
     let mut varmap = VarMap::new();
-    let model_path = "/sdcard/Download/titan_model.safetensors";
+    let model_path = "/home/anon/Downloads/titan_model.safetensors";
     if std::path::Path::new(model_path).exists() {
-        println!("--> Loading existing model from {}", model_path);
+        println!("--> Loading existing matrix weights from {}", model_path);
         varmap.load(model_path).map_err(anyhow::Error::msg)?;
     }
     let vb = VBV::from_varmap(&varmap, DType::F32, &device);
@@ -512,15 +638,21 @@ fn main() -> Result<()> {
     
     let mut burst_ticks = 0;
     let mut burst_energy = 0.0f32;
+    let mut total_complexity = 0.0f32;
 
     for step in 0..total_chunks {
         let aperture = uncertainty.branch_aperture();
         let force_macro = rand::thread_rng().gen_range(0.0..1.0) < (0.2 + aperture * 0.6);
-        let (stereo_chunk, next_micro_tape, next_macro_tape, next_hidden_mem, nc_l, nc_r, nm_l, nm_r, movement) = model.forward(&micro_tape, &macro_tape, &hidden_mem, phase_c_l, phase_c_r, phase_m_l, phase_m_r, force_macro)?;
+        
+        let prev_mimic_loss = if step == 0 { 0.5f32 } else { uncertainty.mimic / 10.0 };
+        
+        let (stereo_chunk, next_micro_tape, next_macro_tape, next_hidden_mem, nc_l, nc_r, nm_l, nm_r, movement, theta) = model.forward(&micro_tape, &macro_tape, &hidden_mem, phase_c_l, phase_c_r, phase_m_l, phase_m_r, force_macro, prev_mimic_loss)?;
 
-        // Losses
+        total_complexity += movement;
+        let age_factor = (total_complexity / 500.0).min(0.6);
+        let audio_for_loss = stereo_chunk.tanh().map_err(anyhow::Error::msg)?.affine((1.0 - age_factor) as f64, 0.0)?;
+        
         let target_chunk = target_loader.sample_chunk(&device)?;
-        let audio_for_loss = stereo_chunk.tanh().map_err(anyhow::Error::msg)?;
         let mimic_loss = audio_for_loss.mean(0).map_err(anyhow::Error::msg)?.sub(&target_chunk.reshape((CHUNK_SIZE,)).map_err(anyhow::Error::msg)?)?.sqr().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?;
         let var_loss = var_all(&audio_for_loss).map_err(anyhow::Error::msg)?.neg().map_err(anyhow::Error::msg)?;
         let movement_loss = Tensor::new(movement, &device).map_err(anyhow::Error::msg)?.neg().map_err(anyhow::Error::msg)?;
@@ -528,54 +660,59 @@ fn main() -> Result<()> {
         let roughness_loss = diff.sqr().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?;
         let reg_loss = stereo_chunk.sqr().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?;
         
-        // Energy loss to keep volume up (Target RMS ~0.25)
         let rms = audio_for_loss.sqr().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?.sqrt().map_err(anyhow::Error::msg)?;
         let energy_loss = rms.sub(&Tensor::new(0.25f32, &device).map_err(anyhow::Error::msg)?)?.sqr().map_err(anyhow::Error::msg)?;
 
-        let arb_features = Tensor::new(&[0.5, mimic_loss.to_scalar::<f32>().unwrap_or(0.0), movement / 0.3, 0.0, 0.0, 0.0, uncertainty.spectral, uncertainty.movement, uncertainty.mimic, uncertainty.compositional, aperture, step as f32 / total_chunks as f32], &device).map_err(anyhow::Error::msg)?.unsqueeze(0).map_err(anyhow::Error::msg)?;
+        let mimic_loss_scalar = mimic_loss.to_scalar::<f32>().unwrap_or(0.0);
+        let arb_features = Tensor::new(&[0.5, mimic_loss_scalar, movement / 0.3, 0.0, 0.0, 0.0, uncertainty.spectral, uncertainty.movement, uncertainty.mimic, uncertainty.compositional, aperture, step as f32 / total_chunks as f32], &device).map_err(anyhow::Error::msg)?.unsqueeze(0).map_err(anyhow::Error::msg)?;
         let loss_weights = arbiter.forward(&arb_features)?;
         let lw = loss_weights.reshape((6,))?.to_vec1::<f32>().map_err(anyhow::Error::msg)?;
 
-        let total_loss = (mimic_loss.affine(lw[1] as f64, 0.0).map_err(anyhow::Error::msg)? 
-            + var_loss.affine(lw[0] as f64, 0.0).map_err(anyhow::Error::msg)? 
-            + movement_loss.affine(lw[2] as f64, 0.0).map_err(anyhow::Error::msg)? 
-            + roughness_loss.affine(lw[3] as f64, 0.0).map_err(anyhow::Error::msg)?
-            + reg_loss.affine(0.01, 0.0).map_err(anyhow::Error::msg)?
-            + energy_loss.affine(2.0, 0.0).map_err(anyhow::Error::msg)?)?; 
+        let l1 = mimic_loss.affine((lw[1] * (1.0 - RESONANT_AUTONOMY)) as f64, 0.0)?;
+        let l2 = var_loss.affine((lw[0] * (1.0 + RESONANT_AUTONOMY)) as f64, 0.0)?;
+        let l3 = movement_loss.affine((lw[2] * RESONANT_AUTONOMY) as f64, 0.0)?;
+        let l4 = roughness_loss.affine(lw[3] as f64, 0.0)?;
+        let l5 = reg_loss.affine(0.01, 0.0)?;
+        let l6 = energy_loss.affine(2.0, 0.0)?;
+        let total_loss = l1.add(&l2)?.add(&l3)?.add(&l4)?.add(&l5)?.add(&l6)?;
+
         optimizer.backward_step(&total_loss).map_err(anyhow::Error::msg)?;
 
-        micro_tape = next_micro_tape.detach().map_err(anyhow::Error::msg)?;
-        macro_tape = next_macro_tape.detach().map_err(anyhow::Error::msg)?;
-        hidden_mem = next_hidden_mem.detach().map_err(anyhow::Error::msg)?;
+        micro_tape = next_micro_tape.detach();
+        macro_tape = next_macro_tape.detach();
+        hidden_mem = next_hidden_mem.detach();
         phase_c_l = nc_l; phase_c_r = nc_r; phase_m_l = nm_l; phase_m_r = nm_r;
 
         let m_sig = movement_mon.analyze(movement)?;
-        let s_sig = spectral_mon.analyze(&stereo_chunk)?;
-        let mimic_drift = mimic_loss.to_scalar::<f32>().unwrap_or(0.0);
-        uncertainty.update(&s_sig, &m_sig, Some(&serde_json::json!({"drift": mimic_drift})));
+        let s_sig = spectral_mon.analyze(&audio_for_loss)?;
+        uncertainty.update(&s_sig, &m_sig, Some(&serde_json::json!({"drift": mimic_loss_scalar, "theta": theta})));
 
-        let defib_features = Tensor::new(&[movement, 0.1, mimic_drift, 0.5, aperture, 0.0, step as f32 / total_chunks as f32], &device).map_err(anyhow::Error::msg)?.unsqueeze(0).map_err(anyhow::Error::msg)?;
+        let phi_current = uncertainty.phi;
+
+        let defib_features = Tensor::new(&[movement, 0.1, mimic_loss_scalar, 0.5, aperture, phi_current / 10.0, step as f32 / total_chunks as f32], &device).map_err(anyhow::Error::msg)?.unsqueeze(0).map_err(anyhow::Error::msg)?;
         let (thresh, n_scale, lr_mult) = defib_ctrl.forward(&defib_features)?;
         
-        // Rhythmic Pacemaker Logic: Creates a multi-chunk "beat" sequence
-        if (movement < thresh || mimic_drift > 0.8) && burst_ticks == 0 {
-            burst_ticks = 8; // Burst lasts 8 chunks
+        if (movement < thresh || mimic_loss_scalar > 0.8) && phi_current < 4.0 && burst_ticks == 0 {
+            burst_ticks = 8;
             burst_energy = n_scale;
         }
 
         if burst_ticks > 0 {
-            let env = (burst_ticks as f32 / 8.0).sqrt(); // Decay envelope for the burst
-            let noise = (Tensor::randn_like(&micro_tape, 0.0, 1.0).map_err(anyhow::Error::msg)?.affine((burst_energy * env) as f64, 0.0))?;
-            micro_tape = (micro_tape + noise).map_err(anyhow::Error::msg)?.clamp(-1.0, 1.0).map_err(anyhow::Error::msg)?;
-            optimizer.set_learning_rate(BASE_LR * (1.0 + (lr_mult - 1.0) * env) as f64);
-            if step % 20 == 0 { println!("[PACEMAKER BURST] step {} (env: {:.2})", step, env); }
+            let env = (burst_ticks as f32 / 8.0).sqrt(); 
+            let noise = Tensor::randn_like(&micro_tape, 0.0, 1.0)?.affine((burst_energy * env) as f64, 0.0)?;
+            micro_tape = micro_tape.add(&noise)?.clamp(-1.0f32, 1.0f32)?;
+            
+            let phi_gate = 1.0 / (1.0 + phi_current);
+            optimizer.set_learning_rate(BASE_LR * (1.0 + (lr_mult - 1.0) * env) as f64 * phi_gate as f64);
+            if step % 20 == 0 { println!("[PACEMAKER BURST] step {} (env: {:.2}, phi_gate: {:.2})", step, env, phi_gate); }
             burst_ticks -= 1;
         } else { 
-            optimizer.set_learning_rate(BASE_LR); 
+            let phi_gate = 1.0 / (1.0 + phi_current);
+            optimizer.set_learning_rate(BASE_LR * phi_gate as f64); 
         }
 
-        // Volume normalization/boost: Ensures at least 25% peak volume
-        let audio_t = stereo_chunk.tanh().map_err(anyhow::Error::msg)?;
+        let age_factor = (total_complexity / 500.0).min(0.6);
+        let audio_t = stereo_chunk.tanh().map_err(anyhow::Error::msg)?.affine((1.0 - age_factor) as f64, 0.0)?;
         let abs_max = audio_t.abs().map_err(anyhow::Error::msg)?.flatten_all().map_err(anyhow::Error::msg)?.max(0).map_err(anyhow::Error::msg)?.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
         let boost = if abs_max < 0.25 { 0.25 / (abs_max + 1e-6) } else { 1.0 };
         let audio_data = audio_t.affine(boost as f64 * 32767.0, 0.0).map_err(anyhow::Error::msg)?;
@@ -587,10 +724,10 @@ fn main() -> Result<()> {
         if step % 10 == 0 {
             let topology_state = macro_tape.mean(1).map_err(anyhow::Error::msg)?.reshape((TAPE_LEN,)).map_err(anyhow::Error::msg)?.to_vec1::<f32>().map_err(anyhow::Error::msg)?;
             topology_history.push(topology_state);
-            uncertainty_trace.push(serde_json::json!({"step": step, "spectral": uncertainty.spectral, "movement": uncertainty.movement, "compositional": uncertainty.compositional, "aperture": aperture}));
+            uncertainty_trace.push(serde_json::json!({"step": step, "spectral": uncertainty.spectral, "movement": uncertainty.movement, "compositional": uncertainty.compositional, "aperture": aperture, "phi": phi_current}));
         }
         if step % 50 == 0 { 
-            println!("Chunk {}/{} | Move: {:.3} | Mimic: {:.3} | Aperture: {:.2}", step, total_chunks, movement, mimic_drift, aperture);
+            println!("Chunk {}/{} | Move: {:.3} | Mimic: {:.3} | Phi: {:.2} | Aperture: {:.2}", step, total_chunks, movement, mimic_loss_scalar, phi_current, aperture);
             if let Ok(v) = micro_tape.narrow(1, 0, 1).unwrap_or(micro_tape.clone()).narrow(2, 0, 64).unwrap_or(micro_tape.clone()).reshape((64,)) {
                 if let Ok(vals) = v.to_vec1::<f32>() {
                     let mut grads = vec![0.0; 64];
@@ -601,23 +738,40 @@ fn main() -> Result<()> {
         }
     }
 
+    // Generate Priming Prompt for Suno/Udio
+    let avg_phi = uncertainty_trace.iter().map(|t| t["phi"].as_f64().unwrap_or(0.0)).sum::<f64>() / uncertainty_trace.len() as f64;
+    let avg_aperture = uncertainty_trace.iter().map(|t| t["aperture"].as_f64().unwrap_or(0.0)).sum::<f64>() / uncertainty_trace.len() as f64;
+    
+    let prompt = format!(
+        "Style: {}, {}, {}, {}. Texture: {}. [Informational Phi: {:.2}, Aperture: {:.2}]",
+        if avg_phi > 5.0 { "Hyper-Resonant" } else { "Chaotic" },
+        if avg_aperture > 0.5 { "Evolving" } else { "Stable" },
+        if total_complexity > 500.0 { "Dense" } else { "Minimal" },
+        "Information-Theoretic Glitch",
+        if avg_phi > 7.0 { "Crystalline" } else if avg_phi > 4.0 { "Organic" } else { "Grit" },
+        avg_phi, avg_aperture
+    );
+    println!("\n=== SUNO/UDIO PRIMING PROMPT ===");
+    println!("{}", prompt);
+    std::fs::write("/home/anon/Downloads/suno_priming_prompt.txt", prompt)?;
+
     // Save CSVs
-    let mut topo_writer = csv::Writer::from_path("/sdcard/Download/ca_topology_rust.csv")?;
+    let mut topo_writer = csv::Writer::from_path("/home/anon/Downloads/ca_topology_rust.csv")?;
     for row in topology_history { topo_writer.write_record(row.iter().map(|f| f.to_string()))?; }
     topo_writer.flush()?;
-    let mut unc_writer = csv::Writer::from_path("/sdcard/Download/uncertainty_trace_rust.csv")?;
+    let mut unc_writer = csv::Writer::from_path("/home/anon/Downloads/uncertainty_trace_rust.csv")?;
     unc_writer.write_record(&["step", "spectral", "movement", "compositional", "aperture"])?;
     for trace in uncertainty_trace { unc_writer.write_record(&[trace["step"].to_string(), trace["spectral"].to_string(), trace["movement"].to_string(), trace["compositional"].to_string(), trace["aperture"].to_string()])?; }
     unc_writer.flush()?;
-    println!("Topology and uncertainty trace saved to /sdcard/Download/.");
+    println!("Topology and uncertainty trace saved to /home/anon/Downloads/.");
 
     let spec = hound::WavSpec { channels: 2, sample_rate: SAMPLE_RATE, bits_per_sample: 16, sample_format: hound::SampleFormat::Int };
-    let mut writer = hound::WavWriter::create("/sdcard/Download/rust_ecosystem_out.wav", spec)?;
+    let mut writer = hound::WavWriter::create("/home/anon/Downloads/rust_ecosystem_out.wav", spec)?;
     for sample in audio_frames { writer.write_sample(sample)?; }
     writer.finalize()?;
-    println!("Audio saved to /sdcard/Download/rust_ecosystem_out.wav");
+    println!("Audio saved to /home/anon/Downloads/rust_ecosystem_out.wav");
 
-    // Save model weights
+    // Save weights safely
     varmap.save(model_path).map_err(anyhow::Error::msg)?;
     let metadata = std::fs::metadata(model_path)?;
     println!("Model saved to {}. Size: {:.2} MB", model_path, metadata.len() as f32 / 1_048_576.0);
