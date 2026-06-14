@@ -1,41 +1,37 @@
 # Titan Audio Ecosystem: Rust Edition - Agent Briefing
 
 ## Project Overview
-This is a generative audio engine that uses **Neural Cellular Automata (NCA)** coupled with **FM Synthesis** and **KAN-based Wavefolding**. The system is designed for "online" continuous learning, mimicking target audio samples while maintaining an autonomous, evolving internal state.
+This is a generative audio engine that uses **Neural Cellular Automata (NCA)** coupled with an **End-to-End Differentiable Synthesis Pipeline** (FM, KAN Wavefolding). The system is designed for "online" continuous learning against target audio samples.
 
-## Current System State (As of April 24, 2026)
-- **Model Size:** ~16.55 MB (`titan_model.safetensors`).
+## Current System State (As of June 2026: v3 Gradient-Coherent)
 - **Architecture:** 
-    - **Micro/Macro NCA:** 144 channels, 16x hidden multiplier.
-    - **Memory:** 256-dimension GRU cell.
-    - **Normalization:** Full Recurrent LayerNorm integrated into NCA and GRU transitions for manifold stability.
-    - **Pacemaker:** Rhythmic "burst" defibrillator (8-chunk decay envelope) to prevent stagnation.
-- **Persistence:** The model persists in `/sdcard/Download/titan_model.safetensors`. Training is cumulative across runs.
+    - **Micro/Macro NCA:** 144 channels, 128x hidden multiplier.
+    - **Memory:** 512-dimension GRU cell.
+    - **Morphic Stack:** Autonomously grows/prunes ResBlocks (up to 12) to match task complexity.
+- **Learning Mechanics:**
+    - **BPTT:** K-step truncated BPTT (window=4) for multi-step temporal credit assignment.
+    - **Loss:** Log-magnitude spectral MSE (96 bins) replacing meaningless waveform MSE.
+    - **Meta-Learning:** An Arbiter network dynamically weights loss terms based on learning progress.
+    - **Self-Model:** A MonitorHead predicts structural uncertainty, trained via interoceptive MSE.
+- **Persistence:** Weights (`titan_model_beta.safetensors`) and morphological depth (`morph_state.json`) persist across runs.
 
-## Key Improvements & Fixes
-1.  **Manifold Stabilization:** Added LayerNorm to prevent the internal CA states from collapsing to zero.
-2.  **Metabolic Logic Fix:** Corrected a critical bug where macro-modulation was incorrectly scaling the `METABOLIC_DECAY`, leading to signal death.
-3.  **Rhythmic Pacemaker:** Upgraded the single-shock defibrillator to a decaying burst system, creating more musical "breathing" and "pulse" effects.
-4.  **Volume Governance:**
-    *   `energy_loss` term in the optimizer keeps RMS volume around 0.25.
-    *   Real-time gain boost ensures at least 25% peak volume in the final output.
-5.  **Target Mimicry:** The model samples from multiple `.wav` files in `/sdcard/Download/` to guide its spectral evolution.
+## Key Improvements in v3
+1. **Fully Differentiable Graph:** Fixed a major bug where `to_scalar()` broke gradient flow to frequencies, FM params, pan, and filter openness. The entire pipeline now learns.
+2. **Scale-Invariant RG Coarse-Graining:** Swapped broken antipodal folds for true block decimation.
+3. **Morphic Homeostasis:** The model self-calibrates a baseline mimic loss during warmup, then grows (neurogenesis) if struggling or prunes if mastering the targets.
+4. **Desktop/CUDA Optimized:** Adapted from a mobile-focused branch to fully leverage a GTX 1080 Ti (2048 chunk size, 512 tape length, 144 CA channels).
 
 ## Files & Directories
 - `src/main.rs`: Primary engine logic.
-- `/sdcard/Download/titan_model.safetensors`: The weights.
-- `/sdcard/Download/rust_ecosystem_out.wav`: Most recent audio output.
-- `/sdcard/Download/ca_topology_rust.csv`: Macro-CA state history.
-- `/sdcard/Download/uncertainty_trace_rust.csv`: System health metrics (Spectral Entropy, Movement, etc.).
+- `Cargo.toml`: Includes `candle-core` with CUDA support.
+- `main-new-phone-optimized.rs`: The historical mobile-reference architecture from which v3 features were ported.
 
 ## How to Run
 ```bash
-cargo build --release
-./target/release/titan_audio_ecosystem
+cargo run --release -- /path/to/working/dir
 ```
-The engine will load the existing model, train for the duration specified in `DURATION_SECONDS`, save the updated weights, and output the new audio track.
 
 ## Future Directions for Agents
-- **Aperture Refinement:** The `branch_aperture` logic controls how often the macro-CA updates. Tweaking this can lead to different "temporal textures."
-- **Normalization Groups:** Currently using full LayerNorm. Exploring GroupNorm might allow for more independent "species" of signals within the CA.
-- **KAN Optimization:** The `KANLayer` uses basis functions for wavefolding; increasing `KAN_BASIS_FUNCTIONS` further could add more grit/complexity to the timbre.
+- **KAN Width:** The `KANLayer` currently uses 244 basis functions; tweaking this affects wavefolder resolution.
+- **Synergy / Empowerment Tuning:** The proxies for mutual information and transition entropy are currently soft regularizers.
+- **Choptuik Criticality Exponent:** Experimenting with the `CHOPTUIK_EXPONENT` (0.37413) affects the "burstiness" of the learning rate.
