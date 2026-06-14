@@ -128,12 +128,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 
 [[package]]
-name = "complex"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3ff57f47d720062e982aa56346e1d20fa9b6005e8407a44e0cb4a36bf2226d5f"
-
-[[package]]
 name = "crc32fast"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1133,7 +1127,6 @@ dependencies = [
  "anyhow",
  "candle-core",
  "candle-nn",
- "complex",
  "csv",
  "hound",
  "rand 0.8.6",

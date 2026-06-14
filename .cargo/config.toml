@@ -1,0 +1,43 @@
+# ============================================================
+# Titan Audio Ecosystem — Cargo build configuration
+# GTX 1080 Ti (sm_61) / CUDA 12.4 via llama-turbo-61 env
+# ============================================================
+# IMPORTANT: All variables use `force = true` so they override
+# any pre-existing shell env vars (e.g. CUDA_PATH=/opt/cuda,
+# NVCC_CCBIN=/usr/bin/g++-15 that the system shell already sets).
+#
+# PATH is explicitly ordered so the conda nvcc/gcc/g++ (12.4) are
+# found BEFORE the system /opt/cuda/bin/nvcc (13.3, incompatible).
+# This must be force=true because cargo [env] default (force=false)
+# never overrides variables that are already set in the shell.
+#
+# Key path layout in the micromamba env:
+#   binaries : .../llama-turbo-61/bin/{nvcc,gcc,g++}
+#   cuda.h   : .../llama-turbo-61/targets/x86_64-linux/include/cuda.h
+#   libcudart: .../llama-turbo-61/lib/libcudart.so.12
+# ============================================================
+
+[env]
+# ---- PATH: conda bin must come before /opt/cuda/bin ----
+# bindgen_cuda calls Command::new("nvcc") which resolves from PATH.
+# Putting the conda env bin first ensures CUDA 12.4 nvcc is used.
+PATH = { value = "/home/anon/micromamba/envs/llama-turbo-61/bin:/home/anon/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/opt/cuda/bin", force = true }
+
+# ---- CUDA headers (bindgen_cuda looks for $CUDA_PATH/include/cuda.h) ----
+CUDA_PATH             = { value = "/home/anon/micromamba/envs/llama-turbo-61/targets/x86_64-linux", force = true }
+CUDA_ROOT             = { value = "/home/anon/micromamba/envs/llama-turbo-61/targets/x86_64-linux", force = true }
+CUDA_TOOLKIT_ROOT_DIR = { value = "/home/anon/micromamba/envs/llama-turbo-61/targets/x86_64-linux", force = true }
+
+# ---- Host compiler overrides (force = true overrides existing NVCC_CCBIN) ----
+# bindgen_cuda reads NVCC_CCBIN and passes it as -ccbin to nvcc
+NVCC_CCBIN  = { value = "/home/anon/micromamba/envs/llama-turbo-61/bin/g++", force = true }
+# cudarc uses CUDAHOSTCXX
+CUDAHOSTCXX = { value = "/home/anon/micromamba/envs/llama-turbo-61/bin/g++", force = true }
+CUDACXX     = { value = "/home/anon/micromamba/envs/llama-turbo-61/bin/nvcc", force = true }
+
+# ---- C/C++ compiler for any other build scripts ----
+CC  = { value = "/home/anon/micromamba/envs/llama-turbo-61/bin/gcc",  force = true }
+CXX = { value = "/home/anon/micromamba/envs/llama-turbo-61/bin/g++",  force = true }
+
+# ---- Runtime linker path (needed when the binary is executed) ----
+LD_LIBRARY_PATH = { value = "/home/anon/micromamba/envs/llama-turbo-61/lib:/home/anon/micromamba/envs/llama-turbo-61/targets/x86_64-linux/lib", force = true }
