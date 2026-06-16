@@ -82,7 +82,7 @@ use rand::Rng;
 // ECOSYSTEM CONFIGURATION
 // ==========================================
 const SAMPLE_RATE: u32 = 48000;
-const DURATION_SECONDS: f32 = 420.0;
+const DURATION_SECONDS: f32 = 240.0;
 const CHUNK_SIZE: usize = 2048;
 const TAPE_LEN: usize = 512;          // restored to desktop scale
 const CA_CHANNELS: usize = 144;
@@ -104,9 +104,9 @@ const QNM_Q_BASE: f32 = 40.0;         // physical resonator Q at phi = 0
 const BASE_FREQ_L: f32 = 48.0;
 const BASE_FREQ_R: f32 = 56.83;
 const METABOLIC_DECAY: f32 = 0.999999;
-const FREQ_GLIDE_SPEED: f32 = 0.0711;
+const FREQ_GLIDE_SPEED: f32 = 0.07314;
 const BASE_LR: f64 = 1.3e-3;
-const RESONANT_AUTONOMY: f32 = 0.2;
+const RESONANT_AUTONOMY: f32 = 0.25;
 const TWO_PI: f32 = 2.0 * std::f32::consts::PI;
 
 // ==========================================
@@ -1018,10 +1018,11 @@ impl SpectralEntropyMonitor {
             let p = m / sum_mag;
             if p > 1e-7 { entropy -= p * p.ln(); }
         }
+        entropy /= 2048.0_f32.ln();
         self.history.push_back(entropy);
         if self.history.len() > self.window { self.history.pop_front(); }
         let avg_entropy: f32 = self.history.iter().sum::<f32>() / self.history.len() as f32;
-        Ok(serde_json::json!({"signal": entropy, "avg": avg_entropy, "trigger": entropy < 3.0, "type": "spectral_entropy"}))
+        Ok(serde_json::json!({"signal": entropy, "avg": avg_entropy, "trigger": entropy < (3.0 / 2048.0_f32.ln()), "type": "spectral_entropy"}))
     }
 }
 
@@ -1083,7 +1084,7 @@ impl AudioUncertaintyState {
         let resonance = (avg_s / (s_sig + 1e-6)).clamp(0.1, 5.0);
         self.phi = (s_sig * resonance).clamp(0.0, 10.0);
 
-        self.spectral = (1.0 - (s_sig / 8.0)).max(0.0);
+        self.spectral = (1.0 - s_sig).max(0.0);
         self.movement = (-m_trend * 200.0).max(0.0);
         if let Some(ms) = mimic_sig {
             let drift = ms["drift"].as_f64().unwrap_or(0.0) as f32;
@@ -1888,6 +1889,7 @@ fn main() -> Result<()> {
         } else {
             (phi_gate * choptuik_gain) as f64
         };
+        latest_lr_gain = latest_lr_gain.max(0.1);
 
         if steps_in_window >= BPTT_WINDOW || step == total_chunks - 1 {
             if let Some(w) = window_loss.take() {
@@ -2017,11 +2019,11 @@ fn main() -> Result<()> {
     let prompt = format!(
         "Style: {}, {}, {}, {}. Texture: {}. Field: {} regime · {} archetype · depth L{:02}. \
          [Informational Phi: {:.2}, Aperture: {:.2}, Synergy: {:.2}, Field-Entropy: {:.2}b, Rad: {:.2}]",
-        if avg_phi > 5.0 { "Hyper-Resonant" } else { "Chaotic" },
+        if avg_phi > 0.65 { "Hyper-Resonant" } else { "Chaotic" },
         if avg_aperture > 0.5 { "Evolving" } else { "Stable" },
         if total_complexity > 500.0 { "Dense" } else { "Minimal" },
         "Information-Theoretic Glitch",
-        if avg_synergy > 1.5 { "Crystalline-Autonomous" } else if avg_phi > 4.0 { "Organic" } else { "Grit" },
+        if avg_synergy > 1.5 { "Crystalline-Autonomous" } else if avg_phi > 0.52 { "Organic" } else { "Grit" },
         dom_phase, dom_archetype, final_depth,
         avg_phi, avg_aperture, avg_synergy, avg_field_h, rad_amp
     );

@@ -20,6 +20,8 @@ This is a generative audio engine that uses **Neural Cellular Automata (NCA)** c
 2. **Scale-Invariant RG Coarse-Graining:** Swapped broken antipodal folds for true block decimation.
 3. **Morphic Homeostasis:** The model self-calibrates a baseline mimic loss during warmup, then grows (neurogenesis) if struggling or prunes if mastering the targets.
 4. **Desktop/CUDA Optimized:** Adapted from a mobile-focused branch to fully leverage a GTX 1080 Ti (2048 chunk size, 512 tape length, 144 CA channels).
+5. **Normalized Phi & Learning Rate Floor:** Normalized spectral entropy to `[0,1]` using `ln(2048)` to prevent chronic learning rate starvation by the phi-gate under noisy/unstructured conditions, and established a hard floor of `0.1` for LRx (`latest_lr_gain`).
+
 
 ## Files & Directories
 - `src/main.rs`: Primary engine logic.
