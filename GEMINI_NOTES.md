@@ -21,6 +21,8 @@ This is a generative audio engine that uses **Neural Cellular Automata (NCA)** c
 3. **Morphic Homeostasis:** The model self-calibrates a baseline mimic loss during warmup, then grows (neurogenesis) if struggling or prunes if mastering the targets.
 4. **Desktop/CUDA Optimized:** Adapted from a mobile-focused branch to fully leverage a GTX 1080 Ti (2048 chunk size, 512 tape length, 144 CA channels).
 5. **Normalized Phi & Learning Rate Floor:** Normalized spectral entropy to `[0,1]` using `ln(2048)` to prevent chronic learning rate starvation by the phi-gate under noisy/unstructured conditions, and established a hard floor of `0.1` for LRx (`latest_lr_gain`).
+6. **Defibrillator Cooldown & Macro Noise:** The defibrillator was permanently firing (both trigger conditions — `movement < thresh` and `mimic_drift_n > 0.6` — were structurally always-true), meaning the CA never got clean iterations to consolidate learning. Added a 16-step cooldown after each 8-step burst cycle (1:2 duty cycle). Also added gentle macro-tape noise injection (0.08× micro amplitude) during bursts to prevent macro-structural stagnation.
+7. **EMA Morphic Baseline:** The morphic stack's grow/prune baseline was calibrated once from a 48-step warmup window and then frozen. This caused runaway neurogenesis (L04→L12 with zero pruning events, rad_amp collapsed to 0.10). Replaced with a slow EMA (α=0.005, half-life ≈ 139 steps) so thresholds track the evolving loss landscape.
 
 
 ## Files & Directories

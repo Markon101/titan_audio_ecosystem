@@ -1584,6 +1584,7 @@ fn main() -> Result<()> {
     let mut uncertainty_trace = Vec::new();
 
     let mut burst_ticks = 0;
+    let mut burst_cooldown = 0u32;
     let mut burst_energy = 0.0f32;
     let mut phi = 0.0f32;
     let mut total_complexity = 0.0f32;
@@ -1739,6 +1740,11 @@ fn main() -> Result<()> {
                 println!("--> Morph baseline calibrated: mimic≈{:.3}  (grow>{:.3}, prune<{:.3})",
                     b, b * MORPH_GROWTH_REL, b * MORPH_PRUNE_REL);
             }
+            // EMA update: let the baseline track the evolving loss landscape
+            // so grow/prune thresholds stay relevant (half-life ≈ 139 steps).
+            if let Some(ref mut b) = morph_baseline {
+                *b = *b * 0.995 + mimic_drift_n * 0.005;
+            }
             morph_history.push(mimic_drift_n);
             let patience = MORPH_PATIENCE_BASE + model.depth() * 2;
             if morph_history.len() >= patience {
@@ -1890,7 +1896,7 @@ fn main() -> Result<()> {
             distance_to_horizon.powf(CHOPTUIK_EXPONENT)
         };
 
-        if (movement < thresh || mimic_drift_n > 0.6) && burst_ticks == 0 {
+        if (movement < thresh || mimic_drift_n > 0.6) && burst_ticks == 0 && burst_cooldown == 0 {
             burst_ticks = 8;
             burst_energy = n_scale;
         }
@@ -1943,8 +1949,17 @@ fn main() -> Result<()> {
                 .map_err(anyhow::Error::msg)?
                 .affine((burst_energy * burst_env * choptuik_gain) as f64, 0.0)?;
             micro_tape = micro_tape.add(&noise).map_err(anyhow::Error::msg)?.clamp(-1.0f32, 1.0f32).map_err(anyhow::Error::msg)?;
+            // Gentle macro-tape perturbation (0.08× micro amplitude) to prevent
+            // macro-structural stagnation without destroying learned phrasing.
+            let macro_noise = Tensor::randn(0.0f32, 1.0f32, macro_tape.shape(), macro_tape.device())
+                .map_err(anyhow::Error::msg)?
+                .affine((burst_energy * burst_env * choptuik_gain * 0.08) as f64, 0.0)?;
+            macro_tape = macro_tape.add(&macro_noise).map_err(anyhow::Error::msg)?.clamp(-1.0f32, 1.0f32).map_err(anyhow::Error::msg)?;
             if step % 20 == 0 { println!("[PACEMAKER CHOPTUIK BURST] step {} (env: {:.2}, gain: {:.3})", step, burst_env, choptuik_gain); }
             burst_ticks -= 1;
+            if burst_ticks == 0 { burst_cooldown = 16; } // 16-step quiet period after each burst cycle
+        } else if burst_cooldown > 0 {
+            burst_cooldown -= 1;
         }
 
         // --------------------------------------------------
