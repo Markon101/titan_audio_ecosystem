@@ -1233,15 +1233,15 @@ impl ComplexAudioEcosystem {
             micro_ca, macro_ca, gru_memory, morphic, asymptotic_contraction, spatial_panner, fm_mod_ratio, fm_mod_index,
             wavefolder_l, wavefolder_r, base_freq_l, base_freq_r,
             t_steps, ramp,
-            current_freq_l: Tensor::new(&[BASE_FREQ_L], device)?,
-            current_freq_r: Tensor::new(&[BASE_FREQ_R], device)?,
-            current_mod_freq_l: Tensor::new(&[BASE_FREQ_L], device)?,
-            current_mod_freq_r: Tensor::new(&[BASE_FREQ_R], device)?,
-            prev_fm_idx_l: Tensor::new(&[0.0f32], device)?,
-            prev_fm_idx_r: Tensor::new(&[0.0f32], device)?,
-            prev_openness: Tensor::new(&[0.7f32], device)?,
-            prev_gain_l: Tensor::new(&[0.707f32], device)?,
-            prev_gain_r: Tensor::new(&[0.707f32], device)?,
+            current_freq_l: Tensor::new(BASE_FREQ_L, device)?,
+            current_freq_r: Tensor::new(BASE_FREQ_R, device)?,
+            current_mod_freq_l: Tensor::new(BASE_FREQ_L, device)?,
+            current_mod_freq_r: Tensor::new(BASE_FREQ_R, device)?,
+            prev_fm_idx_l: Tensor::new(0.0f32, device)?,
+            prev_fm_idx_r: Tensor::new(0.0f32, device)?,
+            prev_openness: Tensor::new(0.7f32, device)?,
+            prev_gain_l: Tensor::new(0.707f32, device)?,
+            prev_gain_r: Tensor::new(0.707f32, device)?,
             prev_theta: 0.0,
         })
     }
@@ -1467,9 +1467,9 @@ impl DefibrillatorController {
         let ctrl1 = ctrl.get(1)?;
         let ctrl2 = ctrl.get(2)?;
         
-        let threshold = ctrl0.neg()?.exp()?.add(&Tensor::new(&[1.0f32], ctrl.device())?)?.recip()?.affine(0.20, 0.05)?;
-        let noise_scale = ctrl1.neg()?.exp()?.add(&Tensor::new(&[1.0f32], ctrl.device())?)?.recip()?.affine(1.5, 0.2)?;
-        let lr_multiplier = ctrl2.neg()?.exp()?.add(&Tensor::new(&[1.0f32], ctrl.device())?)?.recip()?.affine(7.0, 1.0)?;
+        let threshold = ctrl0.neg()?.exp()?.add(&Tensor::new(1.0f32, ctrl.device())?)?.recip()?.affine(0.20, 0.05)?;
+        let noise_scale = ctrl1.neg()?.exp()?.add(&Tensor::new(1.0f32, ctrl.device())?)?.recip()?.affine(1.5, 0.2)?;
+        let lr_multiplier = ctrl2.neg()?.exp()?.add(&Tensor::new(1.0f32, ctrl.device())?)?.recip()?.affine(7.0, 1.0)?;
         Ok((pred, threshold, noise_scale, lr_multiplier))
     }
 }
@@ -1573,10 +1573,10 @@ fn main() -> Result<()> {
     let mut micro_tape = Tensor::randn(0.0f32, 1.0f32, (1, CA_CHANNELS, TAPE_LEN), &device).map_err(anyhow::Error::msg)?;
     let mut macro_tape = Tensor::randn(0.0f32, 1.0f32, (1, CA_CHANNELS, TAPE_LEN), &device).map_err(anyhow::Error::msg)?;
     let mut hidden_mem = Tensor::zeros((1, MEMORY_DIM), DType::F32, &device).map_err(anyhow::Error::msg)?;
-    let mut phase_c_l = Tensor::new(&[0.0f32], &device).map_err(anyhow::Error::msg)?;
-    let mut phase_c_r = Tensor::new(&[0.0f32], &device).map_err(anyhow::Error::msg)?;
-    let mut phase_m_l = Tensor::new(&[0.0f32], &device).map_err(anyhow::Error::msg)?;
-    let mut phase_m_r = Tensor::new(&[0.0f32], &device).map_err(anyhow::Error::msg)?;
+    let mut phase_c_l = Tensor::new(0.0f32, &device).map_err(anyhow::Error::msg)?;
+    let mut phase_c_r = Tensor::new(0.0f32, &device).map_err(anyhow::Error::msg)?;
+    let mut phase_m_l = Tensor::new(0.0f32, &device).map_err(anyhow::Error::msg)?;
+    let mut phase_m_r = Tensor::new(0.0f32, &device).map_err(anyhow::Error::msg)?;
 
     let total_chunks = (SAMPLE_RATE as f32 * DURATION_SECONDS / CHUNK_SIZE as f32) as usize;
     let mut audio_frames: Vec<i16> = Vec::with_capacity(total_chunks * CHUNK_SIZE * 2);
