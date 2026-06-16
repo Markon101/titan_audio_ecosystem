@@ -1004,8 +1004,7 @@ struct SpectralEntropyMonitor {
 
 impl SpectralEntropyMonitor {
     fn new(window: usize) -> Self { Self { history: VecDeque::with_capacity(window), window } }
-    fn analyze(&mut self, stereo_chunk: &Tensor) -> Result<serde_json::Value> {
-        let mono = stereo_chunk.mean(0)?.reshape((CHUNK_SIZE,))?.to_vec1::<f32>()?;
+    fn analyze(&mut self, mono: &[f32]) -> Result<serde_json::Value> {
         let n = mono.len();
         let mut planner = FftPlanner::new();
         let fft = planner.plan_fft_forward(n);
@@ -1162,9 +1161,14 @@ impl MonitorHead {
 // ==========================================
 // 7. COMPLEX AUDIO ECOSYSTEM (Titan Engine)
 // ==========================================
-// All synthesis parameters are graph tensors now; only the carried
-// phases and ramp baselines are scalar STATE (detached by design — they
-// are initial conditions of the next chunk, not learnable quantities).
+fn mod_2pi(x: &Tensor) -> Result<Tensor> {
+    let two_pi = (2.0 * std::f32::consts::PI) as f64;
+    let div = x.affine(1.0 / two_pi, 0.0)?;
+    let floor = div.floor()?;
+    let sub = floor.affine(two_pi, 0.0)?;
+    x.sub(&sub).map_err(anyhow::Error::from)
+}
+
 struct ComplexAudioEcosystem {
     micro_ca: NeuralCA1D,
     macro_ca: NeuralCA1D,
@@ -1182,15 +1186,15 @@ struct ComplexAudioEcosystem {
     t_steps: Tensor, // (CHUNK,) seconds
     ramp: Tensor,    // (CHUNK,) 0..1 linear, for zipper-free param ramps
     // Scalar dynamical state (carried, detached by design)
-    current_freq_l: f32,
-    current_freq_r: f32,
-    current_mod_freq_l: f32,
-    current_mod_freq_r: f32,
-    prev_fm_idx_l: f32,
-    prev_fm_idx_r: f32,
-    prev_openness: f32,
-    prev_gain_l: f32,
-    prev_gain_r: f32,
+    current_freq_l: Tensor,
+    current_freq_r: Tensor,
+    current_mod_freq_l: Tensor,
+    current_mod_freq_r: Tensor,
+    prev_fm_idx_l: Tensor,
+    prev_fm_idx_r: Tensor,
+    prev_openness: Tensor,
+    prev_gain_l: Tensor,
+    prev_gain_r: Tensor,
     prev_theta: f32,
 }
 
@@ -1229,10 +1233,15 @@ impl ComplexAudioEcosystem {
             micro_ca, macro_ca, gru_memory, morphic, asymptotic_contraction, spatial_panner, fm_mod_ratio, fm_mod_index,
             wavefolder_l, wavefolder_r, base_freq_l, base_freq_r,
             t_steps, ramp,
-            current_freq_l: BASE_FREQ_L, current_freq_r: BASE_FREQ_R,
-            current_mod_freq_l: BASE_FREQ_L, current_mod_freq_r: BASE_FREQ_R,
-            prev_fm_idx_l: 0.0, prev_fm_idx_r: 0.0,
-            prev_openness: 0.7, prev_gain_l: 0.707, prev_gain_r: 0.707,
+            current_freq_l: Tensor::new(&[BASE_FREQ_L], device)?,
+            current_freq_r: Tensor::new(&[BASE_FREQ_R], device)?,
+            current_mod_freq_l: Tensor::new(&[BASE_FREQ_L], device)?,
+            current_mod_freq_r: Tensor::new(&[BASE_FREQ_R], device)?,
+            prev_fm_idx_l: Tensor::new(&[0.0f32], device)?,
+            prev_fm_idx_r: Tensor::new(&[0.0f32], device)?,
+            prev_openness: Tensor::new(&[0.7f32], device)?,
+            prev_gain_l: Tensor::new(&[0.707f32], device)?,
+            prev_gain_r: Tensor::new(&[0.707f32], device)?,
             prev_theta: 0.0,
         })
     }
@@ -1240,9 +1249,9 @@ impl ComplexAudioEcosystem {
     /// Ramp a per-chunk-constant parameter from its previous value to the
     /// new (in-graph) value across the chunk. Returns a (CHUNK,) tensor;
     /// gradient flows through `new_val`.
-    fn ramp_param(&self, new_val: &Tensor, prev_val: f32) -> CResult<Tensor> {
-        let delta = new_val.affine(1.0, -(prev_val as f64))?; // new - prev (0-dim)
-        self.ramp.broadcast_mul(&delta)?.affine(1.0, prev_val as f64)
+    fn ramp_param(&self, new_val: &Tensor, prev_val: &Tensor) -> CResult<Tensor> {
+        let delta = new_val.sub(prev_val)?;
+        self.ramp.broadcast_mul(&delta.reshape((1,))?)?.broadcast_add(prev_val)
     }
 
     fn grow(&mut self) -> bool { self.morphic.grow() }
@@ -1257,11 +1266,11 @@ impl ComplexAudioEcosystem {
         micro_tape: &Tensor,
         macro_tape: &Tensor,
         hidden_mem: &Tensor,
-        phase_c_l: f32, phase_c_r: f32,
-        phase_m_l: f32, phase_m_r: f32,
+        phase_c_l: &Tensor, phase_c_r: &Tensor,
+        phase_m_l: &Tensor, phase_m_r: &Tensor,
         force_macro_update: bool,
         mimic_loss_val: f32,
-    ) -> Result<(ForwardOut, f32, f32, f32, f32)> {
+    ) -> Result<(ForwardOut, Tensor, Tensor, Tensor, Tensor)> {
         let _device = micro_tape.device();
 
         // ---- Macro CA (slow timescale) ----
@@ -1297,26 +1306,17 @@ impl ComplexAudioEcosystem {
         let pop_l_t = next_micro.narrow(1, 0, 1).map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?;
         let pop_r_t = next_micro.narrow(1, 1, 1).map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?;
 
-        // Kuramoto-style order parameter (kept as scalar neuromodulation:
-        // it is a phase offset, and atan2 isn't worth the graph cost).
-        let micro_vec = next_micro.mean(D::Minus1).map_err(anyhow::Error::msg)?
-            .reshape((CA_CHANNELS,)).map_err(anyhow::Error::msg)?.to_vec1::<f32>().map_err(anyhow::Error::msg)?;
-        let mut sum_real = 0.0f32;
-        let mut sum_imag = 0.0f32;
-        for i in (0..CA_CHANNELS).step_by(2) {
-            sum_real += micro_vec[i];
-            sum_imag += micro_vec[i + 1];
-        }
-        let theta = sum_imag.atan2(sum_real + 1e-6);
+        // Kuramoto-style order parameter: compute sums on GPU, then a tiny copy for atan2
+        let micro_features = next_micro.mean(D::Minus1).map_err(anyhow::Error::msg)?
+            .reshape((CA_CHANNELS,)).map_err(anyhow::Error::msg)?;
+        let paired = micro_features.reshape((CA_CHANNELS / 2, 2)).map_err(anyhow::Error::msg)?;
+        let sums = paired.sum(0).map_err(anyhow::Error::msg)?; // shape (2,)
+        let sums_vec = sums.to_vec1::<f32>().map_err(anyhow::Error::msg)?;
+        let theta = sums_vec[1].atan2(sums_vec[0] + 1e-6);
 
         // ---- Memory ----
         let tape_features = next_micro.mean(D::Minus1).map_err(anyhow::Error::msg)?;
         let next_hidden = self.gru_memory.forward(&tape_features, hidden_mem).map_err(anyhow::Error::msg)?;
-        // Morphic readout: the observer's adjustable-depth refinement of
-        // its own memory. Depth grows/prunes with mimic-mastery (see main).
-        // The RAW GRU state is carried recurrently; the REFINED state
-        // drives every synthesis head and the self-model monitor, so added
-        // depth changes the sound and is trained by the mimic loss.
         let refined_hidden = self.morphic.forward(&next_hidden).map_err(anyhow::Error::msg)?;
 
         // ---- Frequencies (graph tensors; glide blends in-graph target
@@ -1328,8 +1328,8 @@ impl ComplexAudioEcosystem {
         let target_r = b_r.add(&pop_r_t.affine(200.0, 0.0)?)?.add(&movement_t.affine(-100.0, 0.0)?)?
             .clamp(20.0f32, 4000.0f32).map_err(anyhow::Error::msg)?;
         let g = FREQ_GLIDE_SPEED as f64;
-        let cur_l = target_l.affine(g, (self.current_freq_l * (1.0 - FREQ_GLIDE_SPEED)) as f64)?;
-        let cur_r = target_r.affine(g, (self.current_freq_r * (1.0 - FREQ_GLIDE_SPEED)) as f64)?;
+        let cur_l = target_l.affine(g, 0.0)?.add(&self.current_freq_l.affine(1.0 - g, 0.0)?)?;
+        let cur_r = target_r.affine(g, 0.0)?.add(&self.current_freq_r.affine(1.0 - g, 0.0)?)?;
 
         // ---- FM parameters (graph tensors) ----
         let fm_ratios = self.fm_mod_ratio.forward(&refined_hidden).map_err(anyhow::Error::msg)?.affine(4.0, 0.0)?;
@@ -1340,39 +1340,30 @@ impl ComplexAudioEcosystem {
         let idx_r = fm_indices.narrow(1, 1, 1).map_err(anyhow::Error::msg)?.reshape(()).map_err(anyhow::Error::msg)?;
 
         let mod_f_l = cur_l.mul(&ratio_l).map_err(anyhow::Error::msg)?
-            .clamp(0.0f32, 6000.0f32).map_err(anyhow::Error::msg)?; // keep the modulator well below Nyquist
+            .clamp(0.0f32, 6000.0f32).map_err(anyhow::Error::msg)?;
         let mod_f_r = cur_r.mul(&ratio_r).map_err(anyhow::Error::msg)?
             .clamp(0.0f32, 6000.0f32).map_err(anyhow::Error::msg)?;
 
         // ---- Phase trajectories ----
-        // Modulator: theta_m(t) = 2*pi*f_m*t + phase_m. Carried phase is
-        // its own analytic integral; index is ramped to kill zipper noise.
         let omega_m_l = mod_f_l.affine(TWO_PI as f64, 0.0)?;
         let omega_m_r = mod_f_r.affine(TWO_PI as f64, 0.0)?;
-        let ph_m_l = self.t_steps.broadcast_mul(&omega_m_l).map_err(anyhow::Error::msg)?.affine(1.0, phase_m_l as f64)?;
-        let ph_m_r = self.t_steps.broadcast_mul(&omega_m_r).map_err(anyhow::Error::msg)?.affine(1.0, phase_m_r as f64)?;
-        let idx_curve_l = self.ramp_param(&idx_l, self.prev_fm_idx_l).map_err(anyhow::Error::msg)?;
-        let idx_curve_r = self.ramp_param(&idx_r, self.prev_fm_idx_r).map_err(anyhow::Error::msg)?;
+        let ph_m_l = self.t_steps.broadcast_mul(&omega_m_l).map_err(anyhow::Error::msg)?.broadcast_add(phase_m_l)?;
+        let ph_m_r = self.t_steps.broadcast_mul(&omega_m_r).map_err(anyhow::Error::msg)?.broadcast_add(phase_m_r)?;
+        let idx_curve_l = self.ramp_param(&idx_l, &self.prev_fm_idx_l).map_err(anyhow::Error::msg)?;
+        let idx_curve_r = self.ramp_param(&idx_r, &self.prev_fm_idx_r).map_err(anyhow::Error::msg)?;
         let modulator_l = ph_m_l.sin().map_err(anyhow::Error::msg)?.mul(&idx_curve_l).map_err(anyhow::Error::msg)?;
         let modulator_r = ph_m_r.sin().map_err(anyhow::Error::msg)?.mul(&idx_curve_r).map_err(anyhow::Error::msg)?;
 
-        // Carrier: base phase carries ONLY the carrier integral. theta (the
-        // Kuramoto order-parameter angle, range +/-pi) is applied as a phase
-        // offset RAMPED from the previous chunk's theta to this one across
-        // the chunk, so chunk boundaries stay phase-continuous (a raw scalar
-        // theta offset jumps up to 2*pi per boundary -> ~12 Hz clicking). The
-        // ramp's only side effect is a sub-audible transient pitch glide when
-        // theta swings hard, which is exactly when the CA is incoherent.
         let mut dtheta = theta - self.prev_theta;
-        dtheta -= TWO_PI * (dtheta / TWO_PI).round(); // shortest angular path, |dtheta| <= pi
+        dtheta -= TWO_PI * (dtheta / TWO_PI).round();
         let theta_curve = self.ramp.affine(dtheta as f64, self.prev_theta as f64)
             .map_err(anyhow::Error::msg)?;
         let omega_c_l = cur_l.affine(TWO_PI as f64, 0.0)?;
         let omega_c_r = cur_r.affine(TWO_PI as f64, 0.0)?;
         let ph_c_l = self.t_steps.broadcast_mul(&omega_c_l).map_err(anyhow::Error::msg)?
-            .affine(1.0, phase_c_l as f64)?.add(&theta_curve)?.add(&modulator_l)?;
+            .broadcast_add(phase_c_l)?.add(&theta_curve)?.add(&modulator_l)?;
         let ph_c_r = self.t_steps.broadcast_mul(&omega_c_r).map_err(anyhow::Error::msg)?
-            .affine(1.0, phase_c_r as f64)?.add(&theta_curve)?.add(&modulator_r)?;
+            .broadcast_add(phase_c_r)?.add(&theta_curve)?.add(&modulator_r)?;
 
         let mut audio_l = ph_c_l.sin().map_err(anyhow::Error::msg)?;
         let mut audio_r = ph_c_r.sin().map_err(anyhow::Error::msg)?;
@@ -1386,21 +1377,16 @@ impl ComplexAudioEcosystem {
         for (f_l, f_r) in [(&f1_l, &f1_r), (&f2, &f2), (&f3_l, &f3_r)] {
             let w_l = f_l.affine(TWO_PI as f64, 0.0)?;
             let w_r = f_r.affine(TWO_PI as f64, 0.0)?;
-            let p_l = self.t_steps.broadcast_mul(&w_l).map_err(anyhow::Error::msg)?.affine(1.0, phase_c_l as f64)?.add(&theta_curve)?;
-            let p_r = self.t_steps.broadcast_mul(&w_r).map_err(anyhow::Error::msg)?.affine(1.0, phase_c_r as f64)?.add(&theta_curve)?;
+            let p_l = self.t_steps.broadcast_mul(&w_l).map_err(anyhow::Error::msg)?.broadcast_add(phase_c_l)?.add(&theta_curve)?;
+            let p_r = self.t_steps.broadcast_mul(&w_r).map_err(anyhow::Error::msg)?.broadcast_add(phase_c_r)?.add(&theta_curve)?;
             audio_l = audio_l.add(&p_l.sin().map_err(anyhow::Error::msg)?.affine(0.3, 0.0)?)?;
             audio_r = audio_r.add(&p_r.sin().map_err(anyhow::Error::msg)?.affine(0.3, 0.0)?)?;
         }
 
-        let audio_l = audio_l.unsqueeze(0).map_err(anyhow::Error::msg)?; // (1, CHUNK)
+        let audio_l = audio_l.unsqueeze(0).map_err(anyhow::Error::msg)?;
         let audio_r = audio_r.unsqueeze(0).map_err(anyhow::Error::msg)?;
 
         // ---- KAN wavefolders ----
-        // The KAN emits (1, CHUNK, out_features=1); flatten the trailing
-        // singleton immediately. Without this, broadcasting (1, CHUNK, 1)
-        // against the (1, CHUNK) openness curve aligns from the right and
-        // produces a (1, CHUNK, CHUNK) outer product — the shape-mismatch
-        // crash at the stereo cat.
         let audio_l = self.wavefolder_l.forward(&audio_l, mimic_loss_val).map_err(anyhow::Error::msg)?
             .reshape((1, CHUNK_SIZE)).map_err(anyhow::Error::msg)?;
         let audio_r = self.wavefolder_r.forward(&audio_r, mimic_loss_val).map_err(anyhow::Error::msg)?
@@ -1410,7 +1396,7 @@ impl ComplexAudioEcosystem {
         let open_t = refined_hidden.abs().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?
             .affine(5.0, 0.0)?.add(&movement_t)?
             .clamp(0.4f32, 1.0f32).map_err(anyhow::Error::msg)?;
-        let open_curve = self.ramp_param(&open_t, self.prev_openness).map_err(anyhow::Error::msg)?;
+        let open_curve = self.ramp_param(&open_t, &self.prev_openness).map_err(anyhow::Error::msg)?;
         let audio_l = audio_l.broadcast_mul(&open_curve.unsqueeze(0).map_err(anyhow::Error::msg)?)?;
         let audio_r = audio_r.broadcast_mul(&open_curve.unsqueeze(0).map_err(anyhow::Error::msg)?)?;
 
@@ -1418,10 +1404,10 @@ impl ComplexAudioEcosystem {
         let pan_t = self.spatial_panner.forward(&refined_hidden).map_err(anyhow::Error::msg)?
             .reshape(()).map_err(anyhow::Error::msg)?
             .clamp(-0.5f32, 0.5f32).map_err(anyhow::Error::msg)?;
-        let gain_l_t = pan_t.affine(-0.5, 0.5)?.sqrt().map_err(anyhow::Error::msg)?; // sqrt((1-pan)/2)
-        let gain_r_t = pan_t.affine(0.5, 0.5)?.sqrt().map_err(anyhow::Error::msg)?;  // sqrt((1+pan)/2)
-        let gain_curve_l = self.ramp_param(&gain_l_t, self.prev_gain_l).map_err(anyhow::Error::msg)?;
-        let gain_curve_r = self.ramp_param(&gain_r_t, self.prev_gain_r).map_err(anyhow::Error::msg)?;
+        let gain_l_t = pan_t.affine(-0.5, 0.5)?.sqrt().map_err(anyhow::Error::msg)?;
+        let gain_r_t = pan_t.affine(0.5, 0.5)?.sqrt().map_err(anyhow::Error::msg)?;
+        let gain_curve_l = self.ramp_param(&gain_l_t, &self.prev_gain_l).map_err(anyhow::Error::msg)?;
+        let gain_curve_r = self.ramp_param(&gain_r_t, &self.prev_gain_r).map_err(anyhow::Error::msg)?;
         let audio_l = audio_l.broadcast_mul(&gain_curve_l.unsqueeze(0).map_err(anyhow::Error::msg)?)?.affine(1.414, 0.0)?;
         let audio_r = audio_r.broadcast_mul(&gain_curve_r.unsqueeze(0).map_err(anyhow::Error::msg)?)?.affine(1.414, 0.0)?;
 
@@ -1430,25 +1416,21 @@ impl ComplexAudioEcosystem {
 
         // ---- Analytic phase carry (full N-sample advance, carrier only) ----
         let chunk_dt = CHUNK_SIZE as f32 / SAMPLE_RATE as f32;
-        let cur_l_s = cur_l.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
-        let cur_r_s = cur_r.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
-        let mod_l_s = mod_f_l.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
-        let mod_r_s = mod_f_r.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
-        let next_phase_c_l = (phase_c_l + TWO_PI * cur_l_s * chunk_dt) % TWO_PI;
-        let next_phase_c_r = (phase_c_r + TWO_PI * cur_r_s * chunk_dt) % TWO_PI;
-        let next_phase_m_l = (phase_m_l + TWO_PI * mod_l_s * chunk_dt) % TWO_PI;
-        let next_phase_m_r = (phase_m_r + TWO_PI * mod_r_s * chunk_dt) % TWO_PI;
+        let next_phase_c_l = mod_2pi(&phase_c_l.add(&cur_l.affine(TWO_PI as f64 * chunk_dt as f64, 0.0)?)?)?;
+        let next_phase_c_r = mod_2pi(&phase_c_r.add(&cur_r.affine(TWO_PI as f64 * chunk_dt as f64, 0.0)?)?)?;
+        let next_phase_m_l = mod_2pi(&phase_m_l.add(&mod_f_l.affine(TWO_PI as f64 * chunk_dt as f64, 0.0)?)?)?;
+        let next_phase_m_r = mod_2pi(&phase_m_r.add(&mod_f_r.affine(TWO_PI as f64 * chunk_dt as f64, 0.0)?)?)?;
 
         // ---- Update scalar ramp/glide state from detached values ----
-        self.current_freq_l = cur_l_s;
-        self.current_freq_r = cur_r_s;
-        self.current_mod_freq_l = mod_l_s;
-        self.current_mod_freq_r = mod_r_s;
-        self.prev_fm_idx_l = idx_l.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
-        self.prev_fm_idx_r = idx_r.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
-        self.prev_openness = open_t.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
-        self.prev_gain_l = gain_l_t.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
-        self.prev_gain_r = gain_r_t.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
+        self.current_freq_l = cur_l.detach();
+        self.current_freq_r = cur_r.detach();
+        self.current_mod_freq_l = mod_f_l.detach();
+        self.current_mod_freq_r = mod_f_r.detach();
+        self.prev_fm_idx_l = idx_l.detach();
+        self.prev_fm_idx_r = idx_r.detach();
+        self.prev_openness = open_t.detach();
+        self.prev_gain_l = gain_l_t.detach();
+        self.prev_gain_r = gain_r_t.detach();
         self.prev_theta = theta;
 
         Ok((
@@ -1475,16 +1457,19 @@ impl DefibrillatorController {
             .add(candle_nn::linear(16, 5, vb.pp("net_4"))?);
         Ok(Self { net })
     }
-    /// Returns (prediction tensor (1,2) in-graph, threshold, noise_scale, lr_multiplier)
-    fn forward(&self, features: &Tensor) -> Result<(Tensor, f32, f32, f32)> {
+    /// Returns (prediction tensor (1,2) in-graph, threshold tensor, noise_scale tensor, lr_multiplier tensor)
+    fn forward(&self, features: &Tensor) -> Result<(Tensor, Tensor, Tensor, Tensor)> {
         let raw = self.net.forward(features).map_err(anyhow::Error::msg)?;
         let pred = candle_nn::ops::sigmoid(&raw.narrow(1, 0, 2).map_err(anyhow::Error::msg)?).map_err(anyhow::Error::msg)?;
-        let ctrl = raw.narrow(1, 2, 3).map_err(anyhow::Error::msg)?
-            .reshape((3,)).map_err(anyhow::Error::msg)?
-            .to_vec1::<f32>().map_err(anyhow::Error::msg)?;
-        let threshold = (1.0 / (1.0 + (-ctrl[0]).exp())) * 0.20 + 0.05;
-        let noise_scale = (1.0 / (1.0 + (-ctrl[1]).exp())) * 1.5 + 0.2;
-        let lr_multiplier = 1.0 + (1.0 / (1.0 + (-ctrl[2]).exp())) * 7.0;
+        let ctrl = raw.narrow(1, 2, 3).map_err(anyhow::Error::msg)?.reshape((3,))?;
+        
+        let ctrl0 = ctrl.get(0)?;
+        let ctrl1 = ctrl.get(1)?;
+        let ctrl2 = ctrl.get(2)?;
+        
+        let threshold = ctrl0.neg()?.exp()?.add(&Tensor::new(&[1.0f32], ctrl.device())?)?.recip()?.affine(0.20, 0.05)?;
+        let noise_scale = ctrl1.neg()?.exp()?.add(&Tensor::new(&[1.0f32], ctrl.device())?)?.recip()?.affine(1.5, 0.2)?;
+        let lr_multiplier = ctrl2.neg()?.exp()?.add(&Tensor::new(&[1.0f32], ctrl.device())?)?.recip()?.affine(7.0, 1.0)?;
         Ok((pred, threshold, noise_scale, lr_multiplier))
     }
 }
@@ -1588,7 +1573,10 @@ fn main() -> Result<()> {
     let mut micro_tape = Tensor::randn(0.0f32, 1.0f32, (1, CA_CHANNELS, TAPE_LEN), &device).map_err(anyhow::Error::msg)?;
     let mut macro_tape = Tensor::randn(0.0f32, 1.0f32, (1, CA_CHANNELS, TAPE_LEN), &device).map_err(anyhow::Error::msg)?;
     let mut hidden_mem = Tensor::zeros((1, MEMORY_DIM), DType::F32, &device).map_err(anyhow::Error::msg)?;
-    let mut phase_c_l = 0.0f32; let mut phase_c_r = 0.0f32; let mut phase_m_l = 0.0f32; let mut phase_m_r = 0.0f32;
+    let mut phase_c_l = Tensor::new(&[0.0f32], &device).map_err(anyhow::Error::msg)?;
+    let mut phase_c_r = Tensor::new(&[0.0f32], &device).map_err(anyhow::Error::msg)?;
+    let mut phase_m_l = Tensor::new(&[0.0f32], &device).map_err(anyhow::Error::msg)?;
+    let mut phase_m_r = Tensor::new(&[0.0f32], &device).map_err(anyhow::Error::msg)?;
 
     let total_chunks = (SAMPLE_RATE as f32 * DURATION_SECONDS / CHUNK_SIZE as f32) as usize;
     let mut audio_frames: Vec<i16> = Vec::with_capacity(total_chunks * CHUNK_SIZE * 2);
@@ -1618,15 +1606,10 @@ fn main() -> Result<()> {
 
         let (out, nc_l, nc_r, nm_l, nm_r) = model.forward(
             &micro_tape, &macro_tape, &hidden_mem,
-            phase_c_l, phase_c_r, phase_m_l, phase_m_r,
+            &phase_c_l, &phase_c_r, &phase_m_l, &phase_m_r,
             force_macro, prev_mimic_loss,
         )?;
         let ForwardOut { stereo: stereo_chunk, next_micro, next_macro, next_hidden, refined_hidden, movement_t, theta } = out;
-        let movement = movement_t.reshape(())?.to_scalar::<f32>().map_err(anyhow::Error::msg)?;
-
-        total_complexity += movement;
-        let age_factor = (total_complexity / 500.0).min(0.6);
-        let audio_for_loss = stereo_chunk.tanh().map_err(anyhow::Error::msg)?.affine((1.0 - age_factor) as f64, 0.0)?;
 
         // --------------------------------------------------
         // INFORMATION-THEORETIC RUNTIME ANALYTICS
@@ -1654,30 +1637,88 @@ fn main() -> Result<()> {
         // --------------------------------------------------
         // PERCEPTUAL MIMIC LOSS (log-magnitude spectral MSE)
         // --------------------------------------------------
-        // Stereo targets, per-channel spectral comparison: the model's L/R
-        // voices and pan field get real supervision instead of a mono
-        // downmix erasing the stereo image.
         let target_chunk = target_loader.sample_chunk(&device).map_err(anyhow::Error::msg)?; // (2, CHUNK)
+        let age_factor = (total_complexity / 500.0).min(0.6);
+        let audio_for_loss = stereo_chunk.tanh().map_err(anyhow::Error::msg)?.affine((1.0 - age_factor) as f64, 0.0)?;
+
         let out_spec_l = spec_proj.log_mag(&audio_for_loss.narrow(0, 0, 1).map_err(anyhow::Error::msg)?).map_err(anyhow::Error::msg)?;
         let out_spec_r = spec_proj.log_mag(&audio_for_loss.narrow(0, 1, 1).map_err(anyhow::Error::msg)?).map_err(anyhow::Error::msg)?;
-        let tgt_spec_l = spec_proj.log_mag(&target_chunk.narrow(0, 0, 1).map_err(anyhow::Error::msg)?).map_err(anyhow::Error::msg)?
-            .detach();
-        let tgt_spec_r = spec_proj.log_mag(&target_chunk.narrow(0, 1, 1).map_err(anyhow::Error::msg)?).map_err(anyhow::Error::msg)?
-            .detach();
+        let tgt_spec_l = spec_proj.log_mag(&target_chunk.narrow(0, 0, 1).map_err(anyhow::Error::msg)?).map_err(anyhow::Error::msg)?.detach();
+        let tgt_spec_r = spec_proj.log_mag(&target_chunk.narrow(0, 1, 1).map_err(anyhow::Error::msg)?).map_err(anyhow::Error::msg)?.detach();
         let mimic_l = out_spec_l.sub(&tgt_spec_l)?.sqr()?.mean_all()?;
         let mimic_r = out_spec_r.sub(&tgt_spec_r)?.sqr()?.mean_all()?;
         let mimic_loss = mimic_l.add(&mimic_r)?.affine(0.5, 0.0).map_err(anyhow::Error::msg)?;
-        let mimic_drift = mimic_loss.reshape(())?.to_scalar::<f32>().unwrap_or(0.0);
-        // Bounded control signal: log-spectral MSE is unbounded above, so
-        // every downstream controller sees drift/(1+drift) in [0, 1).
+
+        let current_var = var_all(&audio_for_loss).map_err(anyhow::Error::msg)?;
+        let var_loss = current_var.affine(1.0, -0.12)?.sqr().map_err(anyhow::Error::msg)?;
+
+        let rms = audio_for_loss.sqr().map_err(anyhow::Error::msg)?
+            .mean_all().map_err(anyhow::Error::msg)?
+            .affine(1.0, 1e-5)?.sqrt().map_err(anyhow::Error::msg)?;
+        let saturation_loss = rms.affine(1.0, -0.28)?.sqr().map_err(anyhow::Error::msg)?;
+
+        let movement_loss = movement_t.neg().map_err(anyhow::Error::msg)?.exp().map_err(anyhow::Error::msg)?;
+
+        let diff = audio_for_loss.narrow(1, 1, CHUNK_SIZE - 1).map_err(anyhow::Error::msg)?
+            .sub(&audio_for_loss.narrow(1, 0, CHUNK_SIZE - 1).map_err(anyhow::Error::msg)?)?;
+        let roughness_loss = diff.sqr().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?;
+        let reg_loss = stereo_chunk.sqr().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?;
+
+        let empowerment_loss = empowerment_t.affine(1.0, -2.5)?.sqr().map_err(anyhow::Error::msg)?;
+
+        // First combined copy: get early indicators to CPU
+        let abs_max_t = audio_for_loss.abs().map_err(anyhow::Error::msg)?
+            .flatten_all().map_err(anyhow::Error::msg)?
+            .max(0).map_err(anyhow::Error::msg)?;
+        let first_metrics = Tensor::cat(&[
+            &movement_t.reshape((1,))?,
+            &mimic_loss.reshape((1,))?,
+            &rms.reshape((1,))?,
+            &abs_max_t.reshape((1,))?,
+            &rg_loss.reshape((1,))?,
+            &empowerment_loss.reshape((1,))?,
+            &roughness_loss.reshape((1,))?,
+            &current_var.reshape((1,))?,
+            &movement_loss.reshape((1,))?,
+        ], 0)?;
+        let first_metrics_vec = first_metrics.to_vec1::<f32>()?;
+        let movement = first_metrics_vec[0];
+        let mimic_drift = first_metrics_vec[1];
+        let rms_val = first_metrics_vec[2];
+        let abs_max = first_metrics_vec[3];
+        let rg_v = first_metrics_vec[4];
+        let empowerment_loss_val = first_metrics_vec[5];
+        let roughness_loss_val = first_metrics_vec[6];
+        let current_var_val = first_metrics_vec[7];
+        let movement_loss_val = first_metrics_vec[8];
         let mimic_drift_n = mimic_drift / (1.0 + mimic_drift);
 
+        total_complexity += movement;
+
+        // Render path normalization on GPU, then a single copy to CPU
+        let boost_target = if abs_max < 0.25 { 0.25 / (abs_max + 1e-6) } else { 1.0 };
+        boost_state = boost_state * 0.9 + boost_target * 0.1;
+        let audio_normalized = audio_for_loss.affine(boost_state as f64, 0.0)?;
+        
+        let audio_vec = audio_normalized.to_vec2::<f32>()?;
+        let mut audio_l = audio_vec[0].clone();
+        let mut audio_r = audio_vec[1].clone();
+        
+        let mut mono = vec![0.0f32; CHUNK_SIZE];
+        for i in 0..CHUNK_SIZE {
+            mono[i] = (audio_l[i] + audio_r[i]) * 0.5;
+        }
+
+        // Run monitors and update uncertainty state on CPU
+        let m_sig = movement_mon.analyze(movement)?;
+        let s_sig = spectral_mon.analyze(&mono)?;
+        uncertainty.update(&s_sig, &m_sig, Some(&serde_json::json!({"drift": mimic_drift_n, "theta": theta})), synergy_val, empowerment_val);
+        phi = uncertainty.phi;
+        let aperture = uncertainty.branch_aperture();
+
         // --------------------------------------------------
-        // SEMANTIC FIELD + MORPHOLOGICAL HOMEOSTASIS (token_universe)
+        // SEMANTIC FIELD + MORPHOLOGICAL HOMEOSTASIS
         // --------------------------------------------------
-        // Read the freshly evolved substrate as an archetype field, place
-        // the system on the epistemic phase ladder, and let the observer's
-        // depth + the world's radiation co-adapt toward the edge of chaos.
         let field01: Vec<f32> = next_micro.flatten_all().map_err(anyhow::Error::msg)?
             .to_vec1::<f32>().map_err(anyhow::Error::msg)?
             .iter().map(|&x| (x + 1.0) * 0.5).collect();
@@ -1688,11 +1729,6 @@ fn main() -> Result<()> {
         field_entropy_sum += field_entropy as f64;
         field_entropy_n += 1;
 
-        // Patience-gated neurogenesis / pruning against a self-calibrated
-        // baseline. During warmup we only observe (and accumulate the mean);
-        // after warmup the baseline is fixed and the depth adapts when the
-        // patience-window average leaves the dead-band around it. Patience
-        // lengthens with depth (deeper observers restructure more slowly).
         let mut morph_event: Option<&str> = None;
         if step < MORPH_WARMUP {
             warmup_sum += mimic_drift_n;
@@ -1711,12 +1747,12 @@ fn main() -> Result<()> {
                 let base = morph_baseline.unwrap();
                 if avg > base * MORPH_GROWTH_REL {
                     if model.grow() {
-                        rad_amp = (rad_amp * RAD_COOL).max(RAD_AMP_MIN); // struggling: calm the world
+                        rad_amp = (rad_amp * RAD_COOL).max(RAD_AMP_MIN);
                         morph_event = Some("NEUROGENESIS");
                     }
                 } else if avg < base * MORPH_PRUNE_REL {
                     if model.prune() {
-                        rad_amp = (rad_amp * RAD_HEAT).min(RAD_AMP_MAX);  // mastering: agitate the world
+                        rad_amp = (rad_amp * RAD_HEAT).min(RAD_AMP_MAX);
                         morph_event = Some("PRUNING");
                     }
                 }
@@ -1727,40 +1763,7 @@ fn main() -> Result<()> {
             println!("  ◄ {} ►  {}", ev, line);
         }
 
-        // --------------------------------------------------
-        // SHAPING LOSSES (all live in the graph)
-        // --------------------------------------------------
-        let current_var = var_all(&audio_for_loss).map_err(anyhow::Error::msg)?;
-        let var_loss = current_var.affine(1.0, -0.12)?.sqr().map_err(anyhow::Error::msg)?;
-
-        // Single RMS target (the old saturation_loss/energy_loss pair
-        // pulled toward 0.28 and 0.25 simultaneously).
-        let rms = audio_for_loss.sqr().map_err(anyhow::Error::msg)?
-            .mean_all().map_err(anyhow::Error::msg)?
-            .affine(1.0, 1e-5)?.sqrt().map_err(anyhow::Error::msg)?;
-        let rms_val = rms.reshape(())?.to_scalar::<f32>().unwrap_or(0.0);
-        let saturation_loss = rms.affine(1.0, -0.28)?.sqr().map_err(anyhow::Error::msg)?;
-
-        // movement_loss is a graph tensor now (was exp of a detached f32:
-        // a constant with zero gradient).
-        let movement_loss = movement_t.neg().map_err(anyhow::Error::msg)?.exp().map_err(anyhow::Error::msg)?;
-
-        let diff = audio_for_loss.narrow(1, 1, CHUNK_SIZE - 1).map_err(anyhow::Error::msg)?
-            .sub(&audio_for_loss.narrow(1, 0, CHUNK_SIZE - 1).map_err(anyhow::Error::msg)?)?;
-        let roughness_loss = diff.sqr().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?;
-        let reg_loss = stereo_chunk.sqr().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?;
-
-        let empowerment_loss = empowerment_t.affine(1.0, -2.5)?.sqr().map_err(anyhow::Error::msg)?;
-
-        // --------------------------------------------------
-        // MONITORS FIRST, then the self-model predicts FRESH observations
-        // (the old order made the monitor head predict stale state).
-        // --------------------------------------------------
-        let m_sig = movement_mon.analyze(movement)?;
-        let s_sig = spectral_mon.analyze(&stereo_chunk)?;
-        uncertainty.update(&s_sig, &m_sig, Some(&serde_json::json!({"drift": mimic_drift_n, "theta": theta})), synergy_val, empowerment_val);
-        phi = uncertainty.phi;
-
+        // Predict state and calculate monitor head loss on GPU
         let pred_state = monitor_head.forward(&refined_hidden)?;
         let observed_state = Tensor::new(
             &[
@@ -1774,10 +1777,7 @@ fn main() -> Result<()> {
         )?.unsqueeze(0)?;
         let self_model_loss = pred_state.sub(&observed_state)?.sqr()?.mean_all()?;
 
-        // --------------------------------------------------
-        // ARBITER: real features (no placeholder zeros), learning-progress meta-loss
-        // --------------------------------------------------
-        let rg_v = rg_loss.reshape(())?.to_scalar::<f32>().unwrap_or(0.0);
+        // Run Arbiter
         let arb_features = Tensor::new(&[
             rms_val,
             mimic_drift_n,
@@ -1796,31 +1796,8 @@ fn main() -> Result<()> {
         ], &device).map_err(anyhow::Error::msg)?.unsqueeze(0).map_err(anyhow::Error::msg)?;
 
         let (w_graph, arb_entropy_loss) = arbiter.forward(&arb_features)?;
-        // Detached copies weight the actual losses (stochastic controller).
-        let lw_raw = w_graph.reshape((7,))?.to_vec1::<f32>().map_err(anyhow::Error::msg)?;
-        let lw: Vec<f32> = lw_raw.iter().map(|p| p * 7.0).collect();
 
-        // Learning-progress meta-objective: reward weight on improving losses.
-        let cur_loss_vec = [
-            current_var.reshape(())?.to_scalar::<f32>().unwrap_or(0.0),
-            mimic_drift_n,
-            movement_loss.reshape(())?.to_scalar::<f32>().unwrap_or(0.0),
-            roughness_loss.reshape(())?.to_scalar::<f32>().unwrap_or(0.0),
-            rg_v,
-            self_model_loss.reshape(())?.to_scalar::<f32>().unwrap_or(0.0),
-            empowerment_loss.reshape(())?.to_scalar::<f32>().unwrap_or(0.0),
-        ];
-        let improvement: Vec<f32> = (0..7).map(|i| (prev_loss_vec[i] - cur_loss_vec[i]).clamp(-1.0, 1.0)).collect();
-        prev_loss_vec = cur_loss_vec;
-        let improvement_t = Tensor::new(improvement, &device).map_err(anyhow::Error::msg)?;
-        let arb_progress_loss = w_graph.reshape((7,))?
-            .mul(&improvement_t).map_err(anyhow::Error::msg)?
-            .sum_all().map_err(anyhow::Error::msg)?
-            .affine(-0.5, 0.0).map_err(anyhow::Error::msg)?;
-
-        // --------------------------------------------------
-        // DEFIBRILLATOR: prediction loss from last step's forecast
-        // --------------------------------------------------
+        // Run Defibrillator
         let defib_features = Tensor::new(&[
             movement,
             movement - prev_movement,
@@ -1831,7 +1808,7 @@ fn main() -> Result<()> {
             step as f32 / total_chunks as f32,
         ], &device).map_err(anyhow::Error::msg)?.unsqueeze(0).map_err(anyhow::Error::msg)?;
         prev_movement = movement;
-        let (pred_t, thresh, n_scale, lr_mult) = defib_ctrl.forward(&defib_features)?;
+        let (pred_t, thresh_t, n_scale_t, lr_mult_t) = defib_ctrl.forward(&defib_features)?;
 
         let defib_pred_loss = if let Some(p) = prev_pred.take() {
             let obs = Tensor::new(&[(movement / 0.3).clamp(0.0, 1.0), mimic_drift_n], &device)
@@ -1840,22 +1817,61 @@ fn main() -> Result<()> {
         } else { None };
         prev_pred = Some(pred_t);
 
+        // Combined second copy: get self_model_loss and defib parameters to CPU
+        let second_metrics = Tensor::cat(&[
+            &self_model_loss.reshape((1,))?,
+            &thresh_t.reshape((1,))?,
+            &n_scale_t.reshape((1,))?,
+            &lr_mult_t.reshape((1,))?,
+        ], 0)?;
+        let second_metrics_vec = second_metrics.to_vec1::<f32>()?;
+        let self_model_loss_val = second_metrics_vec[0];
+        let thresh = second_metrics_vec[1];
+        let n_scale = second_metrics_vec[2];
+        let lr_mult = second_metrics_vec[3];
+
+        let cur_loss_vec = [
+            current_var_val,
+            mimic_drift_n,
+            movement_loss_val,
+            roughness_loss_val,
+            rg_v,
+            self_model_loss_val,
+            empowerment_loss_val,
+        ];
+        let improvement: Vec<f32> = (0..7).map(|i| (prev_loss_vec[i] - cur_loss_vec[i]).clamp(-1.0, 1.0)).collect();
+        prev_loss_vec = cur_loss_vec;
+        let improvement_t = Tensor::new(improvement, &device).map_err(anyhow::Error::msg)?;
+        let arb_progress_loss = w_graph.reshape((7,))?
+            .mul(&improvement_t).map_err(anyhow::Error::msg)?
+            .sum_all().map_err(anyhow::Error::msg)?
+            .affine(-0.5, 0.0).map_err(anyhow::Error::msg)?;
+
         // --------------------------------------------------
-        // TOTAL LOSS ASSEMBLY
+        // TOTAL LOSS ASSEMBLY (on GPU)
         // --------------------------------------------------
-        let mut total_loss = mimic_loss.affine((lw[1] * (1.0 - RESONANT_AUTONOMY)) as f64, 0.0).map_err(anyhow::Error::msg)?;
-        total_loss = total_loss.add(&var_loss.affine((lw[0] * 2.5) as f64, 0.0).map_err(anyhow::Error::msg)?)?;
-        total_loss = total_loss.add(&saturation_loss.affine(2.0, 0.0).map_err(anyhow::Error::msg)?)?;
-        total_loss = total_loss.add(&movement_loss.affine((lw[2] * RESONANT_AUTONOMY) as f64, 0.0).map_err(anyhow::Error::msg)?)?;
-        total_loss = total_loss.add(&roughness_loss.affine(lw[3] as f64, 0.0).map_err(anyhow::Error::msg)?)?;
-        total_loss = total_loss.add(&reg_loss.affine(0.01, 0.0).map_err(anyhow::Error::msg)?)?;
-        total_loss = total_loss.add(&rg_loss.affine((0.15 * lw[4].max(0.2)) as f64, 0.0).map_err(anyhow::Error::msg)?)?;
-        total_loss = total_loss.add(&self_model_loss.affine((0.30 * lw[5].max(0.2)) as f64, 0.0).map_err(anyhow::Error::msg)?)?;
-        total_loss = total_loss.add(&empowerment_loss.affine(lw[6] as f64, 0.0).map_err(anyhow::Error::msg)?)?;
+        let lw = w_graph.reshape((7,))?.affine(7.0, 0.0)?;
+        let l0 = lw.get(0)?;
+        let l1 = lw.get(1)?;
+        let l2 = lw.get(2)?;
+        let l3 = lw.get(3)?;
+        let l4 = lw.get(4)?;
+        let l5 = lw.get(5)?;
+        let l6 = lw.get(6)?;
+
+        let mut total_loss = mimic_loss.mul(&l1.affine((1.0 - RESONANT_AUTONOMY) as f64, 0.0)?)?;
+        total_loss = total_loss.add(&var_loss.mul(&l0.affine(2.5, 0.0)?)?)?;
+        total_loss = total_loss.add(&saturation_loss.affine(2.0, 0.0)?)?;
+        total_loss = total_loss.add(&movement_loss.mul(&l2.affine(RESONANT_AUTONOMY as f64, 0.0)?)?)?;
+        total_loss = total_loss.add(&roughness_loss.mul(&l3)?)?;
+        total_loss = total_loss.add(&reg_loss.affine(0.01, 0.0)?)?;
+        total_loss = total_loss.add(&rg_loss.mul(&l4.clamp(0.2, 100.0)?.affine(0.15, 0.0)?)?)?;
+        total_loss = total_loss.add(&self_model_loss.mul(&l5.clamp(0.2, 100.0)?.affine(0.30, 0.0)?)?)?;
+        total_loss = total_loss.add(&empowerment_loss.mul(&l6)?)?;
         total_loss = total_loss.add(&arb_entropy_loss)?;
         total_loss = total_loss.add(&arb_progress_loss)?;
         if let Some(dl) = defib_pred_loss {
-            total_loss = total_loss.add(&dl.affine(0.2, 0.0).map_err(anyhow::Error::msg)?)?;
+            total_loss = total_loss.add(&dl.affine(0.2, 0.0)?)?;
         }
 
         // --------------------------------------------------
@@ -1867,9 +1883,6 @@ fn main() -> Result<()> {
         });
         steps_in_window += 1;
 
-        // Choptuik learning-rate law. CRITICALITY_SEEKING = true puts
-        // peak plasticity AT the critical surface (SOC); false restores
-        // the "frozen at the horizon" time-dilation reading.
         let distance_to_horizon = (movement - thresh).abs() + 1e-4;
         let choptuik_gain = if CRITICALITY_SEEKING {
             (CRITICAL_D0 / distance_to_horizon).powf(CHOPTUIK_EXPONENT).clamp(0.3, 3.0)
@@ -1898,7 +1911,6 @@ fn main() -> Result<()> {
                 optimizer.backward_step(&scaled).map_err(anyhow::Error::msg)?;
             }
             steps_in_window = 0;
-            // Detach carried state: window boundary of truncated BPTT.
             micro_tape = next_micro.detach();
             macro_tape = next_macro.detach();
             hidden_mem = next_hidden.detach();
@@ -1906,20 +1918,22 @@ fn main() -> Result<()> {
                 Some(p) => Some(p.detach()),
                 None => None,
             };
-            // Edge-of-chaos radiation: sparse heavy-tailed mutation of the
-            // substrate, scaled by the homeostat's rad_amp. Done only at the
-            // window boundary — the tape is a detached leaf here, so it is a
-            // physical kick to the world, not a torn gradient path.
+            phase_c_l = nc_l.detach();
+            phase_c_r = nc_r.detach();
+            phase_m_l = nm_l.detach();
+            phase_m_r = nm_r.detach();
             if rand::thread_rng().gen::<f32>() < RADIATE_PROB {
                 micro_tape = levy_radiate(&micro_tape, rad_amp).map_err(anyhow::Error::msg)?;
             }
         } else {
-            // Keep graph alive within the window: multi-step credit assignment.
             micro_tape = next_micro;
             macro_tape = next_macro;
             hidden_mem = next_hidden;
+            phase_c_l = nc_l;
+            phase_c_r = nc_r;
+            phase_m_l = nm_l;
+            phase_m_r = nm_r;
         }
-        phase_c_l = nc_l; phase_c_r = nc_r; phase_m_l = nm_l; phase_m_r = nm_r;
 
         // Defibrillation noise is applied AFTER the state carry. The old
         // order added it to the stale tape and then overwrote that tape
@@ -1939,17 +1953,6 @@ fn main() -> Result<()> {
         // sample-recursive IIR, and we want the model to learn the voice,
         // not the room)
         // --------------------------------------------------
-        let audio_t = stereo_chunk.tanh().map_err(anyhow::Error::msg)?.affine((1.0 - age_factor) as f64, 0.0)?;
-        let abs_max = audio_t.abs().map_err(anyhow::Error::msg)?
-            .flatten_all().map_err(anyhow::Error::msg)?
-            .max(0).map_err(anyhow::Error::msg)?
-            .to_scalar::<f32>().map_err(anyhow::Error::msg)?;
-        let boost_target = if abs_max < 0.25 { 0.25 / (abs_max + 1e-6) } else { 1.0 };
-        boost_state = boost_state * 0.9 + boost_target * 0.1; // smoothed: no per-chunk gain pumping
-        let audio_normalized = audio_t.affine(boost_state as f64, 0.0).map_err(anyhow::Error::msg)?;
-
-        let mut audio_l = audio_normalized.narrow(0, 0, 1).map_err(anyhow::Error::msg)?.to_vec2::<f32>().map_err(anyhow::Error::msg)?[0].clone();
-        let mut audio_r = audio_normalized.narrow(0, 1, 1).map_err(anyhow::Error::msg)?.to_vec2::<f32>().map_err(anyhow::Error::msg)?[0].clone();
 
         qnm_resonators.process(&mut audio_l, &mut audio_r, phi);
 
