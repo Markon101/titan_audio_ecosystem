@@ -45,30 +45,34 @@
 //     the "time dilation at the horizon" behaviour), QNM damping derived
 //     from a physical Q (audible ringdown instead of subtle EQ), and a
 //     damped one-pole in the FDN feedback loop for natural HF decay.
-// 11. SNAPDRAGON TUNING. TAPE_LEN 512->256, CA hidden 48x->8x (the conv
-//     was ~0.5 GMAC per call), t_steps/ramp/DFT matrices precomputed
-//     once, optimizer step every BPTT_WINDOW chunks, periodic
-//     checkpointing. See build notes below.
+// 11. DESKTOP / CUDA SCALE. TAPE_LEN 512, CA hidden 128x, 144 channels —
+//     tuned for a GTX 1080 Ti (sm_61). t_steps/ramp/DFT matrices are
+//     precomputed once, the optimizer steps every BPTT_WINDOW chunks, and
+//     checkpoints are promoted periodically (see persistence below).
+// 12. CROSS-RUN PERSISTENCE. Weights, the morphic depth/rad_amp/health
+//     sidecar, AND the dynamical substrate (CA tapes, GRU memory, oscillator
+//     phases, carried synthesis scalars) persist across runs, gated by a
+//     finiteness + non-regression guard so a diverged run can't poison the
+//     lineage. --fresh-substrate forces a cold start.
 //
 // ---------------------------------------------------------------------
 // Cargo.toml (unchanged deps):
 //   anyhow, candle-core, candle-nn, rustfft, rand, hound, serde_json,
 //   csv, rayon
 //
-// Build for the S25 Ultra (Termux, aarch64) — this matters a lot, it
-// enables NEON/SVE codegen in the gemm kernels:
+// Build (desktop CUDA): use the wrapper, which activates the micromamba
+// CUDA-12.4 / gcc-12 / sm_61 toolchain and sets the cudarc/bindgen env:
 //
-//   RUSTFLAGS="-C target-cpu=native" cargo build --release
+//   ./build.sh             # cargo build --release
+//   ./build.sh run -- DIR  # cargo run   --release -- DIR
+//   ./build.sh check       # fast type-check, no CUDA kernel compile
 //
-// and in Cargo.toml:
-//   [profile.release]
-//   lto = "fat"
-//   codegen-units = 1
-//   opt-level = 3
+// Cargo.toml [profile.release]: lto = "thin", codegen-units = 1,
+// opt-level = 3, panic = "abort".
 //
 // Tuning knobs, cheapest quality/speed trade first:
-//   CA_HIDDEN_MULT (8 -> 4), TAPE_LEN (256 -> 128), BPTT_WINDOW (4 -> 2),
-//   SPEC_BINS (96 -> 64).
+//   CA_HIDDEN_MULT (128 -> 64), TAPE_LEN (512 -> 256), BPTT_WINDOW (4 -> 2),
+//   SPEC_BINS (96 -> 64). Lower CA_HIDDEN_MULT first if VRAM is tight.
 // =====================================================================
 
 use anyhow::Result;
@@ -82,7 +86,7 @@ use rand::Rng;
 // ECOSYSTEM CONFIGURATION
 // ==========================================
 const SAMPLE_RATE: u32 = 48000;
-const DURATION_SECONDS: f32 = 240.0;
+const DURATION_SECONDS: f32 = 420.0;
 const CHUNK_SIZE: usize = 2048;
 const TAPE_LEN: usize = 512;          // restored to desktop scale
 const CA_CHANNELS: usize = 144;
@@ -91,6 +95,12 @@ const KAN_BASIS_FUNCTIONS: usize = 244;
 const MEMORY_DIM: usize = 512;
 const BPTT_WINDOW: usize = 4;         // truncated BPTT length (chunks)
 const SPEC_BINS: usize = 96;          // log-spaced spectral-loss bins
+
+// Cross-run checkpoint health gate. `health` is an EMA of the bounded mimic
+// signal (lower = better mimicry); a run is only promoted over the loaded
+// checkpoint if it did not regress beyond HEALTH_REGRESS_TOL.
+const HEALTH_EMA_ALPHA: f32 = 0.01;   // ~half-life 69 steps
+const HEALTH_REGRESS_TOL: f32 = 0.15; // allow 15% noise before blocking a save
 
 // Physics-Driven Constants
 const CHOPTUIK_EXPONENT: f32 = 0.37413;
@@ -106,7 +116,7 @@ const BASE_FREQ_R: f32 = 56.83;
 const METABOLIC_DECAY: f32 = 0.999999;
 const FREQ_GLIDE_SPEED: f32 = 0.07314;
 const BASE_LR: f64 = 1.3e-3;
-const RESONANT_AUTONOMY: f32 = 0.25;
+const RESONANT_AUTONOMY: f32 = 0.357;
 const TWO_PI: f32 = 2.0 * std::f32::consts::PI;
 
 // ==========================================
@@ -334,6 +344,93 @@ fn load_into_varmap(varmap: &VarMap, path: &str, device: &Device) -> Result<(usi
         }
     }
     Ok((hit, miss, mismatch))
+}
+
+// ==========================================
+// CHECKPOINT SAFETY & SUBSTRATE PERSISTENCE
+// ==========================================
+/// Finiteness check (no NaN/Inf). Pulls to CPU; used before every promotion
+/// and when restoring substrate, so a diverged run can never poison the
+/// persisted lineage.
+fn tensor_finite(t: &Tensor) -> bool {
+    match t.flatten_all().and_then(|f| f.to_vec1::<f32>()) {
+        Ok(v) => v.iter().all(|x| x.is_finite()),
+        Err(_) => false,
+    }
+}
+
+/// True only if every variable in the map is finite.
+fn varmap_all_finite(vm: &VarMap) -> bool {
+    let data = vm.data().lock().unwrap();
+    data.iter().all(|(_, var)| tensor_finite(var.as_tensor()))
+}
+
+/// Atomic safetensors weight save: write to a temp file, then rename, so a
+/// crash mid-write can never truncate the canonical checkpoint.
+fn save_weights_atomic(vm: &VarMap, path: &str) -> Result<()> {
+    let tmp = format!("{}.tmp", path);
+    vm.save(&tmp).map_err(anyhow::Error::msg)?;
+    std::fs::rename(&tmp, path)?;
+    Ok(())
+}
+
+/// Generational backup: copy the current canonical file to "<path>.prev"
+/// before it is overwritten, so one bad promotion is always recoverable.
+fn backup_prev(path: &str) {
+    if std::path::Path::new(path).exists() {
+        let _ = std::fs::copy(path, format!("{}.prev", path));
+    }
+}
+
+/// Persist the full carried dynamical substrate (tapes + GRU memory + the
+/// four oscillator phases + the model's internal carried synthesis scalars)
+/// to one atomic safetensors file. Scalars are stored as shape-(1,) tensors.
+fn save_substrate(
+    path: &str,
+    micro: &Tensor, macro_t: &Tensor, hidden: &Tensor,
+    pc_l: &Tensor, pc_r: &Tensor, pm_l: &Tensor, pm_r: &Tensor,
+    model: &ComplexAudioEcosystem,
+) -> Result<()> {
+    let mut map: std::collections::HashMap<String, Tensor> = std::collections::HashMap::new();
+    map.insert("micro_tape".into(), micro.clone());
+    map.insert("macro_tape".into(), macro_t.clone());
+    map.insert("hidden_mem".into(), hidden.clone());
+    map.insert("phase_c_l".into(), pc_l.reshape((1,)).map_err(anyhow::Error::msg)?);
+    map.insert("phase_c_r".into(), pc_r.reshape((1,)).map_err(anyhow::Error::msg)?);
+    map.insert("phase_m_l".into(), pm_l.reshape((1,)).map_err(anyhow::Error::msg)?);
+    map.insert("phase_m_r".into(), pm_r.reshape((1,)).map_err(anyhow::Error::msg)?);
+    for (k, v) in model.export_carried().map_err(anyhow::Error::msg)? {
+        map.insert(k, v);
+    }
+    let tmp = format!("{}.tmp", path);
+    candle_core::safetensors::save(&map, &tmp).map_err(anyhow::Error::msg)?;
+    std::fs::rename(&tmp, path)?;
+    Ok(())
+}
+
+/// Promote one consistent generation: back up the current canonical files,
+/// then atomically write weights + substrate + morph sidecar together. The
+/// three artifacts come from the same run, so they are saved as a unit (and
+/// roll back as a unit via the ".prev" copies).
+#[allow(clippy::too_many_arguments)]
+fn promote_generation(
+    model_path: &str, morph_path: &str, substrate_path: &str,
+    vm: &VarMap, model: &ComplexAudioEcosystem,
+    micro: &Tensor, macro_t: &Tensor, hidden: &Tensor,
+    pc_l: &Tensor, pc_r: &Tensor, pm_l: &Tensor, pm_r: &Tensor,
+    rad_amp: f32, depth: usize, health: f32,
+) -> Result<()> {
+    backup_prev(model_path);
+    backup_prev(substrate_path);
+    backup_prev(morph_path);
+    save_weights_atomic(vm, model_path)?;
+    save_substrate(substrate_path, micro, macro_t, hidden, pc_l, pc_r, pm_l, pm_r, model)?;
+    let tmp = format!("{}.tmp", morph_path);
+    std::fs::write(&tmp, serde_json::json!({
+        "active_depth": depth, "rad_amp": rad_amp, "health": health
+    }).to_string())?;
+    std::fs::rename(&tmp, morph_path)?;
+    Ok(())
 }
 
 /// True block coarse-graining: average ADJACENT pairs and decimate.
@@ -633,7 +730,7 @@ impl NeuralCA1D {
         let part2 = ln_out.affine(0.7, 0.0)?;
         let normalized = part1.add(&part2)?;
 
-        let anti_stagnation = Tensor::randn(0.0f32, 1.0f32, x.shape(), x.device())?.affine(0.005, 0.0)?;
+        let anti_stagnation = Tensor::randn(0.0f32, 1.0f32, x.shape(), x.device())?.affine(0.015, 0.0)?;
         normalized.add(&anti_stagnation)?.clamp(-1.0, 1.0)
     }
 }
@@ -1261,6 +1358,53 @@ impl ComplexAudioEcosystem {
         self.morphic.active_depth = d.clamp(1, self.morphic.blocks.len());
     }
 
+    /// Export the model's internal carried synthesis scalars as shape-(1,)
+    /// tensors for substrate persistence (see save_substrate).
+    fn export_carried(&self) -> CResult<Vec<(String, Tensor)>> {
+        let s = |t: &Tensor| t.reshape((1,));
+        Ok(vec![
+            ("m_current_freq_l".into(),     s(&self.current_freq_l)?),
+            ("m_current_freq_r".into(),     s(&self.current_freq_r)?),
+            ("m_current_mod_freq_l".into(), s(&self.current_mod_freq_l)?),
+            ("m_current_mod_freq_r".into(), s(&self.current_mod_freq_r)?),
+            ("m_prev_fm_idx_l".into(),      s(&self.prev_fm_idx_l)?),
+            ("m_prev_fm_idx_r".into(),      s(&self.prev_fm_idx_r)?),
+            ("m_prev_openness".into(),      s(&self.prev_openness)?),
+            ("m_prev_gain_l".into(),        s(&self.prev_gain_l)?),
+            ("m_prev_gain_r".into(),        s(&self.prev_gain_r)?),
+            ("m_prev_theta".into(),
+                Tensor::new(self.prev_theta, self.t_steps.device())?.reshape((1,))?),
+        ])
+    }
+
+    /// Restore carried scalars from a loaded substrate map. Only finite,
+    /// present, scalar entries are applied; anything missing keeps its fresh
+    /// init. Returns the number of scalars restored.
+    fn import_carried(&mut self, map: &std::collections::HashMap<String, Tensor>) -> usize {
+        let dev = self.t_steps.device().clone();
+        let get = |k: &str| -> Option<f32> {
+            map.get(k)
+                .and_then(|t| t.reshape(()).ok())
+                .and_then(|t| t.to_scalar::<f32>().ok())
+                .filter(|v| v.is_finite())
+        };
+        let set = |slot: &mut Tensor, v: f32| {
+            if let Ok(t) = Tensor::new(v, &dev) { *slot = t; }
+        };
+        let mut n = 0usize;
+        if let Some(v) = get("m_current_freq_l")     { set(&mut self.current_freq_l, v); n += 1; }
+        if let Some(v) = get("m_current_freq_r")     { set(&mut self.current_freq_r, v); n += 1; }
+        if let Some(v) = get("m_current_mod_freq_l") { set(&mut self.current_mod_freq_l, v); n += 1; }
+        if let Some(v) = get("m_current_mod_freq_r") { set(&mut self.current_mod_freq_r, v); n += 1; }
+        if let Some(v) = get("m_prev_fm_idx_l")      { set(&mut self.prev_fm_idx_l, v); n += 1; }
+        if let Some(v) = get("m_prev_fm_idx_r")      { set(&mut self.prev_fm_idx_r, v); n += 1; }
+        if let Some(v) = get("m_prev_openness")      { set(&mut self.prev_openness, v); n += 1; }
+        if let Some(v) = get("m_prev_gain_l")        { set(&mut self.prev_gain_l, v); n += 1; }
+        if let Some(v) = get("m_prev_gain_r")        { set(&mut self.prev_gain_r, v); n += 1; }
+        if let Some(v) = get("m_prev_theta")         { self.prev_theta = v; n += 1; }
+        n
+    }
+
     fn forward(
         &mut self,
         micro_tape: &Tensor,
@@ -1518,10 +1662,17 @@ fn main() -> Result<()> {
     println!("Threads: {} | BPTT window: {} | Tape: {}x{} | CA hidden: {}",
         n_threads, BPTT_WINDOW, CA_CHANNELS, TAPE_LEN, CA_CHANNELS * CA_HIDDEN_MULT);
 
-    // Base directory configurable: first CLI arg, else /sdcard/Download.
-    let base_dir = std::env::args().nth(1).unwrap_or_else(|| "/home/anon/Downloads".to_string());
-    let wav_dir = format!("{}", base_dir);
+    // CLI: first non-flag arg is the base/working dir (also the WAV source).
+    // Flags: --fresh-substrate  (cold-start the dynamical state)
+    //        --no-substrate-kick (skip the on-load Lévy nudge)
+    let cli: Vec<String> = std::env::args().skip(1).collect();
+    let fresh_substrate = cli.iter().any(|a| a == "--fresh-substrate");
+    let no_kick = cli.iter().any(|a| a == "--no-substrate-kick");
+    let base_dir = cli.iter().find(|a| !a.starts_with("--")).cloned()
+        .unwrap_or_else(|| "/home/anon/Downloads".to_string());
+    let wav_dir = base_dir.clone();
     let model_path = format!("{}/titan_model_beta.safetensors", base_dir);
+    let substrate_path = format!("{}/titan_substrate.safetensors", base_dir);
 
     let target_loader = TargetAudioLoader::new(&wav_dir)?;
     let varmap = VarMap::new();
@@ -1547,13 +1698,16 @@ fn main() -> Result<()> {
     // Restore observer morphology + radiation homeostat from sidecar.
     let morph_path = format!("{}/titan_morph_state.json", base_dir);
     let mut rad_amp = RAD_AMP_INIT;
+    let mut loaded_health: Option<f32> = None;
     if let Ok(txt) = std::fs::read_to_string(&morph_path) {
         if let Ok(j) = serde_json::from_str::<serde_json::Value>(&txt) {
             if let Some(d) = j["active_depth"].as_u64() { model.set_depth(d as usize); }
             if let Some(r) = j["rad_amp"].as_f64() { rad_amp = (r as f32).clamp(RAD_AMP_MIN, RAD_AMP_MAX); }
+            if let Some(h) = j["health"].as_f64() { loaded_health = Some(h as f32); }
         }
     }
-    println!("--> Observer depth: L{:02} / {}  ·  rad_amp: {:.3}", model.depth(), MORPH_MAX_BLOCKS, rad_amp);
+    println!("--> Observer depth: L{:02} / {}  ·  rad_amp: {:.3}{}", model.depth(), MORPH_MAX_BLOCKS, rad_amp,
+        loaded_health.map(|h| format!("  ·  health: {:.3}", h)).unwrap_or_default());
 
     let mut qnm_resonators = QNMFilterBank::new();
     let mut fractal_fdn_l = FractalFDN::new();
@@ -1578,6 +1732,39 @@ fn main() -> Result<()> {
     let mut phase_m_l = Tensor::new(0.0f32, &device).map_err(anyhow::Error::msg)?;
     let mut phase_m_r = Tensor::new(0.0f32, &device).map_err(anyhow::Error::msg)?;
 
+    // ---- Restore the dynamical substrate (carry the organism across runs) ----
+    // The fresh-random substrate each run was a bug: it discarded the GRU
+    // "intent" memory and CA topology every launch. Now tapes / memory /
+    // phases / carried synthesis scalars persist, so run N+1 continues run N.
+    // --fresh-substrate forces a cold start; --no-substrate-kick disables the
+    // on-load Lévy nudge that keeps identical restarts from locking to one orbit.
+    if fresh_substrate {
+        println!("--> --fresh-substrate: cold-starting dynamical state (random substrate)");
+    } else if let Ok(loaded) = candle_core::safetensors::load(&substrate_path, &device) {
+        let pick = |name: &str, dims: &[usize]| -> Option<Tensor> {
+            match loaded.get(name) {
+                Some(t) if t.dims() == dims && tensor_finite(t) => Some(t.clone()),
+                _ => None,
+            }
+        };
+        let mut n = 0usize;
+        if let Some(t) = pick("micro_tape", &[1, CA_CHANNELS, TAPE_LEN]) { micro_tape = t; n += 1; }
+        if let Some(t) = pick("macro_tape", &[1, CA_CHANNELS, TAPE_LEN]) { macro_tape = t; n += 1; }
+        if let Some(t) = pick("hidden_mem", &[1, MEMORY_DIM]) { hidden_mem = t; n += 1; }
+        if let Some(t) = pick("phase_c_l", &[1]) { phase_c_l = t.reshape(()).map_err(anyhow::Error::msg)?; n += 1; }
+        if let Some(t) = pick("phase_c_r", &[1]) { phase_c_r = t.reshape(()).map_err(anyhow::Error::msg)?; n += 1; }
+        if let Some(t) = pick("phase_m_l", &[1]) { phase_m_l = t.reshape(()).map_err(anyhow::Error::msg)?; n += 1; }
+        if let Some(t) = pick("phase_m_r", &[1]) { phase_m_r = t.reshape(()).map_err(anyhow::Error::msg)?; n += 1; }
+        n += model.import_carried(&loaded);
+        println!("--> Substrate restored: {} entries from {}", n, substrate_path);
+        if !no_kick {
+            micro_tape = levy_radiate(&micro_tape, rad_amp).map_err(anyhow::Error::msg)?;
+            println!("--> Substrate Lévy kick applied (rad_amp {:.3}) to avoid orbit lock-in", rad_amp);
+        }
+    } else {
+        println!("--> No substrate at {} — cold-starting dynamical state", substrate_path);
+    }
+
     let total_chunks = (SAMPLE_RATE as f32 * DURATION_SECONDS / CHUNK_SIZE as f32) as usize;
     let mut audio_frames: Vec<i16> = Vec::with_capacity(total_chunks * CHUNK_SIZE * 2);
     let mut topology_history = Vec::new();
@@ -1595,10 +1782,19 @@ fn main() -> Result<()> {
     let mut steps_in_window = 0usize;
     let mut latest_lr_gain = 1.0f64;
 
+    // Cross-run health (EMA of bounded mimic) + divergence-skip counter.
+    let mut health_ema = loaded_health.unwrap_or(0.5);
+    let mut nonfinite_skips = 0u32;
+
     // Controller training state
     let mut prev_pred: Option<Tensor> = None;          // defib prediction from last step
     let mut prev_loss_vec = [0.0f32; 7];               // arbiter learning-progress baseline
     let mut prev_movement = 0.0f32;
+    // Slow EMA of raw mimic loss (alpha=0.001, ~693-step half-life) used by the
+    // defibrillator: fires when current mimic is >20% above this long-term baseline,
+    // which correctly detects sustained plateaus that the fast morph-baseline (alpha=0.005)
+    // masks by adapting to (making mimic_drift_n → 0.5 and the old >0.6 check dead).
+    let mut slow_mimic_ema = 0.5f32;
 
     for step in 0..total_chunks {
         let aperture = uncertainty.branch_aperture();
@@ -1632,15 +1828,14 @@ fn main() -> Result<()> {
         // Scale Invariance Constraint (true RG block decimation now)
         let coarse_micro = decimate2(&next_micro).map_err(anyhow::Error::msg)?;
         let coarse_macro = decimate2(&next_macro).map_err(anyhow::Error::msg)?;
-        let detached_macro = coarse_macro.detach();
-        let rg_loss = coarse_micro.sub(&detached_macro)?.sqr()?.mean_all()?;
+        let detached_micro = coarse_micro.detach();
+        let rg_loss = coarse_macro.sub(&detached_micro)?.sqr()?.mean_all()?;
 
         // --------------------------------------------------
         // PERCEPTUAL MIMIC LOSS (log-magnitude spectral MSE)
         // --------------------------------------------------
         let target_chunk = target_loader.sample_chunk(&device).map_err(anyhow::Error::msg)?; // (2, CHUNK)
-        let age_factor = (total_complexity / 500.0).min(0.6);
-        let audio_for_loss = stereo_chunk.tanh().map_err(anyhow::Error::msg)?.affine((1.0 - age_factor) as f64, 0.0)?;
+        let audio_for_loss = stereo_chunk.tanh().map_err(anyhow::Error::msg)?;
 
         let out_spec_l = spec_proj.log_mag(&audio_for_loss.narrow(0, 0, 1).map_err(anyhow::Error::msg)?).map_err(anyhow::Error::msg)?;
         let out_spec_r = spec_proj.log_mag(&audio_for_loss.narrow(0, 1, 1).map_err(anyhow::Error::msg)?).map_err(anyhow::Error::msg)?;
@@ -1692,7 +1887,11 @@ fn main() -> Result<()> {
         let roughness_loss_val = first_metrics_vec[6];
         let current_var_val = first_metrics_vec[7];
         let movement_loss_val = first_metrics_vec[8];
-        let mimic_drift_n = mimic_drift / (1.0 + mimic_drift);
+        let base = morph_baseline.unwrap_or(1.0);
+        let mimic_drift_n = mimic_drift / (mimic_drift + base);
+        slow_mimic_ema = slow_mimic_ema * 0.999 + mimic_drift * 0.001;
+        // Cross-run health: EMA of the bounded mimic signal (lower = better).
+        health_ema = health_ema * (1.0 - HEALTH_EMA_ALPHA) + mimic_drift_n * HEALTH_EMA_ALPHA;
 
         total_complexity += movement;
 
@@ -1732,7 +1931,7 @@ fn main() -> Result<()> {
 
         let mut morph_event: Option<&str> = None;
         if step < MORPH_WARMUP {
-            warmup_sum += mimic_drift_n;
+            warmup_sum += mimic_drift;
         } else {
             if morph_baseline.is_none() {
                 let b = (warmup_sum / MORPH_WARMUP as f32).max(1e-4);
@@ -1743,9 +1942,9 @@ fn main() -> Result<()> {
             // EMA update: let the baseline track the evolving loss landscape
             // so grow/prune thresholds stay relevant (half-life ≈ 139 steps).
             if let Some(ref mut b) = morph_baseline {
-                *b = *b * 0.995 + mimic_drift_n * 0.005;
+                *b = *b * 0.995 + mimic_drift * 0.005;
             }
-            morph_history.push(mimic_drift_n);
+            morph_history.push(mimic_drift);
             let patience = MORPH_PATIENCE_BASE + model.depth() * 2;
             if morph_history.len() >= patience {
                 let avg = morph_history.iter().sum::<f32>() / morph_history.len() as f32;
@@ -1856,7 +2055,11 @@ fn main() -> Result<()> {
         // --------------------------------------------------
         // TOTAL LOSS ASSEMBLY (on GPU)
         // --------------------------------------------------
-        let lw = w_graph.reshape((7,))?.affine(7.0, 0.0)?;
+        // Weights applied to losses are DETACHED, per the AudioArbiter
+        // contract: the arbiter must not be able to shrink total loss by
+        // zeroing hard objectives. It learns ONLY via arb_progress_loss
+        // (learning-progress allocation) + the entropy regularizer.
+        let lw = w_graph.detach().reshape((7,))?.affine(7.0, 0.0)?;
         let l0 = lw.get(0)?;
         let l1 = lw.get(1)?;
         let l2 = lw.get(2)?;
@@ -1896,12 +2099,12 @@ fn main() -> Result<()> {
             distance_to_horizon.powf(CHOPTUIK_EXPONENT)
         };
 
-        if (movement < thresh || mimic_drift_n > 0.6) && burst_ticks == 0 && burst_cooldown == 0 {
+        if (movement < thresh || mimic_drift > slow_mimic_ema * 1.2) && burst_ticks == 0 && burst_cooldown == 0 {
             burst_ticks = 8;
             burst_energy = n_scale;
         }
 
-        let phi_gate = 1.0 / (1.0 + phi);
+        let phi_gate = (1.0 / (1.0 + phi)).max(0.3f32);
         let burst_env = (burst_ticks as f32 / 8.0).sqrt();
         latest_lr_gain = if burst_ticks > 0 {
             ((1.0 + (lr_mult - 1.0) * burst_env) * phi_gate * choptuik_gain) as f64
@@ -1913,8 +2116,18 @@ fn main() -> Result<()> {
         if steps_in_window >= BPTT_WINDOW || step == total_chunks - 1 {
             if let Some(w) = window_loss.take() {
                 let scaled = w.affine(1.0 / steps_in_window as f64, 0.0).map_err(anyhow::Error::msg)?;
-                optimizer.set_learning_rate(BASE_LR * latest_lr_gain);
-                optimizer.backward_step(&scaled).map_err(anyhow::Error::msg)?;
+                // Divergence guard: never feed a non-finite loss into the
+                // optimizer — a single NaN step would poison every weight and,
+                // through the checkpoint, the whole run lineage. Skip the
+                // update and carry the (still-finite) detached state instead.
+                let loss_val = scaled.to_scalar::<f32>().unwrap_or(f32::NAN);
+                if loss_val.is_finite() {
+                    optimizer.set_learning_rate(BASE_LR * latest_lr_gain);
+                    optimizer.backward_step(&scaled).map_err(anyhow::Error::msg)?;
+                } else {
+                    nonfinite_skips += 1;
+                    println!("[GUARD] non-finite window loss at step {} — skipped optimizer update", step);
+                }
             }
             steps_in_window = 0;
             micro_tape = next_micro.detach();
@@ -1928,8 +2141,12 @@ fn main() -> Result<()> {
             phase_c_r = nc_r.detach();
             phase_m_l = nm_l.detach();
             phase_m_r = nm_r.detach();
-            if rand::thread_rng().gen::<f32>() < RADIATE_PROB {
+            let effective_radiate_prob = (RADIATE_PROB * (1.0 + 2.0 * (1.0 - (movement / 0.3).min(1.0)))).min(0.5);
+            if rand::thread_rng().gen::<f32>() < effective_radiate_prob {
                 micro_tape = levy_radiate(&micro_tape, rad_amp).map_err(anyhow::Error::msg)?;
+            }
+            if rand::thread_rng().gen::<f32>() < effective_radiate_prob * 0.4 {
+                macro_tape = levy_radiate(&macro_tape, rad_amp * 0.4).map_err(anyhow::Error::msg)?;
             }
         } else {
             micro_tape = next_micro;
@@ -2014,13 +2231,24 @@ fn main() -> Result<()> {
             let comment = semantic.commentary(phase, None, rad_amp, model.depth());
             if !comment.is_empty() { println!("  · {}", comment); }
         }
-        // Periodic checkpoint: phones die, batteries drain.
+        // Periodic checkpoint, gated by the finiteness + non-regression guard
+        // so a diverged or worse-than-baseline run can never overwrite the last
+        // good generation (weights + substrate + morph are promoted as a unit).
         if step > 0 && step % 500 == 0 {
-            if varmap.save(&model_path).is_ok() {
-                let _ = std::fs::write(&morph_path, serde_json::json!({
-                    "active_depth": model.depth(), "rad_amp": rad_amp
-                }).to_string());
-                println!("--> Checkpoint saved at step {} (L{:02}, rad {:.3})", step, model.depth(), rad_amp);
+            let regressed = loaded_health.map_or(false, |h| health_ema > h * (1.0 + HEALTH_REGRESS_TOL));
+            if !varmap_all_finite(&varmap) {
+                println!("[GUARD] step {}: non-finite weights — refusing checkpoint (last good kept)", step);
+            } else if regressed {
+                println!("[GUARD] step {}: health regressed ({:.3} > {:.3}) — promotion skipped",
+                    step, health_ema, loaded_health.unwrap() * (1.0 + HEALTH_REGRESS_TOL));
+            } else {
+                match promote_generation(&model_path, &morph_path, &substrate_path, &varmap, &model,
+                    &micro_tape, &macro_tape, &hidden_mem, &phase_c_l, &phase_c_r, &phase_m_l, &phase_m_r,
+                    rad_amp, model.depth(), health_ema) {
+                    Ok(()) => println!("--> Checkpoint promoted at step {} (L{:02}, rad {:.3}, health {:.3})",
+                        step, model.depth(), rad_amp, health_ema),
+                    Err(e) => println!("[GUARD] step {}: checkpoint failed: {}", step, e),
+                }
             }
         }
     }
@@ -2072,13 +2300,27 @@ fn main() -> Result<()> {
     writer.finalize()?;
     println!("Audio saved to {}/rust_ecosystem_out.wav", base_dir);
 
-    varmap.save(&model_path).map_err(anyhow::Error::msg)?;
-    let _ = std::fs::write(&morph_path, serde_json::json!({
-        "active_depth": model.depth(), "rad_amp": rad_amp
-    }).to_string());
-    let metadata = std::fs::metadata(&model_path)?;
-    println!("Model saved to {} (L{:02}, rad {:.3}). Size: {:.2} MB",
-        model_path, model.depth(), rad_amp, metadata.len() as f32 / 1_048_576.0);
+    // Final promotion, same finiteness + non-regression guard as the periodic
+    // checkpoint: a diverged or worse-than-baseline run preserves the last good
+    // generation instead of overwriting it.
+    let regressed = loaded_health.map_or(false, |h| health_ema > h * (1.0 + HEALTH_REGRESS_TOL));
+    if !varmap_all_finite(&varmap) {
+        println!("[GUARD] final: non-finite weights — NOT saving (last good generation preserved)");
+    } else if regressed {
+        println!("[GUARD] final: health regressed ({:.3} > {:.3}) — NOT promoting (last good preserved)",
+            health_ema, loaded_health.unwrap() * (1.0 + HEALTH_REGRESS_TOL));
+    } else {
+        promote_generation(&model_path, &morph_path, &substrate_path, &varmap, &model,
+            &micro_tape, &macro_tape, &hidden_mem, &phase_c_l, &phase_c_r, &phase_m_l, &phase_m_r,
+            rad_amp, model.depth(), health_ema)?;
+        if let Ok(metadata) = std::fs::metadata(&model_path) {
+            println!("Model + substrate saved to {} (L{:02}, rad {:.3}, health {:.3}). Size: {:.2} MB",
+                model_path, model.depth(), rad_amp, health_ema, metadata.len() as f32 / 1_048_576.0);
+        }
+    }
+    if nonfinite_skips > 0 {
+        println!("--> NOTE: {} optimizer update(s) skipped this run due to non-finite loss.", nonfinite_skips);
+    }
 
     Ok(())
 }
