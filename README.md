@@ -17,8 +17,10 @@ The Titan Audio Ecosystem treats audio synthesis as an **emergent biological pro
 - **Information-Theoretic Regularization:**
   - **Synergy / Empowerment:** Mutual information and transition entropy are calculated and optimized within the graph.
   - **Self-Model (Monitor Head):** A sub-network attempts to predict the system's own interoceptive state.
-- **Learning-Progress Arbiter:** The multi-objective loss function is dynamically re-weighted by an Arbiter that receives meta-rewards for improving losses.
+- **Learning-Progress Arbiter:** The multi-objective loss function is dynamically re-weighted by an Arbiter that receives meta-rewards for improving losses. The weights it applies to the losses are **detached** — the Arbiter is trained purely on learning-progress allocation plus an entropy regularizer, so it cannot cheat by zeroing out hard objectives.
 - **Predictive Defibrillator:** Foresees stagnation and applies targeted Choptuik criticality-seeking learning rate bursts.
+- **Cross-Run Continuity:** The dynamical substrate (CA tapes, GRU memory, oscillator phases, carried synthesis scalars) **persists across runs** alongside the weights, so the organism continues its trajectory instead of cold-starting from noise each launch.
+- **Divergence-Safe Persistence:** A non-finite loss never reaches the optimizer, and checkpoints are written atomically and only **promoted** when finite and non-regressing — a generational `.prev` backup makes any bad save recoverable.
 
 ## Synthesis Signal Flow
 
@@ -45,25 +47,41 @@ GRU Memory (512) ──── Morphic Stack (dynamic depth) ────> Differ
 ### Prerequisites
 
 - Rust and Cargo installed.
-- Target audio `.wav` files in `Desktop/OLD_WAVS/` (or specify via CLI).
-- A capable CUDA device (e.g., GTX 1080 Ti).
+- A capable CUDA device (e.g., GTX 1080 Ti, `sm_61`).
+- Target audio `.wav` files placed **directly in the base/working directory** you pass on the command line. All outputs and checkpoints are also written there.
 
 ### Building and Running
 
+Use the build wrapper, which activates the micromamba CUDA-12.4 / gcc-12 / `sm_61`
+toolchain and sets the cudarc/bindgen environment:
+
 ```bash
-cargo build --release
-./target/release/titan_audio_ecosystem /path/to/base_dir
+./build.sh                 # cargo build --release
+./build.sh run -- /path/to/base_dir
+./build.sh check           # fast type-check, no CUDA kernel compile
 ```
 
-*(By default, the engine will look for WAVs in `/sdcard/Download/Desktop/OLD_WAVS/` if no path is provided. Pass your workspace path as the first argument).*
+The first non-flag argument is the base/working directory (also the WAV source).
+If omitted, it defaults to `/home/anon/Downloads`.
+
+**Flags:**
+
+| Flag | Effect |
+|---|---|
+| `--fresh-substrate` | Cold-start the dynamical state (ignore any saved substrate). |
+| `--no-substrate-kick` | Skip the on-load Lévy nudge applied to the restored substrate. |
 
 ### Outputs
+
+All written to the base directory:
 
 | File | Description |
 |---|---|
 | `rust_ecosystem_out.wav` | Resulting generative audio. |
 | `titan_model_beta.safetensors` | Persisted model weights. |
+| `titan_substrate.safetensors` | Persisted dynamical substrate (CA tapes, GRU memory, phases, carried synthesis scalars) — enables cross-run continuity. |
+| `titan_morph_state.json` | Morphic-stack active depth, radiation amplitude (`rad_amp`), and the run-health metric used by the non-regression checkpoint gate. |
+| `*.prev` | Generational backup of the previous good weights / substrate / morph state. |
 | `ca_topology_rust.csv` | Macro-CA state history. |
 | `uncertainty_trace_rust.csv` | System health metrics (Spectral, Movement, etc.). |
 | `suno_priming_prompt.txt` | Generative primer text based on engine analytics. |
-| `morph_state.json` | Stores the current active depth of the Morphic Stack. |
