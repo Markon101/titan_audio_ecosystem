@@ -13,3 +13,7 @@ target/
 .antigravitycli/
 .virtfs_metadata/
 .env
+
+# Working / agent notes (README.md stays tracked)
+Claude-Notes-*.md
+GEMINI_NOTES*.md
