@@ -68,8 +68,9 @@
 //   ./build.sh check       # fast type-check, no CUDA kernel compile
 //
 // Runtime flags: --base-dir/-b, --duration/-d, --lr/-l, --bptt/-w, --threads/-t,
-// --fresh/-f (random init; implies --fresh-substrate), --fresh-substrate,
-// --no-substrate-kick. First bare argument = base dir. See README for details.
+// --fx on|off, --fresh/-f (random init; implies --fresh-substrate),
+// --fresh-substrate, --no-substrate-kick. First bare argument = base dir.
+// See README for details.
 //
 // Cargo.toml [profile.release]: lto = "thin", codegen-units = 1,
 // opt-level = 3, panic = "abort".
@@ -1787,9 +1788,11 @@ impl ComplexAudioEcosystem {
         let pan_t = self.spatial_panner.forward(&refined_hidden).map_err(anyhow::Error::msg)?
             .reshape(()).map_err(anyhow::Error::msg)?
             .clamp(-0.5f32, 0.5f32).map_err(anyhow::Error::msg)?;
-        let pan_t_scalar = pan_t.to_scalar::<f32>().unwrap_or(0.0);
-        let width_val = 1.0 + pan_t_scalar.abs() * 0.8;
-        let side_wide = side.affine(width_val as f64, 0.0)?;
+        // Width stays in-graph: the old to_scalar() here forced a full GPU pipeline
+        // flush in the middle of every forward pass (and detached width from the
+        // gradient). broadcast_mul with 1 + 0.8*|pan| is the same math, no sync.
+        let width_t = pan_t.abs()?.affine(0.8, 1.0)?;
+        let side_wide = side.broadcast_mul(&width_t)?;
         let side_delayed = apply_haas_delay(&side_wide, 16).map_err(anyhow::Error::msg)?;
 
         let audio_l = mid.add(&side_delayed)?;
@@ -1898,7 +1901,8 @@ impl AudioArbiter {
 // ==========================================
 fn main() -> Result<()> {
     // CLI: first non-flag arg is the base/working dir (also the WAV source).
-    // Value flags: --base-dir/-b, --threads/-t, --lr/-l, --duration/-d, --bptt/-w
+    // Value flags: --base-dir/-b, --threads/-t, --lr/-l, --duration/-d, --bptt/-w,
+    //              --fx on|off         (render FX chain: QNM resonators + FDN reverb)
     // Boolean:     --fresh/-f          (ignore weight checkpoint + morph sidecar)
     //              --fresh-substrate   (cold-start the dynamical state)
     //              --no-substrate-kick (skip the on-load Lévy nudge)
@@ -1911,6 +1915,7 @@ fn main() -> Result<()> {
     let mut fresh_start = false;
     let mut fresh_substrate = false;
     let mut no_kick = false;
+    let mut fx_enabled = true;
     let mut arg_idx = 1;
     while arg_idx < args.len() {
         match args[arg_idx].as_str() {
@@ -1919,6 +1924,16 @@ fn main() -> Result<()> {
             "--lr" | "-l" => { if arg_idx + 1 < args.len() { target_lr = args[arg_idx + 1].parse::<f64>()?; arg_idx += 2; } else { anyhow::bail!("Missing value for --lr"); } }
             "--duration" | "-d" => { if arg_idx + 1 < args.len() { sim_duration = args[arg_idx + 1].parse::<f32>()?; arg_idx += 2; } else { anyhow::bail!("Missing value for --duration"); } }
             "--bptt" | "-w" => { if arg_idx + 1 < args.len() { bptt_window = args[arg_idx + 1].parse::<usize>()?.max(1); arg_idx += 2; } else { anyhow::bail!("Missing value for --bptt"); } }
+            "--fx" => {
+                if arg_idx + 1 < args.len() {
+                    fx_enabled = match args[arg_idx + 1].as_str() {
+                        "on" | "true" | "1" => true,
+                        "off" | "false" | "0" => false,
+                        other => anyhow::bail!("Invalid value for --fx: {} (expected on|off)", other),
+                    };
+                    arg_idx += 2;
+                } else { anyhow::bail!("Missing value for --fx (expected on|off)"); }
+            }
             "--fresh" | "-f" => { fresh_start = true; arg_idx += 1; }
             "--fresh-substrate" => { fresh_substrate = true; arg_idx += 1; }
             "--no-substrate-kick" => { no_kick = true; arg_idx += 1; }
@@ -1935,8 +1950,9 @@ fn main() -> Result<()> {
     rayon::ThreadPoolBuilder::new().num_threads(n_threads).build_global()?;
     let device = Device::new_cuda(0).unwrap_or(Device::Cpu);
     println!("=== TITAN AUDIO ECOSYSTEM: RUST EDITION (GRADIENT-COHERENT RELEASE) ===");
-    println!("Threads: {} | BPTT window: {} | Tape: {}x{} | CA hidden: {} | Base LR: {:.2e} | Duration: {}s",
-        n_threads, bptt_window, CA_CHANNELS, TAPE_LEN, CA_CHANNELS * CA_HIDDEN_MULT, target_lr, sim_duration);
+    println!("Threads: {} | BPTT window: {} | Tape: {}x{} | CA hidden: {} | Base LR: {:.2e} | Duration: {}s | FX: {}",
+        n_threads, bptt_window, CA_CHANNELS, TAPE_LEN, CA_CHANNELS * CA_HIDDEN_MULT, target_lr, sim_duration,
+        if fx_enabled { "on" } else { "off (dry render)" });
 
     let wav_dir = base_dir.clone();
     let model_path = format!("{}/titan_model_beta.safetensors", base_dir);
@@ -2086,6 +2102,8 @@ fn main() -> Result<()> {
     let mut tapes_corrupt = false;
     // Chunk scores for the highlight exporter (see end of run).
     let mut chunk_scores: Vec<f32> = Vec::with_capacity(total_chunks);
+    // Sliding window for the branching-ratio proxy sigma (see below at extraction).
+    let mut movement_hist: VecDeque<f32> = VecDeque::with_capacity(64);
     let timer_start = std::time::Instant::now();
     let mut profiling_lap = std::time::Instant::now();
 
@@ -2198,6 +2216,9 @@ fn main() -> Result<()> {
             &next_macro.abs()?.mean_all()?.reshape((1,))?,
             &model.current_freq_l.reshape((1,))?,
             &model.current_freq_r.reshape((1,))?,
+            // Per-channel field summary for the archetype/semantic readout rides the
+            // same copy (was a separate 144-float sync of its own).
+            &next_micro.mean(D::Minus1)?.reshape((CA_CHANNELS,))?,
         ], 0)?;
         let first_metrics_vec = first_metrics.to_vec1::<f32>()?;
         let movement = first_metrics_vec[0];
@@ -2238,14 +2259,32 @@ fn main() -> Result<()> {
 
         total_complexity += movement;
 
+        // Branching-ratio proxy sigma: lag-1 autoregression slope of the movement
+        // series over a 64-step window (Wilting–Priesemann MR-estimator, single-lag
+        // form). sigma < 1 subcritical (activity decays), sigma ~ 1 critical, > 1
+        // supercritical. INSTRUMENTATION ONLY for now — the natural next step is
+        // feeding |sigma - 1| to the Choptuik criticality gain in place of the
+        // movement-distance heuristic, but that waits until a run confirms sigma
+        // carries the structure the old frozen phi lacked.
+        movement_hist.push_back(movement);
+        if movement_hist.len() > 64 { movement_hist.pop_front(); }
+        let branching = if movement_hist.len() >= 8 {
+            let mh: Vec<f32> = movement_hist.iter().copied().collect();
+            let (mut num, mut den) = (0.0f32, 0.0f32);
+            for i in 1..mh.len() { num += mh[i] * mh[i - 1]; den += mh[i - 1] * mh[i - 1]; }
+            num / (den + 1e-8)
+        } else { 1.0 };
+
         // Render path normalization on GPU, then a single copy to CPU
         let boost_target = if abs_max < 0.25 { (0.25 / (abs_max + 1e-6)).clamp(1.0, 4.0) } else { 1.0 };
         boost_state = boost_state * 0.9 + boost_target * 0.1;
         let audio_normalized = audio_for_loss.affine(boost_state as f64, 0.0)?;
         
-        let audio_vec = audio_normalized.to_vec2::<f32>()?;
-        let mut audio_l = audio_vec[0].clone();
-        let mut audio_r = audio_vec[1].clone();
+        // Consume the transferred rows instead of cloning them (saves two 2048-float
+        // copies per step on the render path).
+        let mut audio_vec = audio_normalized.to_vec2::<f32>()?.into_iter();
+        let mut audio_l = audio_vec.next().unwrap_or_default();
+        let mut audio_r = audio_vec.next().unwrap_or_default();
         
         let mut mono = vec![0.0f32; CHUNK_SIZE];
         for i in 0..CHUNK_SIZE {
@@ -2262,8 +2301,9 @@ fn main() -> Result<()> {
         // --------------------------------------------------
         // SEMANTIC FIELD + MORPHOLOGICAL HOMEOSTASIS
         // --------------------------------------------------
-        // Telemetry decoupling: derive archetype summary from spatial averages
-        let field_summary = next_micro.mean(D::Minus1)?.reshape((CA_CHANNELS,))?.to_vec1::<f32>()?;
+        // Telemetry decoupling: archetype summary from the per-channel averages that
+        // arrived in the batched first_metrics copy (indices 15..15+CA_CHANNELS).
+        let field_summary = &first_metrics_vec[15..15 + CA_CHANNELS];
         let field01: Vec<f32> = field_summary.iter().map(|&x| (x + 1.0) * 0.5).collect();
         let (arch_summary, field_entropy, dom_arch) = SemanticField::archetype_field(&field01);
         let phase = SemanticField::phase(mimic_drift_n);
@@ -2332,22 +2372,19 @@ fn main() -> Result<()> {
             println!("  ◄ {} ►  {}", ev, line);
         }
 
-        // Predict state and calculate monitor head loss on GPU
-        let pred_state = monitor_head.forward(&refined_hidden)?;
-        let observed_state = Tensor::new(
-            &[
-                uncertainty.spectral.clamp(0.0, 1.0),
-                (uncertainty.movement / 2.0).clamp(0.0, 1.0),
-                uncertainty.mimic.clamp(0.0, 1.0),
-                aperture.clamp(0.0, 1.0),
-                (synergy_val / 5.0).clamp(0.0, 1.0),
-            ],
-            &device,
-        )?.unsqueeze(0)?;
-        let self_model_loss = pred_state.sub(&observed_state)?.sqr()?.mean_all()?;
-
-        // Run Arbiter
-        let arb_features = Tensor::new(&[
+        // Batched host->device upload: monitor observation (5), arbiter features (14),
+        // defib features (7), and the defib prediction target (2) travel as ONE
+        // 28-float copy, then are sliced into views on the GPU. Previously four
+        // separate Tensor::new() uploads, each its own transfer + kernel setup.
+        let progress = step as f32 / total_chunks as f32;
+        let host_feats = Tensor::new(&[
+            // observed_state [0..5]
+            uncertainty.spectral.clamp(0.0, 1.0),
+            (uncertainty.movement / 2.0).clamp(0.0, 1.0),
+            uncertainty.mimic.clamp(0.0, 1.0),
+            aperture.clamp(0.0, 1.0),
+            (synergy_val / 5.0).clamp(0.0, 1.0),
+            // arb_features [5..19]
             rms_val,
             mimic_drift_n,
             movement / 0.3,
@@ -2359,29 +2396,38 @@ fn main() -> Result<()> {
             uncertainty.mimic,
             uncertainty.compositional,
             aperture,
-            step as f32 / total_chunks as f32,
+            progress,
             phi / 10.0,
             theta / std::f32::consts::PI,
-        ], &device).map_err(anyhow::Error::msg)?.unsqueeze(0).map_err(anyhow::Error::msg)?;
-
-        let (w_graph, arb_entropy_loss) = arbiter.forward(&arb_features)?;
-
-        // Run Defibrillator
-        let defib_features = Tensor::new(&[
+            // defib_features [19..26]
             movement,
             movement - prev_movement,
             mimic_drift_n,
             rms_val,
             aperture,
             phi / 10.0,
-            step as f32 / total_chunks as f32,
-        ], &device).map_err(anyhow::Error::msg)?.unsqueeze(0).map_err(anyhow::Error::msg)?;
+            progress,
+            // defib prediction target [26..28]
+            (movement / 0.3).clamp(0.0, 1.0),
+            mimic_drift_n,
+        ], &device).map_err(anyhow::Error::msg)?;
+
+        // Predict state and calculate monitor head loss on GPU
+        let pred_state = monitor_head.forward(&refined_hidden)?;
+        let observed_state = host_feats.narrow(0, 0, 5)?.unsqueeze(0)?;
+        let self_model_loss = pred_state.sub(&observed_state)?.sqr()?.mean_all()?;
+
+        // Run Arbiter
+        let arb_features = host_feats.narrow(0, 5, 14)?.unsqueeze(0)?;
+        let (w_graph, arb_entropy_loss) = arbiter.forward(&arb_features)?;
+
+        // Run Defibrillator
+        let defib_features = host_feats.narrow(0, 19, 7)?.unsqueeze(0)?;
         prev_movement = movement;
         let (pred_t, thresh_t, n_scale_t, lr_mult_t) = defib_ctrl.forward(&defib_features)?;
 
         let defib_pred_loss = if let Some(p) = prev_pred.take() {
-            let obs = Tensor::new(&[(movement / 0.3).clamp(0.0, 1.0), mimic_drift_n], &device)
-                .map_err(anyhow::Error::msg)?.unsqueeze(0).map_err(anyhow::Error::msg)?;
+            let obs = host_feats.narrow(0, 26, 2)?.unsqueeze(0)?;
             Some(p.sub(&obs)?.sqr()?.mean_all()?)
         } else { None };
         prev_pred = Some(pred_t);
@@ -2574,11 +2620,15 @@ fn main() -> Result<()> {
         // not the room)
         // --------------------------------------------------
 
-        qnm_resonators.process(&mut audio_l, &mut audio_r, phi);
+        // --fx off gives a dry render (the raw synthesized voice, no room) and
+        // skips the per-sample IIR work entirely.
+        if fx_enabled {
+            qnm_resonators.process(&mut audio_l, &mut audio_r, phi);
 
-        let echo_aperture = aperture.min(0.7);
-        fractal_fdn_l.process(&mut audio_l, echo_aperture);
-        fractal_fdn_r.process(&mut audio_r, echo_aperture);
+            let echo_aperture = aperture.min(0.7);
+            fractal_fdn_l.process(&mut audio_l, echo_aperture);
+            fractal_fdn_r.process(&mut audio_r, echo_aperture);
+        }
 
         for i in 0..CHUNK_SIZE {
             audio_frames.push(audio_l[i]);
@@ -2605,7 +2655,8 @@ fn main() -> Result<()> {
                 "flatness": uncertainty.flatness,
                 "brightness": s_sig["brightness"].as_f64().unwrap_or(0.0),
                 "q_norm": ds.q_norm, "lock": ds.lock,
-                "macro_amp": macro_abs, "micro_amp": micro_amp
+                "macro_amp": macro_abs, "micro_amp": micro_amp,
+                "branching": branching
             }));
         }
         if step % 50 == 0 {
@@ -2762,7 +2813,7 @@ fn main() -> Result<()> {
     topo_writer.flush()?;
 
     let mut unc_writer = csv::Writer::from_path(format!("{}/uncertainty_trace_rust.csv", base_dir))?;
-    unc_writer.write_record(&["step", "spectral", "movement", "compositional", "aperture", "synergy", "empowerment", "phi", "flatness", "brightness", "q_norm", "lock", "macro_amp", "micro_amp"])?;
+    unc_writer.write_record(&["step", "spectral", "movement", "compositional", "aperture", "synergy", "empowerment", "phi", "flatness", "brightness", "q_norm", "lock", "macro_amp", "micro_amp", "branching"])?;
     for trace in uncertainty_trace {
         unc_writer.write_record(&[
             trace["step"].to_string(), trace["spectral"].to_string(), trace["movement"].to_string(),
@@ -2770,7 +2821,8 @@ fn main() -> Result<()> {
             trace["synergy"].to_string(), trace["empowerment"].to_string(),
             trace["phi"].to_string(), trace["flatness"].to_string(), trace["brightness"].to_string(),
             trace["q_norm"].to_string(), trace["lock"].to_string(),
-            trace["macro_amp"].to_string(), trace["micro_amp"].to_string()
+            trace["macro_amp"].to_string(), trace["micro_amp"].to_string(),
+            trace["branching"].to_string()
         ])?;
     }
     unc_writer.flush()?;

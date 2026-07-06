@@ -79,6 +79,7 @@ If omitted, it defaults to `/home/anon/Downloads`.
 | `--lr RATE`, `-l RATE` | Base AdamW learning rate (default `1.3e-3`); the Choptuik/defib gains multiply this. |
 | `--bptt N`, `-w N` | Truncated-BPTT window in chunks (default `4`). Larger = more temporal credit, more VRAM. |
 | `--threads N`, `-t N` | Rayon thread count (default: all cores). Mostly affects the CPU DSP/analysis path. |
+| `--fx on\|off` | Render FX chain — QNM resonator bank + fractal FDN reverb (default `on`). `off` renders the raw synthesized voice dry and skips the per-sample IIR work. Training is unaffected either way: the mimic loss is computed pre-FX by design. |
 | `--fresh`, `-f` | Ignore the weight checkpoint and morph sidecar — train from random init. Implies `--fresh-substrate`. |
 | `--fresh-substrate` | Cold-start the dynamical state (ignore any saved substrate). |
 | `--no-substrate-kick` | Skip the on-load Lévy nudge applied to the restored substrate. |
@@ -102,7 +103,7 @@ All written to the base directory:
 | `titan_morph_state.json` | Morphic-stack active depth, radiation amplitude (`rad_amp`), and the run-health metric used by the non-regression checkpoint gate. |
 | `*.prev` | Generational backup of the previous good weights / substrate / morph state. |
 | `ca_topology_rust.csv` | Macro-CA state history. |
-| `uncertainty_trace_rust.csv` | System health metrics: spectral/movement/compositional uncertainty, aperture, synergy, empowerment, phi, flatness, brightness, disruption q-norm/lock, and tape amplitudes. |
+| `uncertainty_trace_rust.csv` | System health metrics: spectral/movement/compositional uncertainty, aperture, synergy, empowerment, phi, flatness, brightness, disruption q-norm/lock, tape amplitudes, and the branching-ratio σ (criticality proxy: <1 subcritical, ~1 critical, >1 supercritical). |
 | `suno_priming_prompt.txt` | Generative primer text — leads with perceptual features (BPM, tonal centroid, stereo width) followed by engine analytics. |
 
 The console additionally reports a rolling steps-per-second figure every 50 chunks
