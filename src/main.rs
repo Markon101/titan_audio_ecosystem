@@ -67,6 +67,10 @@
 //   ./build.sh run -- DIR  # cargo run   --release -- DIR
 //   ./build.sh check       # fast type-check, no CUDA kernel compile
 //
+// Runtime flags: --base-dir/-b, --duration/-d, --lr/-l, --bptt/-w, --threads/-t,
+// --fresh/-f (random init; implies --fresh-substrate), --fresh-substrate,
+// --no-substrate-kick. First bare argument = base dir. See README for details.
+//
 // Cargo.toml [profile.release]: lto = "thin", codegen-units = 1,
 // opt-level = 3, panic = "abort".
 //
@@ -801,18 +805,24 @@ impl QNMFilterBank {
 // Hadamard/2 mixing (orthogonal), prime delays, and now a one-pole
 // lowpass in each feedback path so high frequencies decay faster than
 // lows — natural-sounding tails instead of metallic ringing.
+// Ring buffers (flat Vec + wrap index) instead of VecDeque pop/push: no branchy
+// capacity bookkeeping in the per-sample loop, and read/write hit the same slot
+// so the delay line stays a fixed block of memory the optimizer can reason about.
 struct FractalFDN {
-    buffers: Vec<VecDeque<f32>>,
+    buffers: Vec<Vec<f32>>,
+    indices: Vec<usize>,
     lp_states: [f32; FDN_DELAY_LINES],
 }
 
 impl FractalFDN {
     fn new() -> Self {
         let mut buffers = Vec::new();
+        let mut indices = Vec::new();
         for &delay in &FDN_DELAYS {
-            buffers.push(VecDeque::from(vec![0.0; delay]));
+            buffers.push(vec![0.0; delay]);
+            indices.push(0);
         }
-        Self { buffers, lp_states: [0.0; FDN_DELAY_LINES] }
+        Self { buffers, indices, lp_states: [0.0; FDN_DELAY_LINES] }
     }
 
     fn process(&mut self, samples: &mut [f32], echo_weight: f32) {
@@ -823,12 +833,14 @@ impl FractalFDN {
             [0.5, -0.5, -0.5,  0.5],
         ];
         let lp_a = 0.35; // feedback HF damping
+        let lp_b = 1.0 - lp_a;
+        let scale = 0.42 * echo_weight;
 
         for sample in samples.iter_mut() {
             let mut outputs = [0.0; FDN_DELAY_LINES];
             for i in 0..FDN_DELAY_LINES {
-                let raw = self.buffers[i].pop_front().unwrap_or(0.0);
-                self.lp_states[i] = self.lp_states[i] * lp_a + raw * (1.0 - lp_a);
+                let idx = self.indices[i];
+                self.lp_states[i] = self.lp_states[i] * lp_a + self.buffers[i][idx] * lp_b;
                 outputs[i] = self.lp_states[i];
             }
 
@@ -837,7 +849,10 @@ impl FractalFDN {
                 for j in 0..FDN_DELAY_LINES {
                     sum += mix_matrix[i][j] * outputs[j];
                 }
-                self.buffers[i].push_back(*sample + sum * (0.42 * echo_weight));
+                let idx = self.indices[i];
+                self.buffers[i][idx] = *sample + sum * scale;
+                let next_idx = idx + 1;
+                self.indices[i] = if next_idx >= self.buffers[i].len() { 0 } else { next_idx };
             }
 
             let fdn_out = (outputs[0] + outputs[1] + outputs[2] + outputs[3]) * 0.25;
@@ -1271,16 +1286,21 @@ impl KANLayer {
 struct SpectralEntropyMonitor {
     history: VecDeque<f32>,
     window: usize,
+    // Planned once: rustfft's planner does non-trivial factorization/twiddle setup,
+    // and the old code re-planned the same CHUNK_SIZE transform every single step.
+    fft: std::sync::Arc<dyn rustfft::Fft<f32>>,
 }
 
 impl SpectralEntropyMonitor {
-    fn new(window: usize) -> Self { Self { history: VecDeque::with_capacity(window), window } }
+    fn new(window: usize) -> Self {
+        let mut planner = FftPlanner::new();
+        let fft = planner.plan_fft_forward(CHUNK_SIZE);
+        Self { history: VecDeque::with_capacity(window), window, fft }
+    }
     fn analyze(&mut self, mono: &[f32]) -> Result<serde_json::Value> {
         let n = mono.len();
-        let mut planner = FftPlanner::new();
-        let fft = planner.plan_fft_forward(n);
         let mut buffer: Vec<Complex<f32>> = mono.iter().map(|&x| Complex::new(x, 0.0)).collect();
-        fft.process(&mut buffer);
+        self.fft.process(&mut buffer);
         let magnitudes: Vec<f32> = buffer.iter().take(n / 2).map(|c| c.norm()).collect();
         let sum_mag: f32 = magnitudes.iter().sum::<f32>() + 1e-8;
         // Same FFT pass now yields three descriptors instead of one:
@@ -1826,16 +1846,14 @@ impl DefibrillatorController {
     /// Returns (prediction tensor (1,2) in-graph, threshold tensor, noise_scale tensor, lr_multiplier tensor)
     fn forward(&self, features: &Tensor) -> Result<(Tensor, Tensor, Tensor, Tensor)> {
         let raw = self.net.forward(features).map_err(anyhow::Error::msg)?;
-        let pred = candle_nn::ops::sigmoid(&raw.narrow(1, 0, 2).map_err(anyhow::Error::msg)?).map_err(anyhow::Error::msg)?;
-        let ctrl = raw.narrow(1, 2, 3).map_err(anyhow::Error::msg)?.reshape((3,))?;
-        
-        let ctrl0 = ctrl.get(0)?;
-        let ctrl1 = ctrl.get(1)?;
-        let ctrl2 = ctrl.get(2)?;
-        
-        let threshold = ctrl0.neg()?.exp()?.add(&Tensor::new(1.0f32, ctrl.device())?)?.recip()?.affine(0.20, 0.05)?;
-        let noise_scale = ctrl1.neg()?.exp()?.add(&Tensor::new(1.0f32, ctrl.device())?)?.recip()?.affine(1.5, 0.2)?;
-        let lr_multiplier = ctrl2.neg()?.exp()?.add(&Tensor::new(1.0f32, ctrl.device())?)?.recip()?.affine(7.0, 1.0)?;
+        // One sigmoid over the full (1,5) output, then narrow: the old per-element
+        // neg/exp/add/recip chains launched ~15 scalar kernels per step for the same
+        // 1/(1+e^-x) math. Weights and outputs are numerically identical.
+        let sig = candle_nn::ops::sigmoid(&raw).map_err(anyhow::Error::msg)?;
+        let pred = sig.narrow(1, 0, 2).map_err(anyhow::Error::msg)?;
+        let threshold = sig.narrow(1, 2, 1)?.reshape(())?.affine(0.20, 0.05)?;
+        let noise_scale = sig.narrow(1, 3, 1)?.reshape(())?.affine(1.5, 0.2)?;
+        let lr_multiplier = sig.narrow(1, 4, 1)?.reshape(())?.affine(7.0, 1.0)?;
         Ok((pred, threshold, noise_scale, lr_multiplier))
     }
 }
@@ -1879,21 +1897,47 @@ impl AudioArbiter {
 // MAIN RUNTIME LOGIC
 // ==========================================
 fn main() -> Result<()> {
-    let n_threads = std::thread::available_parallelism().map(|n| n.get()).unwrap_or(8);
+    // CLI: first non-flag arg is the base/working dir (also the WAV source).
+    // Value flags: --base-dir/-b, --threads/-t, --lr/-l, --duration/-d, --bptt/-w
+    // Boolean:     --fresh/-f          (ignore weight checkpoint + morph sidecar)
+    //              --fresh-substrate   (cold-start the dynamical state)
+    //              --no-substrate-kick (skip the on-load Lévy nudge)
+    let args: Vec<String> = std::env::args().collect();
+    let mut base_dir = "/home/anon/Downloads".to_string();
+    let mut n_threads = std::thread::available_parallelism().map(|n| n.get()).unwrap_or(8);
+    let mut target_lr = BASE_LR;
+    let mut sim_duration = DURATION_SECONDS;
+    let mut bptt_window = BPTT_WINDOW;
+    let mut fresh_start = false;
+    let mut fresh_substrate = false;
+    let mut no_kick = false;
+    let mut arg_idx = 1;
+    while arg_idx < args.len() {
+        match args[arg_idx].as_str() {
+            "--base-dir" | "-b" => { if arg_idx + 1 < args.len() { base_dir = args[arg_idx + 1].clone(); arg_idx += 2; } else { anyhow::bail!("Missing value for --base-dir"); } }
+            "--threads" | "-t" => { if arg_idx + 1 < args.len() { n_threads = args[arg_idx + 1].parse::<usize>()?; arg_idx += 2; } else { anyhow::bail!("Missing value for --threads"); } }
+            "--lr" | "-l" => { if arg_idx + 1 < args.len() { target_lr = args[arg_idx + 1].parse::<f64>()?; arg_idx += 2; } else { anyhow::bail!("Missing value for --lr"); } }
+            "--duration" | "-d" => { if arg_idx + 1 < args.len() { sim_duration = args[arg_idx + 1].parse::<f32>()?; arg_idx += 2; } else { anyhow::bail!("Missing value for --duration"); } }
+            "--bptt" | "-w" => { if arg_idx + 1 < args.len() { bptt_window = args[arg_idx + 1].parse::<usize>()?.max(1); arg_idx += 2; } else { anyhow::bail!("Missing value for --bptt"); } }
+            "--fresh" | "-f" => { fresh_start = true; arg_idx += 1; }
+            "--fresh-substrate" => { fresh_substrate = true; arg_idx += 1; }
+            "--no-substrate-kick" => { no_kick = true; arg_idx += 1; }
+            other => {
+                if !other.starts_with('-') { base_dir = other.to_string(); }
+                else { println!("Unknown parameter: {}", other); }
+                arg_idx += 1;
+            }
+        }
+    }
+    // A true from-scratch run means fresh weights AND a fresh dynamical state:
+    // random weights driven by an evolved substrate is a mismatched hybrid.
+    if fresh_start { fresh_substrate = true; }
     rayon::ThreadPoolBuilder::new().num_threads(n_threads).build_global()?;
     let device = Device::new_cuda(0).unwrap_or(Device::Cpu);
     println!("=== TITAN AUDIO ECOSYSTEM: RUST EDITION (GRADIENT-COHERENT RELEASE) ===");
-    println!("Threads: {} | BPTT window: {} | Tape: {}x{} | CA hidden: {}",
-        n_threads, BPTT_WINDOW, CA_CHANNELS, TAPE_LEN, CA_CHANNELS * CA_HIDDEN_MULT);
+    println!("Threads: {} | BPTT window: {} | Tape: {}x{} | CA hidden: {} | Base LR: {:.2e} | Duration: {}s",
+        n_threads, bptt_window, CA_CHANNELS, TAPE_LEN, CA_CHANNELS * CA_HIDDEN_MULT, target_lr, sim_duration);
 
-    // CLI: first non-flag arg is the base/working dir (also the WAV source).
-    // Flags: --fresh-substrate  (cold-start the dynamical state)
-    //        --no-substrate-kick (skip the on-load Lévy nudge)
-    let cli: Vec<String> = std::env::args().skip(1).collect();
-    let fresh_substrate = cli.iter().any(|a| a == "--fresh-substrate");
-    let no_kick = cli.iter().any(|a| a == "--no-substrate-kick");
-    let base_dir = cli.iter().find(|a| !a.starts_with("--")).cloned()
-        .unwrap_or_else(|| "/home/anon/Downloads".to_string());
     let wav_dir = base_dir.clone();
     let model_path = format!("{}/titan_model_beta.safetensors", base_dir);
     let substrate_path = format!("{}/titan_substrate.safetensors", base_dir);
@@ -1910,11 +1954,15 @@ fn main() -> Result<()> {
     // Load the checkpoint AFTER the vars exist (see load_into_varmap). The
     // optimizer is built afterward and holds the same Vars, so the loaded
     // values are picked up regardless.
-    if std::path::Path::new(&model_path).exists() {
+    if fresh_start {
+        println!("==> FRESH START (--fresh): ignoring any checkpoint at {} — weights randomly initialized.", model_path);
+    } else if std::path::Path::new(&model_path).exists() {
         match load_into_varmap(&varmap, &model_path, &device) {
-            Ok((hit, miss, mismatch)) => println!(
-                "--> Loaded {} tensors from {} ({} new/uninitialized, {} shape-mismatched)",
-                hit, model_path, miss, mismatch),
+            Ok((hit, miss, mismatch)) => {
+                println!("--> Loaded {} tensors from {} ({} new/uninitialized, {} shape-mismatched)",
+                    hit, model_path, miss, mismatch);
+                if miss == 0 && mismatch == 0 && hit > 0 { println!("    NOTE: every weight came from the checkpoint — to train from scratch, rerun with --fresh"); }
+            }
             Err(e) => println!("--> Could not load {}: {} — starting fresh", model_path, e),
         }
     }
@@ -1923,11 +1971,13 @@ fn main() -> Result<()> {
     let morph_path = format!("{}/titan_morph_state.json", base_dir);
     let mut rad_amp = RAD_AMP_INIT;
     let mut loaded_health: Option<f32> = None;
-    if let Ok(txt) = std::fs::read_to_string(&morph_path) {
-        if let Ok(j) = serde_json::from_str::<serde_json::Value>(&txt) {
-            if let Some(d) = j["active_depth"].as_u64() { model.set_depth(d as usize); }
-            if let Some(r) = j["rad_amp"].as_f64() { rad_amp = (r as f32).clamp(RAD_AMP_MIN, RAD_AMP_MAX); }
-            if let Some(h) = j["health"].as_f64() { loaded_health = Some(h as f32); }
+    if !fresh_start {
+        if let Ok(txt) = std::fs::read_to_string(&morph_path) {
+            if let Ok(j) = serde_json::from_str::<serde_json::Value>(&txt) {
+                if let Some(d) = j["active_depth"].as_u64() { model.set_depth(d as usize); }
+                if let Some(r) = j["rad_amp"].as_f64() { rad_amp = (r as f32).clamp(RAD_AMP_MIN, RAD_AMP_MAX); }
+                if let Some(h) = j["health"].as_f64() { loaded_health = Some(h as f32); }
+            }
         }
     }
     println!("--> Observer depth: L{:02} / {}  ·  rad_amp: {:.3}{}", model.depth(), MORPH_MAX_BLOCKS, rad_amp,
@@ -1946,7 +1996,7 @@ fn main() -> Result<()> {
     let mut warmup_sum = 0.0f32;
     let mut field_entropy_sum = 0.0f64;
     let mut field_entropy_n = 0u64;
-    let mut optimizer = AdamW::new_lr(varmap.all_vars(), BASE_LR).map_err(anyhow::Error::msg)?;
+    let mut optimizer = AdamW::new_lr(varmap.all_vars(), target_lr).map_err(anyhow::Error::msg)?;
 
     let mut micro_tape = Tensor::randn(0.0f32, 1.0f32, (1, CA_CHANNELS, TAPE_LEN), &device).map_err(anyhow::Error::msg)?;
     let mut macro_tape = Tensor::randn(0.0f32, 1.0f32, (1, CA_CHANNELS, TAPE_LEN), &device).map_err(anyhow::Error::msg)?;
@@ -1989,7 +2039,7 @@ fn main() -> Result<()> {
         println!("--> No substrate at {} — cold-starting dynamical state", substrate_path);
     }
 
-    let total_chunks = (SAMPLE_RATE as f32 * DURATION_SECONDS / CHUNK_SIZE as f32) as usize;
+    let total_chunks = (SAMPLE_RATE as f32 * sim_duration / CHUNK_SIZE as f32) as usize;
     // f32 accumulation: quantization/clipping is deferred to a single mastering pass at
     // the end (DC-block + peak-normalize) instead of hard-clipping per sample mid-run.
     let mut audio_frames: Vec<f32> = Vec::with_capacity(total_chunks * CHUNK_SIZE * 2);
@@ -2033,18 +2083,29 @@ fn main() -> Result<()> {
     let mut bursts_fired = 0usize;
     let mut weight_clamp_tick = 0usize;
 
+    let mut tapes_corrupt = false;
+    // Chunk scores for the highlight exporter (see end of run).
+    let mut chunk_scores: Vec<f32> = Vec::with_capacity(total_chunks);
+    let timer_start = std::time::Instant::now();
+    let mut profiling_lap = std::time::Instant::now();
+
     for step in 0..total_chunks {
         // --- BIO-RESET SAFETY MECHANISM ---
         // Prevents a NaN bomb from crashing the organism forever by re-seeding the
         // primordial soup. The checkpoint-time finiteness guard protects the lineage;
-        // this protects the run itself — without it a mid-run NaN excursion in the
-        // carried tapes has no recovery path.
-        let state_check = micro_tape.mean_all()?.add(&macro_tape.mean_all()?)?.to_scalar::<f32>().unwrap_or(f32::NAN);
-        if !state_check.is_finite() {
+        // this protects the run itself. The corruption flag is derived from last
+        // step's batched metrics sync (movement/macro-variance turning non-finite),
+        // so the check costs zero extra GPU→CPU round-trips.
+        if tapes_corrupt {
             println!("! BIO-RESET: Tape corruption detected (NaN). Re-seeding primordial soup.");
             micro_tape = Tensor::randn(0.0f32, 1.0f32, (1, CA_CHANNELS, TAPE_LEN), &device)?;
             macro_tape = Tensor::randn(0.0f32, 1.0f32, (1, CA_CHANNELS, TAPE_LEN), &device)?;
             hidden_mem = Tensor::zeros((1, MEMORY_DIM), DType::F32, &device)?;
+            // The accumulated window graph flows through the corrupted states; drop it
+            // rather than letting NaN gradients reach the optimizer.
+            window_loss = None;
+            steps_in_window = 0;
+            tapes_corrupt = false;
         }
 
         let aperture = uncertainty.branch_aperture();
@@ -2062,7 +2123,6 @@ fn main() -> Result<()> {
         // INFORMATION-THEORETIC RUNTIME ANALYTICS
         // --------------------------------------------------
         let synergy_tensor = calculate_cross_layer_synergy_tensor(&next_micro, &next_macro)?;
-        let synergy_val = synergy_tensor.to_scalar::<f32>().unwrap_or(0.0);
 
         // Empowerment proxy stays IN-GRAPH now: differential entropy of
         // the state transition, so empowerment_loss genuinely shapes the
@@ -2074,7 +2134,6 @@ fn main() -> Result<()> {
         let empowerment_t = cont_entropy_t.affine(1.0, 7.0)?
             .clamp(0.0f32, 5.0f32).map_err(anyhow::Error::msg)?
             .mul(&movement_t.affine(1.0, 1.0)?)?;
-        let empowerment_val = empowerment_t.reshape(())?.to_scalar::<f32>().unwrap_or(0.0);
 
         // Scale Invariance Constraint (true RG block decimation now)
         let coarse_micro = decimate2(&next_micro).map_err(anyhow::Error::msg)?;
@@ -2116,7 +2175,10 @@ fn main() -> Result<()> {
         // Synergy Band Penalty
         let synergy_loss = synergy_tensor.affine(1.0, -(SYNERGY_TARGET as f64))?.sqr()?;
 
-        // First combined copy: get early indicators to CPU
+        // First combined copy: get early indicators to CPU. This is THE control-plane
+        // sync of the step — synergy, empowerment, macro variance, rail proximity, and
+        // the carried frequencies ride along instead of forcing five extra pipeline
+        // stalls of their own later in the loop.
         let abs_max_t = audio_for_loss.abs().map_err(anyhow::Error::msg)?
             .flatten_all().map_err(anyhow::Error::msg)?
             .max(0).map_err(anyhow::Error::msg)?;
@@ -2130,6 +2192,12 @@ fn main() -> Result<()> {
             &roughness_loss.reshape((1,))?,
             &current_var.reshape((1,))?,
             &movement_loss.reshape((1,))?,
+            &synergy_tensor.reshape((1,))?,
+            &empowerment_t.reshape((1,))?,
+            &var_all(&next_macro)?.reshape((1,))?,
+            &next_macro.abs()?.mean_all()?.reshape((1,))?,
+            &model.current_freq_l.reshape((1,))?,
+            &model.current_freq_r.reshape((1,))?,
         ], 0)?;
         let first_metrics_vec = first_metrics.to_vec1::<f32>()?;
         let movement = first_metrics_vec[0];
@@ -2141,6 +2209,20 @@ fn main() -> Result<()> {
         let roughness_loss_val = first_metrics_vec[6];
         let current_var_val = first_metrics_vec[7];
         let movement_loss_val = first_metrics_vec[8];
+        let synergy_val = first_metrics_vec[9];
+        let empowerment_val = first_metrics_vec[10];
+        let macro_var_val = first_metrics_vec[11];
+        // Rail proximity is now the macro abs-mean (phone-validated form): the old
+        // mean(1/(1-|macro|)) blows up as any cell nears the rail and cost an extra
+        // kernel chain + its own sync.
+        let rail_prox = first_metrics_vec[12];
+        let freq_l_val = first_metrics_vec[13];
+        let freq_r_val = first_metrics_vec[14];
+        // Disruption-avoidance operating point, measured once per step from the
+        // batched metrics (previously computed later from two dedicated syncs).
+        let ds = disruptor.update(macro_var_val, synergy_val, rail_prox, step);
+        // Arm the bio-reset for next step if the carried state went non-finite.
+        if !movement.is_finite() || !macro_var_val.is_finite() { tapes_corrupt = true; }
         // FIXED-REFERENCE bounding: the old mimic_drift / (mimic_drift + morph_baseline)
         // was self-referential — morph_baseline EMA-adapts toward mimic_drift, so the
         // ratio converges to ~0.5 in steady state regardless of actual mimicry quality,
@@ -2201,8 +2283,7 @@ fn main() -> Result<()> {
         let curiosity_factor = (stagnation_ticks as f32 / 12.0).min(1.0);
 
         // --- COMPUTE METABOLIC CHARGE SYSTEMS ---
-        let freq_l_val = model.current_freq_l.to_scalar::<f32>().unwrap_or(BASE_FREQ_L);
-        let freq_r_val = model.current_freq_r.to_scalar::<f32>().unwrap_or(BASE_FREQ_R);
+        // freq_l_val / freq_r_val arrive via the batched first_metrics sync above.
         let metabolic_cost = (rms_val * 0.4 + (freq_l_val + freq_r_val) / 6000.0) * 0.012;
         energy_state = (energy_state - metabolic_cost).max(0.12);
         
@@ -2339,13 +2420,6 @@ fn main() -> Result<()> {
             .sum_all().map_err(anyhow::Error::msg)?
             .affine(-0.5, 0.0).map_err(anyhow::Error::msg)?;
 
-        // Compute safety parameters for the Disruption Avoidance Controller
-        let macro_var = var_all(&next_macro)?;
-        let macro_var_val = macro_var.to_scalar::<f32>().unwrap_or(0.0);
-        let macro_dist_rail = next_macro.abs()?.broadcast_sub(&Tensor::new(1.0f32, &device)?)?.abs()?;
-        let rail_prox = macro_dist_rail.recip()?.mean_all()?.to_scalar::<f32>().unwrap_or(1.0);
-        let ds = disruptor.update(macro_var_val, synergy_val, rail_prox, step);
-
         // --------------------------------------------------
         // TOTAL LOSS ASSEMBLY (on GPU)
         // --------------------------------------------------
@@ -2420,12 +2494,12 @@ fn main() -> Result<()> {
         latest_lr_gain *= curiosity_lr_gain;
         latest_lr_gain = latest_lr_gain.max(0.1);
 
-        if steps_in_window >= BPTT_WINDOW || step == total_chunks - 1 {
+        if steps_in_window >= bptt_window || step == total_chunks - 1 {
             if let Some(w) = window_loss.take() {
                 let scaled = w.affine(1.0 / steps_in_window as f64, 0.0).map_err(anyhow::Error::msg)?;
                 let loss_val = scaled.to_scalar::<f32>().unwrap_or(f32::NAN);
                 if loss_val.is_finite() {
-                    optimizer.set_learning_rate(BASE_LR * latest_lr_gain);
+                    optimizer.set_learning_rate(target_lr * latest_lr_gain);
                     optimizer.backward_step(&scaled).map_err(anyhow::Error::msg)?;
                     weight_clamp_tick += 1;
                     if weight_clamp_tick % 32 == 0 { let _ = clamp_weights(&varmap, 100.0); }
@@ -2510,6 +2584,11 @@ fn main() -> Result<()> {
             audio_frames.push(audio_l[i]);
             audio_frames.push(audio_r[i]);
         }
+        // Chunk score for the highlight exporter: informational richness (field entropy)
+        // gated by movement sitting in the musically-alive band (~0.15) rather than
+        // flatline or thrash. Drives the best-window selection for the priming WAV.
+        let mov_band = 1.0 - ((movement - 0.15).abs() / 0.15).clamp(0.0, 1.0);
+        chunk_scores.push(field_entropy * (0.4 + 0.6 * mov_band));
 
         // --------------------------------------------------
         // TRACES & LOGGING
@@ -2522,14 +2601,21 @@ fn main() -> Result<()> {
             uncertainty_trace.push(serde_json::json!({
                 "step": step, "spectral": uncertainty.spectral, "movement": uncertainty.movement,
                 "compositional": uncertainty.compositional, "aperture": aperture, "phi": phi,
-                "synergy": synergy_val, "empowerment": empowerment_val
+                "synergy": synergy_val, "empowerment": empowerment_val,
+                "flatness": uncertainty.flatness,
+                "brightness": s_sig["brightness"].as_f64().unwrap_or(0.0),
+                "q_norm": ds.q_norm, "lock": ds.lock,
+                "macro_amp": macro_abs, "micro_amp": micro_amp
             }));
         }
         if step % 50 == 0 {
-            println!("Chunk {}/{} | Move: {:.3} | Mimic: {:.3} {} | Phase: {} | L{:02} rad:{:.2} | Phi: {:.2} | LRx: {:.2}",
-                step, total_chunks, movement, mimic_drift_n, trend, phase, model.depth(), rad_amp, phi, latest_lr_gain);
-            println!("  field H:{:.2}b · {} · synergy:{:.2} empower:{:.2}",
-                field_entropy, arch_summary, synergy_val, empowerment_val);
+            let rolling_sec = profiling_lap.elapsed().as_secs_f32();
+            let rolling_sps = if step > 0 && rolling_sec > 1e-4 { 50.0 / rolling_sec } else { 0.0 };
+            profiling_lap = std::time::Instant::now();
+            println!("Chunk {}/{} [SPS: {:.2}] | Move: {:.3} | Mimic: {:.3} {} | Phase: {} | L{:02} rad:{:.2} | Phi: {:.2} | LRx: {:.2} | q:{:.2} lock:{:.2}",
+                step, total_chunks, rolling_sps, movement, mimic_drift_n, trend, phase, model.depth(), rad_amp, phi, latest_lr_gain, ds.q_norm, ds.lock);
+            println!("  field H:{:.2}b · {} · synergy:{:.2} empower:{:.2} | energy: {:.2} | stagnation: {}",
+                field_entropy, arch_summary, synergy_val, empowerment_val, energy_state, stagnation_ticks);
             // Quantile dual-lane tape: value density over gradient motion.
             let cols = 64.min(TAPE_LEN);
             if let Ok(v) = micro_tape.mean(1).and_then(|m| m.reshape((TAPE_LEN,))) {
@@ -2565,6 +2651,12 @@ fn main() -> Result<()> {
         }
     }
 
+    let total_elapsed = timer_start.elapsed().as_secs_f32();
+    let overall_sps = total_chunks as f32 / total_elapsed.max(1e-4);
+    println!("\n=== PERFORMANCE REPORT ===");
+    println!("Total simulation elapsed: {:.2}s", total_elapsed);
+    println!("Overall performance speed: {:.2} steps/sec", overall_sps);
+
     // ---- MASTERING PASS ----
     // DC-block (one-pole HPF, ~15 Hz) then peak-normalize to -1 dBFS. The old path
     // multiplied by 32767 and hard-clipped per sample; with the 1.414 M/S gain plus FDN
@@ -2582,6 +2674,57 @@ fn main() -> Result<()> {
     for v in audio_frames.iter_mut() { *v *= norm; }
     println!("Mastering: DC-blocked, peak {:.3} normalized to -1 dBFS (gain {:.2}x).", peak, norm);
 
+    // ---- AUDIO FEATURE ANALYSIS (for the priming prompt) ----
+    // Suno & co. respond to tempo, tonal, and space vocabulary far more reliably than to
+    // internal telemetry tags, so extract the three cheapest perceptual features from the
+    // mastered render and lead the prompt with them.
+    // Tempo: onset-envelope autocorrelation over 1024-sample hops, 46-180 BPM band.
+    let hop = 1024usize;
+    let n_hops = n_frames / hop;
+    let mut env = Vec::with_capacity(n_hops);
+    for h in 0..n_hops {
+        let mut acc = 0.0f32;
+        for i in 0..hop { let s = h * hop + i; acc += (audio_frames[2 * s] + audio_frames[2 * s + 1]).abs(); }
+        env.push(acc / hop as f32);
+    }
+    let onset: Vec<f32> = env.windows(2).map(|w| (w[1] - w[0]).max(0.0)).collect();
+    let lag_lo = (60.0 * SAMPLE_RATE as f32 / (hop as f32 * 180.0)) as usize; // 180 BPM
+    let lag_hi = (60.0 * SAMPLE_RATE as f32 / (hop as f32 * 46.0)) as usize;  // 46 BPM
+    let mut best_lag = 0usize; let mut best_ac = 0.0f32;
+    for lag in lag_lo..=lag_hi.min(onset.len().saturating_sub(1)) {
+        let mut ac = 0.0f32;
+        for i in lag..onset.len() { ac += onset[i] * onset[i - lag]; }
+        if ac > best_ac { best_ac = ac; best_lag = lag; }
+    }
+    let bpm = if best_lag > 0 { 60.0 * SAMPLE_RATE as f32 / (hop as f32 * best_lag as f32) } else { 0.0 };
+    // Spectral centroid: averaged over 32 windows spread across the render.
+    let mut cf_planner = FftPlanner::new();
+    let cfft = cf_planner.plan_fft_forward(CHUNK_SIZE);
+    let mut centroid_sum = 0.0f32; let mut centroid_n = 0u32;
+    for w in 0..32usize {
+        let start = (w * n_frames.saturating_sub(CHUNK_SIZE)) / 31usize.max(1);
+        if start + CHUNK_SIZE > n_frames { break; }
+        let mut buf: Vec<Complex<f32>> = (0..CHUNK_SIZE)
+            .map(|i| Complex::new((audio_frames[2 * (start + i)] + audio_frames[2 * (start + i) + 1]) * 0.5, 0.0))
+            .collect();
+        cfft.process(&mut buf);
+        let (mut num, mut den) = (0.0f32, 0.0f32);
+        for k in 1..CHUNK_SIZE / 2 {
+            let m = buf[k].norm();
+            num += m * (k as f32 * SAMPLE_RATE as f32 / CHUNK_SIZE as f32);
+            den += m;
+        }
+        if den > 1e-6 { centroid_sum += num / den; centroid_n += 1; }
+    }
+    let centroid = if centroid_n > 0 { centroid_sum / centroid_n as f32 } else { 0.0 };
+    let tone = if centroid < 900.0 { "dark subterranean low-end" } else if centroid < 2200.0 { "warm midrange body" } else { "bright glassy upper spectrum" };
+    // Stereo width: normalized side energy.
+    let mut side_e = 0.0f32; let mut tot_e = 0.0f32;
+    for i in 0..n_frames { let l = audio_frames[2 * i]; let r = audio_frames[2 * i + 1]; side_e += (l - r) * (l - r); tot_e += l * l + r * r; }
+    let width = if tot_e > 1e-6 { (side_e / tot_e).sqrt() } else { 0.0 };
+    let width_word = if width > 0.5 { "ultra-wide stereo field" } else if width > 0.2 { "wide stereo image" } else { "focused center image" };
+    println!("Features: ~{:.0} BPM · centroid {:.0} Hz ({}) · width {:.2} ({})", bpm, centroid, tone, width, width_word);
+
     // Creative Prompt Formulation for External Generation Engine
     let avg_phi = uncertainty_trace.iter().map(|t| t["phi"].as_f64().unwrap_or(0.0)).sum::<f64>() / uncertainty_trace.len() as f64;
     let avg_aperture = uncertainty_trace.iter().map(|t| t["aperture"].as_f64().unwrap_or(0.0)).sum::<f64>() / uncertainty_trace.len() as f64;
@@ -2592,18 +2735,22 @@ fn main() -> Result<()> {
     let final_depth = model.depth();
 
     let prompt = format!(
-        "Style: {}, {}, {}, {}. Texture: {}. Field: {} regime · {} archetype · depth L{:02}. \
-         [Informational Phi: {:.2}, Aperture: {:.2}, Synergy: {:.2}, Field-Entropy: {:.2}b, Rad: {:.2}]",
-        // phi is now order-4 permutation entropy in [0,1]: structured/tonal material
-        // sits ~0.5-0.75, dense glitch/broadband ~0.85+. Synergy is tanh-bounded to
-        // (-1,1), so the old >1.5 threshold was dead code (never "Crystalline").
+        "Style: {}, {}, {}, {}. Texture: {}. Tempo: ~{:.0} BPM. Tone: {}. Space: {}. \
+         Field: {} regime · {} archetype · depth L{:02}. \
+         [Informational Phi: {:.2}, Aperture: {:.2}, Synergy: {:.2}, Field-Entropy: {:.2}b, Rad: {:.2}, Metabolic-Energy: {:.2}, Stagnation-Ticks: {}]",
+        // Perceptual features (BPM/tone/width) lead because prompt-conditioned audio
+        // models weight early tokens heaviest and parse musical vocabulary directly.
+        // phi is order-4 permutation entropy in [0,1]: structured/tonal material sits
+        // ~0.5-0.75, dense glitch/broadband ~0.85+. Synergy is tanh-bounded to (-1,1),
+        // so the old >1.5 threshold was dead code (never "Crystalline").
         if avg_phi > 0.85 { "Hyper-Resonant" } else { "Chaotic" },
         if avg_aperture > 0.5 { "Evolving" } else { "Stable" },
         if total_complexity > 500.0 { "Dense" } else { "Minimal" },
         "Information-Theoretic Glitch",
         if avg_synergy > 0.6 { "Crystalline-Autonomous" } else if avg_phi > 0.55 { "Organic" } else { "Grit" },
+        bpm, tone, width_word,
         dom_phase, dom_archetype, final_depth,
-        avg_phi, avg_aperture, avg_synergy, avg_field_h, rad_amp
+        avg_phi, avg_aperture, avg_synergy, avg_field_h, rad_amp, energy_state, stagnation_ticks
     );
     println!("\n=== GENERATIVE PRIMING PROMPT ===");
     println!("{}", prompt);
@@ -2615,12 +2762,15 @@ fn main() -> Result<()> {
     topo_writer.flush()?;
 
     let mut unc_writer = csv::Writer::from_path(format!("{}/uncertainty_trace_rust.csv", base_dir))?;
-    unc_writer.write_record(&["step", "spectral", "movement", "compositional", "aperture", "synergy", "empowerment"])?;
+    unc_writer.write_record(&["step", "spectral", "movement", "compositional", "aperture", "synergy", "empowerment", "phi", "flatness", "brightness", "q_norm", "lock", "macro_amp", "micro_amp"])?;
     for trace in uncertainty_trace {
         unc_writer.write_record(&[
             trace["step"].to_string(), trace["spectral"].to_string(), trace["movement"].to_string(),
             trace["compositional"].to_string(), trace["aperture"].to_string(),
-            trace["synergy"].to_string(), trace["empowerment"].to_string()
+            trace["synergy"].to_string(), trace["empowerment"].to_string(),
+            trace["phi"].to_string(), trace["flatness"].to_string(), trace["brightness"].to_string(),
+            trace["q_norm"].to_string(), trace["lock"].to_string(),
+            trace["macro_amp"].to_string(), trace["micro_amp"].to_string()
         ])?;
     }
     unc_writer.flush()?;
@@ -2633,6 +2783,37 @@ fn main() -> Result<()> {
     }
     writer.finalize()?;
     println!("Audio saved to {}/rust_ecosystem_out.wav", base_dir);
+
+    // ---- HIGHLIGHT PRIMING SEGMENT ----
+    // Prompt-conditioned audio models take a bounded conditioning window; feeding them the
+    // full render leaves segment choice to chance (or to whatever the front of the file
+    // happens to be — usually warmup). Pick the contiguous 60 s with the best chunk-score
+    // sum (field entropy x movement-in-band), fade the edges, export it as a dedicated
+    // priming WAV alongside the full render.
+    let prime_secs = 60.0f32.min(sim_duration);
+    let win = ((SAMPLE_RATE as f32 * prime_secs / CHUNK_SIZE as f32) as usize).max(1).min(chunk_scores.len());
+    if win > 0 && !chunk_scores.is_empty() {
+        let mut run: f32 = chunk_scores.iter().take(win).sum();
+        let mut best_start = 0usize; let mut best_sum = run;
+        for s in 1..=(chunk_scores.len() - win) {
+            run += chunk_scores[s + win - 1] - chunk_scores[s - 1];
+            if run > best_sum { best_sum = run; best_start = s; }
+        }
+        let s0 = best_start * CHUNK_SIZE;
+        let s1 = ((best_start + win) * CHUNK_SIZE).min(n_frames);
+        let fade = 2048usize.min((s1 - s0) / 4);
+        let prime_path = format!("{}/titan_prime_{}s.wav", base_dir, prime_secs as u32);
+        let mut prime_writer = hound::WavWriter::create(&prime_path, spec)?;
+        for i in s0..s1 {
+            let g = if i < s0 + fade { (i - s0) as f32 / fade as f32 }
+                    else if i >= s1 - fade { (s1 - i) as f32 / fade as f32 }
+                    else { 1.0 };
+            prime_writer.write_sample((audio_frames[2 * i] * g * 32767.0).clamp(-32768.0, 32767.0) as i16)?;
+            prime_writer.write_sample((audio_frames[2 * i + 1] * g * 32767.0).clamp(-32768.0, 32767.0) as i16)?;
+        }
+        prime_writer.finalize()?;
+        println!("Priming segment: chunks {}..{} (avg score {:.2}) -> {}", best_start, best_start + win, best_sum / win as f32, prime_path);
+    }
 
     // Final promotion, same finiteness + non-regression guard as the periodic
     // checkpoint: a diverged or worse-than-baseline run preserves the last good

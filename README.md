@@ -21,10 +21,12 @@ The Titan Audio Ecosystem treats audio synthesis as an **emergent biological pro
 - **Predictive Defibrillator:** Foresees stagnation and applies targeted Choptuik criticality-seeking learning rate bursts.
 - **Cross-Run Continuity:** The dynamical substrate (CA tapes, GRU memory, oscillator phases, carried synthesis scalars) **persists across runs** alongside the weights, so the organism continues its trajectory instead of cold-starting from noise each launch.
 - **Predictive Safety (q-Factor) Disruption Controller & fBm Shear:** Predicts cellular q-collapse based on macro variance, coupling, and rail proximity. Injects traveling-wave fBm shear perturbations to break phase locks, automatically backing off once q recovers.
-- **Metabolic Energy & Stagnation Homeostats:** Features a metabolic charge tracker (`energy_state`) that scales frequencies/openness under heavy loads, a restorer to prevent macro slow-field collapse, and an archetype stagnation tracker that triggers curiosity-driven learning rate boosts.
+- **Metabolic Energy & Stagnation Homeostats:** Features a metabolic charge tracker (`energy_state`) that scales frequencies/openness under heavy loads, macro **and** micro tape amplitude homeostats that hold the fields off their saturation rails, and an archetype stagnation tracker that triggers curiosity-driven learning rate boosts.
+- **Permutation-Entropy Phi:** The system-complexity signal `phi` is order-4 permutation entropy (ordinal temporal structure, bounded [0,1]) computed alongside spectral flatness and brightness from a single per-chunk FFT — replacing the Shannon spectral entropy that saturated on broadband output.
 - **Mid/Side Haas Delay Stereo & Wave Morphing:** Upgraded spatialization with a Mid/Side panning matrix and a 16-sample Haas delay on the wide side channel. Supports learned wave morphing that projects oscillator carriers and formants dynamically between pure sines and rounded triangle waves.
-- **CUDA-Native Latency Grouping & Lévy Radiation:** Vectorized `levy_radiate` runs entirely on the GPU. Transfers of weights, metrics, and parameters are grouped into single combined copies (`first_metrics` and `second_metrics`) to minimize host-to-device synchronization overhead.
-- **Divergence-Safe Persistence:** A non-finite loss never reaches the optimizer, and checkpoints are written atomically and only **promoted** when finite and non-regressing — a generational `.prev` backup makes any bad save recoverable.
+- **CUDA-Native Latency Grouping & Lévy Radiation:** Vectorized `levy_radiate` runs entirely on the GPU. All per-step control-plane scalars (metrics, synergy, empowerment, macro variance, rail proximity, carried frequencies, controller outputs) ride two combined GPU→CPU copies (`first_metrics` and `second_metrics`), and the two tape homeostats share a third — the training loop performs no other per-step scalar readbacks.
+- **Deferred Mastering & Priming Exports:** Audio accumulates in f32 and is mastered once at the end of the run (15 Hz DC-block, peak-normalize to −1 dBFS) instead of being hard-clipped per sample. The mastered render is then analyzed for tempo (onset autocorrelation), spectral centroid, and stereo width — these lead the generative priming prompt — and the best-scoring contiguous 60 s (field entropy × movement-in-band) is exported as a separate faded priming WAV.
+- **Divergence-Safe Persistence & Bio-Reset:** A non-finite loss never reaches the optimizer, checkpoints are written atomically and only **promoted** when finite and non-regressing (generational `.prev` backups make any bad save recoverable), and a per-step bio-reset re-seeds the CA tapes if the carried state ever goes NaN mid-run.
 
 ## Synthesis Signal Flow
 
@@ -72,8 +74,20 @@ If omitted, it defaults to `/home/anon/Downloads`.
 
 | Flag | Effect |
 |---|---|
+| `--base-dir DIR`, `-b DIR` | Base/working directory (equivalent to the positional argument). |
+| `--duration SECS`, `-d SECS` | Simulation length in seconds (default `160`). Also bounds the priming-segment length. |
+| `--lr RATE`, `-l RATE` | Base AdamW learning rate (default `1.3e-3`); the Choptuik/defib gains multiply this. |
+| `--bptt N`, `-w N` | Truncated-BPTT window in chunks (default `4`). Larger = more temporal credit, more VRAM. |
+| `--threads N`, `-t N` | Rayon thread count (default: all cores). Mostly affects the CPU DSP/analysis path. |
+| `--fresh`, `-f` | Ignore the weight checkpoint and morph sidecar — train from random init. Implies `--fresh-substrate`. |
 | `--fresh-substrate` | Cold-start the dynamical state (ignore any saved substrate). |
 | `--no-substrate-kick` | Skip the on-load Lévy nudge applied to the restored substrate. |
+
+Example:
+
+```bash
+./build.sh run -- /path/to/base_dir -d 420 -w 8 --lr 8e-4
+```
 
 ### Outputs
 
@@ -81,11 +95,15 @@ All written to the base directory:
 
 | File | Description |
 |---|---|
-| `rust_ecosystem_out.wav` | Resulting generative audio. |
+| `rust_ecosystem_out.wav` | Full mastered generative render (DC-blocked, peak-normalized to −1 dBFS). |
+| `titan_prime_60s.wav` | Highlight priming segment: the best-scoring contiguous 60 s of the render, edge-faded, for conditioning external audio models. |
 | `titan_model_beta.safetensors` | Persisted model weights. |
 | `titan_substrate.safetensors` | Persisted dynamical substrate (CA tapes, GRU memory, phases, carried synthesis scalars) — enables cross-run continuity. |
 | `titan_morph_state.json` | Morphic-stack active depth, radiation amplitude (`rad_amp`), and the run-health metric used by the non-regression checkpoint gate. |
 | `*.prev` | Generational backup of the previous good weights / substrate / morph state. |
 | `ca_topology_rust.csv` | Macro-CA state history. |
-| `uncertainty_trace_rust.csv` | System health metrics (Spectral, Movement, etc.). |
-| `suno_priming_prompt.txt` | Generative primer text based on engine analytics. |
+| `uncertainty_trace_rust.csv` | System health metrics: spectral/movement/compositional uncertainty, aperture, synergy, empowerment, phi, flatness, brightness, disruption q-norm/lock, and tape amplitudes. |
+| `suno_priming_prompt.txt` | Generative primer text — leads with perceptual features (BPM, tonal centroid, stereo width) followed by engine analytics. |
+
+The console additionally reports a rolling steps-per-second figure every 50 chunks
+and a total performance summary at the end of the run.
