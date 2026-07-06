@@ -86,7 +86,7 @@ use rand::Rng;
 // ECOSYSTEM CONFIGURATION
 // ==========================================
 const SAMPLE_RATE: u32 = 48000;
-const DURATION_SECONDS: f32 = 420.0;
+const DURATION_SECONDS: f32 = 160.0;
 const CHUNK_SIZE: usize = 2048;
 const TAPE_LEN: usize = 512;          // restored to desktop scale
 const CA_CHANNELS: usize = 144;
@@ -139,11 +139,23 @@ const LOCK_SHEAR_SCALE: f32 = 0.75;       // a lock is firm-but-not-quench; cap 
 
 // --- METABOLIC HOMEOSTAT ---
 const ENERGY_SETPOINT: f32 = 0.65;        // metabolic operating point
-const ENERGY_HOMEO_RATE: f32 = 0.05;      // pull strength toward setpoint
+// At 0.05 the setpoint pull dominated both cost (~0.0017/step) and recharge (~0.006/step),
+// pinning energy at ~0.72 regardless of behavior — the metabolism had become a static
+// detune, not a dynamic. At 0.015 the rms-coupled terms matter again: equilibrium swings
+// ~0.93 (quiet) down to ~0.65 (loud), so energy_factor actually modulates pitch/openness.
+const ENERGY_HOMEO_RATE: f32 = 0.015;     // pull strength toward setpoint
 
 // --- MACRO SLOW-FIELD AMPLITUDE HOMEOSTAT ---
 const MACRO_AMP_SETPOINT: f32 = 0.40;     // target abs-mean for the slow macro field
 const MACRO_AMP_RATE: f32 = 0.35;         // per-step multiplicative pull toward the setpoint
+
+// --- MICRO FAST-FIELD AMPLITUDE HOMEOSTAT ---
+// The audio-matching losses (mimic/rms/var) indirectly pull micro amplitude up — saturation is
+// the cheapest source of synthesis drive — so a soft penalty can't hold it off the rail. A hard
+// per-step rescale (same structural device that keeps the macro field healthy) pins the carried
+// micro tape's abs-mean to a setpoint that gradients cannot overpower.
+const MICRO_AMP_SETPOINT: f32 = 0.50;     // target abs-mean for the carried micro tape
+const MICRO_AMP_RATE: f32 = 0.30;         // per-step multiplicative pull toward the setpoint
 
 // --- DEFIBRILLATOR FIRE PARAMETERS ---
 const DEFIB_BURST_TICKS: usize = 8;
@@ -1271,16 +1283,48 @@ impl SpectralEntropyMonitor {
         fft.process(&mut buffer);
         let magnitudes: Vec<f32> = buffer.iter().take(n / 2).map(|c| c.norm()).collect();
         let sum_mag: f32 = magnitudes.iter().sum::<f32>() + 1e-8;
-        let mut entropy = 0.0;
-        for m in magnitudes {
+        // Same FFT pass now yields three descriptors instead of one:
+        //   entropy    — kept for continuity/telemetry (known to saturate on broadband),
+        //   flatness   — geometric/arithmetic mean ratio: ~0 tonal collapse, ~1 noise,
+        //   brightness — spectral centroid in Hz.
+        let nb = magnitudes.len() as f32;
+        let mut entropy = 0.0f32;
+        let mut log_sum = 0.0f32;
+        let (mut c_num, mut c_den) = (0.0f32, 0.0f32);
+        let bin_hz = SAMPLE_RATE as f32 / n as f32;
+        for (k, &m) in magnitudes.iter().enumerate() {
             let p = m / sum_mag;
             if p > 1e-7 { entropy -= p * p.ln(); }
+            log_sum += (m + 1e-9).ln();
+            c_num += m * (k as f32 * bin_hz);
+            c_den += m;
         }
+        let flatness = ((log_sum / nb).exp() / (sum_mag / nb)).clamp(0.0, 1.0);
+        let brightness = if c_den > 1e-6 { c_num / c_den } else { 0.0 };
         entropy /= 2048.0_f32.ln();
+        // Order-4 permutation entropy on 2x-decimated mono (1024 pts, 24 ordinal
+        // patterns, Lehmer-coded — no sort, no allocation beyond the decimated copy).
+        // This is the new phi source: PE measures ordinal TEMPORAL structure, which
+        // keeps dynamic range on exactly the broadband/glitch material that pins
+        // Shannon spectral entropy at its ceiling.
+        let dec: Vec<f32> = mono.iter().step_by(2).copied().collect();
+        let mut hist = [0u32; 24];
+        for w in dec.windows(4) {
+            let mut c0 = 0usize; for k in 1..4 { if w[k] < w[0] { c0 += 1; } }
+            let mut c1 = 0usize; for k in 2..4 { if w[k] < w[1] { c1 += 1; } }
+            let c2 = if w[3] < w[2] { 1usize } else { 0 };
+            hist[c0 * 6 + c1 * 2 + c2] += 1;
+        }
+        let total = dec.len().saturating_sub(3) as f32;
+        let mut pe = 0.0f32;
+        if total > 0.0 {
+            for &c in &hist { if c > 0 { let p = c as f32 / total; pe -= p * p.ln(); } }
+            pe /= (24f32).ln();
+        }
         self.history.push_back(entropy);
         if self.history.len() > self.window { self.history.pop_front(); }
         let avg_entropy: f32 = self.history.iter().sum::<f32>() / self.history.len() as f32;
-        Ok(serde_json::json!({"signal": entropy, "avg": avg_entropy, "trigger": entropy < (3.0 / 2048.0_f32.ln()), "type": "spectral_entropy"}))
+        Ok(serde_json::json!({"signal": entropy, "avg": avg_entropy, "trigger": entropy < (3.0 / 2048.0_f32.ln()), "type": "spectral_entropy", "flatness": flatness, "brightness": brightness, "perm_entropy": pe}))
     }
 }
 
@@ -1325,28 +1369,38 @@ struct AudioUncertaintyState {
     phi: f32,
     synergy: f32,
     empowerment: f32,
+    flatness: f32,
 }
 
 impl AudioUncertaintyState {
     fn new() -> Self {
         Self {
             spectral: 0.0, movement: 0.0, mimic: 0.0, compositional: 0.0,
-            phi: 0.0, synergy: 0.0, empowerment: 0.0
+            phi: 0.0, synergy: 0.0, empowerment: 0.0, flatness: 0.0
         }
     }
     fn update(&mut self, spectral_sig: &serde_json::Value, movement_sig: &serde_json::Value, mimic_sig: Option<&serde_json::Value>, synergy_val: f32, empowerment_val: f32) {
-        let s_sig = spectral_sig["signal"].as_f64().unwrap_or(0.0) as f32;
-        let avg_s = spectral_sig["avg"].as_f64().unwrap_or(1.0) as f32;
         let m_trend = movement_sig["trend"].as_f64().unwrap_or(0.0) as f32;
-
-        let resonance = (avg_s / (s_sig + 1e-6)).clamp(0.1, 5.0);
-        self.phi = (s_sig * resonance).clamp(0.0, 10.0);
-
-        self.spectral = (1.0 - s_sig).max(0.0);
-        self.movement = (-m_trend * 200.0).max(0.0);
+        let pe = spectral_sig["perm_entropy"].as_f64().unwrap_or(0.5) as f32;
+        self.flatness = spectral_sig["flatness"].as_f64().unwrap_or(0.5) as f32;
+        // TELEMETRY-CONFIRMED FIX: the spectral-entropy phi read ~0.98 ± 0.00 for
+        // entire runs while brightness swung 2.6-5.1 kHz — broadband output pins
+        // Shannon spectral entropy at its ceiling, so phi_gate was a constant
+        // (decorative). phi is now order-4 permutation entropy in [0,1]; the gate
+        // phi_gate = 1/(1+phi) lands in [0.5, 1.0], same downstream semantics.
+        self.phi = pe.clamp(0.0, 1.0);
+        // Spectral-collapse signal from flatness with a sharp knee: it should fire on
+        // tonal collapse (flatness -> 0), not sit mid-scale on ordinary structured
+        // audio the way the old (1 - entropy) form did.
+        self.spectral = ((0.08 - self.flatness) / 0.08).clamp(0.0, 1.0);
+        // TELEMETRY-CONFIRMED FIX: movement uncertainty hit 1.4+ unclamped, which
+        // through the 0.25 aperture weight pinned aperture at ~1.0 for whole runs —
+        // the branching dynamic was gone. All aperture components are now bounded
+        // to [0,1] here and in branch_aperture().
+        self.movement = (-m_trend * 200.0).clamp(0.0, 1.0);
         if let Some(ms) = mimic_sig {
             let drift = ms["drift"].as_f64().unwrap_or(0.0) as f32;
-            self.mimic = (drift * 10.0).max(0.0);
+            self.mimic = (drift * 10.0).clamp(0.0, 1.0);
         }
         self.synergy = synergy_val;
         self.empowerment = empowerment_val;
@@ -1355,7 +1409,7 @@ impl AudioUncertaintyState {
         self.compositional = self.compositional.min(1.0);
     }
     fn branch_aperture(&self) -> f32 {
-        let raw = (self.spectral * 0.20) + (self.movement * 0.25) + (self.mimic * 0.15) + (self.compositional * 0.10) + (self.synergy * 0.30);
+        let raw = (self.spectral.clamp(0.0, 1.0) * 0.20) + (self.movement.clamp(0.0, 1.0) * 0.25) + (self.mimic.clamp(0.0, 1.0) * 0.15) + (self.compositional.clamp(0.0, 1.0) * 0.10) + (self.synergy.clamp(0.0, 1.0) * 0.30);
         raw.clamp(0.05, 1.0)
     }
 }
@@ -1808,10 +1862,12 @@ impl AudioArbiter {
     /// Returns (softmax weights (1,7) in-graph, entropy penalty tensor)
     fn forward(&self, features: &Tensor) -> Result<(Tensor, Tensor)> {
         let raw = self.net.forward(features).map_err(anyhow::Error::msg)?;
-        let exp_w = raw.exp().map_err(anyhow::Error::msg)?;
-        let sum_exp = exp_w.sum_all().map_err(anyhow::Error::msg)?;
-        let p = exp_w.broadcast_div(&sum_exp).map_err(anyhow::Error::msg)?;
-        let entropy_penalty = p.log().map_err(anyhow::Error::msg)?
+        // candle's softmax is max-subtracted; the old manual exp/sum overflowed to
+        // NaN weights once any logit drifted large. The epsilon inside the log keeps
+        // the entropy term finite when a weight collapses toward zero.
+        let p = candle_nn::ops::softmax(&raw, D::Minus1).map_err(anyhow::Error::msg)?;
+        let entropy_penalty = p.affine(1.0, 1e-4).map_err(anyhow::Error::msg)?
+            .log().map_err(anyhow::Error::msg)?
             .broadcast_mul(&p)?
             .sum_all().map_err(anyhow::Error::msg)?
             .affine(0.05, 0.0).map_err(anyhow::Error::msg)?;
@@ -1934,7 +1990,9 @@ fn main() -> Result<()> {
     }
 
     let total_chunks = (SAMPLE_RATE as f32 * DURATION_SECONDS / CHUNK_SIZE as f32) as usize;
-    let mut audio_frames: Vec<i16> = Vec::with_capacity(total_chunks * CHUNK_SIZE * 2);
+    // f32 accumulation: quantization/clipping is deferred to a single mastering pass at
+    // the end (DC-block + peak-normalize) instead of hard-clipping per sample mid-run.
+    let mut audio_frames: Vec<f32> = Vec::with_capacity(total_chunks * CHUNK_SIZE * 2);
     let mut topology_history = Vec::new();
     let mut uncertainty_trace = Vec::new();
 
@@ -1976,6 +2034,19 @@ fn main() -> Result<()> {
     let mut weight_clamp_tick = 0usize;
 
     for step in 0..total_chunks {
+        // --- BIO-RESET SAFETY MECHANISM ---
+        // Prevents a NaN bomb from crashing the organism forever by re-seeding the
+        // primordial soup. The checkpoint-time finiteness guard protects the lineage;
+        // this protects the run itself — without it a mid-run NaN excursion in the
+        // carried tapes has no recovery path.
+        let state_check = micro_tape.mean_all()?.add(&macro_tape.mean_all()?)?.to_scalar::<f32>().unwrap_or(f32::NAN);
+        if !state_check.is_finite() {
+            println!("! BIO-RESET: Tape corruption detected (NaN). Re-seeding primordial soup.");
+            micro_tape = Tensor::randn(0.0f32, 1.0f32, (1, CA_CHANNELS, TAPE_LEN), &device)?;
+            macro_tape = Tensor::randn(0.0f32, 1.0f32, (1, CA_CHANNELS, TAPE_LEN), &device)?;
+            hidden_mem = Tensor::zeros((1, MEMORY_DIM), DType::F32, &device)?;
+        }
+
         let aperture = uncertainty.branch_aperture();
         let force_macro = rand::thread_rng().gen_range(0.0..1.0) < (0.2 + aperture * 0.6);
         let prev_mimic_loss = if step == 0 { 0.5f32 } else { uncertainty.mimic / 10.0 };
@@ -2070,8 +2141,15 @@ fn main() -> Result<()> {
         let roughness_loss_val = first_metrics_vec[6];
         let current_var_val = first_metrics_vec[7];
         let movement_loss_val = first_metrics_vec[8];
-        let base = morph_baseline.unwrap_or(1.0);
-        let mimic_drift_n = mimic_drift / (mimic_drift + base);
+        // FIXED-REFERENCE bounding: the old mimic_drift / (mimic_drift + morph_baseline)
+        // was self-referential — morph_baseline EMA-adapts toward mimic_drift, so the
+        // ratio converges to ~0.5 in steady state regardless of actual mimicry quality,
+        // deadening every threshold keyed on it (phase labels, defib trigger, health).
+        let mimic_drift_n = mimic_drift / (1.0 + mimic_drift);
+        // Seed from the first observation — the 0.5 init is on the wrong scale for raw
+        // log-spectral drift and would spuriously arm the defib trigger for hundreds of
+        // steps while the slow EMA caught up.
+        if step == 0 { slow_mimic_ema = mimic_drift; }
         slow_mimic_ema = slow_mimic_ema * 0.999 + mimic_drift * 0.001;
         // Cross-run health: EMA of the bounded mimic signal (lower = better).
         health_ema = health_ema * (1.0 - HEALTH_EMA_ALPHA) + mimic_drift_n * HEALTH_EMA_ALPHA;
@@ -2309,7 +2387,10 @@ fn main() -> Result<()> {
             distance_to_horizon.powf(CHOPTUIK_EXPONENT)
         };
 
-        let alarm = (movement < thresh || mimic_drift_n > 0.6) && burst_ticks == 0 && refractory == 0;
+        // Mimic-drift trigger compares raw drift against its slow EMA (alpha=0.001,
+        // ~693-step half-life, declared above) — detects sustained plateaus that any
+        // self-normalizing signal masks by adapting to them.
+        let alarm = (movement < thresh || mimic_drift > slow_mimic_ema * 1.2) && burst_ticks == 0 && refractory == 0;
         if alarm { alarm_streak += 1; } else { alarm_streak = 0; }
 
         let mut fired_now = false;
@@ -2393,9 +2474,20 @@ fn main() -> Result<()> {
         let shear_amp_eff = (ds.shear_amp + curiosity_factor * SHEAR_AMP_MAX * 0.5).min(SHEAR_AMP_MAX * 1.5);
         let shear = shear_gen.generate(shear_amp_eff, shear_phase, &device).map_err(anyhow::Error::msg)?;
         macro_tape = macro_tape.add(&shear).map_err(anyhow::Error::msg)?.tanh().map_err(anyhow::Error::msg)?;
-        let macro_abs = macro_tape.abs().map_err(anyhow::Error::msg)?.mean_all().map_err(anyhow::Error::msg)?.to_scalar::<f32>().unwrap_or(MACRO_AMP_SETPOINT);
+        // One sync for both amplitude homeostats (reads happen before either gain is
+        // applied; the two rescales are independent, so ordering is unaffected).
+        let amps = Tensor::cat(&[
+            &macro_tape.abs()?.mean_all()?.reshape((1,))?,
+            &micro_tape.abs()?.mean_all()?.reshape((1,))?,
+        ], 0)?.to_vec1::<f32>().unwrap_or_else(|_| vec![MACRO_AMP_SETPOINT, MICRO_AMP_SETPOINT]);
+        let (macro_abs, micro_amp) = (amps[0], amps[1]);
         let amp_gain = (1.0 + MACRO_AMP_RATE * (MACRO_AMP_SETPOINT - macro_abs)).clamp(0.5, 1.5);
         macro_tape = macro_tape.affine(amp_gain as f64, 0.0).map_err(anyhow::Error::msg)?;
+        // Micro fast-field homeostat: structural anti-rail pin on the carried micro tape.
+        // The audio losses drift micro amplitude toward the +1 rail over a run; this hard
+        // rescale holds its abs-mean at the setpoint regardless of that gradient pull.
+        let micro_gain = (1.0 + MICRO_AMP_RATE * (MICRO_AMP_SETPOINT - micro_amp)).clamp(0.5, 1.5);
+        micro_tape = micro_tape.affine(micro_gain as f64, 0.0).map_err(anyhow::Error::msg)?;
         if ds.recovered {
             stagnation_ticks = 0;
             println!("  \u{27FF} DISRUPTION AVERTED · q recovered to {:.2}x baseline · shear backing off", ds.q_norm);
@@ -2415,10 +2507,8 @@ fn main() -> Result<()> {
         fractal_fdn_r.process(&mut audio_r, echo_aperture);
 
         for i in 0..CHUNK_SIZE {
-            let sample_l = (audio_l[i] * 32767.0).clamp(-32768.0, 32767.0) as i16;
-            let sample_r = (audio_r[i] * 32767.0).clamp(-32768.0, 32767.0) as i16;
-            audio_frames.push(sample_l);
-            audio_frames.push(sample_r);
+            audio_frames.push(audio_l[i]);
+            audio_frames.push(audio_r[i]);
         }
 
         // --------------------------------------------------
@@ -2475,6 +2565,23 @@ fn main() -> Result<()> {
         }
     }
 
+    // ---- MASTERING PASS ----
+    // DC-block (one-pole HPF, ~15 Hz) then peak-normalize to -1 dBFS. The old path
+    // multiplied by 32767 and hard-clipped per sample; with the 1.414 M/S gain plus FDN
+    // feedback that produced intermittent digital clipping — the worst artifact class to
+    // hand a diffusion/transformer audio model as conditioning input.
+    let n_frames = audio_frames.len() / 2;
+    let (mut x1_l, mut y1_l, mut x1_r, mut y1_r) = (0.0f32, 0.0f32, 0.0f32, 0.0f32);
+    let r_dc = 0.998f32;
+    for i in 0..n_frames {
+        let xl = audio_frames[2 * i];     let yl = xl - x1_l + r_dc * y1_l; x1_l = xl; y1_l = yl; audio_frames[2 * i] = yl;
+        let xr = audio_frames[2 * i + 1]; let yr = xr - x1_r + r_dc * y1_r; x1_r = xr; y1_r = yr; audio_frames[2 * i + 1] = yr;
+    }
+    let peak = audio_frames.iter().fold(0.0f32, |m, &v| m.max(v.abs())).max(1e-6);
+    let norm = 0.891 / peak; // -1 dBFS headroom
+    for v in audio_frames.iter_mut() { *v *= norm; }
+    println!("Mastering: DC-blocked, peak {:.3} normalized to -1 dBFS (gain {:.2}x).", peak, norm);
+
     // Creative Prompt Formulation for External Generation Engine
     let avg_phi = uncertainty_trace.iter().map(|t| t["phi"].as_f64().unwrap_or(0.0)).sum::<f64>() / uncertainty_trace.len() as f64;
     let avg_aperture = uncertainty_trace.iter().map(|t| t["aperture"].as_f64().unwrap_or(0.0)).sum::<f64>() / uncertainty_trace.len() as f64;
@@ -2487,11 +2594,14 @@ fn main() -> Result<()> {
     let prompt = format!(
         "Style: {}, {}, {}, {}. Texture: {}. Field: {} regime · {} archetype · depth L{:02}. \
          [Informational Phi: {:.2}, Aperture: {:.2}, Synergy: {:.2}, Field-Entropy: {:.2}b, Rad: {:.2}]",
-        if avg_phi > 0.65 { "Hyper-Resonant" } else { "Chaotic" },
+        // phi is now order-4 permutation entropy in [0,1]: structured/tonal material
+        // sits ~0.5-0.75, dense glitch/broadband ~0.85+. Synergy is tanh-bounded to
+        // (-1,1), so the old >1.5 threshold was dead code (never "Crystalline").
+        if avg_phi > 0.85 { "Hyper-Resonant" } else { "Chaotic" },
         if avg_aperture > 0.5 { "Evolving" } else { "Stable" },
         if total_complexity > 500.0 { "Dense" } else { "Minimal" },
         "Information-Theoretic Glitch",
-        if avg_synergy > 1.5 { "Crystalline-Autonomous" } else if avg_phi > 0.52 { "Organic" } else { "Grit" },
+        if avg_synergy > 0.6 { "Crystalline-Autonomous" } else if avg_phi > 0.55 { "Organic" } else { "Grit" },
         dom_phase, dom_archetype, final_depth,
         avg_phi, avg_aperture, avg_synergy, avg_field_h, rad_amp
     );
@@ -2518,7 +2628,9 @@ fn main() -> Result<()> {
 
     let spec = hound::WavSpec { channels: 2, sample_rate: SAMPLE_RATE, bits_per_sample: 16, sample_format: hound::SampleFormat::Int };
     let mut writer = hound::WavWriter::create(format!("{}/rust_ecosystem_out.wav", base_dir), spec)?;
-    for sample in audio_frames { writer.write_sample(sample)?; }
+    for &sample in &audio_frames {
+        writer.write_sample((sample * 32767.0).clamp(-32768.0, 32767.0) as i16)?;
+    }
     writer.finalize()?;
     println!("Audio saved to {}/rust_ecosystem_out.wav", base_dir);
 
