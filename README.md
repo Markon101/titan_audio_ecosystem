@@ -36,6 +36,7 @@ The Titan Audio Ecosystem treats audio synthesis as an **emergent biological pro
 - **Quality/Diversity Motif Memory:** Up to 128 compact motifs are retained. Once full, replacement favors observations that combine high structured quality with distance from their nearest neighbor, preventing redundant motifs from crowding out distinctive material.
 - **Predictive Safety (q-Factor) Disruption Controller & fBm Shear:** Predicts cellular q-collapse based on macro variance, coupling, and rail proximity. Injects traveling-wave fBm shear perturbations to break phase locks, automatically backing off once q recovers.
 - **Metabolic Energy & Stagnation Homeostats:** Features a metabolic charge tracker (`energy_state`) that scales frequencies/openness under heavy loads, macro **and** micro tape amplitude homeostats that hold the fields off their saturation rails, and an archetype stagnation tracker that triggers curiosity-driven learning rate boosts.
+- **Subcritical Recovery:** Critical health is scored as a band around branching ratio `σ = 1` rather than increasing monotonically with σ. Sustained `σ < 0.68` with low absolute movement activates the escape timer even when self-relative activity looks healthy; deeper subcriticality immediately adds bounded turbulence, macro updates, and Lévy radiation while reducing planner authority over an easily predicted frozen state.
 - **Permutation-Entropy Phi:** The system-complexity signal `phi` is order-4 permutation entropy (ordinal temporal structure, bounded [0,1]) computed alongside spectral flatness and brightness from a single per-chunk FFT — replacing the Shannon spectral entropy that saturated on broadband output.
 - **Mid/Side Haas Delay Stereo & Wave Morphing:** Upgraded spatialization with a Mid/Side panning matrix and a 16-sample Haas delay on the wide side channel. Supports learned wave morphing that projects oscillator carriers and formants dynamically between pure sines and rounded triangle waves.
 - **CUDA-Native Latency Grouping & Resident Stochastic Fields:** CA clocks, Langevin kicks, Lévy radiation, and the structured shear basis reuse a deterministic device-resident field pool (about 288 MiB at the default 64-slot setting), eliminating their per-chunk host generation and H2D uploads. Min-of-K target selection uses an on-device argmin/gather. Control-plane metrics use one combined GPU→CPU readback per chunk.
@@ -136,6 +137,12 @@ chunks. A normal finish or Ctrl-C still saves the final state, so the longer
 periodic interval reduces interruption and storage traffic without weakening
 orderly-shutdown persistence.
 
+The console reports stateful `escape` and immediate `recovery` pressure as a
+pair. The uncertainty trace records both pressures separately, along with
+`subcritical_pressure`. Static agreement between RG scales is activity-gated,
+so a frozen field no longer reports perfect scale health solely because every
+scale is equally unchanged.
+
 For profiling, force CUDA so an unavailable device is reported as an error
 instead of silently falling back to CPU:
 
@@ -155,7 +162,7 @@ All written to the base directory:
 | `titan_world_v7.bin` | Versioned reactor checkpoint: CA tapes, GRU memory, DSP state, RNG, controllers, world-model ensemble/replay, attractors, probes, and runtime continuity state. |
 | `titan_morph_state_v7.json` | Active morphic depth, radiation amplitude, and save-health metadata. |
 | `ca_topology_rust.csv` | Macro-CA state history. |
-| `uncertainty_trace_rust.csv` | System health metrics: spectral/movement/compositional uncertainty, aperture, synergy, empowerment, phi, flatness, brightness, disruption q-norm/lock, tape amplitudes, and the branching-ratio σ (criticality proxy: <1 subcritical, ~1 critical, >1 supercritical). |
+| `uncertainty_trace_rust.csv` | System health metrics including spectral/movement/compositional uncertainty, branching ratio σ, RG dynamics, planner confidence, `escape_strength`, `subcritical_pressure`, and `recovery_pressure`. |
 | `suno_priming_prompt.txt` | Generative primer text — leads with perceptual features (BPM, tonal centroid, stereo width) followed by engine analytics. |
 
 The console additionally reports a rolling steps-per-second figure every 50 chunks

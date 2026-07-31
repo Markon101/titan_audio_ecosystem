@@ -147,6 +147,8 @@ const MOTIF_MIN_AGE: u64 = 128;
 const STAGNATION_WARMUP: u64 = 48;
 const STAGNATION_ESCAPE_AFTER: u32 = 96;
 const STAGNATION_HARD_AFTER: u32 = 224;
+const SUBCRITICAL_SIGMA_TRIGGER: f32 = 0.68;
+const LOW_MOTION_TRIGGER: f32 = 0.009;
 const ACTION_USAGE_DECAY: f32 = 0.965;
 const MODAL_MODES: usize = 8;
 const NOISE_BANDS: usize = 4;
@@ -179,7 +181,7 @@ const POT_ENERGY_SET: f32 = 0.72;
 const POT_K_AMP: f32 = 1.2;
 const POT_K_RHO: f32 = 1.0;
 const POT_K_E: f32 = 0.4;
-const POT_K_SIG: f32 = 0.5;
+const POT_K_SIG: f32 = 0.75;
 const POT_BARRIER: f32 = 0.004; // b/(1.02-a): negligible mid-range, ~10 at the rail
 const POT_RIDGE_G: f32 = 0.6; // height of the movement=0 ridge
 const POT_RIDGE_W: f32 = 0.05; // width of the ridge
@@ -659,7 +661,12 @@ impl AdaptiveDynamics {
         let move_health = 0.52 * move_abs + 0.48 * move_rel;
         let region_health = 0.48 * region_abs + 0.52 * region_rel;
         let temporal_health = 0.50 * delta_abs + 0.50 * delta_rel;
-        let critical_health = (self.sigma_ema / 0.75).clamp(0.0, 1.0);
+        // Critical health is a band around sigma=1, not a monotonic reward.
+        // The previous sigma/0.75 score treated a deeply subcritical but
+        // self-consistent field as healthy and prevented the escape timer.
+        let critical_health = (-((self.sigma_ema - 1.0) / 0.42).powi(2))
+            .exp()
+            .clamp(0.0, 1.0);
         let complexity_health = ((self.complexity_ema - 0.18) / 0.42).clamp(0.0, 1.0);
         let target_health = (0.30 * move_health
             + 0.24 * region_health
@@ -674,14 +681,21 @@ impl AdaptiveDynamics {
         let stagnation_target =
             (1.0 - self.activity_health + 0.35 * easy_but_empty).clamp(0.0, 1.0);
         self.stagnation += 0.055 * (stagnation_target - self.stagnation);
-        if self.samples > STAGNATION_WARMUP && self.stagnation > 0.56 {
+        let subcritical_low_motion =
+            self.sigma_ema < SUBCRITICAL_SIGMA_TRIGGER && self.movement_fast < LOW_MOTION_TRIGGER;
+        if self.samples > STAGNATION_WARMUP && (self.stagnation > 0.56 || subcritical_low_motion) {
             self.low_motion_run = self.low_motion_run.saturating_add(1);
         } else {
             self.low_motion_run = self.low_motion_run.saturating_sub(2);
         }
         self.escape_cooldown = self.escape_cooldown.saturating_sub(1);
 
-        let confidence_gate = (0.12 + 0.88 * self.activity_health) * (1.0 - 0.38 * self.stagnation);
+        // An accurate predictor of a nearly frozen, subcritical world should
+        // not earn full control authority merely because it is easy to model.
+        let critical_confidence_gate = 0.20 + 0.80 * critical_health;
+        let confidence_gate = (0.12 + 0.88 * self.activity_health)
+            * (1.0 - 0.38 * self.stagnation)
+            * critical_confidence_gate;
         self.effective_model_weight = (raw_model_confidence * confidence_gate).clamp(0.03, 0.92);
     }
 
@@ -692,7 +706,11 @@ impl AdaptiveDynamics {
         let duration = ((self.low_motion_run - STAGNATION_ESCAPE_AFTER) as f32
             / (STAGNATION_HARD_AFTER - STAGNATION_ESCAPE_AFTER) as f32)
             .clamp(0.0, 1.0);
-        (0.55 * self.stagnation + 0.45 * duration).clamp(0.0, 1.0)
+        let subcritical = ((SUBCRITICAL_SIGMA_TRIGGER - self.sigma_ema) / 0.40).clamp(0.0, 1.0);
+        let motion_deficit =
+            ((LOW_MOTION_TRIGGER - self.movement_fast) / LOW_MOTION_TRIGGER).clamp(0.0, 1.0);
+        (0.35 * self.stagnation + 0.30 * duration + 0.25 * subcritical + 0.10 * motion_deficit)
+            .clamp(0.0, 1.0)
     }
 
     fn record_action(&mut self, action: ControlAction) {
@@ -1415,7 +1433,12 @@ impl RgObserver {
         let entropy_rate =
             (0.55 * temporal_fine * 5.0 + 0.45 * temporal_coarse * 6.0).clamp(0.0, 1.0);
         self.entropy_rate_ema += 0.10 * (entropy_rate - self.entropy_rate_ema);
-        self.scale_invariance_ema += 0.08 * (scale_invariance - self.scale_invariance_ema);
+        // Static fields look perfectly scale-invariant because every scale is
+        // equally unchanged. Require temporal support before treating that
+        // agreement as evidence of healthy multi-scale organization.
+        let temporal_support = (entropy_rate / 0.10).clamp(0.0, 1.0);
+        let dynamic_scale_invariance = scale_invariance * (0.20 + 0.80 * temporal_support);
+        self.scale_invariance_ema += 0.08 * (dynamic_scale_invariance - self.scale_invariance_ema);
         self.disagreement_ema += 0.08 * (disagreement - self.disagreement_ema);
         self.active_scales_ema += 0.08 * (active_scales - self.active_scales_ema);
         self.features = [
@@ -3605,12 +3628,13 @@ impl PotentialController {
         // --- temperature ---
         let stuck = excess * (-self.speed_ema / TEMP_STUCK_SPEED).exp();
         let subcrit = (1.0 - sig).clamp(0.0, 1.0);
-        let movement_deficit = ((0.006 - movement) / 0.006).clamp(0.0, 1.0);
+        let movement_deficit =
+            ((LOW_MOTION_TRIGGER - movement) / LOW_MOTION_TRIGGER).clamp(0.0, 1.0);
         let t_target = (stuck * 0.65
-            + subcrit * 0.38
+            + subcrit * 0.48
             + curiosity * 0.30
             + stagnation * 0.62
-            + movement_deficit * 0.28)
+            + movement_deficit * 0.34)
             .clamp(0.0, 1.0);
         self.temp += TEMP_SMOOTH * (t_target - self.temp);
         let temp = self.temp.clamp(0.0, 1.0);
@@ -5916,6 +5940,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
         let absolute_step = global_step + step as u64;
         let aperture = uncertainty.branch_aperture();
         let escape_strength = adaptive_dynamics.escape_strength();
+        let subcritical_pressure = ((0.78 - sigma) / (0.78 - 0.30)).clamp(0.0, 1.0);
+        // Deep subcriticality gets an immediate, bounded rescue pressure;
+        // prolonged low motion still ramps the stronger stateful escape path.
+        let recovery_pressure = escape_strength.max(0.55 * subcritical_pressure);
         let curiosity_factor = (stagnation_ticks as f32 / 12.0)
             .min(1.0)
             .max(adaptive_dynamics.stagnation * 0.85);
@@ -6032,13 +6060,13 @@ Usage: titan [BASE_DIR] [options]\n\n\
         }
         // A prolonged low-information attractor adds a bounded rescue bias
         // even when the learned controller still proposes an ordering action.
-        if escape_strength > 0.0 {
+        if recovery_pressure > 0.0 {
             let rescue = SynthesisControl::for_action(ControlAction::Turbulence);
             target_control =
-                target_control.blend(rescue, (0.18 + 0.62 * escape_strength).clamp(0.0, 0.82));
+                target_control.blend(rescue, (0.12 + 0.62 * recovery_pressure).clamp(0.0, 0.82));
         }
         let control_slew =
-            (0.10 + 0.18 * controller.meta.surprise() + 0.14 * escape_strength).clamp(0.08, 0.38);
+            (0.10 + 0.18 * controller.meta.surprise() + 0.14 * recovery_pressure).clamp(0.08, 0.38);
         let current_control = smoothed_control.blend(target_control, control_slew);
         smoothed_control = current_control;
         let current_predictor_input = predictor_input(
@@ -6052,7 +6080,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
             + aperture * 0.48
             + 0.12 * (current_control.shear_mult - 1.0).max(0.0)
             + 0.10 * controller.meta.surprise()
-            + 0.32 * escape_strength)
+            + 0.25 * recovery_pressure
+            + 0.12 * subcritical_pressure)
             .clamp(0.05, 0.98);
         let force_macro = rng.gen_range(0.0f32..1.0) < force_probability;
 
@@ -6440,9 +6469,12 @@ Usage: titan [BASE_DIR] [options]\n\n\
         );
         // Radiation amplitude becomes a slow ecological state instead of
         // remaining at its initial value until a rare morphic event.
-        let rad_target =
-            (0.38 + 0.42 * escape_strength + 0.18 * controller.meta.surprise() + 0.10 * pot.temp)
-                .clamp(RAD_AMP_MIN, RAD_AMP_MAX);
+        let rad_target = (0.38
+            + 0.36 * recovery_pressure
+            + 0.22 * subcritical_pressure
+            + 0.18 * controller.meta.surprise()
+            + 0.10 * pot.temp)
+            .clamp(RAD_AMP_MIN, RAD_AMP_MAX);
         rad_amp += 0.012 * (rad_target - rad_amp);
         last_temp = pot.temp;
         if pot.annealed {
@@ -6564,7 +6596,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 + curiosity_factor * 0.12
                 + (current_control.kick_mult - 1.0).max(0.0) * 0.08
                 + controller.meta.surprise() * 0.06
-                + escape_strength * 0.42)
+                + recovery_pressure * 0.36
+                + subcritical_pressure * 0.16)
                 .clamp(0.0, 0.82);
             let escape_pulse = escape_strength > 0.82 && absolute_step % 32 == 0;
             if escape_pulse || rng.gen::<f32>() < rad_probability {
@@ -6574,7 +6607,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
                         * (1.0
                             + curiosity_factor * 0.4
                             + controller.meta.surprise() * 0.25
-                            + escape_strength * 0.55),
+                            + recovery_pressure * 0.50
+                            + subcritical_pressure * 0.25),
                     &random_pool,
                     absolute_step as usize + 31,
                 )?;
@@ -6927,6 +6961,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 "escape_strength",
                 adaptive_dynamics.escape_strength(),
             );
+            json_put(&mut record, "subcritical_pressure", subcritical_pressure);
+            json_put(&mut record, "recovery_pressure", recovery_pressure);
             json_put(&mut record, "reward_mean", adaptive_dynamics.reward_mean);
             json_put(&mut record, "reward_std", adaptive_dynamics.reward_std());
             json_put(&mut record, "motifs", motifs.entries.len());
@@ -7058,9 +7094,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 field_entropy, arch_summary, synergy_val, empowerment_val, energy_state, phi,
                 s_sig["pi_proxy"].as_f64().unwrap_or(0.0), controller.meta.confidence,
                 adaptive_dynamics.effective_model_weight, controller.meta.error_ema);
-            println!("  ecology health:{:.2} stagnation:{:.2} escape:{:.2} | viable:{:.2} reward:{:+.3} μ:{:+.3} σr:{:.3}",
+            println!("  ecology health:{:.2} stagnation:{:.2} escape/recovery:{:.2}/{:.2} | viable:{:.2} reward:{:+.3} μ:{:+.3} σr:{:.3}",
                 adaptive_dynamics.activity_health, adaptive_dynamics.stagnation,
-                adaptive_dynamics.escape_strength(), viable_complexity, reward,
+                adaptive_dynamics.escape_strength(), recovery_pressure, viable_complexity, reward,
                 adaptive_dynamics.reward_mean, adaptive_dynamics.reward_std());
             println!("  edge health:{:.2} order:{:.2} chaos:{:.2} | RG Hdot:{:.2} scale:{:.2} Δs:{:.2} | horizon:{:.2} λ:{:.2} χ:{:.2}",
                 critical_manifold.health, critical_manifold.order_risk, critical_manifold.chaos_risk,
@@ -7484,6 +7520,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
         "stagnation",
         "low_motion_run",
         "escape_strength",
+        "subcritical_pressure",
+        "recovery_pressure",
         "reward_mean",
         "reward_std",
         "motifs",
@@ -7564,6 +7602,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
             t["stagnation"].to_string(),
             t["low_motion_run"].to_string(),
             t["escape_strength"].to_string(),
+            t["subcritical_pressure"].to_string(),
+            t["recovery_pressure"].to_string(),
             t["reward_mean"].to_string(),
             t["reward_std"].to_string(),
             t["motifs"].to_string(),
@@ -7721,6 +7761,42 @@ mod tests {
         assert!(dynamics.low_motion_run > STAGNATION_ESCAPE_AFTER);
         assert!(dynamics.escape_strength() > 0.0);
         assert!(dynamics.effective_model_weight < 0.55);
+    }
+
+    #[test]
+    fn subcritical_low_motion_triggers_escape_despite_relative_health() {
+        let mut dynamics = AdaptiveDynamics::default();
+        for _ in 0..300 {
+            // Absolute movement is close to the old "healthy" threshold and
+            // self-relative terms remain strong, but sigma is deeply low.
+            dynamics.observe(0.006, 0.004, 0.025, 0.58, 0.40, 0.98);
+        }
+        assert!(dynamics.low_motion_run > STAGNATION_ESCAPE_AFTER);
+        assert!(dynamics.escape_strength() > 0.20);
+        assert!(dynamics.effective_model_weight < 0.45);
+    }
+
+    #[test]
+    fn planner_authority_is_higher_near_criticality() {
+        let mut subcritical = AdaptiveDynamics::default();
+        let mut critical = AdaptiveDynamics::default();
+        for _ in 0..160 {
+            subcritical.observe(0.010, 0.008, 0.040, 0.62, 0.40, 0.98);
+            critical.observe(0.010, 0.008, 0.040, 0.62, 1.00, 0.98);
+        }
+        assert!(critical.effective_model_weight > subcritical.effective_model_weight + 0.30);
+    }
+
+    #[test]
+    fn static_rg_agreement_does_not_saturate_scale_health() {
+        let mut observer = RgObserver::default();
+        let activity = [0.5f32; REGION_COUNT];
+        let no_change = [0.0f32; REGION_COUNT];
+        for _ in 0..100 {
+            observer.update(&activity, &no_change);
+        }
+        assert!(observer.entropy_rate_ema < 0.01);
+        assert!(observer.scale_invariance_ema < 0.30);
     }
 
     #[test]
