@@ -140,8 +140,8 @@ const WORLD_VERSION: u32 = 7;
 const WORLD_MAGIC: [u8; 8] = *b"TITANW7\0";
 const LEGACY_WORLD_MAGIC_V6: [u8; 8] = *b"TITANW6\0";
 const LEGACY_WORLD_MAGIC_V5: [u8; 8] = *b"TITANW5\0";
-const WORLD_SAVE_EVERY: usize = 256;
-const MOTIF_SLOTS: usize = 32;
+const WORLD_SAVE_EVERY: usize = 1_000;
+const MOTIF_SLOTS: usize = 128;
 const MOTIF_EVERY: usize = 16;
 const MOTIF_MIN_AGE: u64 = 128;
 const STAGNATION_WARMUP: u64 = 48;
@@ -986,6 +986,24 @@ impl Default for MotifDiagnostics {
 }
 
 impl MotifMemory {
+    fn diversity_score(distance: f32) -> f32 {
+        // Accepted motifs are at least ~0.03-0.045 apart. A distance of 0.20
+        // is already strongly distinct in the normalized 12-D observation.
+        (distance / 0.20).clamp(0.0, 1.0)
+    }
+
+    fn retention_score(&self, index: usize) -> f32 {
+        let motif = &self.entries[index];
+        let nearest_other = self
+            .entries
+            .iter()
+            .enumerate()
+            .filter(|(other, _)| *other != index)
+            .map(|(_, other)| motif.observation.distance(&other.observation))
+            .fold(1.0f32, |a, b| a.min(b));
+        0.72 * motif.quality + 0.28 * Self::diversity_score(nearest_other)
+    }
+
     fn maybe_store(
         &mut self,
         obs: &AudioObservation,
@@ -1030,15 +1048,25 @@ impl MotifMemory {
             diagnostics.rejected_similarity = diagnostics.rejected_similarity.saturating_add(1);
             return false;
         }
-        if self.entries.len() >= MOTIF_SLOTS {
-            self.entries.pop_front();
-        }
-        self.entries.push_back(Motif {
+        let candidate = Motif {
             observation: obs.clone(),
             control,
             born_step: step,
             quality,
-        });
+        };
+        if self.entries.len() < MOTIF_SLOTS {
+            self.entries.push_back(candidate);
+        } else if let Some((weakest_index, weakest_score)) = (0..self.entries.len())
+            .map(|index| (index, self.retention_score(index)))
+            .min_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal))
+        {
+            let candidate_score = 0.72 * quality + 0.28 * Self::diversity_score(nearest);
+            if candidate_score <= weakest_score {
+                diagnostics.rejected_quality = diagnostics.rejected_quality.saturating_add(1);
+                return false;
+            }
+            self.entries[weakest_index] = candidate;
+        }
         diagnostics.stored_total = diagnostics.stored_total.saturating_add(1);
         diagnostics.last_store_step = step;
         true
@@ -7710,6 +7738,57 @@ mod tests {
         assert_eq!(memory.entries.len(), 1);
         assert_eq!(diagnostics.candidates, 1);
         assert_eq!(diagnostics.stored_total, 1);
+    }
+
+    #[test]
+    fn motif_retention_rewards_diversity_as_well_as_quality() {
+        let duplicate = AudioObservation {
+            values: [0.2; OBS_DIM],
+        };
+        let isolated = AudioObservation {
+            values: [0.8; OBS_DIM],
+        };
+        let mut memory = MotifMemory::default();
+        for (observation, quality) in [
+            (duplicate.clone(), 0.80),
+            (duplicate, 0.80),
+            (isolated, 0.65),
+        ] {
+            memory.entries.push_back(Motif {
+                observation,
+                control: SynthesisControl::default(),
+                born_step: 0,
+                quality,
+            });
+        }
+        assert!(memory.retention_score(2) > memory.retention_score(0));
+    }
+
+    #[test]
+    fn full_motif_memory_replaces_weakest_redundant_entry() {
+        let mut memory = MotifMemory::default();
+        for index in 0..MOTIF_SLOTS {
+            memory.entries.push_back(Motif {
+                observation: AudioObservation {
+                    values: [0.0; OBS_DIM],
+                },
+                control: SynthesisControl::default(),
+                born_step: index as u64,
+                quality: if index == 0 { 0.10 } else { 0.90 },
+            });
+        }
+        let mut diagnostics = MotifDiagnostics::default();
+        let stored = memory.maybe_store(
+            &rich_observation(),
+            SynthesisControl::default(),
+            10_000,
+            &AdaptiveDynamics::default(),
+            &mut diagnostics,
+        );
+        assert!(stored);
+        assert_eq!(memory.entries.len(), MOTIF_SLOTS);
+        assert!(memory.entries.iter().any(|motif| motif.born_step == 10_000));
+        assert!(!memory.entries.iter().any(|motif| motif.quality == 0.10));
     }
 
     #[test]

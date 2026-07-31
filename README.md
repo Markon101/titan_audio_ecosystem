@@ -33,6 +33,7 @@ The Titan Audio Ecosystem treats audio synthesis as an **emergent biological pro
 - **Learning-Progress Arbiter:** The multi-objective loss function is dynamically re-weighted by an Arbiter that receives meta-rewards for improving losses. The weights it applies to the losses are **detached** — the Arbiter is trained purely on learning-progress allocation plus an entropy regularizer, so it cannot cheat by zeroing out hard objectives.
 - **Predictive Defibrillator:** Foresees stagnation and applies targeted Choptuik criticality-seeking learning rate bursts.
 - **Cross-Run Continuity:** The dynamical substrate (CA tapes, GRU memory, oscillator phases, carried synthesis scalars) **persists across runs** alongside the weights, so the organism continues its trajectory instead of cold-starting from noise each launch.
+- **Quality/Diversity Motif Memory:** Up to 128 compact motifs are retained. Once full, replacement favors observations that combine high structured quality with distance from their nearest neighbor, preventing redundant motifs from crowding out distinctive material.
 - **Predictive Safety (q-Factor) Disruption Controller & fBm Shear:** Predicts cellular q-collapse based on macro variance, coupling, and rail proximity. Injects traveling-wave fBm shear perturbations to break phase locks, automatically backing off once q recovers.
 - **Metabolic Energy & Stagnation Homeostats:** Features a metabolic charge tracker (`energy_state`) that scales frequencies/openness under heavy loads, macro **and** micro tape amplitude homeostats that hold the fields off their saturation rails, and an archetype stagnation tracker that triggers curiosity-driven learning rate boosts.
 - **Permutation-Entropy Phi:** The system-complexity signal `phi` is order-4 permutation entropy (ordinal temporal structure, bounded [0,1]) computed alongside spectral flatness and brightness from a single per-chunk FFT — replacing the Shannon spectral entropy that saturated on broadband output.
@@ -129,6 +130,11 @@ optimizer step. This is expected: the autograd graph retains eight chunks of
 activations by default and releases them when the window is detached. Lower
 `--bptt` if peak VRAM approaches the device limit; increase it only when there
 is sufficient headroom and the longer temporal credit window is valuable.
+
+Periodic model and reactor checkpoints are written every 1,000 completed
+chunks. A normal finish or Ctrl-C still saves the final state, so the longer
+periodic interval reduces interruption and storage traffic without weakening
+orderly-shutdown persistence.
 
 For profiling, force CUDA so an unavailable device is reported as an error
 instead of silently falling back to CPU:
