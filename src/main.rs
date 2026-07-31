@@ -807,6 +807,22 @@ impl ModelFreeBandit {
         let alpha = (1.0 / (self.visits[i] as f32).sqrt()).clamp(0.04, 0.35);
         self.q[i] += alpha * (advantage - self.q[i]);
     }
+
+    fn apply_recovery_tax(&mut self, strength: f32) {
+        // Forced Explore/Turbulence actions are interventions, so do not blame
+        // them for the unhealthy state that caused the intervention. Instead,
+        // slowly unwind the ordering habits that maintained that state.
+        for (action, scale) in [
+            (ControlAction::Recall, 0.30),
+            (ControlAction::Contract, 0.25),
+            (ControlAction::Crystallize, 0.20),
+            (ControlAction::Hold, 0.12),
+        ] {
+            let q = &mut self.q[action.index()];
+            let target = -scale * strength;
+            *q += 0.03 * (target - *q);
+        }
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -834,6 +850,7 @@ impl HybridController {
         temp: f32,
         ecology: &mut AdaptiveDynamics,
         motif_available: bool,
+        forced_action: Option<ControlAction>,
         rng: &mut RuntimeRng,
     ) -> ControlAction {
         let model_weight = ecology.effective_model_weight.clamp(0.03, 0.92);
@@ -842,10 +859,12 @@ impl HybridController {
             (0.05 + 0.18 * temp + 0.20 * (1.0 - model_weight) + 0.24 * ecology.stagnation)
                 .clamp(0.05, 0.58);
 
-        let forced_escape = escape > 0.56
+        let policy_choice = if let Some(forced) = forced_action {
+            forced
+        } else if escape > 0.56
             && ecology.escape_cooldown == 0
-            && rng.gen::<f32>() < (0.35 + 0.55 * escape);
-        let chosen = if forced_escape {
+            && rng.gen::<f32>() < (0.35 + 0.55 * escape)
+        {
             let rescue = [
                 ControlAction::Explore,
                 ControlAction::Turbulence,
@@ -926,6 +945,9 @@ impl HybridController {
             }
             ControlAction::from_index(best_i)
         };
+        // A hard ecological recovery is a safety override, not another score
+        // for a confident planner or a recall-heavy bandit to outvote.
+        let chosen = policy_choice;
         if chosen == self.current_action {
             self.action_age = self.action_age.saturating_add(1);
         } else {
@@ -5944,6 +5966,12 @@ Usage: titan [BASE_DIR] [options]\n\n\
         // Deep subcriticality gets an immediate, bounded rescue pressure;
         // prolonged low motion still ramps the stronger stateful escape path.
         let recovery_pressure = escape_strength.max(0.55 * subcritical_pressure);
+        let recovery_exit_ready = sigma > 0.72
+            && adaptive_dynamics.movement_fast > 0.007
+            && rg_observer.entropy_rate_ema > 0.015;
+        let recovery_latched =
+            adaptive_dynamics.low_motion_run > STAGNATION_ESCAPE_AFTER && !recovery_exit_ready;
+        let hard_recovery = recovery_pressure >= 0.50 || recovery_latched;
         let curiosity_factor = (stagnation_ticks as f32 / 12.0)
             .min(1.0)
             .max(adaptive_dynamics.stagnation * 0.85);
@@ -6029,9 +6057,28 @@ Usage: titan [BASE_DIR] [options]\n\n\
             adaptive_dynamics.activity_health,
             escape_strength,
         );
-        let current_action =
-            controller.choose(last_temp, &mut adaptive_dynamics, motif_available, &mut rng);
-        let current_command = reactor_planner.command_for(current_action, &adaptive_dynamics);
+        let forced_recovery_action = hard_recovery.then_some(if (absolute_step / 8) % 2 == 0 {
+            ControlAction::Turbulence
+        } else {
+            ControlAction::Explore
+        });
+        let current_action = controller.choose(
+            last_temp,
+            &mut adaptive_dynamics,
+            motif_available,
+            forced_recovery_action,
+            &mut rng,
+        );
+        let current_command = if hard_recovery {
+            // Do not inherit a near-zero planner intensity for an action the
+            // safety controller has explicitly forced.
+            ActionCommand::new(
+                current_action,
+                (0.62 + 0.30 * recovery_pressure).clamp(0.62, 0.92),
+            )
+        } else {
+            reactor_planner.command_for(current_action, &adaptive_dynamics)
+        };
         let mut target_control = current_command.control();
         let mut recall_strength = 0.0f32;
         if current_action == ControlAction::Recall {
@@ -6452,6 +6499,22 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 rad_amp
             );
         }
+        // A long, severe recovery at the same active depth is evidence that
+        // the current residual stack lacks a useful escape direction. Grow at
+        // most once per 1024 global chunks; unlike ordinary neurogenesis, keep
+        // the radiation level because the field has not escaped yet.
+        if morph_event.is_none()
+            && recovery_pressure > 0.62
+            && absolute_step > 0
+            && absolute_step % 1024 == 0
+            && model.grow()
+        {
+            println!(
+                "  ◄ RECOVERY NEUROGENESIS ►  Depth L{:02} | Rad {:.2}",
+                model.depth(),
+                rad_amp
+            );
+        }
 
         // --- POTENTIAL CONTROLLER: the entire crash cart, one call ---
         let recursive_curiosity = curiosity_factor
@@ -6599,7 +6662,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 + recovery_pressure * 0.36
                 + subcritical_pressure * 0.16)
                 .clamp(0.0, 0.82);
-            let escape_pulse = escape_strength > 0.82 && absolute_step % 32 == 0;
+            let escape_pulse = recovery_pressure > 0.60 && absolute_step % 32 == 0;
             if escape_pulse || rng.gen::<f32>() < rad_probability {
                 micro_tape = levy_radiate(
                     &micro_tape,
@@ -6795,19 +6858,34 @@ Usage: titan [BASE_DIR] [options]\n\n\
         reactor_state.values[45] = state_space.occupancy_entropy;
         let viable_complexity = reactor_state.viable_complexity(&critical_manifold);
 
+        let reward_recurrence = recurrence * (1.0 - 0.90 * recovery_pressure);
+        let recall_reward = 0.08 * recall_strength * (1.0 - recovery_pressure);
+        let recovery_action_penalty = if matches!(
+            current_action,
+            ControlAction::Recall | ControlAction::Contract | ControlAction::Crystallize
+        ) {
+            0.18 * recovery_pressure
+        } else {
+            0.0
+        };
         let reward = (post.observation.reward_against(
             last_observation.as_ref(),
-            recurrence,
+            reward_recurrence,
             &adaptive_dynamics,
             controller.meta.confidence,
             controller.action_age,
-        ) + 0.08 * recall_strength
+        ) + recall_reward
             + 0.16 * (viable_complexity - 0.50)
             + 0.08 * (critical_manifold.health - 0.50)
             + 0.06 * (state_space.transition_diversity - 0.35)
-            - 0.10 * reactor_state.collapse_risk())
-        .clamp(-1.0, 1.0);
-        controller.bandit.update(current_action, reward);
+            - 0.10 * reactor_state.collapse_risk()
+            - recovery_action_penalty)
+            .clamp(-1.0, 1.0);
+        if hard_recovery {
+            controller.bandit.apply_recovery_tax(recovery_pressure);
+        } else {
+            controller.bandit.update(current_action, reward);
+        }
         adaptive_dynamics.observe_reward(reward);
 
         // Each chunk is a free transition-training example. Tiny bootstrap
@@ -6963,6 +7041,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
             );
             json_put(&mut record, "subcritical_pressure", subcritical_pressure);
             json_put(&mut record, "recovery_pressure", recovery_pressure);
+            json_put(&mut record, "hard_recovery", hard_recovery);
             json_put(&mut record, "reward_mean", adaptive_dynamics.reward_mean);
             json_put(&mut record, "reward_std", adaptive_dynamics.reward_std());
             json_put(&mut record, "motifs", motifs.entries.len());
@@ -7094,9 +7173,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 field_entropy, arch_summary, synergy_val, empowerment_val, energy_state, phi,
                 s_sig["pi_proxy"].as_f64().unwrap_or(0.0), controller.meta.confidence,
                 adaptive_dynamics.effective_model_weight, controller.meta.error_ema);
-            println!("  ecology health:{:.2} stagnation:{:.2} escape/recovery:{:.2}/{:.2} | viable:{:.2} reward:{:+.3} μ:{:+.3} σr:{:.3}",
+            println!("  ecology health:{:.2} stagnation:{:.2} escape/recovery:{:.2}/{:.2} hard:{} | viable:{:.2} reward:{:+.3} μ:{:+.3} σr:{:.3}",
                 adaptive_dynamics.activity_health, adaptive_dynamics.stagnation,
-                adaptive_dynamics.escape_strength(), recovery_pressure, viable_complexity, reward,
+                adaptive_dynamics.escape_strength(), recovery_pressure, hard_recovery,
+                viable_complexity, reward,
                 adaptive_dynamics.reward_mean, adaptive_dynamics.reward_std());
             println!("  edge health:{:.2} order:{:.2} chaos:{:.2} | RG Hdot:{:.2} scale:{:.2} Δs:{:.2} | horizon:{:.2} λ:{:.2} χ:{:.2}",
                 critical_manifold.health, critical_manifold.order_risk, critical_manifold.chaos_risk,
@@ -7522,6 +7602,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
         "escape_strength",
         "subcritical_pressure",
         "recovery_pressure",
+        "hard_recovery",
         "reward_mean",
         "reward_std",
         "motifs",
@@ -7604,6 +7685,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
             t["escape_strength"].to_string(),
             t["subcritical_pressure"].to_string(),
             t["recovery_pressure"].to_string(),
+            t["hard_recovery"].to_string(),
             t["reward_mean"].to_string(),
             t["reward_std"].to_string(),
             t["motifs"].to_string(),
@@ -7785,6 +7867,31 @@ mod tests {
             critical.observe(0.010, 0.008, 0.040, 0.62, 1.00, 0.98);
         }
         assert!(critical.effective_model_weight > subcritical.effective_model_weight + 0.30);
+    }
+
+    #[test]
+    fn hard_recovery_action_overrides_planner_and_bandit() {
+        let mut controller = HybridController::default();
+        controller.cached_model_scores[ControlAction::Recall.index()] = 10.0;
+        controller.bandit.q[ControlAction::Recall.index()] = 10.0;
+        let mut dynamics = AdaptiveDynamics::default();
+        let mut rng = RuntimeRng::seed_from_u64(123);
+        let action = controller.choose(
+            1.0,
+            &mut dynamics,
+            true,
+            Some(ControlAction::Turbulence),
+            &mut rng,
+        );
+        assert_eq!(action, ControlAction::Turbulence);
+        assert_eq!(controller.current_action, ControlAction::Turbulence);
+        let recall_before = controller.bandit.q[ControlAction::Recall.index()];
+        controller.bandit.apply_recovery_tax(0.8);
+        assert!(controller.bandit.q[ControlAction::Recall.index()] < recall_before);
+        assert_eq!(
+            controller.bandit.visits[ControlAction::Turbulence.index()],
+            0
+        );
     }
 
     #[test]
