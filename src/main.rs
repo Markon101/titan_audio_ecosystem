@@ -1,12 +1,12 @@
 #![recursion_limit = "512"]
 
 // =====================================================================
-// TITAN AUDIO ECOSYSTEM — RUST EDITION v7 ("RECURSIVE CRITICAL REACTOR")
+// TITAN AUDIO ECOSYSTEM — RUST EDITION v8 ("CONFINEMENT REACTOR")
 // =====================================================================
 // BUILD (Termux / Snapdragon 8 Elite):
 //   RUSTFLAGS="-C target-cpu=native" cargo build --release
 //
-// DESIGN RECORD (v7) — recursive critical reactor on a phone:
+// DESIGN RECORD (v8) — recursive reactor with staged confinement control:
 //
 // 1. RECURSIVE RENORMALIZATION OBSERVER. The 4x4 regional field is
 //    repeatedly coarse-grained into 2x2 and global descriptions. Entropy,
@@ -63,7 +63,7 @@
 // 10. CONTINUITY. Versioned, checksummed checkpoints preserve CA tensors, DSP
 //    delay memory, RNG, controller, RG state, transition ensemble/replay,
 //    state-space occupancy, attractors, and probes. V6 and V5 worlds migrate
-//    into V7 without overwriting their original files. AdamW moment buffers
+//    into V8 without overwriting their original files. AdamW moment buffers
 //    remain process-local and are intentionally not serialized.
 
 use anyhow::Result;
@@ -136,8 +136,9 @@ const REGION_W: usize = GRID_W / REGION_COLS;
 // Recursive self-model / hybrid control
 const OBS_DIM: usize = 12;
 const ACTION_COUNT: usize = 10;
-const WORLD_VERSION: u32 = 7;
-const WORLD_MAGIC: [u8; 8] = *b"TITANW7\0";
+const WORLD_VERSION: u32 = 8;
+const WORLD_MAGIC: [u8; 8] = *b"TITANW8\0";
+const LEGACY_WORLD_MAGIC_V7: [u8; 8] = *b"TITANW7\0";
 const LEGACY_WORLD_MAGIC_V6: [u8; 8] = *b"TITANW6\0";
 const LEGACY_WORLD_MAGIC_V5: [u8; 8] = *b"TITANW5\0";
 const WORLD_SAVE_EVERY: usize = 1_000;
@@ -152,6 +153,14 @@ const LOW_MOTION_TRIGGER: f32 = 0.009;
 const ACTION_USAGE_DECAY: f32 = 0.965;
 const MODAL_MODES: usize = 8;
 const NOISE_BANDS: usize = 4;
+
+// Tokamak-inspired staged confinement recovery. Each phase changes actuator
+// class instead of indefinitely increasing the same stochastic heat.
+const RECOVERY_EDGE_CHUNKS: u64 = 160;
+const RECOVERY_ROTATION_CHUNKS: u64 = 160;
+const RECOVERY_GUIDED_CHUNKS: u64 = 128;
+const RECOVERY_COOLDOWN_CHUNKS: u64 = 192;
+const CONFINEMENT_CALIBRATION_SAMPLES: u64 = 128;
 
 // Episodic memory
 const EPI_SLOTS: usize = 16; // snapshots retained (~16*64 steps ≈ 87 s span)
@@ -561,7 +570,12 @@ impl AudioObservation {
         let novelty_score = (novelty / 0.10).clamp(0.0, 1.0);
         let rms_penalty = ((self.values[4] - 0.25).abs() / 0.45).clamp(0.0, 1.0);
         let crest_penalty = ((self.values[5] - 0.82) / 0.25).clamp(0.0, 1.0);
-        let critical_health = (ecology.sigma_ema / 0.75).clamp(0.0, 1.0);
+        // Reward the same finite critical band used by AdaptiveDynamics.
+        // A monotonic sigma/0.75 term incorrectly gave full credit to
+        // supercritical persistence and partial credit to welded states.
+        let critical_health = (-((ecology.sigma_ema - 1.0) / 0.42).powi(2))
+            .exp()
+            .clamp(0.0, 1.0);
         let repetition_penalty = (action_age as f32 / 28.0).clamp(0.0, 1.0);
         let predictability_trap = raw_model_confidence * ecology.stagnation;
         let score = 0.58 * base
@@ -1199,7 +1213,7 @@ impl CriticalityEstimator {
 }
 
 // =====================================================================
-// V7 RECURSIVE CRITICAL REACTOR
+// V8 RECURSIVE CONFINEMENT REACTOR
 // =====================================================================
 // This host-side subsystem is deliberately compact. It never predicts raw
 // samples or clones the neural CA. Instead it learns transitions in a bounded
@@ -1698,6 +1712,327 @@ impl ReactorState {
             h |= q.min(15) << (slot * 4);
         }
         h
+    }
+}
+
+// =====================================================================
+// CONFINEMENT CONTROL — a moving viable shell, not a fixed target point
+// =====================================================================
+
+const CONFINEMENT_MODES: [(usize, usize); 4] = [(1, 0), (0, 1), (1, 1), (1, 3)];
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct ConfinementObserver {
+    #[serde(with = "BigArray")]
+    healthy_mean: [f32; REACTOR_DIM],
+    #[serde(with = "BigArray")]
+    healthy_var: [f32; REACTOR_DIM],
+    #[serde(with = "BigArray")]
+    previous_q: [f32; REACTOR_DIM],
+    previous_micro_modes: [[f32; 2]; 4],
+    previous_macro_modes: [[f32; 2]; 4],
+    healthy_samples: u64,
+    radius: f32,
+    radial_velocity: f32,
+    tangential_velocity: f32,
+    modal_rotation: f32,
+    modal_coherence: f32,
+    micro_macro_lock: f32,
+    health: f32,
+}
+impl Default for ConfinementObserver {
+    fn default() -> Self {
+        Self {
+            healthy_mean: [0.5; REACTOR_DIM],
+            healthy_var: [0.04; REACTOR_DIM],
+            previous_q: [0.0; REACTOR_DIM],
+            previous_micro_modes: [[0.0; 2]; 4],
+            previous_macro_modes: [[0.0; 2]; 4],
+            healthy_samples: 0,
+            radius: 1.0,
+            radial_velocity: 0.0,
+            tangential_velocity: 0.0,
+            modal_rotation: 0.0,
+            modal_coherence: 0.0,
+            micro_macro_lock: 0.5,
+            health: 0.5,
+        }
+    }
+}
+impl ConfinementObserver {
+    fn spatial_modes(regions: &[f32; REGION_COUNT]) -> [[f32; 2]; 4] {
+        std::array::from_fn(|m| {
+            let (kx, ky) = CONFINEMENT_MODES[m];
+            let mut re = 0.0f32;
+            let mut im = 0.0f32;
+            for y in 0..REGION_ROWS {
+                for x in 0..REGION_COLS {
+                    let phase = TWO_PI
+                        * (kx as f32 * x as f32 / REGION_COLS as f32
+                            + ky as f32 * y as f32 / REGION_ROWS as f32);
+                    let value = regions[y * REGION_COLS + x];
+                    re += value * phase.cos();
+                    im -= value * phase.sin();
+                }
+            }
+            [re / REGION_COUNT as f32, im / REGION_COUNT as f32]
+        })
+    }
+
+    fn update(
+        &mut self,
+        state: &ReactorState,
+        micro_regions: &[f32; REGION_COUNT],
+        macro_regions: &[f32; REGION_COUNT],
+        learn_healthy_shell: bool,
+    ) {
+        if learn_healthy_shell {
+            self.healthy_samples = self.healthy_samples.saturating_add(1);
+            let rate = if self.healthy_samples < CONFINEMENT_CALIBRATION_SAMPLES {
+                1.0 / self.healthy_samples as f32
+            } else {
+                0.002
+            };
+            for i in 0..REACTOR_DIM {
+                let delta = state.values[i] - self.healthy_mean[i];
+                self.healthy_mean[i] += rate * delta;
+                self.healthy_var[i] += rate * (delta * delta - self.healthy_var[i]);
+                self.healthy_var[i] = self.healthy_var[i].clamp(0.0004, 0.25);
+            }
+        }
+
+        let q: [f32; REACTOR_DIM] = std::array::from_fn(|i| {
+            ((state.values[i] - self.healthy_mean[i]) / self.healthy_var[i].sqrt()).clamp(-6.0, 6.0)
+        });
+        let radius = (q.iter().map(|v| v * v).sum::<f32>() / REACTOR_DIM as f32).sqrt();
+        let delta: [f32; REACTOR_DIM] = std::array::from_fn(|i| q[i] - self.previous_q[i]);
+        let speed_sq = delta.iter().map(|v| v * v).sum::<f32>() / REACTOR_DIM as f32;
+        let radial = q
+            .iter()
+            .zip(delta.iter())
+            .map(|(position, velocity)| position * velocity)
+            .sum::<f32>()
+            / (REACTOR_DIM as f32 * radius.max(1e-4));
+        let tangential = (speed_sq - radial * radial).max(0.0).sqrt();
+
+        let micro_modes = Self::spatial_modes(micro_regions);
+        let macro_modes = Self::spatial_modes(macro_regions);
+        let mut rotation_sum = 0.0f32;
+        let mut coherence_sum = 0.0f32;
+        let mut lock_sum = 0.0f32;
+        let mut lock_modes = 0.0f32;
+        let mut weight_sum = 0.0f32;
+        for i in 0..4 {
+            let [re, im] = micro_modes[i];
+            let [pre, pim] = self.previous_micro_modes[i];
+            let amp = (re * re + im * im).sqrt();
+            let prev_amp = (pre * pre + pim * pim).sqrt();
+            let weight = (amp * prev_amp).sqrt();
+            if weight > 1e-5 {
+                let cross = pre * im - pim * re;
+                let dot = pre * re + pim * im;
+                let angle = cross.atan2(dot);
+                rotation_sum += angle.abs() * weight;
+                coherence_sum += angle.cos().max(0.0) * weight;
+                weight_sum += weight;
+            }
+            let [mre, mim] = macro_modes[i];
+            let macro_amp = (mre * mre + mim * mim).sqrt();
+            if amp > 1e-5 && macro_amp > 1e-5 {
+                lock_sum += ((re * mre + im * mim) / (amp * macro_amp)).abs();
+                lock_modes += 1.0;
+            }
+        }
+        let rotation = if weight_sum > 1e-6 {
+            rotation_sum / weight_sum
+        } else {
+            0.0
+        };
+        let coherence = if weight_sum > 1e-6 {
+            coherence_sum / weight_sum
+        } else {
+            0.0
+        };
+        let lock = if lock_modes > 0.0 {
+            lock_sum / lock_modes
+        } else {
+            0.0
+        };
+
+        self.radius += 0.08 * (radius - self.radius);
+        self.radial_velocity += 0.12 * (radial - self.radial_velocity);
+        self.tangential_velocity += 0.12 * (tangential - self.tangential_velocity);
+        self.modal_rotation += 0.12 * (rotation - self.modal_rotation);
+        self.modal_coherence += 0.10 * (coherence - self.modal_coherence);
+        self.micro_macro_lock += 0.10 * (lock - self.micro_macro_lock);
+        let calibrated =
+            (self.healthy_samples as f32 / CONFINEMENT_CALIBRATION_SAMPLES as f32).clamp(0.0, 1.0);
+        let shell_health = (-((self.radius - 1.0) / 0.85).powi(2)).exp();
+        let tangent_health = (self.tangential_velocity / 0.08).clamp(0.0, 1.0);
+        let rotation_health = (self.modal_rotation / 0.035).clamp(0.0, 1.0);
+        let target_health = calibrated
+            * (0.40 * shell_health
+                + 0.25 * tangent_health
+                + 0.20 * rotation_health
+                + 0.15 * self.micro_macro_lock)
+            + (1.0 - calibrated) * 0.5;
+        self.health += 0.08 * (target_health - self.health);
+        self.previous_q = q;
+        self.previous_micro_modes = micro_modes;
+        self.previous_macro_modes = macro_modes;
+    }
+}
+
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
+enum RecoveryPhase {
+    Nominal,
+    EdgeAgitation,
+    RotationCapture,
+    GuidedPulse,
+    PartialReseed,
+    Cooldown,
+}
+impl RecoveryPhase {
+    fn label(self) -> &'static str {
+        match self {
+            Self::Nominal => "NOMINAL",
+            Self::EdgeAgitation => "EDGE",
+            Self::RotationCapture => "ROTATE",
+            Self::GuidedPulse => "GUIDED",
+            Self::PartialReseed => "RESEED",
+            Self::Cooldown => "COOLDOWN",
+        }
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct RecoveryController {
+    phase: RecoveryPhase,
+    entered_step: u64,
+    growth_used: bool,
+    healthy_dwell: u32,
+    progress_ema: f32,
+    previous_health: f32,
+    just_entered: bool,
+}
+impl Default for RecoveryController {
+    fn default() -> Self {
+        Self {
+            phase: RecoveryPhase::Nominal,
+            entered_step: 0,
+            growth_used: false,
+            healthy_dwell: 0,
+            progress_ema: 0.0,
+            previous_health: 0.5,
+            just_entered: false,
+        }
+    }
+}
+impl RecoveryController {
+    fn enter(&mut self, phase: RecoveryPhase, step: u64) {
+        self.phase = phase;
+        self.entered_step = step;
+        self.just_entered = true;
+    }
+
+    fn update(&mut self, step: u64, hard_recovery: bool, confinement_health: f32) {
+        self.just_entered = false;
+        let progress = confinement_health - self.previous_health;
+        self.progress_ema += 0.08 * (progress - self.progress_ema);
+        self.previous_health = confinement_health;
+        if !hard_recovery {
+            self.healthy_dwell = self.healthy_dwell.saturating_add(1);
+            if self.phase != RecoveryPhase::Nominal {
+                self.enter(RecoveryPhase::Nominal, step);
+            }
+            if self.healthy_dwell >= 256 {
+                self.growth_used = false;
+            }
+            return;
+        }
+        self.healthy_dwell = 0;
+        let elapsed = step.saturating_sub(self.entered_step);
+        match self.phase {
+            RecoveryPhase::Nominal => self.enter(RecoveryPhase::EdgeAgitation, step),
+            RecoveryPhase::EdgeAgitation if elapsed >= RECOVERY_EDGE_CHUNKS => {
+                self.enter(RecoveryPhase::RotationCapture, step)
+            }
+            RecoveryPhase::RotationCapture if elapsed >= RECOVERY_ROTATION_CHUNKS => {
+                self.enter(RecoveryPhase::GuidedPulse, step)
+            }
+            RecoveryPhase::GuidedPulse if elapsed >= RECOVERY_GUIDED_CHUNKS => {
+                self.enter(RecoveryPhase::PartialReseed, step)
+            }
+            RecoveryPhase::PartialReseed if elapsed >= 1 => {
+                self.enter(RecoveryPhase::Cooldown, step)
+            }
+            RecoveryPhase::Cooldown if elapsed >= RECOVERY_COOLDOWN_CHUNKS => {
+                self.enter(RecoveryPhase::EdgeAgitation, step)
+            }
+            _ => {}
+        }
+    }
+
+    fn elapsed(&self, step: u64) -> u64 {
+        step.saturating_sub(self.entered_step)
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+struct CoreControl {
+    update_drive: f32,
+    macro_coupling: f32,
+    rotational_drive: f32,
+    coherent_pulse: f32,
+    stochastic_heat: f32,
+}
+impl CoreControl {
+    fn for_recovery(phase: RecoveryPhase, pressure: f32) -> Self {
+        let p = pressure.clamp(0.0, 1.0);
+        match phase {
+            RecoveryPhase::Nominal => Self {
+                update_drive: 1.0,
+                macro_coupling: 1.0,
+                rotational_drive: 0.0,
+                coherent_pulse: 0.0,
+                stochastic_heat: 1.0,
+            },
+            RecoveryPhase::EdgeAgitation => Self {
+                update_drive: 1.04 + 0.06 * p,
+                macro_coupling: 0.88,
+                rotational_drive: 0.012 + 0.015 * p,
+                coherent_pulse: 0.035 + 0.045 * p,
+                stochastic_heat: 0.72,
+            },
+            RecoveryPhase::RotationCapture => Self {
+                update_drive: 1.08 + 0.06 * p,
+                macro_coupling: 1.05,
+                rotational_drive: 0.045 + 0.055 * p,
+                coherent_pulse: 0.025,
+                stochastic_heat: 0.44,
+            },
+            RecoveryPhase::GuidedPulse => Self {
+                update_drive: 1.10 + 0.08 * p,
+                macro_coupling: 1.12,
+                rotational_drive: 0.075 + 0.055 * p,
+                coherent_pulse: 0.10 + 0.08 * p,
+                stochastic_heat: 0.32,
+            },
+            RecoveryPhase::PartialReseed => Self {
+                update_drive: 1.08,
+                macro_coupling: 0.95,
+                rotational_drive: 0.04,
+                coherent_pulse: 0.04,
+                stochastic_heat: 0.20,
+            },
+            RecoveryPhase::Cooldown => Self {
+                update_drive: 1.04,
+                macro_coupling: 1.0,
+                rotational_drive: 0.02,
+                coherent_pulse: 0.0,
+                stochastic_heat: 0.28,
+            },
+        }
     }
 }
 
@@ -4251,6 +4586,26 @@ impl NeuralCA2D {
     }
 }
 
+// Pairwise skew rotation is approximately norm preserving and creates
+// coherent tangential motion without raising every cell's amplitude. This is
+// the core analogue of rotational drive rather than another white-noise kick.
+fn rotate_channel_pairs(field: &Tensor, omega: f32) -> CResult<Tensor> {
+    if omega.abs() <= 1e-6 {
+        return Ok(field.clone());
+    }
+    let paired = field.reshape((1, CA_CHANNELS / 2, 2, GRID_H, GRID_W))?;
+    let a = paired.narrow(2, 0, 1)?;
+    let b = paired.narrow(2, 1, 1)?;
+    let norm = (1.0 + omega * omega).sqrt() as f64;
+    let a_rot = a
+        .affine(1.0 / norm, 0.0)?
+        .add(&b.affine(-(omega as f64) / norm, 0.0)?)?;
+    let b_rot = b
+        .affine(1.0 / norm, 0.0)?
+        .add(&a.affine((omega as f64) / norm, 0.0)?)?;
+    Tensor::cat(&[&a_rot, &b_rot], 2)?.reshape((1, CA_CHANNELS, GRID_H, GRID_W))
+}
+
 // --- TENSOR MODEL STRUCTS ---
 struct ForwardOut {
     stereo: Tensor,
@@ -4263,10 +4618,11 @@ struct ForwardOut {
     cur_freq_r: Tensor,
     mod_freq_l: Tensor,
     mod_freq_r: Tensor,
-    pan: Tensor,             // (1,) — feeds the last_pan host mirror
-    pair_sums: Tensor,       // (2,) — theta for the NEXT step (1-step lag, no sync)
-    region_activity: Tensor, // (16,) 4x4 spatial summary for DSP/control
-    region_change: Tensor,   // (16,) local temporal activity
+    pan: Tensor,                   // (1,) — feeds the last_pan host mirror
+    pair_sums: Tensor,             // (2,) — theta for the NEXT step (1-step lag, no sync)
+    region_activity: Tensor,       // (16,) 4x4 spatial summary for DSP/control
+    region_change: Tensor,         // (16,) local temporal activity
+    macro_region_activity: Tensor, // (16,) slow-field profile for confinement control
 }
 
 struct ComplexAudioEcosystem {
@@ -4469,6 +4825,7 @@ impl ComplexAudioEcosystem {
         force: bool,
         energy: f32,
         control: &SynthesisControl,
+        core_control: &CoreControl,
         random_pool: &DeviceRandomPool,
         random_index: usize,
     ) -> Result<ForwardOut> {
@@ -4480,9 +4837,13 @@ impl ComplexAudioEcosystem {
             // barrier lives in the PotentialController).
             let field = macro_t.abs()?.affine(-0.04, 0.02)?;
             let keep = random_pool.keep_mask(random_index * 2)?;
-            next_macro = self
-                .macro_ca
-                .forward(macro_t, None, Some(&field), &keep)?
+            let proposed = self.macro_ca.forward(macro_t, None, Some(&field), &keep)?;
+            next_macro = macro_t
+                .add(
+                    &proposed
+                        .sub(macro_t)?
+                        .affine(core_control.update_drive as f64, 0.0)?,
+                )?
                 .tanh()?
                 .affine(0.95, 0.0)?;
         }
@@ -4491,15 +4852,23 @@ impl ComplexAudioEcosystem {
         let inv_metab = metab.affine(-1.0, 1.0)?;
         let contracted_mem = self.asymptotic_contraction.forward(mem)?;
         let macro_ch = next_macro.mean(D::Minus1)?.mean(D::Minus1)?; // (1, C)
-        let macro_mod = contracted_mem.add(&macro_ch)?;
+        let macro_mod = contracted_mem
+            .add(&macro_ch)?
+            .affine(core_control.macro_coupling as f64, 0.0)?;
         let micro_field = micro.abs()?.affine(-0.04, 0.02)?;
         let keep_m = random_pool.keep_mask(random_index * 2 + 1)?;
-        let raw_next_micro =
+        let proposed_micro =
             self.micro_ca
                 .forward(micro, Some(&macro_mod), Some(&micro_field), &keep_m)?;
+        let driven_micro = micro.add(
+            &proposed_micro
+                .sub(micro)?
+                .affine(core_control.update_drive as f64, 0.0)?,
+        )?;
         let next_micro = micro
             .broadcast_mul(&inv_metab)?
-            .add(&raw_next_micro.broadcast_mul(&metab)?)?
+            .add(&driven_micro.broadcast_mul(&metab)?)?;
+        let next_micro = rotate_channel_pairs(&next_micro, core_control.rotational_drive)?
             .clamp(-1.0f32, 1.0f32)?;
         let movement_t = next_micro.sub(micro)?.abs()?.mean_all()?;
 
@@ -4627,6 +4996,12 @@ impl ComplexAudioEcosystem {
         let region_change = delta_cm
             .reshape((REGION_ROWS, REGION_H, REGION_COLS, REGION_W))?
             .abs()?
+            .mean(D::Minus1)?
+            .mean(1)?
+            .reshape((REGION_COUNT,))?;
+        let macro_region_activity = next_macro
+            .mean(1)?
+            .reshape((REGION_ROWS, REGION_H, REGION_COLS, REGION_W))?
             .mean(D::Minus1)?
             .mean(1)?
             .reshape((REGION_COUNT,))?;
@@ -4764,6 +5139,7 @@ impl ComplexAudioEcosystem {
             pair_sums,
             region_activity,
             region_change,
+            macro_region_activity,
         })
     }
 }
@@ -4905,11 +5281,139 @@ struct WorldCheckpoint {
     reactor_planner: ReactorPlanner,
     attractors: AttractorMemory,
     probe_controller: ProbeController,
+    confinement_observer: ConfinementObserver,
+    recovery_controller: RecoveryController,
     last_reactor_state: Option<ReactorState>,
     pending_reactor_command: Option<ActionCommand>,
 }
 
-// Exact v6 layout for one-time migration into the V7 reactor.
+// Exact v7 layout for migration into the confinement-aware V8 control plane.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct LegacyWorldCheckpointV7 {
+    version: u32,
+    global_step: u64,
+    seed: u64,
+    grid_h: usize,
+    grid_w: usize,
+    ca_channels: usize,
+    rng: RuntimeRng,
+    micro_tape: Vec<f32>,
+    macro_tape: Vec<f32>,
+    hidden_mem: Vec<f32>,
+    phases: [f32; 4],
+    theta_prev: f32,
+    theta_prev2: f32,
+    model_runtime: ModelRuntimeState,
+    rad_amp: f32,
+    active_depth: usize,
+    energy_state: f32,
+    shear_phase: f32,
+    uncertainty: AudioUncertaintyState,
+    potential: PotentialController,
+    semantic: SemanticField,
+    criticality: CriticalityEstimator,
+    episodic_slots: Vec<Vec<f32>>,
+    novelty_spectra: Vec<Vec<f32>>,
+    modal_resonators: ModalResonatorBank,
+    fdn_l: FractalFDN,
+    fdn_r: FractalFDN,
+    noise_bank: SpectralNoiseBank,
+    controller: HybridController,
+    motifs: MotifMemory,
+    last_observation: Option<AudioObservation>,
+    pending_predictor_input: Option<Vec<f32>>,
+    spectral_history: Vec<f32>,
+    spectral_prev_mags: Vec<f32>,
+    movement_history: Vec<f32>,
+    adaptive_dynamics: AdaptiveDynamics,
+    motif_diagnostics: MotifDiagnostics,
+    host_runtime: HostRuntimeState,
+    rg_observer: RgObserver,
+    critical_manifold: CriticalManifold,
+    state_space: StateSpaceTracker,
+    reactor_planner: ReactorPlanner,
+    attractors: AttractorMemory,
+    probe_controller: ProbeController,
+    last_reactor_state: Option<ReactorState>,
+    pending_reactor_command: Option<ActionCommand>,
+}
+impl LegacyWorldCheckpointV7 {
+    fn validate(&self) -> Result<()> {
+        if self.version != 7 {
+            anyhow::bail!(
+                "legacy checkpoint reports version {} instead of 7",
+                self.version
+            );
+        }
+        let ca_n = CA_CHANNELS * GRID_H * GRID_W;
+        if self.grid_h != GRID_H
+            || self.grid_w != GRID_W
+            || self.ca_channels != CA_CHANNELS
+            || self.micro_tape.len() != ca_n
+            || self.macro_tape.len() != ca_n
+            || self.hidden_mem.len() != MEMORY_DIM
+            || self.spectral_prev_mags.len() != CHUNK_SIZE / 2
+        {
+            anyhow::bail!("legacy v7 world dimensions or tensor sizes are invalid");
+        }
+        Ok(())
+    }
+
+    fn migrate(self) -> WorldCheckpoint {
+        WorldCheckpoint {
+            version: WORLD_VERSION,
+            global_step: self.global_step,
+            seed: self.seed,
+            grid_h: self.grid_h,
+            grid_w: self.grid_w,
+            ca_channels: self.ca_channels,
+            rng: self.rng,
+            micro_tape: self.micro_tape,
+            macro_tape: self.macro_tape,
+            hidden_mem: self.hidden_mem,
+            phases: self.phases,
+            theta_prev: self.theta_prev,
+            theta_prev2: self.theta_prev2,
+            model_runtime: self.model_runtime,
+            rad_amp: self.rad_amp,
+            active_depth: self.active_depth,
+            energy_state: self.energy_state,
+            shear_phase: self.shear_phase,
+            uncertainty: self.uncertainty,
+            potential: self.potential,
+            semantic: self.semantic,
+            criticality: self.criticality,
+            episodic_slots: self.episodic_slots,
+            novelty_spectra: self.novelty_spectra,
+            modal_resonators: self.modal_resonators,
+            fdn_l: self.fdn_l,
+            fdn_r: self.fdn_r,
+            noise_bank: self.noise_bank,
+            controller: self.controller,
+            motifs: self.motifs,
+            last_observation: self.last_observation,
+            pending_predictor_input: self.pending_predictor_input,
+            spectral_history: self.spectral_history,
+            spectral_prev_mags: self.spectral_prev_mags,
+            movement_history: self.movement_history,
+            adaptive_dynamics: self.adaptive_dynamics,
+            motif_diagnostics: self.motif_diagnostics,
+            host_runtime: self.host_runtime,
+            rg_observer: self.rg_observer,
+            critical_manifold: self.critical_manifold,
+            state_space: self.state_space,
+            reactor_planner: self.reactor_planner,
+            attractors: self.attractors,
+            probe_controller: self.probe_controller,
+            confinement_observer: ConfinementObserver::default(),
+            recovery_controller: RecoveryController::default(),
+            last_reactor_state: self.last_reactor_state,
+            pending_reactor_command: self.pending_reactor_command,
+        }
+    }
+}
+
+// Exact v6 layout for one-time migration into the current reactor.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct LegacyWorldCheckpointV6 {
     version: u32,
@@ -5070,6 +5574,8 @@ impl LegacyWorldCheckpointV6 {
             reactor_planner: ReactorPlanner::new(self.seed),
             attractors: AttractorMemory::default(),
             probe_controller: ProbeController::new(true),
+            confinement_observer: ConfinementObserver::default(),
+            recovery_controller: RecoveryController::default(),
             last_reactor_state: None,
             pending_reactor_command: None,
         }
@@ -5159,6 +5665,8 @@ impl LegacyWorldCheckpointV5 {
             reactor_planner: ReactorPlanner::new(self.seed),
             attractors: AttractorMemory::default(),
             probe_controller: ProbeController::new(true),
+            confinement_observer: ConfinementObserver::default(),
+            recovery_controller: RecoveryController::default(),
             last_reactor_state: None,
             pending_reactor_command: None,
         }
@@ -5301,10 +5809,11 @@ fn load_world(path: &str) -> Result<WorldCheckpoint> {
     }
     let magic = &bytes[..8];
     if magic != WORLD_MAGIC.as_slice()
+        && magic != LEGACY_WORLD_MAGIC_V7.as_slice()
         && magic != LEGACY_WORLD_MAGIC_V6.as_slice()
         && magic != LEGACY_WORLD_MAGIC_V5.as_slice()
     {
-        anyhow::bail!("world checkpoint is neither TITAN v7 nor a migratable v6/v5 world");
+        anyhow::bail!("world checkpoint is neither TITAN v8 nor a migratable v7/v6/v5 world");
     }
     let payload_len = u64::from_le_bytes(bytes[8..16].try_into().unwrap()) as usize;
     let expected_checksum = u64::from_le_bytes(bytes[16..24].try_into().unwrap());
@@ -5319,17 +5828,24 @@ fn load_world(path: &str) -> Result<WorldCheckpoint> {
         let checkpoint: WorldCheckpoint = bincode::deserialize(payload)?;
         checkpoint.validate()?;
         Ok(checkpoint)
+    } else if magic == LEGACY_WORLD_MAGIC_V7.as_slice() {
+        let legacy: LegacyWorldCheckpointV7 = bincode::deserialize(payload)?;
+        legacy.validate()?;
+        println!("--> Migrating TITAN v7 organism into the v8 confinement controller.");
+        let checkpoint = legacy.migrate();
+        checkpoint.validate()?;
+        Ok(checkpoint)
     } else if magic == LEGACY_WORLD_MAGIC_V6.as_slice() {
         let legacy: LegacyWorldCheckpointV6 = bincode::deserialize(payload)?;
         legacy.validate()?;
-        println!("--> Migrating TITAN v6 organism into the v7 recursive critical reactor.");
+        println!("--> Migrating TITAN v6 organism into the v8 recursive confinement reactor.");
         let checkpoint = legacy.migrate();
         checkpoint.validate()?;
         Ok(checkpoint)
     } else {
         let legacy: LegacyWorldCheckpointV5 = bincode::deserialize(payload)?;
         legacy.validate()?;
-        println!("--> Migrating TITAN v5 organism through the v7 reactor compatibility path.");
+        println!("--> Migrating TITAN v5 organism through the v8 compatibility path.");
         let checkpoint = legacy.migrate();
         checkpoint.validate()?;
         Ok(checkpoint)
@@ -5405,6 +5921,8 @@ fn capture_world(
     reactor_planner: &ReactorPlanner,
     attractors: &AttractorMemory,
     probe_controller: &ProbeController,
+    confinement_observer: &ConfinementObserver,
+    recovery_controller: &RecoveryController,
     last_reactor_state: &Option<ReactorState>,
     pending_reactor_command: &Option<ActionCommand>,
 ) -> Result<WorldCheckpoint> {
@@ -5456,6 +5974,8 @@ fn capture_world(
         reactor_planner: reactor_planner.clone(),
         attractors: attractors.clone(),
         probe_controller: probe_controller.clone(),
+        confinement_observer: confinement_observer.clone(),
+        recovery_controller: recovery_controller.clone(),
         last_reactor_state: last_reactor_state.clone(),
         pending_reactor_command: *pending_reactor_command,
     })
@@ -5596,7 +6116,7 @@ fn main() -> Result<()> {
             }
             "--help" | "-h" => {
                 println!(
-                    "TITAN v7 Recursive Critical Reactor\n\n\
+                    "TITAN v8 Confinement Reactor\n\n\
 Usage: titan [BASE_DIR] [options]\n\n\
   -b, --base-dir DIR   Output/training root (default /sdcard/Download)\n\
   -d, --duration SEC   Render duration (default 240)\n\
@@ -5609,7 +6129,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
       --cuda-device N     CUDA device ordinal (default 0)\n\
       --no-probes      Disable subtle perturbation-response experiments\n\
       --state PATH     World-checkpoint path\n\
-      --model PATH     v7 model output/resume path\n\
+      --model PATH     v8 model output/resume path\n\
       --import-model P Import compatible v4/v5/v6/v7 weights\n\
       --fresh-world    Reset CA/DSP/reactor state while retaining weights\n\
   -f, --fresh-model    Reset both learned weights and the world\n\
@@ -5649,7 +6169,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
     }
     std::fs::create_dir_all(&base_dir)?;
     let planner_config = PlannerConfig::for_profile(planner_profile);
-    println!("=== TITAN AUDIO ECOSYSTEM: RUST EDITION v7 (RECURSIVE CRITICAL REACTOR) ===");
+    println!("=== TITAN AUDIO ECOSYSTEM: RUST EDITION v8 (CONFINEMENT REACTOR) ===");
     println!("Seed: {} | Device: {} | Threads: {} | BPTT: {} | Planner: {} h{} b{} | Field: {}ch x {}x{} torus | LR: {:.2e} | Duration: {}s", seed, device_label, n_threads, bptt_window, planner_profile.label(), planner_config.horizon, planner_config.beam_width, CA_CHANNELS, GRID_H, GRID_W, target_lr, sim_duration);
     println!("NOTE: CA/DSP/RNG state resumes from the world checkpoint; AdamW moment buffers restart per process. Fresh reproducibility also requires the same --threads value.");
 
@@ -5657,8 +6177,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let explicit_model_path = model_override.is_some();
     let explicit_world_path = state_override.is_some();
     let model_path =
-        model_override.unwrap_or_else(|| format!("{}/titan_model_v7.safetensors", base_dir));
-    let legacy_model_path = format!("{}/titan_model_v6.safetensors", base_dir);
+        model_override.unwrap_or_else(|| format!("{}/titan_model_v8.safetensors", base_dir));
+    let legacy_model_path = format!("{}/titan_model_v7.safetensors", base_dir);
+    let legacy_model_path_v6 = format!("{}/titan_model_v6.safetensors", base_dir);
     let legacy_model_path_v5 = format!("{}/titan_model_v5.safetensors", base_dir);
     let importing_model = import_model_override.is_some();
     let load_model_path = if let Some(path) = import_model_override {
@@ -5667,32 +6188,41 @@ Usage: titan [BASE_DIR] [options]\n\n\
         model_path.clone()
     } else if !explicit_model_path && std::path::Path::new(&legacy_model_path).exists() {
         println!(
-            "--> No v7 model yet; importing compatible v6 weights from {}.",
+            "--> No v8 model yet; importing compatible v7 weights from {}.",
             legacy_model_path
         );
         legacy_model_path.clone()
+    } else if !explicit_model_path && std::path::Path::new(&legacy_model_path_v6).exists() {
+        println!(
+            "--> No v8/v7 model yet; importing compatible v6 weights from {}.",
+            legacy_model_path_v6
+        );
+        legacy_model_path_v6.clone()
     } else if !explicit_model_path && std::path::Path::new(&legacy_model_path_v5).exists() {
         println!(
-            "--> No v7/v6 model yet; importing compatible v5 weights from {}.",
+            "--> No v8/v7/v6 model yet; importing compatible v5 weights from {}.",
             legacy_model_path_v5
         );
         legacy_model_path_v5.clone()
     } else {
         model_path.clone()
     };
-    let world_path = state_override.unwrap_or_else(|| format!("{}/titan_world_v7.bin", base_dir));
-    let legacy_world_path = format!("{}/titan_world_v6.bin", base_dir);
+    let world_path = state_override.unwrap_or_else(|| format!("{}/titan_world_v8.bin", base_dir));
+    let legacy_world_path = format!("{}/titan_world_v7.bin", base_dir);
+    let legacy_world_path_v6 = format!("{}/titan_world_v6.bin", base_dir);
     let legacy_world_path_v5 = format!("{}/titan_world_v5.bin", base_dir);
     let load_world_path = if std::path::Path::new(&world_path).exists() {
         world_path.clone()
     } else if !explicit_world_path && std::path::Path::new(&legacy_world_path).exists() {
         legacy_world_path.clone()
+    } else if !explicit_world_path && std::path::Path::new(&legacy_world_path_v6).exists() {
+        legacy_world_path_v6.clone()
     } else if !explicit_world_path && std::path::Path::new(&legacy_world_path_v5).exists() {
         legacy_world_path_v5.clone()
     } else {
         world_path.clone()
     };
-    let morph_path = format!("{}/titan_morph_state_v7.json", base_dir);
+    let morph_path = format!("{}/titan_morph_state_v8.json", base_dir);
     ensure_parent_dir(&model_path)?;
     ensure_parent_dir(&world_path)?;
     let target_loader = TargetAudioLoader::new(&wav_dir)?;
@@ -5706,9 +6236,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let spec_proj_fine =
         SpectralProjector::new_with(1024, FINE_SPEC_BINS, &device).map_err(anyhow::Error::msg)?;
 
-    // Initialize the full V7 neural parameter set deterministically first, then
+    // Initialize the full V8 neural parameter set deterministically first, then
     // load every compatible tensor from an older or current checkpoint on top.
-    // Most V7 intelligence is host-side, so compatible V6/V5 neural weights can
+    // V8 adds host-side confinement control, so compatible V7/V6/V5 neural weights can
     // continue without discarding the learned CA and synthesis mappings.
     let initialized = deterministic_reinit(&varmap, seed, &device)?;
     let mut loaded_full = false;
@@ -5728,7 +6258,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 println!("--> Loaded {} compatible tensors from {} ({} new/missing, {} shape-mismatched)",
                     hit, load_model_path, miss, mismatch);
                 if !loaded_full {
-                    println!("--> Migrated checkpoint: compatible learned weights retained; new v7 tensors use deterministic seed {}.", seed);
+                    println!("--> Migrated checkpoint: compatible learned weights retained; new v8 tensors use deterministic seed {}.", seed);
                     fresh_world = true; // old dynamical state does not match the migrated control plane
                 }
             }
@@ -5748,7 +6278,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
         fresh_world = true;
     }
     if !loaded_any && !fresh_model && std::path::Path::new(&load_model_path).exists() {
-        println!("--> No compatible tensors were found; this run starts as a fresh v7 model.");
+        println!("--> No compatible tensors were found; this run starts as a fresh v8 model.");
     }
     if importing_model && loaded_any {
         println!(
@@ -5794,6 +6324,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let mut reactor_planner = ReactorPlanner::new(seed);
     let mut attractors = AttractorMemory::default();
     let mut probe_controller = ProbeController::new(probes_enabled);
+    let mut confinement_observer = ConfinementObserver::default();
+    let mut recovery_controller = RecoveryController::default();
     let mut last_reactor_state: Option<ReactorState> = None;
     let mut pending_reactor_command: Option<ActionCommand> = None;
     let mut last_observation: Option<AudioObservation> = None;
@@ -5855,6 +6387,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 reactor_planner = world.reactor_planner;
                 attractors = world.attractors;
                 probe_controller = world.probe_controller;
+                confinement_observer = world.confinement_observer;
+                recovery_controller = world.recovery_controller;
                 probe_controller.enabled = probes_enabled;
                 last_reactor_state = world.last_reactor_state;
                 pending_reactor_command = world.pending_reactor_command;
@@ -5972,6 +6506,17 @@ Usage: titan [BASE_DIR] [options]\n\n\
         let recovery_latched =
             adaptive_dynamics.low_motion_run > STAGNATION_ESCAPE_AFTER && !recovery_exit_ready;
         let hard_recovery = recovery_pressure >= 0.50 || recovery_latched;
+        recovery_controller.update(absolute_step, hard_recovery, confinement_observer.health);
+        if recovery_controller.just_entered {
+            println!(
+                "  ⟿ CONFINEMENT PHASE {} · radial {:.3} tangential {:.3} rotation {:.3}",
+                recovery_controller.phase.label(),
+                confinement_observer.radial_velocity,
+                confinement_observer.tangential_velocity,
+                confinement_observer.modal_rotation
+            );
+        }
+        let core_control = CoreControl::for_recovery(recovery_controller.phase, recovery_pressure);
         let curiosity_factor = (stagnation_ticks as f32 / 12.0)
             .min(1.0)
             .max(adaptive_dynamics.stagnation * 0.85);
@@ -6002,7 +6547,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
             )
         };
 
-        // V7 planner: the Candle self-model supplies a fast neural prior,
+        // Recursive planner: the Candle self-model supplies a fast neural prior,
         // while a tiny online ensemble plans in the compressed reactor state.
         // Planning is event-triggered and therefore does not tax every chunk.
         let motif_available =
@@ -6057,10 +6602,11 @@ Usage: titan [BASE_DIR] [options]\n\n\
             adaptive_dynamics.activity_health,
             escape_strength,
         );
-        let forced_recovery_action = hard_recovery.then_some(if (absolute_step / 8) % 2 == 0 {
-            ControlAction::Turbulence
-        } else {
-            ControlAction::Explore
+        let forced_recovery_action = hard_recovery.then_some(match recovery_controller.phase {
+            RecoveryPhase::EdgeAgitation => ControlAction::Explore,
+            RecoveryPhase::RotationCapture => ControlAction::Resonate,
+            RecoveryPhase::GuidedPulse | RecoveryPhase::PartialReseed => ControlAction::Turbulence,
+            RecoveryPhase::Cooldown | RecoveryPhase::Nominal => ControlAction::Explore,
         });
         let current_action = controller.choose(
             last_temp,
@@ -6146,6 +6692,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
             force_macro,
             energy_state,
             &current_control,
+            &core_control,
             &random_pool,
             absolute_step as usize,
         )?;
@@ -6164,6 +6711,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
             pair_sums,
             region_activity,
             region_change,
+            macro_region_activity,
         } = out;
 
         let synergy_tensor = calculate_cross_layer_synergy_tensor(&next_micro, &next_macro)?;
@@ -6341,6 +6889,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 &predicted_log_var_t.reshape((OBS_DIM,))?,
                 &region_activity,
                 &region_change,
+                &macro_region_activity,
                 &novelty_dmin_t.reshape((1,))?,
             ],
             0,
@@ -6381,7 +6930,11 @@ Usage: titan [BASE_DIR] [options]\n\n\
             [region_start + REGION_COUNT..region_start + REGION_COUNT * 2]
             .try_into()
             .unwrap();
-        let novelty_dmin_val = metrics[region_start + REGION_COUNT * 2];
+        let macro_region_activity_host: [f32; REGION_COUNT] = metrics
+            [region_start + REGION_COUNT * 2..region_start + REGION_COUNT * 3]
+            .try_into()
+            .unwrap();
+        let novelty_dmin_val = metrics[region_start + REGION_COUNT * 3];
         if let (Some(actual), Some(_)) = (&last_observation, &pending_predictor_input) {
             controller
                 .meta
@@ -6499,16 +7052,17 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 rad_amp
             );
         }
-        // A long, severe recovery at the same active depth is evidence that
-        // the current residual stack lacks a useful escape direction. Grow at
-        // most once per 1024 global chunks; unlike ordinary neurogenesis, keep
-        // the radiation level because the field has not escaped yet.
+        // Capacity growth is a late recovery tool, not a periodic substitute
+        // for control authority. Use it once per recovery episode, after edge
+        // agitation and rotation capture have both failed.
         if morph_event.is_none()
             && recovery_pressure > 0.62
-            && absolute_step > 0
-            && absolute_step % 1024 == 0
+            && recovery_controller.phase == RecoveryPhase::GuidedPulse
+            && recovery_controller.elapsed(absolute_step) >= 96
+            && !recovery_controller.growth_used
             && model.grow()
         {
+            recovery_controller.growth_used = true;
             println!(
                 "  ◄ RECOVERY NEUROGENESIS ►  Depth L{:02} | Rad {:.2}",
                 model.depth(),
@@ -6655,14 +7209,17 @@ Usage: titan [BASE_DIR] [options]\n\n\
             micro_tape = next_micro.detach();
             macro_tape = next_macro.detach();
             hidden_mem = next_hidden.detach();
-            let rad_probability = (RADIATE_PROB
+            let rad_probability = ((RADIATE_PROB
                 + curiosity_factor * 0.12
                 + (current_control.kick_mult - 1.0).max(0.0) * 0.08
                 + controller.meta.surprise() * 0.06
                 + recovery_pressure * 0.36
                 + subcritical_pressure * 0.16)
+                * core_control.stochastic_heat)
                 .clamp(0.0, 0.82);
-            let escape_pulse = recovery_pressure > 0.60 && absolute_step % 32 == 0;
+            let escape_pulse = recovery_controller.phase == RecoveryPhase::EdgeAgitation
+                && recovery_pressure > 0.60
+                && absolute_step % 64 == 0;
             if escape_pulse || rng.gen::<f32>() < rad_probability {
                 micro_tape = levy_radiate(
                     &micro_tape,
@@ -6681,6 +7238,15 @@ Usage: titan [BASE_DIR] [options]\n\n\
             macro_tape = next_macro;
             hidden_mem = next_hidden;
         }
+        if recovery_controller.phase == RecoveryPhase::PartialReseed
+            && recovery_controller.just_entered
+        {
+            // Sparse Cauchy reseed affects only a small mask and preserves the
+            // macro field, recurrent memory, motifs, and learned weights.
+            micro_tape =
+                levy_radiate(&micro_tape, 0.42, &random_pool, absolute_step as usize + 79)?;
+            println!("  ⟿ PARTIAL CORE RESEED · coarse world and memory preserved");
+        }
 
         // --- LANGEVIN STEP: drift (-grad V gains) + temperature noise ---
         shear_phase += SHEAR_PHASE_VEL * (0.82 + 0.28 * current_control.shear_mult);
@@ -6690,7 +7256,17 @@ Usage: titan [BASE_DIR] [options]\n\n\
             .add(&shear)?
             .tanh()?
             .affine(pot.macro_gain as f64, 0.0)?;
-        let controlled_kick = (pot.micro_kick * current_control.kick_mult).clamp(0.0, 0.27);
+        if core_control.coherent_pulse > 1e-4 {
+            // Reuse the smooth multiscale shear as a correlated micro-field
+            // pulse. Unlike white kicks, neighboring cells receive a coherent
+            // direction that the rotation phase can capture.
+            micro_tape = micro_tape
+                .add(&shear.affine(core_control.coherent_pulse as f64, 0.0)?)?
+                .clamp(-1.0f32, 1.0f32)?;
+        }
+        let controlled_kick =
+            (pot.micro_kick * current_control.kick_mult * core_control.stochastic_heat)
+                .clamp(0.0, 0.27);
         if controlled_kick > 1e-3 {
             let kick = random_pool
                 .normal(absolute_step as usize + 47)?
@@ -6857,6 +7433,17 @@ Usage: titan [BASE_DIR] [options]\n\n\
         reactor_state.values[44] = state_space.novel_ema;
         reactor_state.values[45] = state_space.occupancy_entropy;
         let viable_complexity = reactor_state.viable_complexity(&critical_manifold);
+        let learn_healthy_shell = !hard_recovery
+            && adaptive_dynamics.activity_health > 0.62
+            && adaptive_dynamics.movement_fast > 0.006
+            && rg_observer.entropy_rate_ema > 0.012
+            && critical_manifold.health > 0.42;
+        confinement_observer.update(
+            &reactor_state,
+            &region_activity_host,
+            &macro_region_activity_host,
+            learn_healthy_shell,
+        );
 
         let reward_recurrence = recurrence * (1.0 - 0.90 * recovery_pressure);
         let recall_reward = 0.08 * recall_strength * (1.0 - recovery_pressure);
@@ -7042,6 +7629,41 @@ Usage: titan [BASE_DIR] [options]\n\n\
             json_put(&mut record, "subcritical_pressure", subcritical_pressure);
             json_put(&mut record, "recovery_pressure", recovery_pressure);
             json_put(&mut record, "hard_recovery", hard_recovery);
+            json_put(
+                &mut record,
+                "recovery_phase",
+                recovery_controller.phase.label(),
+            );
+            json_put(
+                &mut record,
+                "confinement_health",
+                confinement_observer.health,
+            );
+            json_put(
+                &mut record,
+                "confinement_radius",
+                confinement_observer.radius,
+            );
+            json_put(
+                &mut record,
+                "radial_velocity",
+                confinement_observer.radial_velocity,
+            );
+            json_put(
+                &mut record,
+                "tangential_velocity",
+                confinement_observer.tangential_velocity,
+            );
+            json_put(
+                &mut record,
+                "modal_rotation",
+                confinement_observer.modal_rotation,
+            );
+            json_put(
+                &mut record,
+                "micro_macro_lock",
+                confinement_observer.micro_macro_lock,
+            );
             json_put(&mut record, "reward_mean", adaptive_dynamics.reward_mean);
             json_put(&mut record, "reward_std", adaptive_dynamics.reward_std());
             json_put(&mut record, "motifs", motifs.entries.len());
@@ -7183,6 +7805,12 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 rg_observer.entropy_rate_ema, rg_observer.scale_invariance_ema,
                 rg_observer.disagreement_ema, critical_manifold.prediction_horizon,
                 critical_manifold.lyapunov_proxy, critical_manifold.susceptibility);
+            println!("  confinement {} health:{:.2} R:{:.2} vr:{:+.3} vt:{:.3} rot:{:.3} lock:{:.2} | core drive:{:.2} couple:{:.2} heat:{:.2}",
+                recovery_controller.phase.label(), confinement_observer.health,
+                confinement_observer.radius, confinement_observer.radial_velocity,
+                confinement_observer.tangential_velocity, confinement_observer.modal_rotation,
+                confinement_observer.micro_macro_lock, core_control.update_drive,
+                core_control.macro_coupling, core_control.stochastic_heat);
             println!("  planner {} ready:{:.2} loss:{:.4} trigger:{} adv:{:+.3} option:{:.2} | model:{} bandit:{} selected:{}",
                 planner_profile.label(), reactor_planner.ensemble.readiness(),
                 reactor_planner.ensemble.train_loss_ema, reactor_planner.last_trigger,
@@ -7271,6 +7899,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
                     &reactor_planner,
                     &attractors,
                     &probe_controller,
+                    &confinement_observer,
+                    &recovery_controller,
                     &last_reactor_state,
                     &pending_reactor_command,
                 )
@@ -7603,6 +8233,13 @@ Usage: titan [BASE_DIR] [options]\n\n\
         "subcritical_pressure",
         "recovery_pressure",
         "hard_recovery",
+        "recovery_phase",
+        "confinement_health",
+        "confinement_radius",
+        "radial_velocity",
+        "tangential_velocity",
+        "modal_rotation",
+        "micro_macro_lock",
         "reward_mean",
         "reward_std",
         "motifs",
@@ -7686,6 +8323,13 @@ Usage: titan [BASE_DIR] [options]\n\n\
             t["subcritical_pressure"].to_string(),
             t["recovery_pressure"].to_string(),
             t["hard_recovery"].to_string(),
+            t["recovery_phase"].as_str().unwrap_or("").to_string(),
+            t["confinement_health"].to_string(),
+            t["confinement_radius"].to_string(),
+            t["radial_velocity"].to_string(),
+            t["tangential_velocity"].to_string(),
+            t["modal_rotation"].to_string(),
+            t["micro_macro_lock"].to_string(),
             t["reward_mean"].to_string(),
             t["reward_std"].to_string(),
             t["motifs"].to_string(),
@@ -7785,6 +8429,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
         &reactor_planner,
         &attractors,
         &probe_controller,
+        &confinement_observer,
+        &recovery_controller,
         &last_reactor_state,
         &pending_reactor_command,
     )?;
@@ -7904,6 +8550,77 @@ mod tests {
         }
         assert!(observer.entropy_rate_ema < 0.01);
         assert!(observer.scale_invariance_ema < 0.30);
+    }
+
+    #[test]
+    fn confinement_observer_detects_coherent_spatial_rotation() {
+        let mut observer = ConfinementObserver::default();
+        let state = ReactorState {
+            values: [0.5; REACTOR_DIM],
+        };
+        let first: [f32; REGION_COUNT] = std::array::from_fn(|i| {
+            let x = i % REGION_COLS;
+            (TWO_PI * x as f32 / REGION_COLS as f32).cos()
+        });
+        let shifted: [f32; REGION_COUNT] = std::array::from_fn(|i| {
+            let x = (i % REGION_COLS + 1) % REGION_COLS;
+            (TWO_PI * x as f32 / REGION_COLS as f32).cos()
+        });
+        observer.update(&state, &first, &first, false);
+        for _ in 0..12 {
+            observer.update(&state, &shifted, &shifted, false);
+        }
+        assert!(observer.modal_rotation > 0.02);
+        assert!(observer.micro_macro_lock > 0.70);
+    }
+
+    #[test]
+    fn recovery_changes_actuator_class_and_limits_growth_per_episode() {
+        let mut recovery = RecoveryController::default();
+        recovery.update(10, true, 0.2);
+        assert_eq!(recovery.phase, RecoveryPhase::EdgeAgitation);
+        recovery.update(10 + RECOVERY_EDGE_CHUNKS, true, 0.2);
+        assert_eq!(recovery.phase, RecoveryPhase::RotationCapture);
+        recovery.update(
+            10 + RECOVERY_EDGE_CHUNKS + RECOVERY_ROTATION_CHUNKS,
+            true,
+            0.2,
+        );
+        assert_eq!(recovery.phase, RecoveryPhase::GuidedPulse);
+        recovery.growth_used = true;
+        for step in 0..256 {
+            recovery.update(1_000 + step, false, 0.7);
+        }
+        assert_eq!(recovery.phase, RecoveryPhase::Nominal);
+        assert!(!recovery.growth_used);
+    }
+
+    #[test]
+    fn channel_rotation_preserves_field_norm() {
+        let device = Device::Cpu;
+        let values: Vec<f32> = (0..CA_CHANNELS * GRID_H * GRID_W)
+            .map(|i| ((i % 31) as f32 - 15.0) / 15.0)
+            .collect();
+        let field = Tensor::from_vec(values, (1, CA_CHANNELS, GRID_H, GRID_W), &device).unwrap();
+        let rotated = rotate_channel_pairs(&field, 0.12).unwrap();
+        // Accumulate in f64 on the host: the normal f32 parallel reduction
+        // changes order after cat/reshape and its rounding error is larger
+        // than the actual rotation error over ~400k values.
+        let before_values = field.flatten_all().unwrap().to_vec1::<f32>().unwrap();
+        let after_values = rotated.flatten_all().unwrap().to_vec1::<f32>().unwrap();
+        let before = before_values
+            .iter()
+            .map(|v| (*v as f64).powi(2))
+            .sum::<f64>();
+        let after = after_values
+            .iter()
+            .map(|v| (*v as f64).powi(2))
+            .sum::<f64>();
+        let relative_error = (before - after).abs() / before.max(1e-12);
+        assert!(
+            relative_error < 1e-6,
+            "pair rotation changed mean-square norm by {relative_error:e}"
+        );
     }
 
     #[test]

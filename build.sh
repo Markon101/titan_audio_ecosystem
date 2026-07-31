@@ -9,7 +9,7 @@
 # Usage:
 #   ./build.sh              — cargo build --release
 #   ./build.sh run          — cargo run   --release
-#   ./build.sh check        — cargo check (fast, no CUDA kernel compile)
+#   ./build.sh check        — cargo check with the pinned sm_61 toolchain
 # ==========================================================================
 
 set -euo pipefail
@@ -37,6 +37,11 @@ export CUDACXX="${ENV_PREFIX}/bin/nvcc"
 export CC="${ENV_PREFIX}/bin/gcc"
 export CXX="${ENV_PREFIX}/bin/g++"
 
+# GTX 1080 Ti / Pascal. Setting this explicitly prevents bindgen_cuda from
+# relying on nvidia-smi auto-detection, which can fail while another process
+# owns the driver or inside a restricted build environment.
+export CUDA_COMPUTE_CAP=61
+
 # ---- Runtime library path ----
 export LD_LIBRARY_PATH="${ENV_PREFIX}/lib:${TARGETS}/lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
 
@@ -45,6 +50,7 @@ echo "  nvcc : $(which nvcc) — $(nvcc --version | grep 'release')"
 echo "  g++  : $(which g++) — $(g++ --version | head -1)"
 echo "  gcc  : $(which gcc) — $(gcc --version | head -1)"
 echo "  CUDA_PATH : ${CUDA_PATH}"
+echo "  compute   : sm_${CUDA_COMPUTE_CAP}"
 echo "  cuda.h    : $(ls ${CUDA_PATH}/include/cuda.h 2>/dev/null && echo FOUND || echo MISSING)"
 echo "========================="
 

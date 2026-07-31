@@ -1,7 +1,8 @@
-# Titan Audio Ecosystem v7 (Recursive Critical Reactor)
+# Titan Audio Ecosystem v8 (Confinement Reactor)
 
-The active implementation is the v7 recursive critical reactor ported from
-the current phone release. Its control and synthesis equations are retained:
+The active implementation is the v8 confinement reactor. It retains the v7
+recursive reactor and synthesis core while adding a tokamak-inspired viable
+shell observer, staged recovery, and direct bounded CA-core actuators:
 the 96-channel 64×64 toroidal neural CA, 48-value reactor state, RG observer,
 8-dimensional moving critical manifold, online transition-model ensemble,
 event-triggered beam planner, attractor memory, and active probes all run
@@ -19,7 +20,7 @@ A self-evolving generative audio engine combining **Neural Cellular Automata (NC
 
 The Titan Audio Ecosystem treats audio synthesis as an **emergent biological process**. Training WAVs act as "genetic attractors" that pull the system's chaotic internal dynamics toward interesting timbral territory, but never fully constrain it. Version 7 combines the differentiable synthesis core with a recursive critical reactor, online world model, event-triggered planning, persistent attractors, and a post-DSP observation loop.
 
-### Core Architecture (v7)
+### Core Architecture (v8)
 
 - **End-to-End Differentiable Graph:** Every synthesis parameter (frequencies, FM ratios, modulation indices, pan, filter openness) is maintained as a computational graph tensor.
 - **Micro/Macro NCA:** Two 96-channel 64×64 toroidal fields with 128 hidden convolution channels and recursive RG block decimation.
@@ -36,7 +37,8 @@ The Titan Audio Ecosystem treats audio synthesis as an **emergent biological pro
 - **Quality/Diversity Motif Memory:** Up to 128 compact motifs are retained. Once full, replacement favors observations that combine high structured quality with distance from their nearest neighbor, preventing redundant motifs from crowding out distinctive material.
 - **Predictive Safety (q-Factor) Disruption Controller & fBm Shear:** Predicts cellular q-collapse based on macro variance, coupling, and rail proximity. Injects traveling-wave fBm shear perturbations to break phase locks, automatically backing off once q recovers.
 - **Metabolic Energy & Stagnation Homeostats:** Features a metabolic charge tracker (`energy_state`) that scales frequencies/openness under heavy loads, macro **and** micro tape amplitude homeostats that hold the fields off their saturation rails, and an archetype stagnation tracker that triggers curiosity-driven learning rate boosts.
-- **Subcritical Recovery:** Critical health is scored as a band around branching ratio `σ = 1` rather than increasing monotonically with σ. Sustained `σ < 0.68` with low absolute movement activates the escape timer even when self-relative activity looks healthy. At recovery pressure `≥0.50`, a hard safety policy overrides the planner/bandit and alternates strong `TURBULENCE` and `EXPLORE` actions until σ, absolute movement, and RG temporal activity all recover.
+- **Confinement Recovery:** Critical health is scored consistently as a band around `σ = 1`. Sustained `σ < 0.68` with low movement activates hard recovery. Recovery now changes actuator class through `EDGE`, `ROTATE`, `GUIDED`, sparse `RESEED`, and `COOLDOWN` phases instead of indefinitely saturating the same noise controls. A normalized viable-shell observer reports radial drift, tangential motion, low-frequency modal rotation, and micro/macro phase lock.
+- **Direct Core Actuation:** Recovery can increase bounded CA update drive, alter macro coupling, apply approximately norm-preserving rotations across channel pairs, and reuse the smooth multiscale shear field as a spatially coherent micro pulse. Random heat is reduced once the controller starts capturing coherent rotation.
 - **Permutation-Entropy Phi:** The system-complexity signal `phi` is order-4 permutation entropy (ordinal temporal structure, bounded [0,1]) computed alongside spectral flatness and brightness from a single per-chunk FFT — replacing the Shannon spectral entropy that saturated on broadband output.
 - **Mid/Side Haas Delay Stereo & Wave Morphing:** Upgraded spatialization with a Mid/Side panning matrix and a 16-sample Haas delay on the wide side channel. Supports learned wave morphing that projects oscillator carriers and formants dynamically between pure sines and rounded triangle waves.
 - **CUDA-Native Latency Grouping & Resident Stochastic Fields:** CA clocks, Langevin kicks, Lévy radiation, and the structured shear basis reuse a deterministic device-resident field pool (about 288 MiB at the default 64-slot setting), eliminating their per-chunk host generation and H2D uploads. Min-of-K target selection uses an on-device argmin/gather. Control-plane metrics use one combined GPU→CPU readback per chunk.
@@ -83,7 +85,7 @@ toolchain and sets the cudarc/bindgen environment:
 ./build.sh check           # fast type-check, no CUDA kernel compile
 ```
 
-The first non-flag argument is the base/working directory. If omitted, v7
+The first non-flag argument is the base/working directory. If omitted, v8
 uses `/sdcard/Download`; pass `--base-dir` on desktop systems.
 
 **Flags:**
@@ -101,7 +103,7 @@ uses `/sdcard/Download`; pass `--base-dir` on desktop systems.
 | `--cuda-device N` | CUDA device ordinal (default `0`). |
 | `--no-probes` | Disable subtle system-identification probes. |
 | `--state PATH` | Override the world-checkpoint path. |
-| `--model PATH` | Override the v7 model resume/output path. |
+| `--model PATH` | Override the v8 model resume/output path. |
 | `--import-model PATH` | Import compatible v4/v5/v6/v7 weights. |
 | `--fresh-world` | Reset CA/DSP/reactor state but retain weights. |
 | `--fresh-model`, `-f` | Reset both learned weights and reactor state. |
@@ -138,15 +140,14 @@ periodic interval reduces interruption and storage traffic without weakening
 orderly-shutdown persistence.
 
 The console reports stateful `escape` and immediate `recovery` pressure as a
-pair. The uncertainty trace records both pressures separately, along with
-`subcritical_pressure` and the `hard_recovery` latch. During hard recovery,
-recall reinforcement is suppressed, ordering habits are gradually deconditioned,
-forced actions use an intensity independent of planner confidence, and radiation
-pulses occur every 32 chunks above recovery pressure `0.60`. Static agreement
-between RG scales is activity-gated, so a frozen field no longer reports perfect
-scale health solely because every scale is equally unchanged. If severe recovery
-persists, the morphic stack may grow by one layer at most once per 1,024 global
-chunks to introduce a new learned escape direction.
+pair, followed by a confinement line. `R` is distance from the learned healthy
+shell, `vr` is signed radial velocity, `vt` is tangential motion, `rot` is
+low-frequency spatial modal rotation, and `lock` is micro/macro modal alignment.
+The healthy shell learns only during sustained active, non-recovery states, so
+it cannot drift toward a collapsed field. Recovery neurogenesis is available
+only late in `GUIDED` recovery and at most once per recovery episode; 256 healthy
+chunks are required to re-arm it. V7 worlds migrate automatically into V8 with
+a fresh confinement calibration while preserving their learned organism.
 
 For profiling, force CUDA so an unavailable device is reported as an error
 instead of silently falling back to CPU:
@@ -163,11 +164,11 @@ All written to the base directory:
 |---|---|
 | `rust_ecosystem_out.wav` | Full mastered generative render (DC-blocked, peak-normalized to −1 dBFS). |
 | `titan_prime_<seconds>s.wav` | Best-scoring contiguous priming segment, up to 60 seconds and edge-faded. |
-| `titan_model_v7.safetensors` | Persisted neural model weights. |
-| `titan_world_v7.bin` | Versioned reactor checkpoint: CA tapes, GRU memory, DSP state, RNG, controllers, world-model ensemble/replay, attractors, probes, and runtime continuity state. |
-| `titan_morph_state_v7.json` | Active morphic depth, radiation amplitude, and save-health metadata. |
+| `titan_model_v8.safetensors` | Persisted neural model weights; compatible V7 weights are imported automatically. |
+| `titan_world_v8.bin` | Versioned reactor checkpoint including confinement and staged-recovery state. V7/V6/V5 worlds remain migratable. |
+| `titan_morph_state_v8.json` | Active morphic depth and radiation amplitude. |
 | `ca_topology_rust.csv` | Macro-CA state history. |
-| `uncertainty_trace_rust.csv` | System health metrics including spectral/movement/compositional uncertainty, branching ratio σ, RG dynamics, planner confidence, `escape_strength`, `subcritical_pressure`, `recovery_pressure`, and `hard_recovery`. |
+| `uncertainty_trace_rust.csv` | System health plus recovery phase, confinement health/radius, radial and tangential velocity, modal rotation, and micro/macro lock. |
 | `suno_priming_prompt.txt` | Generative primer text — leads with perceptual features (BPM, tonal centroid, stereo width) followed by engine analytics. |
 
 The console additionally reports a rolling steps-per-second figure every 50 chunks
