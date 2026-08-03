@@ -218,8 +218,13 @@ const MORPH_MAX_BLOCKS: usize = 12;
 const MORPH_START_DEPTH: usize = 1;
 const MORPH_PATIENCE_BASE: usize = 10;
 const MORPH_WARMUP: usize = 48;
-const MORPH_GROWTH_REL: f32 = 1.10;
-const MORPH_PRUNE_REL: f32 = 0.55;
+const MORPH_GROWTH_REL: f32 = 1.05;
+const MORPH_PRUNE_REL: f32 = 0.70;
+// A structural change activates previously dormant parameters. Give the new
+// depth enough audio and optimizer steps to settle before changing it again.
+// The gate is derived from global step, so old world checkpoints need no
+// schema migration or additional persisted cooldown field.
+const MORPH_EVENT_COOLDOWN: u64 = 512;
 
 const RAD_AMP_INIT: f32 = 0.8;
 const RAD_AMP_MIN: f32 = 0.10;
@@ -639,6 +644,51 @@ impl AdaptiveDynamics {
 
     fn reward_std(&self) -> f32 {
         self.reward_variance.max(1e-6).sqrt()
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum MorphDecision {
+    Grow,
+    Prune,
+    Hold,
+}
+
+fn morph_decision(
+    window_avg: f32,
+    baseline: f32,
+    ecology: &AdaptiveDynamics,
+    depth: usize,
+    absolute_step: u64,
+    window_len: usize,
+) -> MorphDecision {
+    // At most one decision window can act in each cooldown epoch. This works
+    // for resumed worlds without extending the serialized checkpoint schema.
+    let previous_step = absolute_step.saturating_sub(window_len.saturating_sub(1) as u64);
+    let cooldown_boundary =
+        absolute_step / MORPH_EVENT_COOLDOWN != previous_step / MORPH_EVENT_COOLDOWN;
+    if !cooldown_boundary {
+        return MorphDecision::Hold;
+    }
+
+    let relative_pressure = window_avg > baseline * MORPH_GROWTH_REL;
+    let ecological_pressure = ecology.samples > STAGNATION_WARMUP
+        && ecology.stagnation > 0.58
+        && ecology.activity_health < 0.55;
+    if depth < MORPH_MAX_BLOCKS && (relative_pressure || ecological_pressure) {
+        return MorphDecision::Grow;
+    }
+
+    // Only shed capacity in a demonstrably healthy, settled regime. The old
+    // loss-only rule could prune precisely when a stagnant organism needed
+    // more representational capacity.
+    let safely_overprovisioned = window_avg < baseline * MORPH_PRUNE_REL
+        && ecology.activity_health > 0.72
+        && ecology.stagnation < 0.24;
+    if depth > 1 && safely_overprovisioned {
+        MorphDecision::Prune
+    } else {
+        MorphDecision::Hold
     }
 }
 
@@ -4543,7 +4593,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
         energy_state += ENERGY_HOMEO_RATE * (POT_ENERGY_SET - energy_state);
         energy_state = energy_state.clamp(0.18, 0.96);
 
-        // Morphic growth/pruning (unchanged policy).
+        // Morphic growth/pruning. Capacity responds both to relative mimic
+        // difficulty and to sustained ecological collapse; structural events
+        // are cooldown-gated so a hot episode cannot cascade through layers.
         let mut morph_event = None;
         if step < MORPH_WARMUP {
             warmup_sum += mimic_drift_n;
@@ -4562,17 +4614,31 @@ Usage: titan [BASE_DIR] [options]\n\n\
             let patience = MORPH_PATIENCE_BASE + model.depth() * 2;
             if morph_history.len() >= patience {
                 let avg = morph_history.iter().sum::<f32>() / morph_history.len() as f32;
+                let window_len = morph_history.len();
                 morph_history.clear();
                 let base = morph_baseline.unwrap();
-                if avg > base * MORPH_GROWTH_REL {
-                    if model.grow() {
+                match morph_decision(
+                    avg,
+                    base,
+                    &adaptive_dynamics,
+                    model.depth(),
+                    absolute_step,
+                    window_len,
+                ) {
+                    MorphDecision::Grow if model.grow() => {
                         rad_amp = (rad_amp * RAD_COOL).max(RAD_AMP_MIN);
                         morph_event = Some("NEUROGENESIS");
                     }
-                } else if avg < base * MORPH_PRUNE_REL && model.prune() {
-                    rad_amp = (rad_amp * RAD_HEAT).min(RAD_AMP_MAX);
-                    morph_event = Some("PRUNING");
+                    MorphDecision::Prune if model.prune() => {
+                        rad_amp = (rad_amp * RAD_HEAT).min(RAD_AMP_MAX);
+                        morph_event = Some("PRUNING");
+                    }
+                    _ => {}
                 }
+                // Track the organism's current operating scale instead of
+                // comparing forever against its first 48 chunks. A slow EMA
+                // retains a meaningful relative-pressure signal across runs.
+                morph_baseline = Some(base + 0.04 * (avg - base));
             }
         }
         if let Some(ev) = morph_event {
@@ -5547,6 +5613,56 @@ mod tests {
         assert!(dynamics.low_motion_run > STAGNATION_ESCAPE_AFTER);
         assert!(dynamics.escape_strength() > 0.0);
         assert!(dynamics.effective_model_weight < 0.55);
+    }
+
+    #[test]
+    fn morphic_growth_responds_to_ecological_capacity_pressure() {
+        let ecology = AdaptiveDynamics {
+            samples: 500,
+            activity_health: 0.42,
+            stagnation: 0.71,
+            ..Default::default()
+        };
+        assert_eq!(
+            morph_decision(0.70, 0.70, &ecology, 1, 512, 12),
+            MorphDecision::Grow
+        );
+    }
+
+    #[test]
+    fn morphic_events_are_cooldown_gated() {
+        let ecology = AdaptiveDynamics {
+            samples: 500,
+            activity_health: 0.42,
+            stagnation: 0.71,
+            ..Default::default()
+        };
+        assert_eq!(
+            morph_decision(0.80, 0.70, &ecology, 1, 600, 12),
+            MorphDecision::Hold
+        );
+    }
+
+    #[test]
+    fn morphic_pruning_requires_a_healthy_regime() {
+        let healthy = AdaptiveDynamics {
+            samples: 500,
+            activity_health: 0.82,
+            stagnation: 0.12,
+            ..Default::default()
+        };
+        assert_eq!(
+            morph_decision(0.40, 0.70, &healthy, 3, 1024, 14),
+            MorphDecision::Prune
+        );
+
+        let mut stagnant = healthy;
+        stagnant.activity_health = 0.40;
+        stagnant.stagnation = 0.75;
+        assert_eq!(
+            morph_decision(0.40, 0.70, &stagnant, 3, 1024, 14),
+            MorphDecision::Grow
+        );
     }
 
     #[test]
