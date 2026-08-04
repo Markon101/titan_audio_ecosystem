@@ -3,6 +3,28 @@
 TITAN's telemetry mixes direct signal measurements with control heuristics and
 artistic interpretation. The distinction matters when comparing experiments.
 
+## Files and schema
+
+Telemetry schema v2 writes five complementary artifacts per run:
+
+- `uncertainty_trace_rust.csv` is the sampled scalar trace. `raw_movement` is
+  the mean absolute micro-field delta printed as `Move:` in the console.
+  `uncertainty_movement` is a different bounded feature derived from movement
+  trend and model surprise. The old ambiguous `movement` heading is removed.
+- `ca_topology_rust.csv` remains a headerless matrix of 4,096 macro-field
+  values per sampled row so numerical consumers retain a fixed shape.
+- `ca_topology_index_rust.csv` maps every topology row to `run_id`, sample
+  index, global and local step, depth, radiation amplitude, field entropy, and
+  any morph event observed since the prior sample.
+- `morph_events_rust.csv` records neurogenesis and pruning at their exact
+  global and local steps, including the resulting depth and radiation value.
+- `titan_run_metadata_v6.json` records the build commit, dirty/release flags,
+  invocation, reset mode, seed, thread count, requested BPTT and bounded tape,
+  field dimensions, start/end state, output paths, and trace semantics.
+
+The CSV trace is intentionally overwritten per process. Use the metadata
+`run_id` when archiving or joining artifacts from multiple runs.
+
 ## Measurements and estimators
 
 - `sigma` is a mean-centered, multi-lag propagation-slope estimate over recent
@@ -42,6 +64,8 @@ artistic interpretation. The distinction matters when comparing experiments.
 - `stereo_corr` is the post-DSP Pearson correlation between channels. Strongly
   negative values warn of mono cancellation even when width sounds impressive;
   Haas side gain is capped at 1.25 to bound that risk.
+- `field_entropy` is the channel-archetype entropy in bits for the current
+  micro field. It is not the entropy of the rendered waveform.
 
 Claims about improved sound should be supported by repeated seeded runs,
 ablation comparisons, objective audio measurements, and blinded listening—not

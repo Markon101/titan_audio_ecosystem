@@ -32,5 +32,7 @@ regime. Every structural event prints its reason. Motif memory retains up to
 64 diverse observations for long-horizon recall.
 
 Telemetry names and their scientific limitations are documented in
-[`METRICS.md`](METRICS.md). Run the verification suite with `cargo test` and
-`cargo clippy --all-targets -- -D warnings`.
+[`METRICS.md`](METRICS.md). Schema v2 separates raw CA movement from the
+uncertainty movement feature, records exact morph events, supplies a topology
+row index, and writes self-describing run/build metadata. Run the verification
+suite with `cargo test` and `cargo clippy --all-targets -- -D warnings`.

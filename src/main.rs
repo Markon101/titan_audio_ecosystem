@@ -80,6 +80,7 @@ use std::sync::{
     atomic::{AtomicBool, Ordering as AtomicOrdering},
     Arc,
 };
+use std::time::{SystemTime, UNIX_EPOCH};
 
 type RuntimeRng = ChaCha8Rng;
 
@@ -142,6 +143,10 @@ const WORLD_VERSION: u32 = 6;
 const WORLD_MAGIC: [u8; 8] = *b"TITANW6\0";
 const LEGACY_WORLD_MAGIC_V5: [u8; 8] = *b"TITANW5\0";
 const WORLD_SAVE_EVERY: usize = 256;
+const TRACE_SCHEMA_VERSION: u32 = 2;
+const TRACE_EVERY: usize = 10;
+const BUILD_COMMIT: &str = env!("TITAN_GIT_COMMIT");
+const BUILD_DIRTY: &str = env!("TITAN_GIT_DIRTY");
 const MOTIF_SLOTS: usize = 64;
 const MOTIF_EVERY: usize = 16;
 const MOTIF_MIN_AGE: u64 = 128;
@@ -273,6 +278,114 @@ const PHASE_MAP: [(f32, &str); 7] = [
     (0.70, "CHAOTIC"),
     (f32::MAX, "PRIMORDIAL"),
 ];
+
+const UNCERTAINTY_TRACE_HEADERS: &[&str] = &[
+    "trace_schema_version",
+    "run_id",
+    "sample_index",
+    "step",
+    "run_step",
+    "raw_movement",
+    "uncertainty_movement",
+    "spectral",
+    "compositional",
+    "aperture",
+    "synergy",
+    "empowerment",
+    "phi",
+    "V",
+    "temp",
+    "temp_stuck",
+    "temp_subcritical",
+    "temp_curiosity",
+    "temp_stagnation",
+    "temp_motion",
+    "curiosity",
+    "micro_gain",
+    "macro_gain",
+    "micro_amp",
+    "macro_amp",
+    "field_signed_mean",
+    "field_rail_excess",
+    "field_entropy",
+    "controlled_shear_rms",
+    "sigma",
+    "criticality_confidence",
+    "crit_gain",
+    "flatness",
+    "pe1",
+    "pe4",
+    "pe16",
+    "pi_proxy",
+    "brightness",
+    "flux",
+    "width",
+    "stereo_corr",
+    "structured_complexity",
+    "novelty_dmin",
+    "morph_depth",
+    "rad_amp",
+    "morph_event",
+    "morph_event_step",
+    "action",
+    "planner_proposal",
+    "bandit_proposal",
+    "reward",
+    "recurrence",
+    "model_confidence",
+    "effective_model_weight",
+    "prediction_error",
+    "calibration_error",
+    "region_change",
+    "observation_delta",
+    "activity_health",
+    "stagnation",
+    "low_motion_run",
+    "escape_strength",
+    "reward_mean",
+    "reward_std",
+    "lr_gain",
+    "grad_norm",
+    "clip_scale",
+    "radiation_probability",
+    "motifs",
+    "motif_candidates",
+    "motif_stored_total",
+    "motif_rejected_quality",
+    "motif_rejected_similarity",
+    "motif_last_quality",
+    "motif_last_distance",
+];
+
+const TOPOLOGY_INDEX_HEADERS: &[&str] = &[
+    "trace_schema_version",
+    "run_id",
+    "sample_index",
+    "step",
+    "run_step",
+    "morph_depth",
+    "rad_amp",
+    "field_entropy",
+    "morph_event",
+    "morph_event_step",
+];
+
+const MORPH_EVENT_HEADERS: &[&str] = &[
+    "trace_schema_version",
+    "run_id",
+    "step",
+    "run_step",
+    "event",
+    "morph_depth",
+    "rad_amp",
+];
+
+fn unix_time_ms() -> u128 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis()
+}
 
 // --- DETERMINISTIC RANDOM TENSOR HELPERS ---
 // All runtime randomness flows through the caller's RuntimeRng. Tensors are built
@@ -4012,6 +4125,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
     if bptt_window == 0 || bptt_window > 64 {
         anyhow::bail!("BPTT window must be between 1 and 64 chunks");
     }
+    let run_started_unix_ms = unix_time_ms();
     n_threads = n_threads.max(1).min(available_threads.max(1));
     rayon::ThreadPoolBuilder::new()
         .num_threads(n_threads)
@@ -4257,6 +4371,28 @@ Usage: titan [BASE_DIR] [options]\n\n\
         if loaded_world { "resumed" } else { "new" }
     );
 
+    let reset_mode = if fresh_model {
+        "fresh_model"
+    } else if fresh_world {
+        "fresh_world"
+    } else if loaded_world {
+        "resume"
+    } else {
+        "new_world"
+    };
+    let run_id = format!("{}-p{}-s{}", run_started_unix_ms, std::process::id(), seed);
+    let start_global_step = global_step;
+    let start_depth = model.depth();
+    let start_rad_amp = rad_amp;
+    println!(
+        "--> Telemetry run {} · schema v{} · build {}{} · mode {}",
+        run_id,
+        TRACE_SCHEMA_VERSION,
+        BUILD_COMMIT,
+        if BUILD_DIRTY == "true" { "-dirty" } else { "" },
+        reset_mode
+    );
+
     let total_chunks = ((SAMPLE_RATE as f32 * sim_duration / CHUNK_SIZE as f32) as usize).max(1);
     // Mobile-safe output path: stream DC-blocked f32 samples to a temporary
     // file, then perform one normalization/transcode pass.  A 16-minute run
@@ -4274,7 +4410,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let mut raw_peak = 1e-6f32;
     let mut chunk_scores: Vec<f32> = Vec::with_capacity(total_chunks);
     let mut topology_history = Vec::new();
+    let mut topology_index_history = Vec::new();
     let mut uncertainty_trace = Vec::new();
+    let mut morph_events = Vec::new();
+    let mut pending_morph_event: Option<(u64, &'static str)> = None;
 
     let mut phi = uncertainty.phi;
     let mut tape_loss: Option<Tensor> = None;
@@ -4748,7 +4887,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
         // Morphic growth/pruning. Capacity responds both to relative mimic
         // difficulty and to sustained ecological collapse; structural events
         // are cooldown-gated so a hot episode cannot cascade through layers.
-        let mut morph_event = None;
+        let mut morph_event: Option<&'static str> = None;
         if step < MORPH_WARMUP {
             warmup_sum += mimic_drift_n;
         } else {
@@ -4811,6 +4950,14 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 model.depth(),
                 rad_amp
             );
+            morph_events.push(serde_json::json!({
+                "step": absolute_step,
+                "run_step": step,
+                "event": ev,
+                "morph_depth": model.depth(),
+                "rad_amp": rad_amp,
+            }));
+            pending_morph_event = Some((absolute_step, ev));
         }
 
         // --- POTENTIAL CONTROLLER: the entire crash cart, one call ---
@@ -5189,14 +5336,29 @@ Usage: titan [BASE_DIR] [options]\n\n\
         completed_chunks += 1;
         evolved_chunks = step + 1;
 
-        if step % 10 == 0 {
+        if step % TRACE_EVERY == 0 {
+            let sample_index = topology_history.len();
+            let (trace_morph_event_step, trace_morph_event) =
+                pending_morph_event.unwrap_or((0, ""));
             let topology_state = macro_tape
                 .mean(1)?
                 .reshape((GRID_H * GRID_W,))?
                 .to_vec1::<f32>()?;
             topology_history.push(topology_state);
+            topology_index_history.push(serde_json::json!({
+                "sample_index": sample_index,
+                "step": absolute_step,
+                "run_step": step,
+                "morph_depth": model.depth(),
+                "rad_amp": rad_amp,
+                "field_entropy": field_entropy,
+                "morph_event": trace_morph_event,
+                "morph_event_step": if trace_morph_event.is_empty() { None } else { Some(trace_morph_event_step) },
+            }));
             uncertainty_trace.push(serde_json::json!({
-                "step": absolute_step, "spectral": uncertainty.spectral, "movement": uncertainty.movement,
+                "sample_index": sample_index, "step": absolute_step, "run_step": step,
+                "raw_movement": movement, "uncertainty_movement": uncertainty.movement,
+                "spectral": uncertainty.spectral,
                 "compositional": uncertainty.compositional, "aperture": aperture, "phi": phi,
                 "synergy": synergy_val, "empowerment": empowerment_val,
                 "V": pot.v, "temp": pot.temp, "micro_gain": pot.micro_gain, "macro_gain": pot.macro_gain,
@@ -5205,6 +5367,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 "temp_motion": pot.temp_terms[4], "curiosity": curiosity_factor,
                 "micro_amp": micro_abs, "macro_amp": macro_abs, "sigma": sigma,
                 "field_signed_mean": field_signed_mean, "field_rail_excess": field_rail_excess,
+                "field_entropy": field_entropy,
                 "controlled_shear_rms": controlled_shear,
                 "criticality_confidence": criticality.confidence, "crit_gain": crit_gain,
                 "flatness": uncertainty.flatness,
@@ -5216,6 +5379,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 "stereo_corr": s_sig["stereo_corr"].as_f64().unwrap_or(0.0),
                 "structured_complexity": s_sig["structured_complexity"].as_f64().unwrap_or(0.0),
                 "novelty_dmin": novelty_dmin_val,
+                "morph_depth": model.depth(), "rad_amp": rad_amp,
+                "morph_event": trace_morph_event,
+                "morph_event_step": if trace_morph_event.is_empty() { None } else { Some(trace_morph_event_step) },
                 "action": current_action.label(),
                 "planner_proposal": controller.model_proposal().label(),
                 "bandit_proposal": controller.bandit_proposal().label(),
@@ -5242,6 +5408,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 "motif_last_quality": motif_diagnostics.last_quality,
                 "motif_last_distance": motif_diagnostics.last_nearest_distance,
             }));
+            pending_morph_event = None;
         }
         if step % 50 == 0 {
             let rolling_sec = profiling_lap.elapsed().as_secs_f32();
@@ -5628,80 +5795,62 @@ Usage: titan [BASE_DIR] [options]\n\n\
     }
     topo_writer.flush()?;
 
+    let mut topology_index_writer =
+        csv::Writer::from_path(format!("{}/ca_topology_index_rust.csv", base_dir))?;
+    topology_index_writer.write_record(TOPOLOGY_INDEX_HEADERS)?;
+    for t in &topology_index_history {
+        let morph_event_step = t["morph_event_step"]
+            .as_u64()
+            .map(|value| value.to_string())
+            .unwrap_or_default();
+        topology_index_writer.write_record(&[
+            TRACE_SCHEMA_VERSION.to_string(),
+            run_id.clone(),
+            t["sample_index"].to_string(),
+            t["step"].to_string(),
+            t["run_step"].to_string(),
+            t["morph_depth"].to_string(),
+            t["rad_amp"].to_string(),
+            t["field_entropy"].to_string(),
+            t["morph_event"].as_str().unwrap_or("").to_string(),
+            morph_event_step,
+        ])?;
+    }
+    topology_index_writer.flush()?;
+
+    let mut morph_event_writer =
+        csv::Writer::from_path(format!("{}/morph_events_rust.csv", base_dir))?;
+    morph_event_writer.write_record(MORPH_EVENT_HEADERS)?;
+    for event in &morph_events {
+        morph_event_writer.write_record(&[
+            TRACE_SCHEMA_VERSION.to_string(),
+            run_id.clone(),
+            event["step"].to_string(),
+            event["run_step"].to_string(),
+            event["event"].as_str().unwrap_or("").to_string(),
+            event["morph_depth"].to_string(),
+            event["rad_amp"].to_string(),
+        ])?;
+    }
+    morph_event_writer.flush()?;
+
     let mut unc_writer =
         csv::Writer::from_path(format!("{}/uncertainty_trace_rust.csv", base_dir))?;
-    unc_writer.write_record([
-        "step",
-        "spectral",
-        "movement",
-        "compositional",
-        "aperture",
-        "synergy",
-        "empowerment",
-        "phi",
-        "V",
-        "temp",
-        "temp_stuck",
-        "temp_subcritical",
-        "temp_curiosity",
-        "temp_stagnation",
-        "temp_motion",
-        "curiosity",
-        "micro_gain",
-        "macro_gain",
-        "micro_amp",
-        "macro_amp",
-        "field_signed_mean",
-        "field_rail_excess",
-        "controlled_shear_rms",
-        "sigma",
-        "criticality_confidence",
-        "crit_gain",
-        "flatness",
-        "pe1",
-        "pe4",
-        "pe16",
-        "pi_proxy",
-        "brightness",
-        "flux",
-        "width",
-        "stereo_corr",
-        "structured_complexity",
-        "novelty_dmin",
-        "action",
-        "planner_proposal",
-        "bandit_proposal",
-        "reward",
-        "recurrence",
-        "model_confidence",
-        "effective_model_weight",
-        "prediction_error",
-        "calibration_error",
-        "region_change",
-        "observation_delta",
-        "activity_health",
-        "stagnation",
-        "low_motion_run",
-        "escape_strength",
-        "reward_mean",
-        "reward_std",
-        "lr_gain",
-        "grad_norm",
-        "clip_scale",
-        "radiation_probability",
-        "motifs",
-        "motif_candidates",
-        "motif_stored_total",
-        "motif_rejected_quality",
-        "motif_rejected_similarity",
-        "motif_last_quality",
-        "motif_last_distance",
-    ])?;
+    unc_writer.write_record(UNCERTAINTY_TRACE_HEADERS)?;
     for t in &uncertainty_trace {
+        let morph_event_step = t["morph_event_step"]
+            .as_u64()
+            .map(|value| value.to_string())
+            .unwrap_or_default();
         unc_writer.write_record(&[
+            TRACE_SCHEMA_VERSION.to_string(),
+            run_id.clone(),
+            t["sample_index"].to_string(),
             t["step"].to_string(),
+            t["run_step"].to_string(),
+            t["raw_movement"].to_string(),
+            t["uncertainty_movement"].to_string(),
             t["spectral"].to_string(),
-            t["movement"].to_string(),
             t["compositional"].to_string(),
             t["aperture"].to_string(),
             t["synergy"].to_string(),
@@ -5721,6 +5870,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
             t["macro_amp"].to_string(),
             t["field_signed_mean"].to_string(),
             t["field_rail_excess"].to_string(),
+            t["field_entropy"].to_string(),
             t["controlled_shear_rms"].to_string(),
             t["sigma"].to_string(),
             t["criticality_confidence"].to_string(),
@@ -5736,6 +5886,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
             t["stereo_corr"].to_string(),
             t["structured_complexity"].to_string(),
             t["novelty_dmin"].to_string(),
+            t["morph_depth"].to_string(),
+            t["rad_amp"].to_string(),
+            t["morph_event"].as_str().unwrap_or("").to_string(),
+            morph_event_step,
             t["action"].as_str().unwrap_or("").to_string(),
             t["planner_proposal"].as_str().unwrap_or("").to_string(),
             t["bandit_proposal"].as_str().unwrap_or("").to_string(),
@@ -5767,7 +5921,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
         ])?;
     }
     unc_writer.flush()?;
-    println!("Topology and uncertainty trace saved to {}.", base_dir);
+    println!(
+        "Telemetry schema v{} saved to {} (trace, topology index, and morph events).",
+        TRACE_SCHEMA_VERSION, base_dir
+    );
 
     // Final atomic model + organism save.
     let final_global_step = global_step + evolved_chunks as u64;
@@ -5831,6 +5988,93 @@ Usage: titan [BASE_DIR] [options]\n\n\
         serde_json::json!({"active_depth": model.depth(), "rad_amp": rad_amp}).to_string(),
     );
     let metadata = std::fs::metadata(&model_path)?;
+    let run_finished_unix_ms = unix_time_ms();
+    let run_metadata_path = format!("{}/titan_run_metadata_v6.json", base_dir);
+    let run_metadata_tmp = format!("{}.tmp", run_metadata_path);
+    let run_metadata = serde_json::json!({
+        "trace_schema_version": TRACE_SCHEMA_VERSION,
+        "run_id": run_id,
+        "started_unix_ms": run_started_unix_ms,
+        "finished_unix_ms": run_finished_unix_ms,
+        "build": {
+            "package": env!("CARGO_PKG_NAME"),
+            "version": env!("CARGO_PKG_VERSION"),
+            "git_commit": BUILD_COMMIT,
+            "git_dirty": BUILD_DIRTY == "true",
+            "release": !cfg!(debug_assertions),
+        },
+        "invocation": {
+            "args": args,
+            "base_dir": base_dir,
+            "reset_mode": reset_mode,
+            "seed": seed,
+            "threads": n_threads,
+            "learning_rate": target_lr,
+            "duration_requested_seconds": sim_duration,
+            "bptt_requested_chunks": bptt_window,
+            "autograd_tape_chunks": tape_chunks,
+            "model_loaded": loaded_any,
+            "model_fully_compatible": loaded_full,
+            "world_loaded": loaded_world,
+            "importing_model": importing_model,
+        },
+        "field": {
+            "channels": CA_CHANNELS,
+            "height": GRID_H,
+            "width": GRID_W,
+            "cells": CA_CHANNELS * GRID_H * GRID_W,
+            "sample_rate": SAMPLE_RATE,
+            "chunk_size": CHUNK_SIZE,
+        },
+        "run": {
+            "start_global_step": start_global_step,
+            "end_global_step": final_global_step,
+            "completed_chunks": completed_chunks,
+            "rendered_seconds": rendered_seconds,
+            "elapsed_seconds": total_elapsed,
+            "steps_per_second": overall_sps,
+            "start_morph_depth": start_depth,
+            "end_morph_depth": model.depth(),
+            "start_rad_amp": start_rad_amp,
+            "end_rad_amp": rad_amp,
+            "morph_event_count": morph_events.len(),
+        },
+        "final_state": {
+            "raw_model_confidence": controller.meta.confidence,
+            "effective_model_weight": adaptive_dynamics.effective_model_weight,
+            "activity_health": adaptive_dynamics.activity_health,
+            "stagnation": adaptive_dynamics.stagnation,
+            "motifs_active": motifs.entries.len(),
+            "motif_candidates": motif_diagnostics.candidates,
+            "motif_stored_total": motif_diagnostics.stored_total,
+        },
+        "telemetry": {
+            "trace_stride_chunks": TRACE_EVERY,
+            "trace_rows": uncertainty_trace.len(),
+            "topology_rows": topology_index_history.len(),
+            "uncertainty_trace": "uncertainty_trace_rust.csv",
+            "topology_values": "ca_topology_rust.csv",
+            "topology_index": "ca_topology_index_rust.csv",
+            "morph_events": "morph_events_rust.csv",
+            "movement_semantics": {
+                "raw_movement": "mean absolute micro-field delta per chunk; this is the console Move value",
+                "uncertainty_movement": "bounded uncertainty feature derived from movement trend and model surprise",
+            },
+        },
+        "outputs": {
+            "audio": output_path,
+            "prime": prime_path,
+            "model": model_path,
+            "world": world_path,
+            "morph_state": morph_path,
+        },
+        "notes": [
+            "AdamW moment buffers restart per process and are not present in the world checkpoint.",
+            "Bitwise reproducibility also requires the same thread count and build.",
+        ],
+    });
+    std::fs::write(&run_metadata_tmp, serde_json::to_vec_pretty(&run_metadata)?)?;
+    std::fs::rename(&run_metadata_tmp, &run_metadata_path)?;
     println!(
         "Model saved to {} (L{:02}, rad {:.3}). Size: {:.2} MB",
         model_path,
@@ -5838,6 +6082,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
         rad_amp,
         metadata.len() as f32 / 1_048_576.0
     );
+    println!("Run metadata saved to {}.", run_metadata_path);
     println!("Organism saved to {} at global step {} ({} motifs, raw/effective confidence {:.2}/{:.2}, health {:.2}, stagnation {:.2}).",
         world_path, final_global_step, motifs.entries.len(), controller.meta.confidence,
         adaptive_dynamics.effective_model_weight, adaptive_dynamics.activity_health,
@@ -6183,5 +6428,33 @@ mod tests {
             .to_scalar::<f32>()?;
         assert!(distance < 1e-4);
         Ok(())
+    }
+
+    #[test]
+    fn telemetry_schema_is_unambiguous_and_joinable() {
+        use std::collections::HashSet;
+
+        let trace: HashSet<_> = UNCERTAINTY_TRACE_HEADERS.iter().copied().collect();
+        assert_eq!(trace.len(), UNCERTAINTY_TRACE_HEADERS.len());
+        assert!(trace.contains("raw_movement"));
+        assert!(trace.contains("uncertainty_movement"));
+        assert!(!trace.contains("movement"));
+        for required in [
+            "run_id",
+            "sample_index",
+            "step",
+            "run_step",
+            "field_entropy",
+            "morph_depth",
+            "rad_amp",
+            "morph_event",
+            "morph_event_step",
+        ] {
+            assert!(trace.contains(required));
+            assert!(TOPOLOGY_INDEX_HEADERS.contains(&required));
+        }
+        assert!(MORPH_EVENT_HEADERS.contains(&"step"));
+        assert!(MORPH_EVENT_HEADERS.contains(&"event"));
+        assert!(MORPH_EVENT_HEADERS.contains(&"morph_depth"));
     }
 }
