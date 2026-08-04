@@ -25,6 +25,19 @@ artistic interpretation. The distinction matters when comparing experiments.
 - `temp` controls perturbation, plasticity, and exploration. It is an adaptive
   control variable, not physical temperature.
 - `energy` is a bounded synthesis/control budget.
+- `temp_stuck`, `temp_subcritical`, `temp_curiosity`, `temp_stagnation`, and
+  `temp_motion` are the additive drives of the temperature target before its
+  final clamp and EMA. They are the first place to inspect persistent heat.
+- `controlled_shear_rms` is the requested and phase-normalized RMS of the
+  structured macro-field forcing.
+- `field_signed_mean` detects sign bias in the micro field;
+  `field_rail_excess` is the mean amount by which cell magnitude exceeds 0.9.
+- `radiation_probability` is the per-chunk sparse-radiation hazard and is
+  independent of the selected BPTT window.
+- `grad_norm` is measured before global clipping and `clip_scale` is the factor
+  applied to gradients before AdamW updates its moments.
+- `stereo_corr` is the post-DSP Pearson correlation between channels. Strongly
+  negative values warn of mono cancellation even when width sounds impressive.
 
 Claims about improved sound should be supported by repeated seeded runs,
 ablation comparisons, objective audio measurements, and blinded listening—not

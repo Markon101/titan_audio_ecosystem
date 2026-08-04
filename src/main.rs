@@ -192,6 +192,7 @@ const SHEAR_AMP_MIN: f32 = 0.03; // structured macro shear at T=0 (anti-weld flo
 const SHEAR_AMP_MAX: f32 = 0.45; // at T=1
 const MICRO_KICK_MAX: f32 = 0.11; // white micro kick amplitude at T=1
 const LR_HEAT_MAX: f64 = 1.5; // lr multiplier reaches 1+this at T=1
+const LR_CURIOSITY_MAX: f64 = 0.35;
 const ARB_TAU_MAX: f32 = 2.0; // arbiter softmax temp reaches 1+this at T=1
 const SHEAR_OCTAVES: usize = 7;
 const SHEAR_PHASE_VEL: f32 = 0.314;
@@ -206,6 +207,9 @@ const FREQ_GLIDE_SPEED: f32 = 0.07131;
 const BASE_LR: f64 = 1.5e-3;
 const RESONANT_AUTONOMY: f32 = 0.31;
 const GRAD_NORM_MAX: f32 = 5.0; // global-norm ceiling; applied as an LR scale (see note at use)
+const RADIATION_REFERENCE_WINDOW: f32 = BPTT_WINDOW as f32;
+const LOCAL_RAIL_START: f32 = 0.70;
+const LOCAL_RAIL_STRENGTH: f64 = 0.08;
 const TWO_PI: f32 = 2.0 * std::f32::consts::PI;
 
 const ENERGY_HOMEO_RATE: f32 = 0.025; // energy bowl strength applied directly to the scalar
@@ -228,6 +232,7 @@ const MORPH_EVENT_COOLDOWN: u64 = 512;
 const MORPH_DEVELOPMENT_EVERY: u64 = 2048;
 const MORPH_FIELD_ENTROPY_FLOOR: f32 = 0.42; // normalized from the field's 0..3 bits
 const MORPH_PI_FLOOR: f32 = 0.04;
+const MORPH_ADDED_RESIDUAL_GAIN: f64 = 0.35;
 
 const RAD_AMP_INIT: f32 = 0.8;
 const RAD_AMP_MIN: f32 = 0.10;
@@ -279,6 +284,11 @@ fn rand_t(rng: &mut RuntimeRng, shape: &[usize], device: &Device) -> CResult<Ten
     let n: usize = shape.iter().product();
     let v: Vec<f32> = (0..n).map(|_| rng.gen_range(0.0f32..1.0)).collect();
     Tensor::from_vec(v, shape, device)
+}
+
+fn reference_window_probability_to_chunk(probability: f32) -> f32 {
+    let p = probability.clamp(0.0, 1.0);
+    1.0 - (1.0 - p).powf(1.0 / RADIATION_REFERENCE_WINDOW)
 }
 
 // =====================================================================
@@ -648,6 +658,21 @@ impl AdaptiveDynamics {
     fn reward_std(&self) -> f32 {
         self.reward_variance.max(1e-6).sqrt()
     }
+}
+
+fn ecological_curiosity(ecology: &AdaptiveDynamics, archetype_ticks: usize) -> f32 {
+    // Archetype persistence alone is not stagnation: a coherent musical
+    // regime may remain in one coarse semantic bin for a long time. Weight
+    // persistence by actual loss of health/complexity and combine it with a
+    // continuous novelty deficit instead of saturating after twelve chunks.
+    let persistence = (archetype_ticks as f32 / 96.0).clamp(0.0, 1.0);
+    let health_deficit = 1.0 - ecology.activity_health;
+    let novelty_deficit = (1.0 - ecology.observation_delta_ema / 0.04).clamp(0.0, 1.0);
+    let complexity_deficit = (1.0 - ecology.complexity_ema / 0.55).clamp(0.0, 1.0);
+    (0.55 * ecology.stagnation
+        + 0.25 * health_deficit * novelty_deficit
+        + 0.20 * persistence * health_deficit * complexity_deficit)
+        .clamp(0.0, 1.0)
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -1382,6 +1407,16 @@ fn calculate_cross_layer_synergy_tensor(micro: &Tensor, macro_t: &Tensor) -> CRe
     cross_cov.affine(10.0, 0.0)?.tanh()
 }
 
+#[cfg(test)]
+fn local_rail_bias_value(x: f32) -> f32 {
+    -LOCAL_RAIL_STRENGTH as f32 * x * (x.abs() - LOCAL_RAIL_START).max(0.0)
+}
+
+fn local_rail_bias(x: &Tensor) -> CResult<Tensor> {
+    let excess = x.abs()?.affine(1.0, -(LOCAL_RAIL_START as f64))?.relu()?;
+    x.mul(&excess)?.affine(-LOCAL_RAIL_STRENGTH, 0.0)
+}
+
 type TensorTransform = Box<dyn Fn(&Tensor) -> CResult<Tensor>>;
 
 // Circular (torus) 2D convolution: wrap-pad both spatial dims, then conv with
@@ -1783,6 +1818,9 @@ impl SpectralEntropyMonitor {
         let mut peak = 0.0f32;
         let mut side_e = 0.0f32;
         let mut total_e = 0.0f32;
+        let mut left_e = 0.0f32;
+        let mut right_e = 0.0f32;
+        let mut cross_e = 0.0f32;
         for i in 0..n {
             let m = (left[i] + right[i]) * 0.5;
             mono.push(m);
@@ -1791,7 +1829,12 @@ impl SpectralEntropyMonitor {
             peak = peak.max(m.abs());
             let side = left[i] - right[i];
             side_e += side * side;
-            total_e += left[i] * left[i] + right[i] * right[i];
+            let l2 = left[i] * left[i];
+            let r2 = right[i] * right[i];
+            left_e += l2;
+            right_e += r2;
+            cross_e += left[i] * right[i];
+            total_e += l2 + r2;
         }
         self.fft.process(&mut buf);
         let mags: Vec<f32> = buf.iter().take(n / 2).map(|c| c.norm()).collect();
@@ -1826,6 +1869,7 @@ impl SpectralEntropyMonitor {
         } else {
             0.0
         };
+        let stereo_corr = (cross_e / (left_e * right_e).sqrt().max(1e-8)).clamp(-1.0, 1.0);
 
         let dec: Vec<f32> = mono.iter().step_by(4).copied().collect();
         let pe1 = perm_entropy4(&dec, 1);
@@ -1859,6 +1903,7 @@ impl SpectralEntropyMonitor {
             "signal": entropy_norm, "avg": avg, "type": "post_dsp_spectral_ecology",
             "flatness": flatness, "brightness": brightness_hz, "centroid_norm": centroid_norm,
             "flux": flux, "rms": rms, "crest": crest, "width": width,
+            "stereo_corr": stereo_corr,
             "pe1": pe1, "pe4": pe4, "pe16": pe16, "pi_proxy": pi_proxy,
             "structured_complexity": observation.structured_complexity(),
         });
@@ -2039,7 +2084,8 @@ struct PotOut {
     lr_heat: f64,
     couple_release: f32, // eases the synergy band when over-coupled or hot
     v: f32,
-    annealed: bool, // edge: hot episode just cooled below TEMP_COOL
+    temp_terms: [f32; 5], // stuck, subcritical, curiosity, stagnation, motion
+    annealed: bool,       // edge: hot episode just cooled below TEMP_COOL
 }
 
 #[derive(Clone, Copy)]
@@ -2135,12 +2181,14 @@ impl PotentialController {
         let stuck = excess * (-self.speed_ema / TEMP_STUCK_SPEED).exp();
         let subcrit = (1.0 - sig).clamp(0.0, 1.0);
         let movement_deficit = ((0.006 - movement) / 0.006).clamp(0.0, 1.0);
-        let t_target = (stuck * 0.65
-            + subcrit * 0.38
-            + curiosity * 0.30
-            + stagnation * 0.62
-            + movement_deficit * 0.28)
-            .clamp(0.0, 1.0);
+        let temp_terms = [
+            stuck * 0.65,
+            subcrit * 0.38,
+            curiosity * 0.30,
+            stagnation * 0.62,
+            movement_deficit * 0.28,
+        ];
+        let t_target = temp_terms.iter().sum::<f32>().clamp(0.0, 1.0);
         self.temp += TEMP_SMOOTH * (t_target - self.temp);
         let temp = self.temp.clamp(0.0, 1.0);
 
@@ -2166,6 +2214,7 @@ impl PotentialController {
             lr_heat: 1.0 + LR_HEAT_MAX * temp as f64,
             couple_release,
             v,
+            temp_terms,
             annealed,
         }
     }
@@ -2234,8 +2283,13 @@ impl ShearField2D {
                 self.scratch[k] += w * (self.sin_a[base + k] * cb + self.cos_a[base + k] * sb);
             }
         }
+        // Normalize the actual phase-dependent field to the requested RMS.
+        // Octave sums are not perfectly orthogonal on the finite torus, so a
+        // fixed coefficient normalization would still breathe with phase.
+        let rms = (self.scratch.iter().map(|v| v * v).sum::<f32>() / self.cl as f32).sqrt();
+        let scale = amp / rms.max(1e-6);
         for v in self.scratch.iter_mut() {
-            *v *= amp;
+            *v *= scale;
         }
         Tensor::from_slice(&self.scratch, (1, CA_CHANNELS, GRID_H, GRID_W), device)
     }
@@ -2525,15 +2579,16 @@ fn plan_action_scores(
     hidden: &Tensor,
     device: &Device,
     ecology: &AdaptiveDynamics,
+    smoothed_control: SynthesisControl,
+    control_slew: f32,
 ) -> Result<[f32; ACTION_COUNT]> {
     let refs: Vec<&Tensor> = (0..ACTION_COUNT).map(|_| hidden).collect();
     let hidden_batch = Tensor::cat(&refs, 0)?;
     let mut control_rows = Vec::with_capacity(ACTION_COUNT * ACTION_COUNT);
     for action in ControlAction::ALL {
-        control_rows.extend_from_slice(&control_features(
-            action,
-            SynthesisControl::for_action(action),
-        ));
+        let candidate_control =
+            smoothed_control.blend(SynthesisControl::for_action(action), control_slew);
+        control_rows.extend_from_slice(&control_features(action, candidate_control));
     }
     let action_batch = Tensor::from_vec(control_rows, (ACTION_COUNT, ACTION_COUNT), device)?;
     let input = Tensor::cat(&[&hidden_batch, &action_batch], 1)?;
@@ -2622,7 +2677,10 @@ impl MorphicStack {
     fn forward(&self, x: &Tensor) -> CResult<Tensor> {
         let mut out = x.clone();
         for i in 0..self.active_depth {
-            out = out.add(&self.layers[i].forward(&out)?)?;
+            let residual = self.layers[i]
+                .forward(&out)?
+                .affine(morphic_residual_gain(i), 0.0)?;
+            out = out.add(&residual)?;
         }
         Ok(out)
     }
@@ -2647,6 +2705,14 @@ impl MorphicStack {
         } else {
             false
         }
+    }
+}
+
+fn morphic_residual_gain(layer_index: usize) -> f64 {
+    if layer_index == 0 {
+        1.0 // preserve all existing L01 checkpoint behavior
+    } else {
+        MORPH_ADDED_RESIDUAL_GAIN / ((layer_index + 1) as f64).sqrt()
     }
 }
 
@@ -2996,9 +3062,9 @@ impl ComplexAudioEcosystem {
 
         let mut next_macro = macro_t.clone();
         if force {
-            // Local anti-rail restoring field (per-cell health; the global-mean
-            // barrier lives in the PotentialController).
-            let field = macro_t.abs()?.affine(-0.04, 0.02)?;
+            // Sign-symmetric local anti-rail restoring field (the global-mean
+            // amplitude barrier lives in the PotentialController).
+            let field = local_rail_bias(macro_t)?;
             let keep = mk_keep(rng)?;
             next_macro = self
                 .macro_ca
@@ -3012,7 +3078,7 @@ impl ComplexAudioEcosystem {
         let contracted_mem = self.asymptotic_contraction.forward(mem)?;
         let macro_ch = next_macro.mean(D::Minus1)?.mean(D::Minus1)?; // (1, C)
         let macro_mod = contracted_mem.add(&macro_ch)?;
-        let micro_field = micro.abs()?.affine(-0.04, 0.02)?;
+        let micro_field = local_rail_bias(micro)?;
         let keep_m = mk_keep(rng)?;
         let raw_next_micro =
             self.micro_ca
@@ -4171,6 +4237,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let mut window_loss: Option<Tensor> = None;
     let mut steps_in_window = 0;
     let mut latest_lr_gain: f64;
+    let mut latest_grad_norm = 0.0f32;
+    let mut latest_clip_scale = 1.0f32;
     // Persisted host-side adaptive state is unpacked into local scalars for
     // the hot loop, then packed again only when checkpointing.
     let mut morph_history = std::mem::take(&mut host_runtime.morph_history);
@@ -4208,9 +4276,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
         let absolute_step = global_step + step as u64;
         let aperture = uncertainty.branch_aperture();
         let escape_strength = adaptive_dynamics.escape_strength();
-        let curiosity_factor = (stagnation_ticks as f32 / 12.0)
-            .min(1.0)
-            .max(adaptive_dynamics.stagnation * 0.85);
+        let curiosity_factor = ecological_curiosity(&adaptive_dynamics, stagnation_ticks);
+        let control_slew =
+            (0.10 + 0.18 * controller.meta.surprise() + 0.14 * escape_strength).clamp(0.08, 0.38);
 
         // Causally correct self-model: the state/action pair retained from the
         // previous chunk predicts the post-DSP observation that is now known.
@@ -4247,6 +4315,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 &hidden_mem.detach(),
                 &device,
                 &adaptive_dynamics,
+                smoothed_control,
+                control_slew,
             ) {
                 Ok(scores) => controller.cached_model_scores = scores,
                 Err(e) => println!("! planner skipped at step {}: {}", absolute_step, e),
@@ -4256,14 +4326,12 @@ Usage: titan [BASE_DIR] [options]\n\n\
         let current_action =
             controller.choose(last_temp, &mut adaptive_dynamics, motif_available, &mut rng);
         let mut target_control = SynthesisControl::for_action(current_action);
-        let mut recall_strength = 0.0f32;
         if current_action == ControlAction::Recall {
             if let Some((remembered, strength)) = motifs.recall(
                 last_observation.as_ref(),
                 absolute_step,
                 &mut motif_diagnostics,
             ) {
-                recall_strength = strength;
                 target_control =
                     target_control.blend(remembered, (0.35 + 0.55 * strength).clamp(0.0, 0.9));
             }
@@ -4279,8 +4347,6 @@ Usage: titan [BASE_DIR] [options]\n\n\
         // Action selection is discrete, but the acoustic intervention is a
         // persistent continuous state.  This avoids chunk-boundary spectral
         // jumps while still allowing rapid changes during self-surprise.
-        let control_slew =
-            (0.10 + 0.18 * controller.meta.surprise() + 0.14 * escape_strength).clamp(0.08, 0.38);
         let current_control = smoothed_control.blend(target_control, control_slew);
         smoothed_control = current_control;
         let current_predictor_input = predictor_input(
@@ -4501,6 +4567,13 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 &region_activity,
                 &region_change,
                 &novelty_dmin_t.reshape((1,))?,
+                &next_micro.mean_all()?.reshape((1,))?,
+                &next_micro
+                    .abs()?
+                    .affine(1.0, -0.90)?
+                    .relu()?
+                    .mean_all()?
+                    .reshape((1,))?,
             ],
             0,
         )?
@@ -4540,7 +4613,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
             [region_start + REGION_COUNT..region_start + REGION_COUNT * 2]
             .try_into()
             .unwrap();
-        let novelty_dmin_val = metrics[region_start + REGION_COUNT * 2];
+        let tail_start = region_start + REGION_COUNT * 2;
+        let novelty_dmin_val = metrics[tail_start];
+        let field_signed_mean = metrics[tail_start + 1];
+        let field_rail_excess = metrics[tail_start + 2];
         if let (Some(actual), Some(_)) = (&last_observation, &pending_predictor_input) {
             controller
                 .meta
@@ -4778,21 +4854,19 @@ Usage: titan [BASE_DIR] [options]\n\n\
         // intervention. Confidence smoothly blends the gain back toward neutral.
         let crit_gain = 1.0 + criticality.confidence * (raw_crit_gain - 1.0);
         let phi_gate = 1.0 / (1.0 + phi);
-        let curiosity_lr_gain = 1.0 + (curiosity_factor * 1.5) as f64;
+        let curiosity_lr_gain = 1.0 + curiosity_factor as f64 * LR_CURIOSITY_MAX;
         latest_lr_gain = crit_gain as f64 * pot.lr_heat * phi_gate as f64 * curiosity_lr_gain;
 
         if steps_in_window >= bptt_window || step == total_chunks - 1 {
             if let Some(w) = window_loss.take() {
                 let scaled = w.affine(1.0 / steps_in_window as f64, 0.0)?;
-                let bounded_loss = scaled.clamp(0.0, 10.0)?;
-                if let Ok(loss_val) = bounded_loss.to_scalar::<f32>() {
+                if let Ok(loss_val) = scaled.to_scalar::<f32>() {
                     if loss_val.is_finite() && latest_lr_gain.is_finite() {
-                        // Global grad norm -> LR scale. NOTE: for AdamW this is not
-                        // bitwise-identical to true clipping (the moments still see
-                        // raw grads), but as a blow-up guardrail it is equivalent in
-                        // effect and replaces v3's no-op ±100 weight clamp.
-                        match bounded_loss.backward() {
-                            Ok(grads) => {
+                        // True global-norm clipping: scale gradients before AdamW
+                        // updates either moment buffer. This prevents a single hot
+                        // window from poisoning future second-moment estimates.
+                        match scaled.backward() {
+                            Ok(mut grads) => {
                                 let mut sq = Tensor::zeros((), DType::F32, &device)?;
                                 for var in varmap.all_vars() {
                                     if let Some(g) = grads.get(var.as_tensor()) {
@@ -4803,8 +4877,19 @@ Usage: titan [BASE_DIR] [options]\n\n\
                                 if gnorm.is_finite() {
                                     let clip_scale =
                                         (GRAD_NORM_MAX / gnorm.max(1e-6)).min(1.0) as f64;
-                                    optimizer
-                                        .set_learning_rate(target_lr * latest_lr_gain * clip_scale);
+                                    latest_grad_norm = gnorm;
+                                    latest_clip_scale = clip_scale as f32;
+                                    if clip_scale < 1.0 {
+                                        for var in varmap.all_vars() {
+                                            if let Some(g) = grads.remove(var.as_tensor()) {
+                                                grads.insert(
+                                                    var.as_tensor(),
+                                                    g.affine(clip_scale, 0.0)?,
+                                                );
+                                            }
+                                        }
+                                    }
+                                    optimizer.set_learning_rate(target_lr * latest_lr_gain);
                                     let _ = optimizer.step(&grads);
                                 } else {
                                     println!("! WARNING: non-finite grad norm — skipping window.");
@@ -4823,28 +4908,34 @@ Usage: titan [BASE_DIR] [options]\n\n\
             micro_tape = next_micro.detach();
             macro_tape = next_macro.detach();
             hidden_mem = next_hidden.detach();
-            let rad_probability = (RADIATE_PROB
-                + curiosity_factor * 0.12
-                + (current_control.kick_mult - 1.0).max(0.0) * 0.08
-                + controller.meta.surprise() * 0.06
-                + escape_strength * 0.42)
-                .clamp(0.0, 0.82);
-            let escape_pulse = escape_strength > 0.82 && absolute_step.is_multiple_of(32);
-            if escape_pulse || rng.gen::<f32>() < rad_probability {
-                micro_tape = levy_radiate(
-                    &micro_tape,
-                    rad_amp
-                        * (1.0
-                            + curiosity_factor * 0.4
-                            + controller.meta.surprise() * 0.25
-                            + escape_strength * 0.55),
-                    &mut rng,
-                )?;
-            }
         } else {
             micro_tape = next_micro;
             macro_tape = next_macro;
             hidden_mem = next_hidden;
+        }
+
+        // Radiation is an ecological event, not an optimizer event. Convert
+        // the old default-window probability to an equivalent per-chunk
+        // hazard so changing --bptt no longer changes organism dynamics.
+        let radiation_window_probability = (RADIATE_PROB
+            + curiosity_factor * 0.12
+            + (current_control.kick_mult - 1.0).max(0.0) * 0.08
+            + controller.meta.surprise() * 0.06
+            + escape_strength * 0.42)
+            .clamp(0.0, 0.82);
+        let radiation_probability =
+            reference_window_probability_to_chunk(radiation_window_probability);
+        let escape_pulse = escape_strength > 0.82 && absolute_step.is_multiple_of(32);
+        if escape_pulse || rng.gen::<f32>() < radiation_probability {
+            micro_tape = levy_radiate(
+                &micro_tape,
+                rad_amp
+                    * (1.0
+                        + curiosity_factor * 0.4
+                        + controller.meta.surprise() * 0.25
+                        + escape_strength * 0.55),
+                &mut rng,
+            )?;
         }
 
         // --- LANGEVIN STEP: drift (-grad V gains) + temperature noise ---
@@ -4964,14 +5055,13 @@ Usage: titan [BASE_DIR] [options]\n\n\
             controller.meta.confidence,
         );
         let recurrence = motifs.recurrence(&post.observation, absolute_step);
-        let reward = (post.observation.reward_against(
+        let reward = post.observation.reward_against(
             last_observation.as_ref(),
             recurrence,
             &adaptive_dynamics,
             controller.meta.confidence,
             controller.action_age,
-        ) + 0.08 * recall_strength)
-            .clamp(-1.0, 1.0);
+        );
         controller.bandit.update(current_action, reward);
         adaptive_dynamics.observe_reward(reward);
         if absolute_step.is_multiple_of(MOTIF_EVERY as u64) {
@@ -5009,7 +5099,12 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 "compositional": uncertainty.compositional, "aperture": aperture, "phi": phi,
                 "synergy": synergy_val, "empowerment": empowerment_val,
                 "V": pot.v, "temp": pot.temp, "micro_gain": pot.micro_gain, "macro_gain": pot.macro_gain,
+                "temp_stuck": pot.temp_terms[0], "temp_subcritical": pot.temp_terms[1],
+                "temp_curiosity": pot.temp_terms[2], "temp_stagnation": pot.temp_terms[3],
+                "temp_motion": pot.temp_terms[4], "curiosity": curiosity_factor,
                 "micro_amp": micro_abs, "macro_amp": macro_abs, "sigma": sigma,
+                "field_signed_mean": field_signed_mean, "field_rail_excess": field_rail_excess,
+                "controlled_shear_rms": controlled_shear,
                 "criticality_confidence": criticality.confidence, "crit_gain": crit_gain,
                 "flatness": uncertainty.flatness,
                 "pe1": s_sig["pe1"].as_f64().unwrap_or(0.0), "pe4": s_sig["pe4"].as_f64().unwrap_or(0.0),
@@ -5017,6 +5112,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 "brightness": s_sig["brightness"].as_f64().unwrap_or(0.0),
                 "flux": s_sig["flux"].as_f64().unwrap_or(0.0),
                 "width": s_sig["width"].as_f64().unwrap_or(0.0),
+                "stereo_corr": s_sig["stereo_corr"].as_f64().unwrap_or(0.0),
                 "structured_complexity": s_sig["structured_complexity"].as_f64().unwrap_or(0.0),
                 "novelty_dmin": novelty_dmin_val,
                 "action": current_action.label(),
@@ -5035,6 +5131,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 "escape_strength": adaptive_dynamics.escape_strength(),
                 "reward_mean": adaptive_dynamics.reward_mean,
                 "reward_std": adaptive_dynamics.reward_std(),
+                "lr_gain": latest_lr_gain, "grad_norm": latest_grad_norm,
+                "clip_scale": latest_clip_scale, "radiation_probability": radiation_probability,
                 "motifs": motifs.entries.len(),
                 "motif_candidates": motif_diagnostics.candidates,
                 "motif_stored_total": motif_diagnostics.stored_total,
@@ -5060,6 +5158,11 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 field_entropy, arch_summary, synergy_val, empowerment_val, energy_state, phi,
                 s_sig["pi_proxy"].as_f64().unwrap_or(0.0), controller.meta.confidence,
                 adaptive_dynamics.effective_model_weight, controller.meta.error_ema);
+            println!("  drives S:{:.2} σ:{:.2} C:{:.2} G:{:.2} M:{:.2} | curiosity:{:.2} shear-rms:{:.2} rad-p:{:.3} | field μ:{:+.3} rail:{:.4} | grad:{:.2} clip:{:.2} corr:{:+.2}",
+                pot.temp_terms[0], pot.temp_terms[1], pot.temp_terms[2], pot.temp_terms[3],
+                pot.temp_terms[4], curiosity_factor, controlled_shear, radiation_probability,
+                field_signed_mean, field_rail_excess, latest_grad_norm, latest_clip_scale,
+                s_sig["stereo_corr"].as_f64().unwrap_or(0.0));
             println!("  ecology health:{:.2} stagnation:{:.2} escape:{:.2} | reward:{:+.3} μ:{:+.3} σr:{:.3} | motifs:{}/{} qrej:{} srej:{}",
                 adaptive_dynamics.activity_health, adaptive_dynamics.stagnation,
                 adaptive_dynamics.escape_strength(), reward, adaptive_dynamics.reward_mean,
@@ -5437,10 +5540,19 @@ Usage: titan [BASE_DIR] [options]\n\n\
         "phi",
         "V",
         "temp",
+        "temp_stuck",
+        "temp_subcritical",
+        "temp_curiosity",
+        "temp_stagnation",
+        "temp_motion",
+        "curiosity",
         "micro_gain",
         "macro_gain",
         "micro_amp",
         "macro_amp",
+        "field_signed_mean",
+        "field_rail_excess",
+        "controlled_shear_rms",
         "sigma",
         "criticality_confidence",
         "crit_gain",
@@ -5452,6 +5564,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
         "brightness",
         "flux",
         "width",
+        "stereo_corr",
         "structured_complexity",
         "novelty_dmin",
         "action",
@@ -5471,6 +5584,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
         "escape_strength",
         "reward_mean",
         "reward_std",
+        "lr_gain",
+        "grad_norm",
+        "clip_scale",
+        "radiation_probability",
         "motifs",
         "motif_candidates",
         "motif_stored_total",
@@ -5491,10 +5608,19 @@ Usage: titan [BASE_DIR] [options]\n\n\
             t["phi"].to_string(),
             t["V"].to_string(),
             t["temp"].to_string(),
+            t["temp_stuck"].to_string(),
+            t["temp_subcritical"].to_string(),
+            t["temp_curiosity"].to_string(),
+            t["temp_stagnation"].to_string(),
+            t["temp_motion"].to_string(),
+            t["curiosity"].to_string(),
             t["micro_gain"].to_string(),
             t["macro_gain"].to_string(),
             t["micro_amp"].to_string(),
             t["macro_amp"].to_string(),
+            t["field_signed_mean"].to_string(),
+            t["field_rail_excess"].to_string(),
+            t["controlled_shear_rms"].to_string(),
             t["sigma"].to_string(),
             t["criticality_confidence"].to_string(),
             t["crit_gain"].to_string(),
@@ -5506,6 +5632,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
             t["brightness"].to_string(),
             t["flux"].to_string(),
             t["width"].to_string(),
+            t["stereo_corr"].to_string(),
             t["structured_complexity"].to_string(),
             t["novelty_dmin"].to_string(),
             t["action"].as_str().unwrap_or("").to_string(),
@@ -5525,6 +5652,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
             t["escape_strength"].to_string(),
             t["reward_mean"].to_string(),
             t["reward_std"].to_string(),
+            t["lr_gain"].to_string(),
+            t["grad_norm"].to_string(),
+            t["clip_scale"].to_string(),
+            t["radiation_probability"].to_string(),
             t["motifs"].to_string(),
             t["motif_candidates"].to_string(),
             t["motif_stored_total"].to_string(),
@@ -5664,6 +5795,60 @@ mod tests {
     }
 
     #[test]
+    fn curiosity_distinguishes_coherence_from_stagnation() {
+        let healthy = AdaptiveDynamics {
+            activity_health: 0.88,
+            stagnation: 0.14,
+            observation_delta_ema: 0.035,
+            complexity_ema: 0.48,
+            ..Default::default()
+        };
+        let mut stagnant = healthy.clone();
+        stagnant.activity_health = 0.34;
+        stagnant.stagnation = 0.78;
+        stagnant.observation_delta_ema = 0.003;
+        stagnant.complexity_ema = 0.20;
+
+        let coherent_curiosity = ecological_curiosity(&healthy, 1_000);
+        let stagnant_curiosity = ecological_curiosity(&stagnant, 1_000);
+        assert!(coherent_curiosity < 0.16);
+        assert!(stagnant_curiosity > coherent_curiosity + 0.45);
+    }
+
+    #[test]
+    fn local_rail_bias_is_sign_symmetric_and_restoring() {
+        let positive = local_rail_bias_value(0.95);
+        let negative = local_rail_bias_value(-0.95);
+        assert!(positive < 0.0);
+        assert!(negative > 0.0);
+        assert!((positive + negative).abs() < 1e-7);
+        assert_eq!(local_rail_bias_value(0.50), 0.0);
+        assert_eq!(local_rail_bias_value(-0.50), 0.0);
+    }
+
+    #[test]
+    fn radiation_hazard_is_independent_of_runtime_bptt() {
+        let window_probability = 0.24f32;
+        let chunk_probability = reference_window_probability_to_chunk(window_probability);
+        let reconstructed = 1.0 - (1.0 - chunk_probability).powf(RADIATION_REFERENCE_WINDOW);
+        assert!((reconstructed - window_probability).abs() < 1e-6);
+    }
+
+    #[test]
+    fn shear_generator_honors_requested_rms() -> Result<()> {
+        let device = Device::Cpu;
+        let mut shear = ShearField2D::new(CA_CHANNELS, GRID_H, GRID_W);
+        let requested = 0.23f32;
+        let values = shear
+            .generate(requested, 1.234, &device)?
+            .flatten_all()?
+            .to_vec1::<f32>()?;
+        let rms = (values.iter().map(|v| v * v).sum::<f32>() / values.len() as f32).sqrt();
+        assert!((rms - requested).abs() < 1e-5);
+        Ok(())
+    }
+
+    #[test]
     fn morphic_growth_responds_to_ecological_capacity_pressure() {
         let ecology = AdaptiveDynamics {
             samples: 500,
@@ -5719,6 +5904,17 @@ mod tests {
             ),
             MorphDecision::Hold
         );
+    }
+
+    #[test]
+    fn added_morphic_layers_have_bounded_decreasing_residuals() {
+        assert_eq!(morphic_residual_gain(0), 1.0);
+        assert!(morphic_residual_gain(1) < 0.26);
+        for i in 2..MORPH_MAX_BLOCKS {
+            assert!(morphic_residual_gain(i) < morphic_residual_gain(i - 1));
+        }
+        let added_gain: f64 = (1..MORPH_MAX_BLOCKS).map(morphic_residual_gain).sum();
+        assert!(added_gain < 1.8);
     }
 
     #[test]
