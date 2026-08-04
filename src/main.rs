@@ -137,7 +137,7 @@ const WORLD_VERSION: u32 = 6;
 const WORLD_MAGIC: [u8; 8] = *b"TITANW6\0";
 const LEGACY_WORLD_MAGIC_V5: [u8; 8] = *b"TITANW5\0";
 const WORLD_SAVE_EVERY: usize = 256;
-const MOTIF_SLOTS: usize = 32;
+const MOTIF_SLOTS: usize = 64;
 const MOTIF_EVERY: usize = 16;
 const MOTIF_MIN_AGE: u64 = 128;
 const STAGNATION_WARMUP: u64 = 48;
@@ -225,6 +225,9 @@ const MORPH_PRUNE_REL: f32 = 0.70;
 // The gate is derived from global step, so old world checkpoints need no
 // schema migration or additional persisted cooldown field.
 const MORPH_EVENT_COOLDOWN: u64 = 512;
+const MORPH_DEVELOPMENT_EVERY: u64 = 2048;
+const MORPH_FIELD_ENTROPY_FLOOR: f32 = 0.42; // normalized from the field's 0..3 bits
+const MORPH_PI_FLOOR: f32 = 0.04;
 
 const RAD_AMP_INIT: f32 = 0.8;
 const RAD_AMP_MIN: f32 = 0.10;
@@ -649,43 +652,63 @@ impl AdaptiveDynamics {
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum MorphDecision {
-    Grow,
+    GrowPressure,
+    GrowDevelopment,
     Prune,
     Hold,
 }
 
+#[derive(Clone, Copy, Debug)]
+struct MorphEvidence {
+    mimic_avg: f32,
+    mimic_baseline: f32,
+    field_entropy_norm: f32,
+    predictive_structure: f32,
+}
+
+fn morph_boundary_crossed(absolute_step: u64, window_len: usize, period: u64) -> bool {
+    let previous_step = absolute_step.saturating_sub(window_len.saturating_sub(1) as u64);
+    absolute_step / period != previous_step / period
+}
+
 fn morph_decision(
-    window_avg: f32,
-    baseline: f32,
+    evidence: MorphEvidence,
     ecology: &AdaptiveDynamics,
     depth: usize,
     absolute_step: u64,
     window_len: usize,
 ) -> MorphDecision {
-    // At most one decision window can act in each cooldown epoch. This works
-    // for resumed worlds without extending the serialized checkpoint schema.
-    let previous_step = absolute_step.saturating_sub(window_len.saturating_sub(1) as u64);
-    let cooldown_boundary =
-        absolute_step / MORPH_EVENT_COOLDOWN != previous_step / MORPH_EVENT_COOLDOWN;
-    if !cooldown_boundary {
-        return MorphDecision::Hold;
-    }
-
-    let relative_pressure = window_avg > baseline * MORPH_GROWTH_REL;
+    let pressure_boundary = morph_boundary_crossed(absolute_step, window_len, MORPH_EVENT_COOLDOWN);
+    let relative_pressure = evidence.mimic_avg > evidence.mimic_baseline * MORPH_GROWTH_REL;
     let ecological_pressure = ecology.samples > STAGNATION_WARMUP
         && ecology.stagnation > 0.58
         && ecology.activity_health < 0.55;
-    if depth < MORPH_MAX_BLOCKS && (relative_pressure || ecological_pressure) {
-        return MorphDecision::Grow;
+    if pressure_boundary && depth < MORPH_MAX_BLOCKS && (relative_pressure || ecological_pressure) {
+        return MorphDecision::GrowPressure;
+    }
+
+    // Healthy organisms also need a route out of shallow representations.
+    // At a much slower boundary, persistent poverty in both field vocabulary
+    // and temporal predictive structure is evidence that the current depth
+    // is expressive but not structurally rich. Global-step boundaries make
+    // this work across process restarts without changing the v6 world format.
+    let development_boundary =
+        morph_boundary_crossed(absolute_step, window_len, MORPH_DEVELOPMENT_EVERY);
+    let structurally_poor = evidence.field_entropy_norm < MORPH_FIELD_ENTROPY_FLOOR
+        && evidence.predictive_structure < MORPH_PI_FLOOR;
+    let development_ready =
+        ecology.samples > STAGNATION_WARMUP && ecology.activity_health > 0.55 && structurally_poor;
+    if development_boundary && depth < MORPH_MAX_BLOCKS && development_ready {
+        return MorphDecision::GrowDevelopment;
     }
 
     // Only shed capacity in a demonstrably healthy, settled regime. The old
     // loss-only rule could prune precisely when a stagnant organism needed
     // more representational capacity.
-    let safely_overprovisioned = window_avg < baseline * MORPH_PRUNE_REL
+    let safely_overprovisioned = evidence.mimic_avg < evidence.mimic_baseline * MORPH_PRUNE_REL
         && ecology.activity_health > 0.72
         && ecology.stagnation < 0.24;
-    if depth > 1 && safely_overprovisioned {
+    if development_boundary && depth > 1 && safely_overprovisioned && !structurally_poor {
         MorphDecision::Prune
     } else {
         MorphDecision::Hold
@@ -4618,16 +4641,27 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 morph_history.clear();
                 let base = morph_baseline.unwrap();
                 match morph_decision(
-                    avg,
-                    base,
+                    MorphEvidence {
+                        mimic_avg: avg,
+                        mimic_baseline: base,
+                        field_entropy_norm: (field_entropy / 3.0).clamp(0.0, 1.0),
+                        predictive_structure: last_observation
+                            .as_ref()
+                            .map(|obs| obs.values[10])
+                            .unwrap_or(0.0),
+                    },
                     &adaptive_dynamics,
                     model.depth(),
                     absolute_step,
                     window_len,
                 ) {
-                    MorphDecision::Grow if model.grow() => {
+                    MorphDecision::GrowPressure if model.grow() => {
                         rad_amp = (rad_amp * RAD_COOL).max(RAD_AMP_MIN);
-                        morph_event = Some("NEUROGENESIS");
+                        morph_event = Some("NEUROGENESIS · capacity pressure");
+                    }
+                    MorphDecision::GrowDevelopment if model.grow() => {
+                        rad_amp = (rad_amp * RAD_COOL).max(RAD_AMP_MIN);
+                        morph_event = Some("NEUROGENESIS · structural development");
                     }
                     MorphDecision::Prune if model.prune() => {
                         rad_amp = (rad_amp * RAD_HEAT).min(RAD_AMP_MAX);
@@ -5603,6 +5637,20 @@ mod tests {
         }
     }
 
+    fn morph_evidence(
+        mimic_avg: f32,
+        mimic_baseline: f32,
+        field_entropy_norm: f32,
+        predictive_structure: f32,
+    ) -> MorphEvidence {
+        MorphEvidence {
+            mimic_avg,
+            mimic_baseline,
+            field_entropy_norm,
+            predictive_structure,
+        }
+    }
+
     #[test]
     fn frozen_regime_reduces_effective_model_authority() {
         let mut dynamics = AdaptiveDynamics::default();
@@ -5624,8 +5672,8 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(
-            morph_decision(0.70, 0.70, &ecology, 1, 512, 12),
-            MorphDecision::Grow
+            morph_decision(morph_evidence(0.70, 0.70, 0.50, 0.10), &ecology, 1, 512, 12),
+            MorphDecision::GrowPressure
         );
     }
 
@@ -5638,7 +5686,37 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(
-            morph_decision(0.80, 0.70, &ecology, 1, 600, 12),
+            morph_decision(morph_evidence(0.80, 0.70, 0.50, 0.10), &ecology, 1, 600, 12),
+            MorphDecision::Hold
+        );
+    }
+
+    #[test]
+    fn healthy_shallow_organism_can_develop_structural_depth() {
+        let ecology = AdaptiveDynamics {
+            samples: 4_000,
+            activity_health: 0.86,
+            stagnation: 0.16,
+            ..Default::default()
+        };
+        assert_eq!(
+            morph_decision(
+                morph_evidence(0.68, 0.68, 0.31, 0.01),
+                &ecology,
+                1,
+                2048,
+                12
+            ),
+            MorphDecision::GrowDevelopment
+        );
+        assert_eq!(
+            morph_decision(
+                morph_evidence(0.68, 0.68, 0.55, 0.01),
+                &ecology,
+                1,
+                2048,
+                12
+            ),
             MorphDecision::Hold
         );
     }
@@ -5652,7 +5730,13 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(
-            morph_decision(0.40, 0.70, &healthy, 3, 1024, 14),
+            morph_decision(
+                morph_evidence(0.40, 0.70, 0.55, 0.10),
+                &healthy,
+                3,
+                2048,
+                14
+            ),
             MorphDecision::Prune
         );
 
@@ -5660,8 +5744,14 @@ mod tests {
         stagnant.activity_health = 0.40;
         stagnant.stagnation = 0.75;
         assert_eq!(
-            morph_decision(0.40, 0.70, &stagnant, 3, 1024, 14),
-            MorphDecision::Grow
+            morph_decision(
+                morph_evidence(0.40, 0.70, 0.30, 0.01),
+                &stagnant,
+                3,
+                2048,
+                14
+            ),
+            MorphDecision::GrowPressure
         );
     }
 

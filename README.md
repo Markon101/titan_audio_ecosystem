@@ -16,6 +16,14 @@ RUSTFLAGS="-C target-cpu=native" cargo build --release
 Use `./target/release/titan --help` for checkpoint, reset, thread, learning-rate,
 and truncated-BPTT options.
 
+Morphic depth has two checkpoint-compatible development paths. Sustained
+ecological or mimic pressure may add one layer at a 512-chunk boundary. A
+healthy organism with both low normalized field entropy and low predictive
+structure may add one layer at the slower 2,048-chunk boundary. Pruning uses
+the slow boundary and requires a healthy, non-stagnant, structurally rich
+regime. Every structural event prints its reason. Motif memory retains up to
+64 diverse observations for long-horizon recall.
+
 Telemetry names and their scientific limitations are documented in
 [`METRICS.md`](METRICS.md). Run the verification suite with `cargo test` and
 `cargo clippy --all-targets -- -D warnings`.
