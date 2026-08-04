@@ -190,7 +190,8 @@ const POT_GAIN_HI: f32 = 1.4;
 // Temperature: T = smooth(stuck + subcritical + stagnation), in [0,1].
 const TEMP_STUCK_SPEED: f32 = 0.010; // state-speed scale below which "flat" ⇒ heat
 const TEMP_EXCESS_SCALE: f32 = 0.5; // V-above-floor normalization
-const TEMP_SMOOTH: f32 = 0.10; // EMA rate on T
+const TEMP_HEAT_SMOOTH: f32 = 0.10; // fast rescue onset
+const TEMP_COOL_SMOOTH: f32 = 0.035; // slower release matches ecology's delayed health EMAs
 const TEMP_HOT: f32 = 0.57; // "hot episode" edge for the anneal printout
 const TEMP_COOL: f32 = 0.25;
 const SHEAR_AMP_MIN: f32 = 0.03; // structured macro shear at T=0 (anti-weld floor)
@@ -215,6 +216,8 @@ const GRAD_NORM_MAX: f32 = 5.0; // global-norm ceiling applied directly to gradi
 const RADIATION_REFERENCE_WINDOW: f32 = BPTT_WINDOW as f32;
 const LOCAL_RAIL_START: f32 = 0.70;
 const LOCAL_RAIL_STRENGTH: f64 = 0.08;
+const GLOBAL_MEAN_DAMP: f64 = 0.035; // damp only the spatial/channel DC mode
+const MAX_STEREO_SIDE_GAIN: f32 = 1.25; // width without persistent anti-phase dominance
 const TWO_PI: f32 = 2.0 * std::f32::consts::PI;
 
 const ENERGY_HOMEO_RATE: f32 = 0.025; // energy bowl strength applied directly to the scalar
@@ -1426,6 +1429,11 @@ fn local_rail_bias(x: &Tensor) -> CResult<Tensor> {
     x.mul(&excess)?.affine(-LOCAL_RAIL_STRENGTH, 0.0)
 }
 
+fn damp_global_mean(x: &Tensor) -> CResult<Tensor> {
+    let dc = x.mean_all()?.affine(GLOBAL_MEAN_DAMP, 0.0)?;
+    x.broadcast_sub(&dc)
+}
+
 type TensorTransform = Box<dyn Fn(&Tensor) -> CResult<Tensor>>;
 
 // Circular (torus) 2D convolution: wrap-pad both spatial dims, then conv with
@@ -1475,6 +1483,10 @@ fn apply_haas_delay(x: &Tensor, delay_samples: usize) -> CResult<Tensor> {
     let zero = Tensor::zeros((1, delay_samples), DType::F32, dev)?;
     let cut = x.narrow(D::Minus1, 0, len - delay_samples)?;
     Tensor::cat(&[&zero, &cut], D::Minus1)
+}
+
+fn stereo_side_gain(last_pan: f32, width_mult: f32) -> f32 {
+    ((1.0 + last_pan.abs() * 0.8) * width_mult.clamp(0.5, 1.6)).clamp(0.5, MAX_STEREO_SIDE_GAIN)
 }
 
 // --- SPECTRAL PROJECTOR ---
@@ -2198,7 +2210,17 @@ impl PotentialController {
             movement_deficit * 0.28,
         ];
         let t_target = temp_terms.iter().sum::<f32>().clamp(0.0, 1.0);
-        self.temp += TEMP_SMOOTH * (t_target - self.temp);
+        // The health/stagnation observers lag real movement by roughly
+        // 14--18 chunks. Cooling faster than that removed the forcing that
+        // created a recovery before the observers could confirm it, yielding
+        // a relaxation oscillator. Heat remains fast; release is deliberately
+        // slower so a recovered regime has time to become self-sustaining.
+        let temp_smooth = if t_target >= self.temp {
+            TEMP_HEAT_SMOOTH
+        } else {
+            TEMP_COOL_SMOOTH
+        };
+        self.temp += temp_smooth * (t_target - self.temp);
         let temp = self.temp.clamp(0.0, 1.0);
 
         let annealed = self.was_hot && temp < TEMP_COOL;
@@ -3081,6 +3103,7 @@ impl ComplexAudioEcosystem {
                 .tanh()?
                 .affine(0.95, 0.0)?;
         }
+        let next_macro = damp_global_mean(&next_macro)?.clamp(-1.0f32, 1.0f32)?;
         let macro_act = next_macro.abs()?.mean_all()?;
         let metab = macro_act.affine(5.0, 0.0)?.clamp(0.01f32, 1.0f32)?;
         let inv_metab = metab.affine(-1.0, 1.0)?;
@@ -3096,6 +3119,7 @@ impl ComplexAudioEcosystem {
             .broadcast_mul(&inv_metab)?
             .add(&raw_next_micro.broadcast_mul(&metab)?)?
             .clamp(-1.0f32, 1.0f32)?;
+        let next_micro = damp_global_mean(&next_micro)?.clamp(-1.0f32, 1.0f32)?;
         let movement_t = next_micro.sub(micro)?.abs()?.mean_all()?;
 
         // Channel features (spatial mean) — population readouts + GRU input.
@@ -3319,7 +3343,7 @@ impl ComplexAudioEcosystem {
         // Haas width from LAST step's pan (host mirror, updated by the batched
         // readback) — removes the one remaining per-step to_scalar sync. Width
         // is a slow spatial parameter; the 85 ms lag is inaudible.
-        let width_val = (1.0 + self.last_pan.abs() * 0.8) * control.width_mult.clamp(0.5, 1.6);
+        let width_val = stereo_side_gain(self.last_pan, control.width_mult);
         let side_wide = side.affine(width_val as f64, 0.0)?;
         let side_delayed = apply_haas_delay(&side_wide, 16)?;
         let audio_l = mid.add(&side_delayed)?;
@@ -5865,6 +5889,53 @@ mod tests {
         assert_eq!(autograd_tape_chunks(BPTT_WINDOW), BPTT_WINDOW);
         assert_eq!(autograd_tape_chunks(16), MAX_AUTOGRAD_TAPE_CHUNKS);
         assert_eq!(autograd_tape_chunks(64), MAX_AUTOGRAD_TAPE_CHUNKS);
+    }
+
+    #[test]
+    fn field_dc_mode_is_damped_without_forcing_zero_mean() -> Result<()> {
+        let field = Tensor::new(&[0.8f32, 0.4, -0.2, 0.6], &Device::Cpu)?;
+        let before = field.mean_all()?.to_scalar::<f32>()?;
+        let after = damp_global_mean(&field)?.mean_all()?.to_scalar::<f32>()?;
+        assert!((after - before * (1.0 - GLOBAL_MEAN_DAMP as f32)).abs() < 1e-6);
+        Ok(())
+    }
+
+    #[test]
+    fn controller_releases_heat_more_slowly_than_it_applies_it() {
+        let calm = PotentialState {
+            micro_amp: POT_MICRO_SET,
+            macro_amp: POT_MACRO_SET,
+            coupling: POT_COUPLE_SET,
+            movement: 0.05,
+            energy: POT_ENERGY_SET,
+            sigma: 1.0,
+            curiosity: 0.0,
+            stagnation: 0.0,
+        };
+        let mut cooling = PotentialController::new();
+        cooling.temp = 0.8;
+        let cooled = cooling.update(calm).temp;
+
+        let mut heating = PotentialController::new();
+        let heated = heating
+            .update(PotentialState {
+                movement: 0.0,
+                curiosity: 1.0,
+                stagnation: 1.0,
+                sigma: 0.0,
+                ..calm
+            })
+            .temp;
+        assert!(0.8 - cooled < heated);
+        assert!(cooled > 0.75);
+        assert!(heated >= 0.09);
+    }
+
+    #[test]
+    fn stereo_width_control_retains_widening_with_a_mono_safe_cap() {
+        assert_eq!(stereo_side_gain(0.0, 1.0), 1.0);
+        assert!(stereo_side_gain(0.5, 0.62) < 1.0);
+        assert_eq!(stereo_side_gain(0.5, 1.45), MAX_STEREO_SIDE_GAIN);
     }
 
     #[test]

@@ -32,13 +32,16 @@ artistic interpretation. The distinction matters when comparing experiments.
   structured macro-field forcing.
 - `field_signed_mean` detects sign bias in the micro field;
   `field_rail_excess` is the mean amount by which cell magnitude exceeds 0.9.
+  A weak global-mean damper removes only 3.5% of the field's DC mode per chunk,
+  so local signed structure remains free while population drift is bounded.
 - `radiation_probability` is the per-chunk sparse-radiation hazard and is
   independent of the selected BPTT window.
 - `grad_norm` is the requested-horizon mean gradient norm before global
   clipping and `clip_scale` is the factor applied before AdamW updates its
   moments. Horizons above 8 accumulate bounded, detached tape segments.
 - `stereo_corr` is the post-DSP Pearson correlation between channels. Strongly
-  negative values warn of mono cancellation even when width sounds impressive.
+  negative values warn of mono cancellation even when width sounds impressive;
+  Haas side gain is capped at 1.25 to bound that risk.
 
 Claims about improved sound should be supported by repeated seeded runs,
 ablation comparisons, objective audio measurements, and blinded listening—not

@@ -8,3 +8,6 @@ target/
 
 # OS files
 .DS_Store
+
+# Isolated release-validation workspaces
+.titan-validation*/
