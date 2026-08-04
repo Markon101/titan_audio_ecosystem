@@ -16,6 +16,13 @@ RUSTFLAGS="-C target-cpu=native" cargo build --release
 Use `./target/release/titan --help` for checkpoint, reset, thread, learning-rate,
 and truncated-BPTT options.
 
+`--bptt` selects the optimizer's gradient-averaging horizon. The differentiable
+recurrent tape is capped at 8 chunks and longer horizons accumulate detached
+8-chunk gradient segments, so `--bptt 64` no longer retains a 64-chunk CA graph
+in memory. Use the default `--bptt 8` for fresh models and fastest adaptation;
+larger values trade update frequency for lower-variance gradients and are most
+useful for already-developed organisms.
+
 Morphic depth has two checkpoint-compatible development paths. Sustained
 ecological or mimic pressure may add one layer at a 512-chunk boundary. A
 healthy organism with both low normalized field entropy and low predictive

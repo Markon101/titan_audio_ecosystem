@@ -67,7 +67,7 @@
 //    atomic checkpoint saves (tmp + rename).
 
 use anyhow::Result;
-use candle_core::{DType, Device, Result as CResult, Tensor, D};
+use candle_core::{backprop::GradStore, DType, Device, Result as CResult, Tensor, D};
 use candle_nn::{AdamW, Conv2dConfig, Linear, Module, Optimizer, VarBuilder as VBV, VarMap};
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
@@ -117,6 +117,11 @@ const CA_UPDATE_PROB: f32 = 0.71; // stochastic cell clock (anti-limit-cycle)
 
 const MEMORY_DIM: usize = 512;
 const BPTT_WINDOW: usize = 8;
+// The recurrent CA graph is large enough that retaining 64 differentiable
+// chunks can exhaust mobile memory before backward starts. Longer requested
+// horizons still reduce gradient variance, but are accumulated from bounded
+// tape segments so memory grows with this cap rather than with --bptt.
+const MAX_AUTOGRAD_TAPE_CHUNKS: usize = 8;
 const SPEC_BINS: usize = 96;
 const KAN_BASIS_FUNCTIONS: usize = 64;
 
@@ -206,7 +211,7 @@ const BASE_FREQ_R: f32 = 69.0;
 const FREQ_GLIDE_SPEED: f32 = 0.07131;
 const BASE_LR: f64 = 1.5e-3;
 const RESONANT_AUTONOMY: f32 = 0.31;
-const GRAD_NORM_MAX: f32 = 5.0; // global-norm ceiling; applied as an LR scale (see note at use)
+const GRAD_NORM_MAX: f32 = 5.0; // global-norm ceiling applied directly to gradients before AdamW
 const RADIATION_REFERENCE_WINDOW: f32 = BPTT_WINDOW as f32;
 const LOCAL_RAIL_START: f32 = 0.70;
 const LOCAL_RAIL_STRENGTH: f64 = 0.08;
@@ -673,6 +678,10 @@ fn ecological_curiosity(ecology: &AdaptiveDynamics, archetype_ticks: usize) -> f
         + 0.25 * health_deficit * novelty_deficit
         + 0.20 * persistence * health_deficit * complexity_deficit)
         .clamp(0.0, 1.0)
+}
+
+fn autograd_tape_chunks(gradient_horizon: usize) -> usize {
+    gradient_horizon.min(MAX_AUTOGRAD_TAPE_CHUNKS)
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -3944,7 +3953,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
   -b, --base-dir DIR   Output/training root (default /sdcard/Download)\n\
   -d, --duration SEC   Render duration (default 240)\n\
   -t, --threads N      Rayon/Candle CPU threads (default min(device cores, 6))\n\
-  -w, --bptt N         Truncated-BPTT window (default 8)\n\
+  -w, --bptt N         Gradient horizon 1..64; tape is memory-capped at 8 (default 8)\n\
   -l, --lr VALUE       Base AdamW learning rate\n\
   -s, --seed N         Seed for a fresh deterministic organism\n\
       --state PATH     World-checkpoint path\n\
@@ -3984,6 +3993,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
         .num_threads(n_threads)
         .build_global()?;
     let device = Device::Cpu;
+    let tape_chunks = autograd_tape_chunks(bptt_window);
     let mut rng = RuntimeRng::seed_from_u64(seed);
     let _wake_lock = WakeLockGuard::acquire();
     let keep_running = Arc::new(AtomicBool::new(true));
@@ -3995,7 +4005,16 @@ Usage: titan [BASE_DIR] [options]\n\n\
     }
     std::fs::create_dir_all(&base_dir)?;
     println!("=== TITAN AUDIO ECOSYSTEM: RUST EDITION v6 (ADAPTIVE EDGE ECOLOGY) ===");
-    println!("Seed: {} | Threads: {} | BPTT: {} | Field: {}ch x {}x{} torus | LR: {:.2e} | Duration: {}s", seed, n_threads, bptt_window, CA_CHANNELS, GRID_H, GRID_W, target_lr, sim_duration);
+    println!("Seed: {} | Threads: {} | Gradient horizon: {} | Autograd tape: {} | Field: {}ch x {}x{} torus | LR: {:.2e} | Duration: {}s", seed, n_threads, bptt_window, tape_chunks, CA_CHANNELS, GRID_H, GRID_W, target_lr, sim_duration);
+    if bptt_window > tape_chunks {
+        println!("--> Memory-safe TBPTT: accumulating {}-chunk tape segments across a {}-chunk optimizer horizon.", tape_chunks, bptt_window);
+        if fresh_model {
+            println!(
+                "NOTE: Fresh models usually adapt faster with --bptt {}; longer horizons update less often.",
+                BPTT_WINDOW
+            );
+        }
+    }
     println!("NOTE: CA/DSP/RNG state resumes from the world checkpoint; AdamW moment buffers restart per process. Fresh reproducibility also requires the same --threads value.");
 
     let wav_dir = format!("{}/OLD_WAVS", base_dir);
@@ -4234,8 +4253,13 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let mut uncertainty_trace = Vec::new();
 
     let mut phi = uncertainty.phi;
-    let mut window_loss: Option<Tensor> = None;
-    let mut steps_in_window = 0;
+    let mut tape_loss: Option<Tensor> = None;
+    let mut steps_in_tape = 0usize;
+    let mut steps_since_update = 0usize;
+    let mut accumulated_steps = 0usize;
+    let mut accumulated_grads: Option<GradStore> = None;
+    let mut tape_lr_gain_sum = 0.0f64;
+    let mut accumulated_lr_gain_sum = 0.0f64;
     let mut latest_lr_gain: f64;
     let mut latest_grad_norm = 0.0f32;
     let mut latest_clip_scale = 1.0f32;
@@ -4629,8 +4653,13 @@ Usage: titan [BASE_DIR] [options]\n\n\
             micro_tape = randn_t(&mut rng, &[1, CA_CHANNELS, GRID_H, GRID_W], 1.0, &device)?;
             macro_tape = randn_t(&mut rng, &[1, CA_CHANNELS, GRID_H, GRID_W], 1.0, &device)?;
             hidden_mem = Tensor::zeros((1, MEMORY_DIM), DType::F32, &device)?;
-            window_loss = None;
-            steps_in_window = 0;
+            tape_loss = None;
+            steps_in_tape = 0;
+            steps_since_update = 0;
+            accumulated_steps = 0;
+            accumulated_grads = None;
+            tape_lr_gain_sum = 0.0;
+            accumulated_lr_gain_sum = 0.0;
             adaptive_dynamics.low_motion_run = 0;
             adaptive_dynamics.stagnation = 0.0;
             adaptive_dynamics.escape_cooldown = 0;
@@ -4841,11 +4870,12 @@ Usage: titan [BASE_DIR] [options]\n\n\
             total_loss = total_loss.add(&nl.affine(NOVELTY_W, 0.0)?)?;
         }
 
-        window_loss = Some(match window_loss.take() {
+        tape_loss = Some(match tape_loss.take() {
             None => total_loss,
             Some(w) => w.add(&total_loss)?,
         });
-        steps_in_window += 1;
+        steps_in_tape += 1;
+        steps_since_update += 1;
 
         // --- CRITICALITY-DRIVEN PLASTICITY (replaces the movement-threshold Choptuik) ---
         let raw_crit_gain =
@@ -4856,55 +4886,102 @@ Usage: titan [BASE_DIR] [options]\n\n\
         let phi_gate = 1.0 / (1.0 + phi);
         let curiosity_lr_gain = 1.0 + curiosity_factor as f64 * LR_CURIOSITY_MAX;
         latest_lr_gain = crit_gain as f64 * pot.lr_heat * phi_gate as f64 * curiosity_lr_gain;
+        tape_lr_gain_sum += latest_lr_gain;
 
-        if steps_in_window >= bptt_window || step == total_chunks - 1 {
-            if let Some(w) = window_loss.take() {
-                let scaled = w.affine(1.0 / steps_in_window as f64, 0.0)?;
-                if let Ok(loss_val) = scaled.to_scalar::<f32>() {
-                    if loss_val.is_finite() && latest_lr_gain.is_finite() {
-                        // True global-norm clipping: scale gradients before AdamW
-                        // updates either moment buffer. This prevents a single hot
-                        // window from poisoning future second-moment estimates.
-                        match scaled.backward() {
-                            Ok(mut grads) => {
-                                let mut sq = Tensor::zeros((), DType::F32, &device)?;
-                                for var in varmap.all_vars() {
-                                    if let Some(g) = grads.get(var.as_tensor()) {
-                                        sq = sq.add(&g.sqr()?.sum_all()?)?;
-                                    }
-                                }
-                                let gnorm = sq.to_scalar::<f32>().unwrap_or(f32::INFINITY).sqrt();
-                                if gnorm.is_finite() {
-                                    let clip_scale =
-                                        (GRAD_NORM_MAX / gnorm.max(1e-6)).min(1.0) as f64;
-                                    latest_grad_norm = gnorm;
-                                    latest_clip_scale = clip_scale as f32;
-                                    if clip_scale < 1.0 {
-                                        for var in varmap.all_vars() {
-                                            if let Some(g) = grads.remove(var.as_tensor()) {
-                                                grads.insert(
-                                                    var.as_tensor(),
-                                                    g.affine(clip_scale, 0.0)?,
-                                                );
-                                            }
+        let end_of_run = step == total_chunks - 1;
+        let tape_boundary =
+            steps_in_tape >= tape_chunks || steps_since_update >= bptt_window || end_of_run;
+        if tape_boundary {
+            if let Some(w) = tape_loss.take() {
+                let segment_steps = steps_in_tape;
+                let segment_mean = w.affine(1.0 / segment_steps as f64, 0.0)?;
+                match segment_mean.to_scalar::<f32>() {
+                    Ok(loss_val) if loss_val.is_finite() && tape_lr_gain_sum.is_finite() => {
+                        match segment_mean.backward() {
+                            Ok(mut segment_grads) => {
+                                // Store a weighted SUM across bounded tape segments.
+                                // Dividing once at the optimizer boundary makes -w 64
+                                // a 64-chunk gradient average without a 64-chunk graph.
+                                let segment_weight = segment_steps as f64;
+                                if let Some(grads) = accumulated_grads.as_mut() {
+                                    for var in varmap.all_vars() {
+                                        if let Some(g) = segment_grads.remove(var.as_tensor()) {
+                                            let weighted = g.affine(segment_weight, 0.0)?.detach();
+                                            let merged = match grads.remove(var.as_tensor()) {
+                                                Some(previous) => previous.add(&weighted)?.detach(),
+                                                None => weighted,
+                                            };
+                                            grads.insert(var.as_tensor(), merged);
                                         }
                                     }
-                                    optimizer.set_learning_rate(target_lr * latest_lr_gain);
-                                    let _ = optimizer.step(&grads);
                                 } else {
-                                    println!("! WARNING: non-finite grad norm — skipping window.");
+                                    for var in varmap.all_vars() {
+                                        if let Some(g) = segment_grads.remove(var.as_tensor()) {
+                                            segment_grads.insert(
+                                                var.as_tensor(),
+                                                g.affine(segment_weight, 0.0)?.detach(),
+                                            );
+                                        }
+                                    }
+                                    accumulated_grads = Some(segment_grads);
                                 }
+                                accumulated_steps += segment_steps;
+                                accumulated_lr_gain_sum += tape_lr_gain_sum;
                             }
-                            Err(e) => {
-                                println!("! WARNING: backward failed: {} — skipping window.", e)
+                            Err(e) => println!(
+                                "! WARNING: backward failed: {} — dropping tape segment.",
+                                e
+                            ),
+                        }
+                    }
+                    _ => println!("! WARNING: Non-finite loss detected. Dropping tape segment."),
+                }
+            }
+            steps_in_tape = 0;
+            tape_lr_gain_sum = 0.0;
+        }
+
+        let update_boundary = steps_since_update >= bptt_window || end_of_run;
+        if update_boundary {
+            if let Some(mut grads) = accumulated_grads.take() {
+                if accumulated_steps > 0 {
+                    let mean_scale = 1.0 / accumulated_steps as f64;
+                    let mut sq = Tensor::zeros((), DType::F32, &device)?;
+                    for var in varmap.all_vars() {
+                        if let Some(g) = grads.get(var.as_tensor()) {
+                            sq = sq.add(&g.affine(mean_scale, 0.0)?.sqr()?.sum_all()?)?;
+                        }
+                    }
+                    let gnorm = sq.to_scalar::<f32>().unwrap_or(f32::INFINITY).sqrt();
+                    if gnorm.is_finite() {
+                        // True global-norm clipping happens before AdamW sees the
+                        // accumulated mean, so a hot segment cannot poison moments.
+                        let clip_scale = (GRAD_NORM_MAX / gnorm.max(1e-6)).min(1.0) as f64;
+                        let optimizer_scale = mean_scale * clip_scale;
+                        latest_grad_norm = gnorm;
+                        latest_clip_scale = clip_scale as f32;
+                        for var in varmap.all_vars() {
+                            if let Some(g) = grads.remove(var.as_tensor()) {
+                                grads.insert(
+                                    var.as_tensor(),
+                                    g.affine(optimizer_scale, 0.0)?.detach(),
+                                );
                             }
                         }
+                        let mean_lr_gain = accumulated_lr_gain_sum / accumulated_steps as f64;
+                        optimizer.set_learning_rate(target_lr * mean_lr_gain);
+                        let _ = optimizer.step(&grads);
                     } else {
-                        println!("! WARNING: Non-finite loss step detected. Dropping BPTT window.");
+                        println!("! WARNING: non-finite grad norm — skipping horizon.");
                     }
                 }
             }
-            steps_in_window = 0;
+            steps_since_update = 0;
+            accumulated_steps = 0;
+            accumulated_lr_gain_sum = 0.0;
+        }
+
+        if tape_boundary {
             micro_tape = next_micro.detach();
             macro_tape = next_macro.detach();
             hidden_mem = next_hidden.detach();
@@ -5780,6 +5857,14 @@ mod tests {
             field_entropy_norm,
             predictive_structure,
         }
+    }
+
+    #[test]
+    fn long_gradient_horizons_use_a_bounded_autograd_tape() {
+        assert_eq!(autograd_tape_chunks(1), 1);
+        assert_eq!(autograd_tape_chunks(BPTT_WINDOW), BPTT_WINDOW);
+        assert_eq!(autograd_tape_chunks(16), MAX_AUTOGRAD_TAPE_CHUNKS);
+        assert_eq!(autograd_tape_chunks(64), MAX_AUTOGRAD_TAPE_CHUNKS);
     }
 
     #[test]

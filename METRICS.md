@@ -34,8 +34,9 @@ artistic interpretation. The distinction matters when comparing experiments.
   `field_rail_excess` is the mean amount by which cell magnitude exceeds 0.9.
 - `radiation_probability` is the per-chunk sparse-radiation hazard and is
   independent of the selected BPTT window.
-- `grad_norm` is measured before global clipping and `clip_scale` is the factor
-  applied to gradients before AdamW updates its moments.
+- `grad_norm` is the requested-horizon mean gradient norm before global
+  clipping and `clip_scale` is the factor applied before AdamW updates its
+  moments. Horizons above 8 accumulate bounded, detached tape segments.
 - `stereo_corr` is the post-DSP Pearson correlation between channels. Strongly
   negative values warn of mono cancellation even when width sounds impressive.
 
