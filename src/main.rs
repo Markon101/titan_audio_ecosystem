@@ -1,70 +1,29 @@
-#![recursion_limit = "256"]
+#![recursion_limit = "512"]
 
 // =====================================================================
-// TITAN AUDIO ECOSYSTEM — RUST EDITION v6 ("ADAPTIVE EDGE ECOLOGY")
+// TITAN AUDIO ECOSYSTEM — RUST EDITION v7 ("TRUTHFUL RESONANT ECOLOGY")
 // =====================================================================
 // BUILD (Termux / Snapdragon 8 Elite):
 //   RUSTFLAGS="-C target-cpu=native" cargo build --release
 //
-// DESIGN RECORD (v6) — v5 recursive ecology plus anti-stagnation control:
+// DESIGN RECORD (v7):
 //
-// 1. UNIFIED CONTROL LAYER (PotentialController). The defibrillator, the
-//    tokamak DisruptionController, both amplitude homeostats, the anti-rail
-//    loss term, and the energy homeostat are DELETED and replaced by one
-//    scalar potential V(s) over the summary state
-//        s = (micro_amp, macro_amp, coupling, movement, energy, sigma)
-//    with Langevin-style dynamics: interventions are -grad(V) (bowls at the
-//    setpoints, 1/(1.02-a) barriers at the rails, a ridge at movement=0, a
-//    criticality bowl at sigma=1), and TEMPERATURE T(s) supplies the noise
-//    term. T rises when the system is (a) uphill on V but barely moving
-//    ("stuck is DEFINED as flat"), (b) subcritical (sigma << 1), or
-//    (c) stagnating (archetype unchanged). T drives: structured shear into
-//    the macro field, white kicks into the micro field, an LR multiplier
-//    (plasticity anneals with the dynamics), and the arbiter's softmax
-//    temperature. One scalar replaces five gadgets, thresholds, debounce
-//    counters, refractory clocks, and the poisonable q-baseline.
-//
-// 2. 2D CELLULAR AUTOMATA at constant cell count. 96x512 (1D ring) becomes
-//    64 channels x 64x64 torus = 262,144 cells. Rationale: the
-//    pattern vocabulary of 1D CA is pulses and domain walls; gliders,
-//    spirals, rotating cores and Turing patterns need 2D. The field is made
-//    DIRECTLY audible by a differentiable scan-synth: row-profile -> partial
-//    amplitudes, column-profile -> intra-chunk envelope (one axis is
-//    frequency-like, the other time-like).
-//
-// 3. EPISODIC MEMORY. The GRU carried ~1 s of context; nothing could do
-//    "return of the theme". A ring buffer snapshots refined_hidden every
-//    EPI_SNAP_EVERY steps; a small learned attention head (Wq/Wk/Wv) reads
-//    it back into the GRU input. Snapshots are detached (no grad through
-//    history) but the attention weights learn WHAT in the past is useful.
-//
-// 4. NOVELTY PRESSURE. The mimic targets are static; nothing stopped the
-//    system converging to one texture forever. A buffer of the system's OWN
-//    recent output spectra supplies an anti-self-similarity loss: margin -
-//    distance-to-nearest-recent-self, hinged. The teacher now gets bored.
-//
-// 5. CRITICALITY-DRIVEN PLASTICITY. The Choptuik gain no longer runs on the
-//    movement-distance heuristic (whose learned threshold head received zero
-//    gradient in v3 — a genuine bug); it runs on |sigma - 1| from the
-//    Wilting-Priesemann branching estimator. Multi-lag permutation entropy
-//    (lags 1/4/16) is logged as a predictive-structure instrument.
-//
-// 6. DETERMINISM. --seed <u64> (default 42). ALL runtime randomness flows
-//    from one RuntimeRng (tape seeds, CA update masks, Levy kicks, target chunk
-//    choice, temperature noise). Fresh-start weights are re-initialized
-//    deterministically from the seed (candle's internal init RNG is not
-//    seedable on CPU across versions, so we overwrite it). Caveat: bitwise
-//    reproducibility also requires a fixed --threads value; float reduction
-//    order depends on the rayon pool.
-//
-// 7. v3 BUG FIXES FOLDED IN: arbiter entropy sign (it was REWARDED for
-//    collapsing onto one loss; now an entropy bonus with temperature),
-//    phases carried as host f32 (mod_2pi's tensor round-trip synced the
-//    device every step and severed gradients anyway), one consolidated
-//    metrics readback per step, gradient-norm-scaled LR instead of the
-//    no-op +/-100 weight clamp, min-of-K target sampling (the mimic loss
-//    chases the nearest mode instead of the blurred mean of all targets),
-//    atomic checkpoint saves (tmp + rename).
+// 1. The 64-channel 64x64 toroidal neural CA remains the organism. The
+//    migration changes the observation/synthesis coupling, not the field size.
+// 2. Target WAVs are seek-decoded into coherent ~22 s episodes. Multi-scale
+//    full-band spectral, envelope, level, and seam losses provide causal
+//    musical evidence without requiring arbitrary waveform-phase matching.
+// 3. Carrier, FM, auxiliary, regional-partial, scan, and Haas-delay state are
+//    continuous across chunks and checkpointed.
+// 4. The audible post path is learned synthesis -> bounded saturation ->
+//    stateful DC block. No discrete controller may add untrained timbre after
+//    the differentiable loss.
+// 5. Movement and novelty are bounded homeostats. Source grounding has a
+//    non-zero floor. The movement-persistence statistic is telemetry, not a
+//    claimed Lyapunov exponent or a learning-rate singularity.
+// 6. v7 model/world filenames and schemas are independent. Earlier worlds are
+//    intentionally rejected; fresh deterministic weights are the default when
+//    no v7 model exists.
 
 use anyhow::Result;
 use candle_core::{backprop::GradStore, DType, Device, Result as CResult, Tensor, D};
@@ -124,11 +83,17 @@ const BPTT_WINDOW: usize = 8;
 // tape segments so memory grows with this cap rather than with --bptt.
 const MAX_AUTOGRAD_TAPE_CHUNKS: usize = 8;
 const SPEC_BINS: usize = 96;
-const KAN_BASIS_FUNCTIONS: usize = 64;
+// Eight smooth basis functions are enough for a learned waveshaper at 48 kHz.
+// The former 64-basis pointwise nonlinearity generated strong foldback images
+// near Nyquist; those are discretization artifacts, not organism complexity.
+const KAN_BASIS_FUNCTIONS: usize = 8;
 
 // Scan-synth (the 2D field made directly audible)
 const SCAN_PARTIALS: usize = 16; // 4x4 regional agents -> partial amplitudes
 const SCAN_GAIN: f64 = 0.42;
+// Traverse only a few field columns per audio chunk. The old full-width scan
+// retriggered at 11.7 Hz and directly produced a small-engine amplitude buzz.
+const SCAN_COLUMNS_PER_CHUNK: usize = 4;
 const REGION_ROWS: usize = 4;
 const REGION_COLS: usize = 4;
 const REGION_COUNT: usize = REGION_ROWS * REGION_COLS;
@@ -139,11 +104,10 @@ const REGION_W: usize = GRID_W / REGION_COLS;
 const OBS_DIM: usize = 12;
 const ACTION_COUNT: usize = 10;
 const PLAN_EVERY: usize = 8;
-const WORLD_VERSION: u32 = 6;
-const WORLD_MAGIC: [u8; 8] = *b"TITANW6\0";
-const LEGACY_WORLD_MAGIC_V5: [u8; 8] = *b"TITANW5\0";
+const WORLD_VERSION: u32 = 7;
+const WORLD_MAGIC: [u8; 8] = *b"TITANW7\0";
 const WORLD_SAVE_EVERY: usize = 256;
-const TRACE_SCHEMA_VERSION: u32 = 2;
+const TRACE_SCHEMA_VERSION: u32 = 3;
 const TRACE_EVERY: usize = 10;
 const BUILD_COMMIT: &str = env!("TITAN_GIT_COMMIT");
 const BUILD_DIRTY: &str = env!("TITAN_GIT_DIRTY");
@@ -154,8 +118,6 @@ const STAGNATION_WARMUP: u64 = 48;
 const STAGNATION_ESCAPE_AFTER: u32 = 96;
 const STAGNATION_HARD_AFTER: u32 = 224;
 const ACTION_USAGE_DECAY: f32 = 0.965;
-const MODAL_MODES: usize = 8;
-const NOISE_BANDS: usize = 4;
 
 // Episodic memory
 const EPI_SLOTS: usize = 16; // snapshots retained (~16*64 steps ≈ 87 s span)
@@ -170,10 +132,11 @@ const NOVELTY_W: f64 = 0.25;
 
 // Min-of-K target sampling
 const TARGET_K: usize = 3;
-
-// Criticality / plasticity
-const CHOPTUIK_EXPONENT: f32 = 0.3747;
-const CRITICAL_D0: f32 = 0.02;
+// Pick the nearest source mode once, then follow it for a real musical span.
+// 256 chunks is ~21.85 s at 48 kHz: long enough to expose rhythm, phrasing,
+// and transitions to the recurrent graph instead of presenting unrelated
+// 85 ms grains as if they were a sequence.
+const TARGET_EPISODE_CHUNKS: usize = 256;
 
 // --- POTENTIAL CONTROLLER V(s) ---
 // Bowls (quadratic wells at setpoints), barriers (1/(1.02-a) rail walls),
@@ -199,9 +162,9 @@ const TEMP_HEAT_SMOOTH: f32 = 0.10; // fast rescue onset
 const TEMP_COOL_SMOOTH: f32 = 0.035; // slower release matches ecology's delayed health EMAs
 const TEMP_HOT: f32 = 0.57; // "hot episode" edge for the anneal printout
 const TEMP_COOL: f32 = 0.25;
-const SHEAR_AMP_MIN: f32 = 0.03; // structured macro shear at T=0 (anti-weld floor)
-const SHEAR_AMP_MAX: f32 = 0.45; // at T=1
-const MICRO_KICK_MAX: f32 = 0.11; // white micro kick amplitude at T=1
+const SHEAR_AMP_MIN: f32 = 0.015; // structured macro shear at T=0 (anti-weld floor)
+const SHEAR_AMP_MAX: f32 = 0.42; // at T=1
+const MICRO_KICK_MAX: f32 = 0.035; // small ergodic perturbation; structure must be learned
 const LR_HEAT_MAX: f64 = 1.5; // lr multiplier reaches 1+this at T=1
 const LR_CURIOSITY_MAX: f64 = 0.35;
 const ARB_TAU_MAX: f32 = 2.0; // arbiter softmax temp reaches 1+this at T=1
@@ -228,8 +191,6 @@ const TWO_PI: f32 = 2.0 * std::f32::consts::PI;
 const ENERGY_HOMEO_RATE: f32 = 0.025; // energy bowl strength applied directly to the scalar
 
 const LARGE_D_DIM: usize = 512;
-const FDN_DELAY_LINES: usize = 4;
-const FDN_DELAYS: [usize; 4] = [149, 263, 431, 701];
 
 const MORPH_MAX_BLOCKS: usize = 12;
 const MORPH_START_DEPTH: usize = 1;
@@ -247,12 +208,12 @@ const MORPH_FIELD_ENTROPY_FLOOR: f32 = 0.42; // normalized from the field's 0..3
 const MORPH_PI_FLOOR: f32 = 0.04;
 const MORPH_ADDED_RESIDUAL_GAIN: f64 = 0.35;
 
-const RAD_AMP_INIT: f32 = 0.8;
-const RAD_AMP_MIN: f32 = 0.10;
-const RAD_AMP_MAX: f32 = 0.98;
+const RAD_AMP_INIT: f32 = 0.35;
+const RAD_AMP_MIN: f32 = 0.05;
+const RAD_AMP_MAX: f32 = 0.55;
 const RAD_COOL: f32 = 0.7;
 const RAD_HEAT: f32 = 1.3;
-const RADIATE_PROB: f32 = 0.12;
+const RADIATE_PROB: f32 = 0.04;
 const RADIATE_SPARSITY: f32 = 0.95;
 const CAUCHY_CLAMP: f32 = 8.0;
 
@@ -355,6 +316,19 @@ const UNCERTAINTY_TRACE_HEADERS: &[&str] = &[
     "motif_rejected_similarity",
     "motif_last_quality",
     "motif_last_distance",
+    "carrier_freq_l",
+    "carrier_freq_r",
+    "carrier_beat_hz",
+    "mimic_coarse",
+    "mimic_fine",
+    "boundary_loss",
+    "level_loss",
+    "target_rms",
+    "target_file",
+    "target_frame",
+    "target_chunks_left",
+    "optimizer_updates",
+    "ultrasonic_ratio",
 ];
 
 const TOPOLOGY_INDEX_HEADERS: &[&str] = &[
@@ -474,11 +448,7 @@ struct SynthesisControl {
     kick_mult: f32,
     inharmonicity: f32,
     spectral_tilt: f32,
-    resonator_drive: f32,
-    noise_level: f32,
-    echo_delta: f32,
     width_mult: f32,
-    recall_mix: f32,
 }
 impl Default for SynthesisControl {
     fn default() -> Self {
@@ -487,11 +457,7 @@ impl Default for SynthesisControl {
             kick_mult: 1.0,
             inharmonicity: 0.20,
             spectral_tilt: 0.0,
-            resonator_drive: 0.35,
-            noise_level: 0.05,
-            echo_delta: 0.0,
             width_mult: 1.0,
-            recall_mix: 0.0,
         }
     }
 }
@@ -507,51 +473,43 @@ impl SynthesisControl {
                 c.kick_mult = 0.78;
                 c.inharmonicity = 0.05;
                 c.spectral_tilt = -0.10;
-                c.echo_delta = -0.07;
             }
             ControlAction::Explore => {
                 c.shear_mult = 1.42;
                 c.kick_mult = 1.55;
                 c.inharmonicity = 0.48;
-                c.noise_level = 0.11;
                 c.spectral_tilt = 0.20;
             }
             ControlAction::Inharmonic => {
                 c.inharmonicity = 0.88;
-                c.resonator_drive = 0.55;
                 c.spectral_tilt = 0.12;
             }
             ControlAction::Harmonic => {
                 c.inharmonicity = 0.0;
-                c.noise_level = 0.025;
-                c.resonator_drive = 0.42;
             }
             ControlAction::Resonate => {
-                c.resonator_drive = 0.95;
-                c.echo_delta = 0.10;
-                c.inharmonicity = 0.34;
+                c.shear_mult = 1.12;
+                c.kick_mult = 0.90;
+                c.inharmonicity = 0.25;
+                c.spectral_tilt = -0.08;
             }
             ControlAction::Turbulence => {
                 c.shear_mult = 1.72;
                 c.kick_mult = 1.82;
-                c.noise_level = 0.18;
                 c.inharmonicity = 0.66;
                 c.spectral_tilt = 0.30;
             }
             ControlAction::Widen => {
                 c.width_mult = 1.45;
-                c.echo_delta = 0.08;
                 c.inharmonicity = 0.32;
             }
             ControlAction::Contract => {
                 c.width_mult = 0.62;
-                c.echo_delta = -0.10;
-                c.noise_level = 0.02;
                 c.inharmonicity = 0.12;
             }
             ControlAction::Recall => {
-                c.recall_mix = 0.75;
-                c.resonator_drive = 0.62;
+                c.shear_mult = 0.92;
+                c.kick_mult = 0.88;
             }
         }
         c
@@ -564,11 +522,7 @@ impl SynthesisControl {
             kick_mult: mix(self.kick_mult, other.kick_mult),
             inharmonicity: mix(self.inharmonicity, other.inharmonicity),
             spectral_tilt: mix(self.spectral_tilt, other.spectral_tilt),
-            resonator_drive: mix(self.resonator_drive, other.resonator_drive),
-            noise_level: mix(self.noise_level, other.noise_level),
-            echo_delta: mix(self.echo_delta, other.echo_delta),
             width_mult: mix(self.width_mult, other.width_mult),
-            recall_mix: mix(self.recall_mix, other.recall_mix),
         }
     }
 }
@@ -615,7 +569,7 @@ impl AudioObservation {
         raw_model_confidence: f32,
         action_age: u32,
     ) -> f32 {
-        // Reward is deliberately centered and contrastive. v5's mostly
+        // Reward is deliberately centered and contrastive. The former mostly
         // positive score compressed every action into ~0.22, leaving the
         // bandit almost no evidence about which intervention helped.
         let base = self.structured_complexity();
@@ -841,7 +795,7 @@ fn morph_decision(
     // At a much slower boundary, persistent poverty in both field vocabulary
     // and temporal predictive structure is evidence that the current depth
     // is expressive but not structurally rich. Global-step boundaries make
-    // this work across process restarts without changing the v6 world format.
+    // this work across process restarts in the v7 world format.
     let development_boundary =
         morph_boundary_crossed(absolute_step, window_len, MORPH_DEVELOPMENT_EVERY);
     let structurally_poor = evidence.field_entropy_norm < MORPH_FIELD_ENTROPY_FLOOR
@@ -1350,13 +1304,34 @@ fn deterministic_reinit(varmap: &VarMap, seed: u64, device: &Device) -> Result<u
 }
 
 // --- AUDIO TARGET LOADER ---
+#[derive(Clone)]
+struct TargetFile {
+    path: std::path::PathBuf,
+    sample_rate: u32,
+    channels: usize,
+    bits_per_sample: u16,
+    sample_format: hound::SampleFormat,
+    source_frames: usize,
+    output_frames: usize,
+}
+
+#[derive(Clone, Copy)]
+struct TargetCursor {
+    file: usize,
+    output_frame: usize,
+    chunks_left: usize,
+}
+
 struct TargetAudioLoader {
-    buffers: Vec<(Vec<f32>, Vec<f32>)>,
+    files: Vec<TargetFile>,
+    active: Option<TargetCursor>,
+    pending: Vec<TargetCursor>,
+    last_served: Option<TargetCursor>,
 }
 
 impl TargetAudioLoader {
     fn new(path: &str) -> Result<Self> {
-        let mut buffers = Vec::new();
+        let mut files = Vec::new();
         let mut paths: Vec<std::path::PathBuf> = std::fs::read_dir(path)?
             .filter_map(|e| e.ok().map(|e| e.path()))
             .collect();
@@ -1364,108 +1339,178 @@ impl TargetAudioLoader {
         for p in paths {
             let is_out = p.file_name().and_then(|n| n.to_str()) == Some("rust_ecosystem_out.wav");
             if p.extension().is_some_and(|ext| ext == "wav") && !is_out {
-                match Self::load_wav(&p) {
-                    Ok((l, r)) if l.len() >= CHUNK_SIZE => {
-                        println!(
-                            "--> Loaded target audio: {:?} ({} samples/ch @ 48k stereo)",
-                            p,
-                            l.len()
-                        );
-                        buffers.push((l, r));
-                    }
-                    Ok((l, _)) => println!(
+                match Self::index_wav(&p) {
+                    Ok(file) if file.output_frames >= CHUNK_SIZE => files.push(file),
+                    Ok(file) => println!(
                         "--> Skipping {:?}: only {} samples after resample",
-                        p,
-                        l.len()
+                        p, file.output_frames
                     ),
                     Err(e) => println!("--> Skipping {:?}: {}", p, e),
                 }
             }
         }
-        if buffers.is_empty() {
+        if files.is_empty() {
             anyhow::bail!("No usable training audio found in {}", path);
         }
-        Ok(Self { buffers })
+        let total_output_frames: usize = files.iter().map(|f| f.output_frames).sum();
+        println!(
+            "--> Indexed {} target WAVs ({:.2} h); streaming coherent {:.1} s episodes (no corpus preload).",
+            files.len(),
+            total_output_frames as f64 / SAMPLE_RATE as f64 / 3600.0,
+            TARGET_EPISODE_CHUNKS as f64 * CHUNK_SIZE as f64 / SAMPLE_RATE as f64,
+        );
+        Ok(Self {
+            files,
+            active: None,
+            pending: Vec::with_capacity(TARGET_K),
+            last_served: None,
+        })
     }
 
-    fn load_wav(p: &std::path::Path) -> Result<(Vec<f32>, Vec<f32>)> {
-        let mut reader = hound::WavReader::open(p)?;
+    fn index_wav(p: &std::path::Path) -> Result<TargetFile> {
+        let reader = hound::WavReader::open(p)?;
         let spec = reader.spec();
-        let raw: Vec<f32> = match (spec.sample_format, spec.bits_per_sample) {
+        match (spec.sample_format, spec.bits_per_sample) {
+            (hound::SampleFormat::Float, 32)
+            | (hound::SampleFormat::Int, 16)
+            | (hound::SampleFormat::Int, 24 | 32) => {}
+            (fmt, bits) => anyhow::bail!("unsupported WAV format {:?}/{} bits", fmt, bits),
+        }
+        let source_frames = reader.duration() as usize;
+        let output_frames =
+            ((source_frames as u64 * SAMPLE_RATE as u64) / spec.sample_rate as u64) as usize;
+        Ok(TargetFile {
+            path: p.to_path_buf(),
+            sample_rate: spec.sample_rate,
+            channels: spec.channels as usize,
+            bits_per_sample: spec.bits_per_sample,
+            sample_format: spec.sample_format,
+            source_frames,
+            output_frames,
+        })
+    }
+
+    fn decode_window(&self, cursor: TargetCursor) -> Result<(Vec<f32>, Vec<f32>)> {
+        let file = &self.files[cursor.file];
+        let rate_ratio = file.sample_rate as f64 / SAMPLE_RATE as f64;
+        let source_pos = cursor.output_frame as f64 * rate_ratio;
+        let source_start = source_pos.floor() as usize;
+        let frac0 = source_pos - source_start as f64;
+        let needed_frames = ((frac0 + (CHUNK_SIZE - 1) as f64 * rate_ratio).ceil() as usize + 2)
+            .min(file.source_frames.saturating_sub(source_start));
+        if needed_frames < 2 {
+            anyhow::bail!("target cursor reached the end of {:?}", file.path);
+        }
+        let mut reader = hound::WavReader::open(&file.path)?;
+        reader.seek(source_start as u32)?;
+        let sample_count = needed_frames * file.channels;
+        let raw: Vec<f32> = match (file.sample_format, file.bits_per_sample) {
             (hound::SampleFormat::Float, 32) => reader
                 .samples::<f32>()
+                .take(sample_count)
                 .collect::<std::result::Result<Vec<_>, _>>()?,
             (hound::SampleFormat::Int, 16) => reader
                 .samples::<i16>()
-                .collect::<std::result::Result<Vec<_>, _>>()?
-                .into_iter()
-                .map(|s| s as f32 / 32768.0)
-                .collect(),
+                .take(sample_count)
+                .map(|s| s.map(|v| v as f32 / 32768.0))
+                .collect::<std::result::Result<Vec<_>, _>>()?,
             (hound::SampleFormat::Int, bits @ (24 | 32)) => {
                 let scale = (1i64 << (bits - 1)) as f32;
                 reader
                     .samples::<i32>()
+                    .take(sample_count)
+                    .map(|s| s.map(|v| v as f32 / scale))
                     .collect::<std::result::Result<Vec<_>, _>>()?
-                    .into_iter()
-                    .map(|s| s as f32 / scale)
-                    .collect()
             }
-            (fmt, bits) => anyhow::bail!("unsupported WAV format {:?}/{} bits", fmt, bits),
+            _ => unreachable!("format was validated while indexing"),
         };
-        if raw.is_empty() {
-            anyhow::bail!("no samples decoded");
+        let frames_read = raw.len() / file.channels;
+        if frames_read < 2 {
+            anyhow::bail!("short target read from {:?}", file.path);
         }
-        let ch = spec.channels as usize;
-        let (left, right): (Vec<f32>, Vec<f32>) = if ch >= 2 {
-            let l = raw.iter().step_by(ch).copied().collect();
-            let r = raw.iter().skip(1).step_by(ch).copied().collect();
-            (l, r)
-        } else {
-            (raw.clone(), raw)
-        };
-        if spec.sample_rate == SAMPLE_RATE {
-            return Ok((left, right));
+        let mut left = Vec::with_capacity(CHUNK_SIZE);
+        let mut right = Vec::with_capacity(CHUNK_SIZE);
+        for i in 0..CHUNK_SIZE {
+            let pos = frac0 + i as f64 * rate_ratio;
+            let j = (pos.floor() as usize).min(frames_read - 1);
+            let j1 = (j + 1).min(frames_read - 1);
+            let frac = (pos - pos.floor()) as f32;
+            let l0 = raw[j * file.channels];
+            let l1 = raw[j1 * file.channels];
+            let r_ch = usize::from(file.channels > 1);
+            let r0 = raw[j * file.channels + r_ch];
+            let r1 = raw[j1 * file.channels + r_ch];
+            left.push(l0 + (l1 - l0) * frac);
+            right.push(r0 + (r1 - r0) * frac);
         }
-        Ok((
-            Self::resample(&left, spec.sample_rate),
-            Self::resample(&right, spec.sample_rate),
-        ))
-    }
-
-    fn resample(x: &[f32], from_rate: u32) -> Vec<f32> {
-        // NOTE: linear interpolation with no anti-alias prefilter — >48k sources
-        // will fold a little HF hash into the targets. Acceptable for now.
-        let ratio = SAMPLE_RATE as f64 / from_rate as f64;
-        let out_len = (x.len() as f64 * ratio) as usize;
-        let mut out = Vec::with_capacity(out_len);
-        for i in 0..out_len {
-            let pos = i as f64 / ratio;
-            let i0 = pos.floor() as usize;
-            let frac = (pos - i0 as f64) as f32;
-            let a = x[i0.min(x.len() - 1)];
-            let b = x[(i0 + 1).min(x.len() - 1)];
-            out.push(a + (b - a) * frac);
-        }
-        out
+        Ok((left, right))
     }
 
     // Min-of-K sampling: return K candidate chunks stacked (K, 2, CHUNK). The
     // caller computes a cheap coarse mimic per candidate and keeps the nearest —
     // regressing to A mode of the target set instead of the blur of all modes.
-    fn sample_chunks(&self, k: usize, rng: &mut RuntimeRng, device: &Device) -> CResult<Tensor> {
+    fn sample_chunks(&mut self, k: usize, rng: &mut RuntimeRng, device: &Device) -> Result<Tensor> {
         let mut data = Vec::with_capacity(k * 2 * CHUNK_SIZE);
-        for _ in 0..k {
-            let idx = rng.gen_range(0..self.buffers.len());
-            let (l, r) = &self.buffers[idx];
-            let start = if l.len() == CHUNK_SIZE {
-                0
-            } else {
-                rng.gen_range(0..(l.len() - CHUNK_SIZE + 1))
-            };
-            data.extend_from_slice(&l[start..start + CHUNK_SIZE]);
-            data.extend_from_slice(&r[start..start + CHUNK_SIZE]);
+        self.pending.clear();
+        if let Some(mut cursor) = self.active {
+            let (l, r) = self.decode_window(cursor)?;
+            self.last_served = Some(cursor);
+            for _ in 0..k {
+                data.extend_from_slice(&l);
+                data.extend_from_slice(&r);
+            }
+            cursor.output_frame += CHUNK_SIZE;
+            cursor.chunks_left = cursor.chunks_left.saturating_sub(1);
+            self.active = (cursor.chunks_left > 0).then_some(cursor);
+        } else {
+            for _ in 0..k {
+                let file_idx = rng.gen_range(0..self.files.len());
+                let file = &self.files[file_idx];
+                let episode_chunks =
+                    (file.output_frames / CHUNK_SIZE).clamp(1, TARGET_EPISODE_CHUNKS);
+                let episode_frames = episode_chunks * CHUNK_SIZE;
+                let start_count = file
+                    .output_frames
+                    .saturating_sub(episode_frames)
+                    .saturating_add(1);
+                let start = rng.gen_range(0..start_count);
+                let cursor = TargetCursor {
+                    file: file_idx,
+                    output_frame: start,
+                    chunks_left: episode_chunks,
+                };
+                let (l, r) = self.decode_window(cursor)?;
+                data.extend_from_slice(&l);
+                data.extend_from_slice(&r);
+                self.pending.push(cursor);
+            }
         }
-        Tensor::from_vec(data, (k, 2, CHUNK_SIZE), device)
+        Ok(Tensor::from_vec(data, (k, 2, CHUNK_SIZE), device)?)
+    }
+
+    fn commit_selection(&mut self, selected: usize) {
+        if let Some(mut cursor) = self.pending.get(selected).copied() {
+            self.last_served = Some(cursor);
+            cursor.output_frame += CHUNK_SIZE;
+            cursor.chunks_left = cursor.chunks_left.saturating_sub(1);
+            self.active = (cursor.chunks_left > 0).then_some(cursor);
+        }
+    }
+
+    fn episode_info(&self) -> (String, usize, usize) {
+        match self.last_served {
+            Some(cursor) => (
+                self.files[cursor.file]
+                    .path
+                    .file_name()
+                    .and_then(|n| n.to_str())
+                    .unwrap_or("<non-utf8>")
+                    .to_string(),
+                cursor.output_frame,
+                cursor.chunks_left,
+            ),
+            None => (String::new(), 0, 0),
+        }
     }
 }
 
@@ -1587,17 +1632,6 @@ fn morph_wave(phase: &Tensor, morph: &Tensor) -> CResult<Tensor> {
     s_part.add(&t_part)
 }
 
-fn apply_haas_delay(x: &Tensor, delay_samples: usize) -> CResult<Tensor> {
-    let len = x.dim(D::Minus1)?;
-    if delay_samples == 0 {
-        return Ok(x.clone());
-    }
-    let dev = x.device();
-    let zero = Tensor::zeros((1, delay_samples), DType::F32, dev)?;
-    let cut = x.narrow(D::Minus1, 0, len - delay_samples)?;
-    Tensor::cat(&[&zero, &cut], D::Minus1)
-}
-
 fn stereo_side_gain(last_pan: f32, width_mult: f32) -> f32 {
     ((1.0 + last_pan.abs() * 0.8) * width_mult.clamp(0.5, 1.6)).clamp(0.5, MAX_STEREO_SIDE_GAIN)
 }
@@ -1618,7 +1652,10 @@ impl SpectralProjector {
             win.push(0.5 - 0.5 * (TWO_PI * i as f32 / (n as f32 - 1.0)).cos());
         }
         let f_lo = 40.0f32;
-        let f_hi = 8000.0f32;
+        // The old 8 kHz ceiling made harsh energy above the loss bandwidth
+        // effectively free. Keep the logarithmic resolution but supervise the
+        // full audible band below Nyquist.
+        let f_hi = 20000.0f32;
         let mut cos_v = vec![0.0f32; n * bins];
         let mut sin_v = vec![0.0f32; n * bins];
         for k in 0..bins {
@@ -1659,214 +1696,19 @@ fn normalize_spectral_shape(spectrum: &Tensor) -> CResult<Tensor> {
     centered.broadcast_div(&scale)
 }
 
+// Smooth L1/Charbonnier distance. Unlike a squared log-spectral residual its
+// derivative is bounded, so a fresh renderer far from the corpus cannot make
+// every optimizer step hit the global clip ceiling and erase relative scale.
+fn robust_distance(delta: &Tensor, epsilon: f64) -> CResult<Tensor> {
+    delta
+        .sqr()?
+        .affine(1.0, epsilon * epsilon)?
+        .sqrt()?
+        .affine(1.0, -epsilon)?
+        .mean_all()
+}
+
 // =====================================================================
-// POST-NEURAL SPECTRAL ECOLOGY
-// =====================================================================
-// These layers are deliberately host-side.  They enrich the final signal and
-// are included in the post-DSP self-observation loop, while the differentiable
-// core still learns from its pre-DSP signal.
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct ModalResonatorBank {
-    states_l: [[f32; 2]; MODAL_MODES],
-    states_r: [[f32; 2]; MODAL_MODES],
-}
-impl Default for ModalResonatorBank {
-    fn default() -> Self {
-        Self {
-            states_l: [[0.0; 2]; MODAL_MODES],
-            states_r: [[0.0; 2]; MODAL_MODES],
-        }
-    }
-}
-impl ModalResonatorBank {
-    fn new() -> Self {
-        Self::default()
-    }
-    fn process(
-        &mut self,
-        samples_l: &mut [f32],
-        samples_r: &mut [f32],
-        regions: &[f32; REGION_COUNT],
-        control: &SynthesisControl,
-        surprise: f32,
-    ) {
-        const RATIOS: [f32; MODAL_MODES] = [
-            1.0,
-            std::f32::consts::SQRT_2,
-            1.875,
-            2.618,
-            3.0,
-            3.732,
-            4.236,
-            5.125,
-        ];
-        let root = 82.0 + 62.0 * regions.iter().take(4).copied().sum::<f32>() * 0.25;
-        let wet =
-            (0.035 + 0.16 * control.resonator_drive + 0.08 * surprise + 0.06 * control.recall_mix)
-                .clamp(0.02, 0.30);
-        for mode in 0..MODAL_MODES {
-            let regional = regions[(mode * 2) % REGION_COUNT].clamp(-1.0, 1.0);
-            let warp = 1.0 + control.inharmonicity * (0.025 * mode as f32 + 0.08 * regional);
-            let freq = (root * RATIOS[mode] * warp).clamp(35.0, 9200.0);
-            let q = (18.0
-                + 58.0 * (1.0 - surprise)
-                + 24.0 * regions[(mode * 2 + 1) % REGION_COUNT].abs())
-            .clamp(6.0, 110.0);
-            let damping = std::f32::consts::PI * freq / (q * SAMPLE_RATE as f32);
-            let omega = TWO_PI * freq / SAMPLE_RATE as f32;
-            let r = (-damping).exp();
-            let c1 = 2.0 * r * omega.cos();
-            let c2 = -r * r;
-            let scale = (1.0 - r) * (0.20 + 0.45 * control.resonator_drive);
-            let pan = mode as f32 / (MODAL_MODES - 1) as f32 * 2.0 - 1.0;
-            let gl = ((1.0 - pan) * 0.5).sqrt();
-            let gr = ((1.0 + pan) * 0.5).sqrt();
-            let sl = &mut self.states_l[mode];
-            let sr = &mut self.states_r[mode];
-            for i in 0..samples_l.len() {
-                let nl = samples_l[i] * scale + c1 * sl[0] + c2 * sl[1];
-                let nr = samples_r[i] * scale + c1 * sr[0] + c2 * sr[1];
-                sl[1] = sl[0];
-                sl[0] = nl;
-                sr[1] = sr[0];
-                sr[0] = nr;
-                samples_l[i] = (samples_l[i] + nl * wet * gl).clamp(-1.4, 1.4);
-                samples_r[i] = (samples_r[i] + nr * wet * gr).clamp(-1.4, 1.4);
-            }
-        }
-    }
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct SpectralNoiseBank {
-    low_l: [f32; NOISE_BANDS],
-    band_l: [f32; NOISE_BANDS],
-    low_r: [f32; NOISE_BANDS],
-    band_r: [f32; NOISE_BANDS],
-}
-impl Default for SpectralNoiseBank {
-    fn default() -> Self {
-        Self {
-            low_l: [0.0; NOISE_BANDS],
-            band_l: [0.0; NOISE_BANDS],
-            low_r: [0.0; NOISE_BANDS],
-            band_r: [0.0; NOISE_BANDS],
-        }
-    }
-}
-impl SpectralNoiseBank {
-    fn process(
-        &mut self,
-        samples_l: &mut [f32],
-        samples_r: &mut [f32],
-        regions: &[f32; REGION_COUNT],
-        control: &SynthesisControl,
-        rng: &mut RuntimeRng,
-    ) {
-        if control.noise_level <= 1e-4 {
-            return;
-        }
-        const BASE_FREQS: [f32; NOISE_BANDS] = [110.0, 430.0, 1650.0, 5200.0];
-        let mut coeff = [0.0f32; NOISE_BANDS];
-        let mut damping = [0.0f32; NOISE_BANDS];
-        let mut pans = [0.0f32; NOISE_BANDS];
-        for b in 0..NOISE_BANDS {
-            let region = regions[b * 4..b * 4 + 4].iter().copied().sum::<f32>() * 0.25;
-            let freq = (BASE_FREQS[b]
-                * (1.0 + 0.38 * region + 0.12 * control.inharmonicity * b as f32))
-                .clamp(45.0, 9000.0);
-            coeff[b] =
-                (2.0 * (std::f32::consts::PI * freq / SAMPLE_RATE as f32).sin()).clamp(0.001, 0.92);
-            damping[b] = (0.16 + 0.58 * (1.0 - region.abs())).clamp(0.12, 0.85);
-            pans[b] = (region * 0.8 + (b as f32 / 3.0 * 2.0 - 1.0) * 0.35).clamp(-1.0, 1.0);
-        }
-        let gain = (0.012 + 0.11 * control.noise_level).clamp(0.0, 0.16);
-        for i in 0..samples_l.len() {
-            let n = rng.gen_range(-1.0f32..1.0f32);
-            let mut add_l = 0.0f32;
-            let mut add_r = 0.0f32;
-            for b in 0..NOISE_BANDS {
-                let high_l = n - self.low_l[b] - damping[b] * self.band_l[b];
-                self.band_l[b] = (self.band_l[b] + coeff[b] * high_l).clamp(-4.0, 4.0);
-                self.low_l[b] = (self.low_l[b] + coeff[b] * self.band_l[b]).clamp(-4.0, 4.0);
-                let high_r = -n - self.low_r[b] - damping[b] * self.band_r[b];
-                self.band_r[b] = (self.band_r[b] + coeff[b] * high_r).clamp(-4.0, 4.0);
-                self.low_r[b] = (self.low_r[b] + coeff[b] * self.band_r[b]).clamp(-4.0, 4.0);
-                let gl = ((1.0 - pans[b]) * 0.5).sqrt();
-                let gr = ((1.0 + pans[b]) * 0.5).sqrt();
-                add_l += self.band_l[b] * gl;
-                add_r += self.band_r[b] * gr;
-            }
-            samples_l[i] = (samples_l[i] + add_l * gain).clamp(-1.5, 1.5);
-            samples_r[i] = (samples_r[i] + add_r * gain).clamp(-1.5, 1.5);
-        }
-    }
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct FractalFDN {
-    buffers: Vec<Vec<f32>>,
-    indices: Vec<usize>,
-    lp_states: [f32; FDN_DELAY_LINES],
-}
-impl FractalFDN {
-    fn new() -> Self {
-        let mut buffers = Vec::new();
-        let mut indices = Vec::new();
-        for &d in &FDN_DELAYS {
-            buffers.push(vec![0.0; d]);
-            indices.push(0);
-        }
-        Self {
-            buffers,
-            indices,
-            lp_states: [0.0; FDN_DELAY_LINES],
-        }
-    }
-    fn is_valid(&self) -> bool {
-        self.buffers.len() == FDN_DELAY_LINES
-            && self.indices.len() == FDN_DELAY_LINES
-            && self
-                .buffers
-                .iter()
-                .zip(FDN_DELAYS.iter())
-                .all(|(b, &d)| b.len() == d && !b.is_empty())
-            && self
-                .indices
-                .iter()
-                .zip(self.buffers.iter())
-                .all(|(&i, b)| i < b.len())
-    }
-    fn process(&mut self, samples: &mut [f32], echo: f32, damping: f32) {
-        let mix = [
-            [0.5, 0.5, 0.5, 0.5],
-            [0.5, -0.5, 0.5, -0.5],
-            [0.5, 0.5, -0.5, -0.5],
-            [0.5, -0.5, -0.5, 0.5],
-        ];
-        let lp_a = damping.clamp(0.08, 0.92);
-        let lp_b = 1.0 - lp_a;
-        let scale = (0.18 + 0.34 * echo).clamp(0.0, 0.54);
-        for x in samples.iter_mut() {
-            let mut outs = [0.0; FDN_DELAY_LINES];
-            for (i, out) in outs.iter_mut().enumerate() {
-                let idx = self.indices[i];
-                self.lp_states[i] = self.lp_states[i] * lp_a + self.buffers[i][idx] * lp_b;
-                *out = self.lp_states[i];
-            }
-            for (i, row) in mix.iter().enumerate() {
-                let sum = row.iter().zip(outs.iter()).map(|(a, b)| a * b).sum::<f32>();
-                let idx = self.indices[i];
-                self.buffers[i][idx] = (*x + sum * scale).clamp(-2.0, 2.0);
-                self.indices[i] = (idx + 1) % self.buffers[i].len();
-            }
-            let fdn_out = (outs[0] + outs[1] + outs[2] + outs[3]) * 0.25;
-            *x = *x * (1.0 - echo * 0.18) + fdn_out * (echo * 0.44);
-        }
-    }
-}
-
 // --- MONITORS ---
 // Order-4 permutation entropy at a given ordinal lag over a signal slice.
 // Lag 1 = fastest temporal structure; larger lags probe slower structure.
@@ -2004,6 +1846,13 @@ impl SpectralEntropyMonitor {
             0.0
         };
         let stereo_corr = (cross_e / (left_e * right_e).sqrt().max(1e-8)).clamp(-1.0, 1.0);
+        let ultrasonic_ratio = mags
+            .iter()
+            .enumerate()
+            .filter(|(k, _)| *k as f32 * bin_hz >= 20_000.0)
+            .map(|(_, &m)| m)
+            .sum::<f32>()
+            / sum;
 
         let dec: Vec<f32> = mono.iter().step_by(4).copied().collect();
         let pe1 = perm_entropy4(&dec, 1);
@@ -2038,6 +1887,7 @@ impl SpectralEntropyMonitor {
             "flatness": flatness, "brightness": brightness_hz, "centroid_norm": centroid_norm,
             "flux": flux, "rms": rms, "crest": crest, "width": width,
             "stereo_corr": stereo_corr,
+            "ultrasonic_ratio": ultrasonic_ratio,
             "pe1": pe1, "pe4": pe4, "pe16": pe16, "pi_proxy": pi_proxy,
             "structured_complexity": observation.structured_complexity(),
         });
@@ -2675,16 +2525,21 @@ impl MonitorHead {
 }
 
 fn control_features(action: ControlAction, c: SynthesisControl) -> [f32; ACTION_COUNT] {
+    let shear = (c.shear_mult / 1.75).clamp(0.0, 1.0);
+    let kick = (c.kick_mult / 1.80).clamp(0.0, 1.0);
+    let inharmonicity = c.inharmonicity.clamp(0.0, 1.0);
+    let tilt = ((c.spectral_tilt + 0.30) / 0.60).clamp(0.0, 1.0);
+    let width = (c.width_mult / 1.50).clamp(0.0, 1.0);
     [
-        (c.shear_mult / 1.75).clamp(0.0, 1.0),
-        (c.kick_mult / 1.80).clamp(0.0, 1.0),
-        c.inharmonicity.clamp(0.0, 1.0),
-        ((c.spectral_tilt + 0.30) / 0.60).clamp(0.0, 1.0),
-        c.resonator_drive.clamp(0.0, 1.0),
-        (c.noise_level / 0.20).clamp(0.0, 1.0),
-        ((c.echo_delta + 0.12) / 0.24).clamp(0.0, 1.0),
-        (c.width_mult / 1.50).clamp(0.0, 1.0),
-        c.recall_mix.clamp(0.0, 1.0),
+        shear,
+        kick,
+        inharmonicity,
+        tilt,
+        width,
+        (shear * kick).sqrt(),
+        1.0 - inharmonicity,
+        ((c.width_mult - 1.0).abs() / 0.50).clamp(0.0, 1.0),
+        f32::from(action == ControlAction::Recall),
         action.index() as f32 / (ACTION_COUNT - 1) as f32,
     ]
 }
@@ -2767,7 +2622,13 @@ impl KANLayer {
         let mod_proj = candle_nn::linear(MEMORY_DIM, basis_fn, vb.pp("mod_proj"))?;
         let freq_vec: Vec<f32> = (1..=basis_fn).map(|i| i as f32).collect();
         let freqs = Tensor::from_vec(freq_vec, (1, basis_fn), vb.device())?;
-        let tilt_vec: Vec<f32> = (1..=basis_fn).map(|i| 1.0 / (i as f32).sqrt()).collect();
+        // A sinusoidal basis' derivative grows with harmonic index. 1/sqrt(k)
+        // therefore let the derivative energy grow with k; 1/k^1.25 makes the
+        // series and its practical finite-band slope well behaved while still
+        // leaving every basis trainable.
+        let tilt_vec: Vec<f32> = (1..=basis_fn)
+            .map(|i| 1.0 / (i as f32).powf(1.25))
+            .collect();
         let tilt = Tensor::from_vec(tilt_vec, (1, basis_fn), vb.device())?;
         Ok(Self {
             basis_fn,
@@ -2786,7 +2647,7 @@ impl KANLayer {
             .reshape((self.basis_fn,))?;
         let active_w = self
             .w
-            .add(&delta_w.affine(0.15, 0.0)?)?
+            .add(&delta_w.affine(0.08, 0.0)?)?
             .reshape((1, self.basis_fn))?
             .broadcast_mul(&self.tilt)?;
         let xf = x.reshape((d0 * d1, 1))?;
@@ -2963,8 +2824,12 @@ struct ForwardOut {
     cur_freq_r: Tensor,
     mod_freq_l: Tensor,
     mod_freq_r: Tensor,
-    pan: Tensor,             // (1,) — feeds the last_pan host mirror
-    pair_sums: Tensor,       // (2,) — theta for the NEXT step (1-step lag, no sync)
+    pan: Tensor,         // (1,) — feeds the last_pan host mirror
+    pair_sums: Tensor,   // (2,) — theta for the NEXT step (1-step lag, no sync)
+    aux_freqs_l: Tensor, // (3,) phase-continuous auxiliary oscillators
+    aux_freqs_r: Tensor,
+    scan_freqs_l: Tensor, // (16,) phase-continuous regional partials
+    scan_freqs_r: Tensor,
     region_activity: Tensor, // (16,) 4x4 spatial summary for DSP/control
     region_change: Tensor,   // (16,) local temporal activity
 }
@@ -2991,7 +2856,6 @@ struct ComplexAudioEcosystem {
     scan_pan_l: Tensor,
     scan_pan_r: Tensor,
     scan_brightness: Tensor,
-    scan_phase_offsets: Tensor,
     scan_interp: Tensor, // (CHUNK_SIZE, GRID_W) linear-interp upsampler for the column envelope
     // Host-side mirrors (phases and glide frequencies live OFF the device: the
     // v3 mod_2pi tensor round-trip synced every step and carried no gradient
@@ -3004,6 +2868,12 @@ struct ComplexAudioEcosystem {
     prev_openness: Tensor,
     prev_gain_l: Tensor,
     prev_gain_r: Tensor,
+    aux_phase_l: [f32; 3],
+    aux_phase_r: [f32; 3],
+    scan_phase_l: [f32; SCAN_PARTIALS],
+    scan_phase_r: [f32; SCAN_PARTIALS],
+    scan_column_offset: usize,
+    prev_haas_side: Tensor,
 }
 
 struct AsymptoticContractionLayer {
@@ -3057,12 +2927,12 @@ impl ComplexAudioEcosystem {
         let base_freq_l = vb.get_with_hints(
             (1,),
             "base_freq_l",
-            candle_nn::Init::Const(BASE_FREQ_L as f64),
+            candle_nn::Init::Const(BASE_FREQ_L.ln() as f64),
         )?;
         let base_freq_r = vb.get_with_hints(
             (1,),
             "base_freq_r",
-            candle_nn::Init::Const(BASE_FREQ_R as f64),
+            candle_nn::Init::Const(BASE_FREQ_R.ln() as f64),
         )?;
         let steps_vec: Vec<f32> = (0..CHUNK_SIZE)
             .map(|i| i as f32 / SAMPLE_RATE as f32)
@@ -3105,16 +2975,16 @@ impl ComplexAudioEcosystem {
             pan_l.push(((1.0 - x) * 0.5).sqrt());
             pan_r.push(((1.0 + x) * 0.5).sqrt());
         }
-        // Linear-interp matrix upsampling the (GRID_W,) column profile to CHUNK
-        // samples: env[t] = (1-f)*col[j] + f*col[j+1]. Precomputed once so the
-        // scan-synth envelope is a single matmul at runtime.
+        // Linear-interp matrix for a continuous, slow scan across a few columns
+        // per chunk. The host offset advances by exactly the same amount, so
+        // the next chunk begins where this one ended.
         let mut interp = vec![0.0f32; CHUNK_SIZE * GRID_W];
         for t in 0..CHUNK_SIZE {
-            let pos = t as f32 / CHUNK_SIZE as f32 * (GRID_W as f32 - 1.0);
+            let pos = t as f32 / CHUNK_SIZE as f32 * SCAN_COLUMNS_PER_CHUNK as f32;
             let j = pos.floor() as usize;
             let f = pos - j as f32;
             interp[t * GRID_W + j] += 1.0 - f;
-            interp[t * GRID_W + (j + 1).min(GRID_W - 1)] += f;
+            interp[t * GRID_W + (j + 1) % GRID_W] += f;
         }
         Ok(Self {
             micro_ca,
@@ -3138,7 +3008,6 @@ impl ComplexAudioEcosystem {
             scan_pan_l: Tensor::from_vec(pan_l, (SCAN_PARTIALS, 1), dev)?,
             scan_pan_r: Tensor::from_vec(pan_r, (SCAN_PARTIALS, 1), dev)?,
             scan_brightness: Tensor::from_vec(brightness_vec, (SCAN_PARTIALS, 1), dev)?,
-            scan_phase_offsets: Tensor::from_vec(phase_vec, (SCAN_PARTIALS, 1), dev)?,
             scan_interp: Tensor::from_vec(interp, (CHUNK_SIZE, GRID_W), dev)?,
             current_freq_l: BASE_FREQ_L,
             current_freq_r: BASE_FREQ_R,
@@ -3148,6 +3017,17 @@ impl ComplexAudioEcosystem {
             prev_openness: Tensor::new(0.7f32, dev)?,
             prev_gain_l: Tensor::new(0.707f32, dev)?,
             prev_gain_r: Tensor::new(0.707f32, dev)?,
+            aux_phase_l: [0.0; 3],
+            aux_phase_r: [0.0; 3],
+            scan_phase_l: phase_vec.clone().try_into().unwrap(),
+            scan_phase_r: phase_vec
+                .into_iter()
+                .map(|p| (-p).rem_euclid(TWO_PI))
+                .collect::<Vec<_>>()
+                .try_into()
+                .unwrap(),
+            scan_column_offset: 0,
+            prev_haas_side: Tensor::zeros((1, 16), DType::F32, dev)?,
         })
     }
     fn depth(&self) -> usize {
@@ -3255,31 +3135,40 @@ impl ComplexAudioEcosystem {
         let fm_indices = self
             .fm_mod_index
             .forward(&refined_hidden)?
-            .affine(5.0, 0.0)?;
+            .affine(2.0, 0.0)?;
         let ratio_l = fm_ratios.narrow(1, 0, 1)?.reshape(())?;
         let ratio_r = fm_ratios.narrow(1, 1, 1)?.reshape(())?;
         let idx_l = fm_indices.narrow(1, 0, 1)?.reshape(())?;
         let idx_r = fm_indices.narrow(1, 1, 1)?.reshape(())?;
-        let b_l = self.base_freq_l.reshape(())?.abs()?;
-        let b_r = self.base_freq_r.reshape(())?.abs()?;
+        // Learned in log-Hz. The former abs(parameter) geometry had a cusp at
+        // zero and let the carrier fall into sub-audio engine rates. Energy is
+        // an amplitude budget, not a pitch control, so it no longer scales Hz.
+        let b_l = self
+            .base_freq_l
+            .reshape(())?
+            .exp()?
+            .clamp(32.0f32, 880.0f32)?;
+        let b_r = self
+            .base_freq_r
+            .reshape(())?
+            .exp()?
+            .clamp(32.0f32, 880.0f32)?;
 
         let energy_factor = energy.clamp(0.15, 1.0);
         let target_l = b_l
             .add(&pop_l.affine(200.0, 0.0)?)?
             .add(&movement_t.affine(100.0, 0.0)?)?
-            .clamp(20.0f32, 4000.0f32)?
-            .affine(energy_factor as f64, 0.0)?;
+            .clamp(32.0f32, 4000.0f32)?;
         let target_r = b_r
             .add(&pop_r.affine(200.0, 0.0)?)?
             .add(&movement_t.affine(-100.0, 0.0)?)?
-            .clamp(20.0f32, 4000.0f32)?
-            .affine(energy_factor as f64, 0.0)?;
+            .clamp(32.0f32, 4000.0f32)?;
 
         let g = FREQ_GLIDE_SPEED as f64;
         let cur_l = target_l.affine(g, self.current_freq_l as f64 * (1.0 - g))?;
         let cur_r = target_r.affine(g, self.current_freq_r as f64 * (1.0 - g))?;
-        let mod_f_l = cur_l.mul(&ratio_l)?.clamp(0.0f32, 6000.0f32)?;
-        let mod_f_r = cur_r.mul(&ratio_r)?.clamp(0.0f32, 6000.0f32)?;
+        let mod_f_l = cur_l.mul(&ratio_l)?.clamp(0.0f32, 4000.0f32)?;
+        let mod_f_r = cur_r.mul(&ratio_r)?.clamp(0.0f32, 4000.0f32)?;
         let omega_m_l = mod_f_l.affine(TWO_PI as f64, 0.0)?;
         let omega_m_r = mod_f_r.affine(TWO_PI as f64, 0.0)?;
         let ph_m_l = self
@@ -3319,30 +3208,42 @@ impl ComplexAudioEcosystem {
 
         let mut audio_l = morph_wave(&ph_c_l, &morph_l)?;
         let mut audio_r = morph_wave(&ph_c_r, &morph_r)?;
-        for (f_l, f_r) in [
-            (&pop_l.affine(700.0, 300.0)?, &pop_r.affine(700.0, 300.0)?),
+        let aux_pairs = [
             (
-                &movement_t.affine(1700.0, 800.0)?,
-                &movement_t.affine(1700.0, 800.0)?,
+                pop_l.affine(700.0, 300.0)?.clamp(60.0f32, 6000.0f32)?,
+                pop_r.affine(700.0, 300.0)?.clamp(60.0f32, 6000.0f32)?,
             ),
             (
-                &pop_l.affine(-500.0, 2000.0)?,
-                &pop_r.affine(-500.0, 2000.0)?,
+                movement_t.affine(1700.0, 800.0)?,
+                movement_t.affine(1700.0, 800.0)?,
             ),
-        ] {
+            (
+                pop_l.affine(-500.0, 2000.0)?.clamp(60.0f32, 6000.0f32)?,
+                pop_r.affine(-500.0, 2000.0)?.clamp(60.0f32, 6000.0f32)?,
+            ),
+        ];
+        let mut aux_freqs_l = Vec::with_capacity(3);
+        let mut aux_freqs_r = Vec::with_capacity(3);
+        for (j, (f_l, f_r)) in aux_pairs.into_iter().enumerate() {
             let p_l = self
                 .t_steps
                 .broadcast_mul(&f_l.affine(TWO_PI as f64, 0.0)?)?
-                .affine(1.0, pc_l as f64)?
+                .affine(1.0, self.aux_phase_l[j] as f64)?
                 .add(&theta_curve)?;
             let p_r = self
                 .t_steps
                 .broadcast_mul(&f_r.affine(TWO_PI as f64, 0.0)?)?
-                .affine(1.0, pc_r as f64)?
+                .affine(1.0, self.aux_phase_r[j] as f64)?
                 .add(&theta_curve)?;
             audio_l = audio_l.add(&morph_wave(&p_l, &morph_l)?.affine(0.3, 0.0)?)?;
             audio_r = audio_r.add(&morph_wave(&p_r, &morph_r)?.affine(0.3, 0.0)?)?;
+            aux_freqs_l.push(f_l.reshape((1,))?);
+            aux_freqs_r.push(f_r.reshape((1,))?);
         }
+        let aux_l_refs: Vec<&Tensor> = aux_freqs_l.iter().collect();
+        let aux_r_refs: Vec<&Tensor> = aux_freqs_r.iter().collect();
+        let aux_freqs_l = Tensor::cat(&aux_l_refs, 0)?;
+        let aux_freqs_r = Tensor::cat(&aux_r_refs, 0)?;
 
         // --- REGIONAL SPECTRAL FIELD ---
         // The previous row/column projection discarded most 2-D topology.  A
@@ -3391,28 +3292,36 @@ impl ComplexAudioEcosystem {
         // Keep one global column envelope as a slow, coherent breath while the
         // regional agents retain spatially independent spectra.
         let cols = field_cm.mean(1)?.reshape((GRID_W, 1))?;
+        let offset = self.scan_column_offset % GRID_W;
+        let cols = if offset == 0 {
+            cols
+        } else {
+            Tensor::cat(
+                &[
+                    &cols.narrow(0, offset, GRID_W - offset)?,
+                    &cols.narrow(0, 0, offset)?,
+                ],
+                0,
+            )?
+        };
         let env = self
             .scan_interp
             .matmul(&cols)?
             .affine(0.30, 0.70)?
             .clamp(0.18f32, 1.25f32)?
             .reshape((1, CHUNK_SIZE))?;
-        let base_phase_l = self
-            .t_steps
-            .broadcast_mul(&omega_c_l)?
-            .affine(1.0, pc_l as f64)?
-            .reshape((1, CHUNK_SIZE))?;
-        let base_phase_r = self
-            .t_steps
-            .broadcast_mul(&omega_c_r)?
-            .affine(1.0, pc_r as f64)?
-            .reshape((1, CHUNK_SIZE))?;
-        let ph_l = ratios
-            .broadcast_mul(&base_phase_l)?
-            .broadcast_add(&self.scan_phase_offsets)?;
-        let ph_r = ratios
-            .broadcast_mul(&base_phase_r)?
-            .broadcast_add(&self.scan_phase_offsets.affine(-1.0, 0.0)?)?;
+        let scan_freqs_l = ratios.broadcast_mul(&cur_l)?.clamp(24.0f32, 18000.0f32)?;
+        let scan_freqs_r = ratios.broadcast_mul(&cur_r)?.clamp(24.0f32, 18000.0f32)?;
+        let scan_phase_l = Tensor::from_vec(self.scan_phase_l.to_vec(), (SCAN_PARTIALS, 1), dev)?;
+        let scan_phase_r = Tensor::from_vec(self.scan_phase_r.to_vec(), (SCAN_PARTIALS, 1), dev)?;
+        let ph_l = scan_freqs_l
+            .broadcast_mul(&self.t_steps)?
+            .affine(TWO_PI as f64, 0.0)?
+            .broadcast_add(&scan_phase_l)?;
+        let ph_r = scan_freqs_r
+            .broadcast_mul(&self.t_steps)?
+            .affine(TWO_PI as f64, 0.0)?
+            .broadcast_add(&scan_phase_r)?;
         let partials_l = ph_l
             .sin()?
             .broadcast_mul(&amps_n)?
@@ -3458,7 +3367,8 @@ impl ComplexAudioEcosystem {
         // is a slow spatial parameter; the 85 ms lag is inaudible.
         let width_val = stereo_side_gain(self.last_pan, control.width_mult);
         let side_wide = side.affine(width_val as f64, 0.0)?;
-        let side_delayed = apply_haas_delay(&side_wide, 16)?;
+        let side_history = Tensor::cat(&[&self.prev_haas_side, &side_wide], 1)?;
+        let side_delayed = side_history.narrow(1, 0, CHUNK_SIZE)?;
         let audio_l = mid.add(&side_delayed)?;
         let audio_r = mid.sub(&side_delayed)?;
 
@@ -3480,6 +3390,8 @@ impl ComplexAudioEcosystem {
         self.prev_openness = open_t.detach();
         self.prev_gain_l = gain_l.detach();
         self.prev_gain_r = gain_r.detach();
+        self.prev_haas_side = side_wide.narrow(1, CHUNK_SIZE - 16, 16)?.detach();
+        self.scan_column_offset = (self.scan_column_offset + SCAN_COLUMNS_PER_CHUNK) % GRID_W;
 
         Ok(ForwardOut {
             stereo,
@@ -3494,6 +3406,10 @@ impl ComplexAudioEcosystem {
             mod_freq_r: mod_f_r.reshape((1,))?,
             pan: pan_t.reshape((1,))?,
             pair_sums,
+            aux_freqs_l,
+            aux_freqs_r,
+            scan_freqs_l: scan_freqs_l.reshape((SCAN_PARTIALS,))?,
+            scan_freqs_r: scan_freqs_r.reshape((SCAN_PARTIALS,))?,
             region_activity,
             region_change,
         })
@@ -3510,6 +3426,12 @@ struct ModelRuntimeState {
     prev_openness: f32,
     prev_gain_l: f32,
     prev_gain_r: f32,
+    aux_phase_l: [f32; 3],
+    aux_phase_r: [f32; 3],
+    scan_phase_l: [f32; SCAN_PARTIALS],
+    scan_phase_r: [f32; SCAN_PARTIALS],
+    scan_column_offset: usize,
+    prev_haas_side: Vec<f32>,
 }
 impl ComplexAudioEcosystem {
     fn runtime_state(&self) -> Result<ModelRuntimeState> {
@@ -3522,6 +3444,12 @@ impl ComplexAudioEcosystem {
             prev_openness: self.prev_openness.to_scalar::<f32>()?,
             prev_gain_l: self.prev_gain_l.to_scalar::<f32>()?,
             prev_gain_r: self.prev_gain_r.to_scalar::<f32>()?,
+            aux_phase_l: self.aux_phase_l,
+            aux_phase_r: self.aux_phase_r,
+            scan_phase_l: self.scan_phase_l,
+            scan_phase_r: self.scan_phase_r,
+            scan_column_offset: self.scan_column_offset,
+            prev_haas_side: self.prev_haas_side.flatten_all()?.to_vec1::<f32>()?,
         })
     }
     fn restore_runtime_state(&mut self, state: &ModelRuntimeState, device: &Device) -> Result<()> {
@@ -3533,6 +3461,14 @@ impl ComplexAudioEcosystem {
         self.prev_openness = Tensor::new(state.prev_openness, device)?;
         self.prev_gain_l = Tensor::new(state.prev_gain_l, device)?;
         self.prev_gain_r = Tensor::new(state.prev_gain_r, device)?;
+        self.aux_phase_l = state.aux_phase_l;
+        self.aux_phase_r = state.aux_phase_r;
+        self.scan_phase_l = state.scan_phase_l;
+        self.scan_phase_r = state.scan_phase_r;
+        self.scan_column_offset = state.scan_column_offset % GRID_W;
+        if state.prev_haas_side.len() == 16 {
+            self.prev_haas_side = Tensor::from_vec(state.prev_haas_side.clone(), (1, 16), device)?;
+        }
         Ok(())
     }
 }
@@ -3621,10 +3557,6 @@ struct WorldCheckpoint {
     criticality: CriticalityEstimator,
     episodic_slots: Vec<Vec<f32>>,
     novelty_spectra: Vec<Vec<f32>>,
-    modal_resonators: ModalResonatorBank,
-    fdn_l: FractalFDN,
-    fdn_r: FractalFDN,
-    noise_bank: SpectralNoiseBank,
     controller: HybridController,
     motifs: MotifMemory,
     last_observation: Option<AudioObservation>,
@@ -3636,134 +3568,6 @@ struct WorldCheckpoint {
     motif_diagnostics: MotifDiagnostics,
     host_runtime: HostRuntimeState,
 }
-// Exact v5 layout for one-time world migration. Neural tensor shapes are
-// unchanged in v6, so the learned organism can continue while the new
-// anti-stagnation state starts from calibrated defaults.
-#[derive(Clone, Debug, Serialize, Deserialize)]
-struct LegacyWorldCheckpointV5 {
-    version: u32,
-    global_step: u64,
-    seed: u64,
-    grid_h: usize,
-    grid_w: usize,
-    ca_channels: usize,
-    rng: RuntimeRng,
-    micro_tape: Vec<f32>,
-    macro_tape: Vec<f32>,
-    hidden_mem: Vec<f32>,
-    phases: [f32; 4],
-    theta_prev: f32,
-    theta_prev2: f32,
-    model_runtime: ModelRuntimeState,
-    rad_amp: f32,
-    active_depth: usize,
-    energy_state: f32,
-    shear_phase: f32,
-    uncertainty: AudioUncertaintyState,
-    potential: PotentialController,
-    semantic: SemanticField,
-    criticality: CriticalityEstimator,
-    episodic_slots: Vec<Vec<f32>>,
-    novelty_spectra: Vec<Vec<f32>>,
-    modal_resonators: ModalResonatorBank,
-    fdn_l: FractalFDN,
-    fdn_r: FractalFDN,
-    noise_bank: SpectralNoiseBank,
-    controller: HybridController,
-    motifs: MotifMemory,
-    last_observation: Option<AudioObservation>,
-    pending_predictor_input: Option<Vec<f32>>,
-    spectral_history: Vec<f32>,
-    spectral_prev_mags: Vec<f32>,
-    movement_history: Vec<f32>,
-    host_runtime: HostRuntimeState,
-}
-impl LegacyWorldCheckpointV5 {
-    fn validate(&self) -> Result<()> {
-        if self.version != 5 {
-            anyhow::bail!(
-                "legacy checkpoint reports version {} instead of 5",
-                self.version
-            );
-        }
-        if self.grid_h != GRID_H || self.grid_w != GRID_W || self.ca_channels != CA_CHANNELS {
-            anyhow::bail!("legacy world dimensions do not match this build");
-        }
-        let ca_n = CA_CHANNELS * GRID_H * GRID_W;
-        if self.micro_tape.len() != ca_n
-            || self.macro_tape.len() != ca_n
-            || self.hidden_mem.len() != MEMORY_DIM
-            || self.spectral_prev_mags.len() != CHUNK_SIZE / 2
-        {
-            anyhow::bail!("legacy world checkpoint tensor sizes are invalid or truncated");
-        }
-        if self.active_depth == 0 || self.active_depth > MORPH_MAX_BLOCKS {
-            anyhow::bail!("legacy world checkpoint morphic depth is invalid");
-        }
-        if self.episodic_slots.iter().any(|v| v.len() != MEMORY_DIM)
-            || self.novelty_spectra.iter().any(|v| v.len() != SPEC_BINS)
-            || !self.fdn_l.is_valid()
-            || !self.fdn_r.is_valid()
-        {
-            anyhow::bail!("legacy world checkpoint adaptive memory is malformed");
-        }
-        Ok(())
-    }
-
-    fn migrate(self) -> WorldCheckpoint {
-        let mut controller = self.controller;
-        // v5 learned absolute ~0.22 rewards. v6 learns centered action
-        // advantage, so carrying those Q values would preserve the very
-        // crystallization bias this migration is designed to remove.
-        controller.bandit = ModelFreeBandit::default();
-        controller.action_age = 0;
-        let motif_count = self.motifs.entries.len() as u64;
-        WorldCheckpoint {
-            version: WORLD_VERSION,
-            global_step: self.global_step,
-            seed: self.seed,
-            grid_h: self.grid_h,
-            grid_w: self.grid_w,
-            ca_channels: self.ca_channels,
-            rng: self.rng,
-            micro_tape: self.micro_tape,
-            macro_tape: self.macro_tape,
-            hidden_mem: self.hidden_mem,
-            phases: self.phases,
-            theta_prev: self.theta_prev,
-            theta_prev2: self.theta_prev2,
-            model_runtime: self.model_runtime,
-            rad_amp: self.rad_amp,
-            active_depth: self.active_depth,
-            energy_state: self.energy_state,
-            shear_phase: self.shear_phase,
-            uncertainty: self.uncertainty,
-            potential: self.potential,
-            semantic: self.semantic,
-            criticality: self.criticality,
-            episodic_slots: self.episodic_slots,
-            novelty_spectra: self.novelty_spectra,
-            modal_resonators: self.modal_resonators,
-            fdn_l: self.fdn_l,
-            fdn_r: self.fdn_r,
-            noise_bank: self.noise_bank,
-            controller,
-            motifs: self.motifs,
-            last_observation: self.last_observation,
-            pending_predictor_input: self.pending_predictor_input,
-            spectral_history: self.spectral_history,
-            spectral_prev_mags: self.spectral_prev_mags,
-            movement_history: self.movement_history,
-            adaptive_dynamics: AdaptiveDynamics::default(),
-            motif_diagnostics: MotifDiagnostics {
-                stored_total: motif_count,
-                ..MotifDiagnostics::default()
-            },
-            host_runtime: self.host_runtime,
-        }
-    }
-}
-
 impl WorldCheckpoint {
     fn validate(&self) -> Result<()> {
         if self.version != WORLD_VERSION {
@@ -3801,9 +3605,6 @@ impl WorldCheckpoint {
             || self.novelty_spectra.iter().any(|v| v.len() != SPEC_BINS)
         {
             anyhow::bail!("world checkpoint memory slots are malformed");
-        }
-        if !self.fdn_l.is_valid() || !self.fdn_r.is_valid() {
-            anyhow::bail!("world checkpoint feedback-delay state is malformed");
         }
         Ok(())
     }
@@ -3846,8 +3647,10 @@ fn load_world(path: &str) -> Result<WorldCheckpoint> {
         anyhow::bail!("world checkpoint has an invalid or truncated header");
     }
     let magic = &bytes[..8];
-    if magic != WORLD_MAGIC.as_slice() && magic != LEGACY_WORLD_MAGIC_V5.as_slice() {
-        anyhow::bail!("world checkpoint is neither TITAN v6 nor a migratable v5 world");
+    if magic != WORLD_MAGIC.as_slice() {
+        anyhow::bail!(
+            "world checkpoint is not a TITAN v7 world; use --fresh-world or a v7 --state"
+        );
     }
     let payload_len = u64::from_le_bytes(bytes[8..16].try_into().unwrap()) as usize;
     let expected_checksum = u64::from_le_bytes(bytes[16..24].try_into().unwrap());
@@ -3858,18 +3661,9 @@ fn load_world(path: &str) -> Result<WorldCheckpoint> {
     if checkpoint_checksum(payload) != expected_checksum {
         anyhow::bail!("world checkpoint checksum mismatch");
     }
-    if magic == WORLD_MAGIC.as_slice() {
-        let checkpoint: WorldCheckpoint = bincode::deserialize(payload)?;
-        checkpoint.validate()?;
-        Ok(checkpoint)
-    } else {
-        let legacy: LegacyWorldCheckpointV5 = bincode::deserialize(payload)?;
-        legacy.validate()?;
-        println!("--> Migrating TITAN v5 organism state into v6 adaptive ecology.");
-        let checkpoint = legacy.migrate();
-        checkpoint.validate()?;
-        Ok(checkpoint)
-    }
+    let checkpoint: WorldCheckpoint = bincode::deserialize(payload)?;
+    checkpoint.validate()?;
+    Ok(checkpoint)
 }
 
 fn flatten_tensor(t: &Tensor) -> Result<Vec<f32>> {
@@ -3923,10 +3717,6 @@ fn capture_world(
     criticality: &CriticalityEstimator,
     episodic: &EpisodicMemory,
     novelty_buf: &VecDeque<Tensor>,
-    modal_resonators: &ModalResonatorBank,
-    fdn_l: &FractalFDN,
-    fdn_r: &FractalFDN,
-    noise_bank: &SpectralNoiseBank,
     controller: &HybridController,
     motifs: &MotifMemory,
     last_observation: &Option<AudioObservation>,
@@ -3962,10 +3752,6 @@ fn capture_world(
         criticality: criticality.clone(),
         episodic_slots: episodic.snapshot_host()?,
         novelty_spectra: novelty_snapshot(novelty_buf)?,
-        modal_resonators: modal_resonators.clone(),
-        fdn_l: fdn_l.clone(),
-        fdn_r: fdn_r.clone(),
-        noise_bank: noise_bank.clone(),
         controller: controller.clone(),
         motifs: motifs.clone(),
         last_observation: last_observation.clone(),
@@ -4085,7 +3871,7 @@ fn main() -> Result<()> {
             }
             "--help" | "-h" => {
                 println!(
-                    "TITAN v6 Adaptive Edge Ecology\n\n\
+                    "TITAN v7 Truthful Resonant Ecology\n\n\
 Usage: titan [BASE_DIR] [options]\n\n\
   -b, --base-dir DIR   Output/training root (default /sdcard/Download)\n\
   -d, --duration SEC   Render duration (default 240)\n\
@@ -4094,8 +3880,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
   -l, --lr VALUE       Base AdamW learning rate\n\
   -s, --seed N         Seed for a fresh deterministic organism\n\
       --state PATH     World-checkpoint path\n\
-      --model PATH     v6 model output/resume path\n\
-      --import-model P Import compatible v4/v5/v6 weights without overwriting source\n\
+      --model PATH     v7 model output/resume path\n\
+      --import-model P Import compatible experimental tensors without overwriting source\n\
       --fresh-world    Reset CA/DSP/memory while retaining compatible weights\n\
   -f, --fresh-model    Reset both learned weights and the world\n\
 \nCtrl-C finishes the active chunk, finalizes audio, and saves the organism.\n"
@@ -4142,7 +3928,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
         })?;
     }
     std::fs::create_dir_all(&base_dir)?;
-    println!("=== TITAN AUDIO ECOSYSTEM: RUST EDITION v6 (ADAPTIVE EDGE ECOLOGY) ===");
+    println!("=== TITAN AUDIO ECOSYSTEM: RUST EDITION v7 (TRUTHFUL RESONANT ECOLOGY) ===");
     println!("Seed: {} | Threads: {} | Gradient horizon: {} | Autograd tape: {} | Field: {}ch x {}x{} torus | LR: {:.2e} | Duration: {}s", seed, n_threads, bptt_window, tape_chunks, CA_CHANNELS, GRID_H, GRID_W, target_lr, sim_duration);
     if bptt_window > tape_chunks {
         println!("--> Memory-safe TBPTT: accumulating {}-chunk tape segments across a {}-chunk optimizer horizon.", tape_chunks, bptt_window);
@@ -4153,41 +3939,23 @@ Usage: titan [BASE_DIR] [options]\n\n\
             );
         }
     }
-    println!("NOTE: CA/DSP/RNG state resumes from the world checkpoint; AdamW moment buffers restart per process. Fresh reproducibility also requires the same --threads value.");
+    println!("NOTE: CA/RNG/renderer state resumes from the v7 world. AdamW moments restart per process behind a 32-update LR warmup. Fresh reproducibility also requires the same --threads value.");
 
     let wav_dir = format!("{}/OLD_WAVS", base_dir);
-    let explicit_model_path = model_override.is_some();
-    let explicit_world_path = state_override.is_some();
     let model_path =
-        model_override.unwrap_or_else(|| format!("{}/titan_model_v6.safetensors", base_dir));
-    let legacy_model_path = format!("{}/titan_model_v5.safetensors", base_dir);
+        model_override.unwrap_or_else(|| format!("{}/titan_model_v7.safetensors", base_dir));
     let importing_model = import_model_override.is_some();
     let load_model_path = if let Some(path) = import_model_override {
         path
-    } else if std::path::Path::new(&model_path).exists() {
-        model_path.clone()
-    } else if !explicit_model_path && std::path::Path::new(&legacy_model_path).exists() {
-        println!(
-            "--> No v6 model yet; importing compatible v5 weights from {}.",
-            legacy_model_path
-        );
-        legacy_model_path.clone()
     } else {
         model_path.clone()
     };
-    let world_path = state_override.unwrap_or_else(|| format!("{}/titan_world_v6.bin", base_dir));
-    let legacy_world_path = format!("{}/titan_world_v5.bin", base_dir);
-    let load_world_path = if std::path::Path::new(&world_path).exists() {
-        world_path.clone()
-    } else if !explicit_world_path && std::path::Path::new(&legacy_world_path).exists() {
-        legacy_world_path.clone()
-    } else {
-        world_path.clone()
-    };
-    let morph_path = format!("{}/titan_morph_state_v6.json", base_dir);
+    let world_path = state_override.unwrap_or_else(|| format!("{}/titan_world_v7.bin", base_dir));
+    let load_world_path = world_path.clone();
+    let morph_path = format!("{}/titan_morph_state_v7.json", base_dir);
     ensure_parent_dir(&model_path)?;
     ensure_parent_dir(&world_path)?;
-    let target_loader = TargetAudioLoader::new(&wav_dir)?;
+    let mut target_loader = TargetAudioLoader::new(&wav_dir)?;
     let varmap = VarMap::new();
     let vb = VBV::from_varmap(&varmap, DType::F32, &device);
     let mut model = ComplexAudioEcosystem::new(vb.pp("model"), &device)?;
@@ -4197,10 +3965,12 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let spec_proj = SpectralProjector::new(&device).map_err(anyhow::Error::msg)?;
     let spec_proj_fine =
         SpectralProjector::new_with(1024, 48, &device).map_err(anyhow::Error::msg)?;
+    let spec_proj_long = SpectralProjector::new_with(CHUNK_SIZE * tape_chunks, 128, &device)
+        .map_err(anyhow::Error::msg)?;
 
-    // Initialize the full v6 parameter set deterministically first, then load
+    // Initialize the full v7 parameter set deterministically first, then load
     // every compatible tensor from an older or current checkpoint on top.
-    // This permits v4/v5 -> v6 migration without discarding the learned CA just
+    // This permits older tensor migration without discarding the learned CA just
     // because the new self-model head has different dimensions.
     let initialized = deterministic_reinit(&varmap, seed, &device)?;
     let mut loaded_full = false;
@@ -4220,7 +3990,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 println!("--> Loaded {} compatible tensors from {} ({} new/missing, {} shape-mismatched)",
                     hit, load_model_path, miss, mismatch);
                 if !loaded_full {
-                    println!("--> Migrated checkpoint: compatible learned weights retained; new v6 tensors use deterministic seed {}.", seed);
+                    println!("--> Migrated checkpoint: compatible learned weights retained; new v7 tensors use deterministic seed {}.", seed);
                     fresh_world = true; // old dynamical state does not match the migrated control plane
                 }
             }
@@ -4240,7 +4010,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
         fresh_world = true;
     }
     if !loaded_any && !fresh_model && std::path::Path::new(&load_model_path).exists() {
-        println!("--> No compatible tensors were found; this run starts as a fresh v6 model.");
+        println!("--> No compatible tensors were found; this run starts as a fresh v7 model.");
     }
     if importing_model && loaded_any {
         println!(
@@ -4264,10 +4034,6 @@ Usage: titan [BASE_DIR] [options]\n\n\
         }
     }
 
-    let mut modal_resonators = ModalResonatorBank::new();
-    let mut spectral_noise = SpectralNoiseBank::default();
-    let mut fractal_fdn_l = FractalFDN::new();
-    let mut fractal_fdn_r = FractalFDN::new();
     let mut spectral_mon = SpectralEntropyMonitor::new(20);
     let mut movement_mon = MovementCoherenceMonitor::new(20);
     let mut potential = PotentialController::new();
@@ -4325,10 +4091,6 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 criticality = world.criticality;
                 episodic.restore_host(&world.episodic_slots, &device)?;
                 novelty_buf = restore_novelty(&world.novelty_spectra, &device)?;
-                modal_resonators = world.modal_resonators;
-                fractal_fdn_l = world.fdn_l;
-                fractal_fdn_r = world.fdn_r;
-                spectral_noise = world.noise_bank;
                 controller = world.controller;
                 adaptive_dynamics = world.adaptive_dynamics;
                 motifs = world.motifs;
@@ -4417,6 +4179,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
 
     let mut phi = uncertainty.phi;
     let mut tape_loss: Option<Tensor> = None;
+    let mut audio_sequence: Vec<Tensor> = Vec::with_capacity(tape_chunks);
+    let mut target_sequence: Vec<Tensor> = Vec::with_capacity(tape_chunks);
+    let mut prev_audio_tail: Option<Tensor> = None;
+    let mut prev_target_tail: Option<Tensor> = None;
     let mut steps_in_tape = 0usize;
     let mut steps_since_update = 0usize;
     let mut accumulated_steps = 0usize;
@@ -4426,6 +4192,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let mut latest_lr_gain: f64;
     let mut latest_grad_norm = 0.0f32;
     let mut latest_clip_scale = 1.0f32;
+    let mut optimizer_update_count = 0usize;
     // Persisted host-side adaptive state is unpacked into local scalars for
     // the hot loop, then packed again only when checkpointing.
     let mut morph_history = std::mem::take(&mut host_runtime.morph_history);
@@ -4580,6 +4347,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
             mod_freq_r,
             pan,
             pair_sums,
+            aux_freqs_l,
+            aux_freqs_r,
+            scan_freqs_l,
+            scan_freqs_r,
             region_activity,
             region_change,
         } = out;
@@ -4608,7 +4379,6 @@ Usage: titan [BASE_DIR] [options]\n\n\
         // --- MIN-OF-K TARGET SELECTION ---
         // K candidate chunks; the coarse mimic picks the NEAREST, so the model
         // matches a mode of the target set instead of the blur of all modes.
-        let age_factor = (total_complexity / 500.0).min(0.6);
         let audio_for_loss = stereo_chunk.tanh()?;
         let out_spec_l = spec_proj.log_mag(&audio_for_loss.narrow(0, 0, 1)?)?;
         let out_spec_r = spec_proj.log_mag(&audio_for_loss.narrow(0, 1, 1)?)?;
@@ -4637,17 +4407,53 @@ Usage: titan [BASE_DIR] [options]\n\n\
             .min_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal))
             .map(|(i, _)| i)
             .unwrap_or(0);
+        target_loader.commit_selection(best_k);
         let target_chunk = targets.narrow(0, best_k, 1)?.reshape((2, CHUNK_SIZE))?;
         let tgt_spec = tgt_specs.narrow(0, best_k * 2, 2)?;
 
         let out_spec = Tensor::cat(&[&out_spec_l, &out_spec_r], 0)?; // (2, bins), grad-carrying
-        let mimic_coarse = out_spec.sub(&tgt_spec)?.sqr()?.mean_all()?;
+        let mimic_coarse = robust_distance(&out_spec.sub(&tgt_spec)?, 0.03)?;
         let out_fine = spec_proj_fine.log_mag(&audio_for_loss.reshape((8, 1024))?)?;
         let tgt_fine = spec_proj_fine
             .log_mag(&target_chunk.reshape((8, 1024))?)?
             .detach();
-        let mimic_fine = out_fine.sub(&tgt_fine)?.sqr()?.mean_all()?;
-        let mimic_loss = mimic_coarse.add(&mimic_fine.affine(0.5, 0.0)?)?;
+        let mimic_fine = robust_distance(&out_fine.sub(&tgt_fine)?, 0.03)?;
+        // Frame energy is phase-invariant but time-aligned. It gives the GRU
+        // an honest gradient for pulse, accents, rests, and phrase dynamics
+        // that a single chunk-wide spectrum cannot represent.
+        let out_env = audio_for_loss
+            .reshape((2, 16, CHUNK_SIZE / 16))?
+            .sqr()?
+            .mean(D::Minus1)?
+            .affine(1.0, 1e-5)?
+            .sqrt()?;
+        let target_env = target_chunk
+            .reshape((2, 16, CHUNK_SIZE / 16))?
+            .sqr()?
+            .mean(D::Minus1)?
+            .affine(1.0, 1e-5)?
+            .sqrt()?
+            .detach();
+        let envelope_loss = out_env.sub(&target_env)?.sqr()?.mean_all()?;
+        let mimic_loss = mimic_coarse
+            .add(&mimic_fine.affine(0.5, 0.0)?)?
+            .add(&envelope_loss.affine(0.35, 0.0)?)?;
+
+        // Explicitly supervise the seam between adjacent chunks. The prior
+        // Hann-only objective discarded both endpoints, making retriggers and
+        // phase resets mathematically invisible.
+        let boundary_loss =
+            if let (Some(prev_out), Some(prev_tgt)) = (&prev_audio_tail, &prev_target_tail) {
+                let out_jump = audio_for_loss.narrow(1, 0, 1)?.sub(prev_out)?;
+                let tgt_jump = target_chunk.narrow(1, 0, 1)?.sub(prev_tgt)?;
+                out_jump.sub(&tgt_jump)?.sqr()?.mean_all()?
+            } else {
+                Tensor::new(0.0f32, &device)?
+            };
+        prev_audio_tail = Some(audio_for_loss.narrow(1, CHUNK_SIZE - 1, 1)?);
+        prev_target_tail = Some(target_chunk.narrow(1, CHUNK_SIZE - 1, 1)?.detach());
+        audio_sequence.push(audio_for_loss.clone());
+        target_sequence.push(target_chunk.clone());
 
         // --- NOVELTY PRESSURE: the teacher gets bored ---
         // Hinge on distance to the nearest of the system's OWN recent spectra.
@@ -4663,14 +4469,26 @@ Usage: titan [BASE_DIR] [options]\n\n\
         };
 
         let current_var = var_all(&audio_for_loss)?;
-        let var_loss = current_var.affine(1.0, -0.12)?.sqr()?;
         let rms = audio_for_loss
             .sqr()?
             .mean_all()?
             .affine(1.0, 1e-4)?
             .sqrt()?;
-        let saturation_loss = rms.affine(1.0, -0.28)?.sqr()?;
-        let movement_loss = movement_t.neg()?.exp()?;
+        let target_rms = target_chunk
+            .sqr()?
+            .mean_all()?
+            .affine(1.0, 1e-4)?
+            .sqrt()?
+            .clamp(0.02f32, 0.50f32)?
+            .detach();
+        let level_delta = rms
+            .affine(1.0, 1e-3)?
+            .log()?
+            .sub(&target_rms.affine(1.0, 1e-3)?.log()?)?;
+        let level_loss = robust_distance(&level_delta, 0.10)?;
+        // Safety is one-sided: quiet source passages are allowed; only an
+        // excessive generated level is penalized.
+        let saturation_loss = rms.affine(1.0, -0.45)?.relu()?.sqr()?;
         // Differentiable anti-weld floors. Targets adapt to the organism's
         // own decaying peaks, with small absolute minima so a collapsed world
         // cannot redefine zero movement as its healthy baseline.
@@ -4678,6 +4496,11 @@ Usage: titan [BASE_DIR] [options]\n\n\
         let region_floor = (0.002 + 0.24 * adaptive_dynamics.region_peak).clamp(0.002, 0.010);
         let movement_floor_loss = movement_t
             .affine(-(1.0 / movement_floor) as f64, 1.0)?
+            .relu()?
+            .sqr()?;
+        let movement_ceiling = (0.012 + 0.45 * adaptive_dynamics.movement_peak).clamp(0.012, 0.035);
+        let movement_loss = movement_t
+            .affine((1.0 / movement_ceiling) as f64, -1.0)?
             .relu()?
             .sqr()?;
         let region_change_mean_t = region_change.mean_all()?;
@@ -4688,7 +4511,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
         let diff = audio_for_loss
             .narrow(1, 1, CHUNK_SIZE - 1)?
             .sub(&audio_for_loss.narrow(1, 0, CHUNK_SIZE - 1)?)?;
-        let roughness_loss = diff.sqr()?.mean_all()?;
+        let target_diff = target_chunk
+            .narrow(1, 1, CHUNK_SIZE - 1)?
+            .sub(&target_chunk.narrow(1, 0, CHUNK_SIZE - 1)?)?;
+        let roughness_loss = diff.sub(&target_diff)?.sqr()?.mean_all()?;
         let reg_loss = stereo_chunk.sqr()?.mean_all()?;
         let empowerment_loss = empowerment_t.affine(1.0, -2.5)?.sqr()?;
         let synergy_loss = synergy_tensor
@@ -4747,6 +4573,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 &mod_freq_r,
                 &pan,
                 &pair_sums,
+                &aux_freqs_l,
+                &aux_freqs_r,
+                &scan_freqs_l,
+                &scan_freqs_r,
                 &micro_feats_flat,
                 &w_graph.reshape((7,))?,
                 &predicted_mean_t.reshape((OBS_DIM,))?,
@@ -4761,6 +4591,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
                     .relu()?
                     .mean_all()?
                     .reshape((1,))?,
+                &mimic_fine.reshape((1,))?,
+                &boundary_loss.reshape((1,))?,
+                &level_loss.reshape((1,))?,
+                &target_rms.reshape((1,))?,
             ],
             0,
         )?
@@ -4783,7 +4617,26 @@ Usage: titan [BASE_DIR] [options]\n\n\
         model.last_pan = metrics[18];
         theta_prev2 = theta_prev;
         theta_prev = metrics[20].atan2(metrics[19] + 1e-6);
-        let field_start = 21;
+        let oscillator_start = 21;
+        for j in 0..3 {
+            model.aux_phase_l[j] = (model.aux_phase_l[j]
+                + TWO_PI * metrics[oscillator_start + j] * chunk_dt)
+                .rem_euclid(TWO_PI);
+            model.aux_phase_r[j] = (model.aux_phase_r[j]
+                + TWO_PI * metrics[oscillator_start + 3 + j] * chunk_dt)
+                .rem_euclid(TWO_PI);
+        }
+        let scan_l_start = oscillator_start + 6;
+        let scan_r_start = scan_l_start + SCAN_PARTIALS;
+        for j in 0..SCAN_PARTIALS {
+            model.scan_phase_l[j] = (model.scan_phase_l[j]
+                + TWO_PI * metrics[scan_l_start + j] * chunk_dt)
+                .rem_euclid(TWO_PI);
+            model.scan_phase_r[j] = (model.scan_phase_r[j]
+                + TWO_PI * metrics[scan_r_start + j] * chunk_dt)
+                .rem_euclid(TWO_PI);
+        }
+        let field_start = scan_r_start + SCAN_PARTIALS;
         let field_summary = &metrics[field_start..field_start + CA_CHANNELS];
         let lw_start = field_start + CA_CHANNELS;
         let lw_raw = &metrics[lw_start..lw_start + 7];
@@ -4792,7 +4645,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
         let region_start = pred_log_start + OBS_DIM;
         let predicted_mean_host = &metrics[pred_mean_start..pred_mean_start + OBS_DIM];
         let predicted_log_host = &metrics[pred_log_start..pred_log_start + OBS_DIM];
-        let region_activity_host: [f32; REGION_COUNT] = metrics
+        let _region_activity_host: [f32; REGION_COUNT] = metrics
             [region_start..region_start + REGION_COUNT]
             .try_into()
             .unwrap();
@@ -4804,6 +4657,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
         let novelty_dmin_val = metrics[tail_start];
         let field_signed_mean = metrics[tail_start + 1];
         let field_rail_excess = metrics[tail_start + 2];
+        let mimic_fine_val = metrics[tail_start + 3];
+        let boundary_loss_val = metrics[tail_start + 4];
+        let level_loss_val = metrics[tail_start + 5];
+        let target_rms_val = metrics[tail_start + 6];
         if let (Some(actual), Some(_)) = (&last_observation, &pending_predictor_input) {
             controller
                 .meta
@@ -4823,6 +4680,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
             accumulated_grads = None;
             tape_lr_gain_sum = 0.0;
             accumulated_lr_gain_sum = 0.0;
+            audio_sequence.clear();
+            target_sequence.clear();
+            prev_audio_tail = None;
+            prev_target_tail = None;
             adaptive_dynamics.low_motion_run = 0;
             adaptive_dynamics.stagnation = 0.0;
             adaptive_dynamics.escape_cooldown = 0;
@@ -4871,7 +4732,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
             prev_archetype = current_arch.to_string();
         }
 
-        // Metabolism now has a genuine interior fixed point. In v5 the flat
+        // Metabolism now has a genuine interior fixed point. The former flat
         // recharge term overwhelmed cost and pinned energy at 0.99.
         let metabolic_cost = 0.0020
             + rms_val.clamp(0.0, 1.0) * 0.0060
@@ -4977,7 +4838,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
         // Radiation amplitude becomes a slow ecological state instead of
         // remaining at its initial value until a rare morphic event.
         let rad_target =
-            (0.38 + 0.42 * escape_strength + 0.18 * controller.meta.surprise() + 0.10 * pot.temp)
+            (0.18 + 0.18 * escape_strength + 0.08 * controller.meta.surprise() + 0.05 * pot.temp)
                 .clamp(RAD_AMP_MIN, RAD_AMP_MAX);
         rad_amp += 0.012 * (rad_target - rad_amp);
         last_temp = pot.temp;
@@ -5010,26 +4871,51 @@ Usage: titan [BASE_DIR] [options]\n\n\
             .sum_all()?
             .affine(-0.5, 0.0)?;
 
+        let end_of_run = step == total_chunks - 1;
+        let tape_boundary =
+            steps_in_tape + 1 >= tape_chunks || steps_since_update + 1 >= bptt_window || end_of_run;
+        // A tape-scale view supplies the missing temporal receptive field.
+        // Partial final tapes remain covered by the two short scales and seam
+        // loss, while complete tapes use the precomputed long projector.
+        let trajectory_loss = if tape_boundary && audio_sequence.len() == tape_chunks {
+            let out_refs: Vec<&Tensor> = audio_sequence.iter().collect();
+            let target_refs: Vec<&Tensor> = target_sequence.iter().collect();
+            let out_long = Tensor::cat(&out_refs, 1)?;
+            let target_long = Tensor::cat(&target_refs, 1)?.detach();
+            let out_long_spec = spec_proj_long.log_mag(&out_long)?;
+            let target_long_spec = spec_proj_long.log_mag(&target_long)?.detach();
+            Some(robust_distance(
+                &out_long_spec.sub(&target_long_spec)?,
+                0.03,
+            )?)
+        } else {
+            None
+        };
+
         // --- TOTAL LOSS ---
-        let mut total_loss = mimic_loss.affine(
-            (lw[1] * (1.0 - RESONANT_AUTONOMY) * (1.0 - age_factor)) as f64,
-            0.0,
-        )?;
-        total_loss = total_loss.add(&var_loss.affine((lw[0] * 2.5) as f64, 0.0)?)?;
+        // Source evidence is an invariant, not a preference the learned
+        // arbiter may switch off. The arbiter modulates additional emphasis
+        // around a non-zero grounding floor.
+        let source_weight = 0.80 + 0.35 * lw[1] * (1.0 - RESONANT_AUTONOMY);
+        let mut total_loss = mimic_loss.affine(source_weight as f64, 0.0)?;
+        total_loss = total_loss.add(&level_loss.affine((lw[0] * 0.75) as f64, 0.0)?)?;
         total_loss = total_loss.add(&saturation_loss.affine(2.0, 0.0)?)?;
-        total_loss =
-            total_loss.add(&movement_loss.affine((lw[2] * RESONANT_AUTONOMY) as f64, 0.0)?)?;
+        total_loss = total_loss.add(&movement_loss.affine((lw[2] * 0.20) as f64, 0.0)?)?;
         let anti_weld_weight = 0.06 + 0.20 * adaptive_dynamics.stagnation;
         let regional_weld_weight = 0.04 + 0.12 * adaptive_dynamics.stagnation;
         total_loss = total_loss.add(&movement_floor_loss.affine(anti_weld_weight as f64, 0.0)?)?;
         total_loss =
             total_loss.add(&regional_floor_loss.affine(regional_weld_weight as f64, 0.0)?)?;
         total_loss = total_loss.add(&roughness_loss.affine(lw[3] as f64, 0.0)?)?;
-        total_loss = total_loss.add(&reg_loss.affine(0.01, 0.0)?)?;
+        total_loss = total_loss.add(&boundary_loss.affine(0.50, 0.0)?)?;
+        if let Some(long) = trajectory_loss {
+            total_loss = total_loss.add(&long.affine(0.35, 0.0)?)?;
+        }
+        total_loss = total_loss.add(&reg_loss.affine(0.002, 0.0)?)?;
         total_loss = total_loss.add(&rg_loss.affine((0.15 * lw[4].max(0.2)) as f64, 0.0)?)?;
         total_loss =
             total_loss.add(&self_model_loss.affine((0.30 * lw[5].max(0.2)) as f64, 0.0)?)?;
-        total_loss = total_loss.add(&empowerment_loss.affine(lw[6] as f64, 0.0)?)?;
+        total_loss = total_loss.add(&empowerment_loss.affine((0.10 * lw[6]) as f64, 0.0)?)?;
         // Coupling band, released by the controller's over-coupling/heat signal.
         let synergy_w = (SYNERGY_BAND_W * (1.0 - 0.7 * pot.couple_release)).max(0.1f32);
         total_loss = total_loss.add(&synergy_loss.affine(synergy_w as f64, 0.0)?)?;
@@ -5038,7 +4924,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
         total_loss = total_loss.add(&neg_entropy.affine(0.05, 0.0)?)?;
         total_loss = total_loss.add(&arb_progress_loss)?;
         if let Some(nl) = novelty_loss {
-            total_loss = total_loss.add(&nl.affine(NOVELTY_W, 0.0)?)?;
+            let novelty_weight = NOVELTY_W * adaptive_dynamics.stagnation as f64;
+            total_loss = total_loss.add(&nl.affine(novelty_weight, 0.0)?)?;
         }
 
         tape_loss = Some(match tape_loss.take() {
@@ -5048,20 +4935,15 @@ Usage: titan [BASE_DIR] [options]\n\n\
         steps_in_tape += 1;
         steps_since_update += 1;
 
-        // --- CRITICALITY-DRIVEN PLASTICITY (replaces the movement-threshold Choptuik) ---
-        let raw_crit_gain =
-            ((CRITICAL_D0 / ((sigma - 1.0).abs() + 1e-3)).powf(CHOPTUIK_EXPONENT)).clamp(0.3, 3.0);
-        // An uncertain stationarity estimate must not produce a large plasticity
-        // intervention. Confidence smoothly blends the gain back toward neutral.
-        let crit_gain = 1.0 + criticality.confidence * (raw_crit_gain - 1.0);
+        // `sigma` is movement persistence, not a calibrated branching ratio.
+        // Retain it as evidence, but do not shape LR around an unproved sigma=1
+        // singularity.
+        let crit_gain = 1.0f32;
         let phi_gate = 1.0 / (1.0 + phi);
         let curiosity_lr_gain = 1.0 + curiosity_factor as f64 * LR_CURIOSITY_MAX;
         latest_lr_gain = crit_gain as f64 * pot.lr_heat * phi_gate as f64 * curiosity_lr_gain;
         tape_lr_gain_sum += latest_lr_gain;
 
-        let end_of_run = step == total_chunks - 1;
-        let tape_boundary =
-            steps_in_tape >= tape_chunks || steps_since_update >= bptt_window || end_of_run;
         if tape_boundary {
             if let Some(w) = tape_loss.take() {
                 let segment_steps = steps_in_tape;
@@ -5110,6 +4992,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
             }
             steps_in_tape = 0;
             tape_lr_gain_sum = 0.0;
+            audio_sequence.clear();
+            target_sequence.clear();
+            prev_audio_tail = None;
+            prev_target_tail = None;
         }
 
         let update_boundary = steps_since_update >= bptt_window || end_of_run;
@@ -5140,8 +5026,11 @@ Usage: titan [BASE_DIR] [options]\n\n\
                             }
                         }
                         let mean_lr_gain = accumulated_lr_gain_sum / accumulated_steps as f64;
-                        optimizer.set_learning_rate(target_lr * mean_lr_gain);
+                        let moment_warmup =
+                            (0.20 + 0.80 * (optimizer_update_count + 1) as f64 / 32.0).min(1.0);
+                        optimizer.set_learning_rate(target_lr * mean_lr_gain * moment_warmup);
                         let _ = optimizer.step(&grads);
+                        optimizer_update_count += 1;
                     } else {
                         println!("! WARNING: non-finite grad norm — skipping horizon.");
                     }
@@ -5166,24 +5055,24 @@ Usage: titan [BASE_DIR] [options]\n\n\
         // the old default-window probability to an equivalent per-chunk
         // hazard so changing --bptt no longer changes organism dynamics.
         let radiation_window_probability = (RADIATE_PROB
-            + curiosity_factor * 0.12
-            + (current_control.kick_mult - 1.0).max(0.0) * 0.08
-            + controller.meta.surprise() * 0.06
-            + escape_strength * 0.42)
-            .clamp(0.0, 0.82);
+            + curiosity_factor * 0.04
+            + (current_control.kick_mult - 1.0).max(0.0) * 0.03
+            + controller.meta.surprise() * 0.02
+            + escape_strength * 0.12)
+            .clamp(0.0, 0.30);
         let radiation_probability =
             reference_window_probability_to_chunk(radiation_window_probability);
-        let escape_pulse = escape_strength > 0.82 && absolute_step.is_multiple_of(32);
-        if escape_pulse || rng.gen::<f32>() < radiation_probability {
+        if rng.gen::<f32>() < radiation_probability {
             micro_tape = levy_radiate(
                 &micro_tape,
                 rad_amp
                     * (1.0
-                        + curiosity_factor * 0.4
-                        + controller.meta.surprise() * 0.25
-                        + escape_strength * 0.55),
+                        + curiosity_factor * 0.15
+                        + controller.meta.surprise() * 0.10
+                        + escape_strength * 0.20),
                 &mut rng,
-            )?;
+            )?
+            .detach();
         }
 
         // --- LANGEVIN STEP: drift (-grad V gains) + temperature noise ---
@@ -5194,7 +5083,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
             .add(&shear)?
             .tanh()?
             .affine(pot.macro_gain as f64, 0.0)?;
-        let controlled_kick = (pot.micro_kick * current_control.kick_mult).clamp(0.0, 0.27);
+        let controlled_kick = (pot.micro_kick * current_control.kick_mult).clamp(0.0, 0.10);
         if controlled_kick > 1e-3 {
             let kick = randn_t(
                 &mut rng,
@@ -5220,36 +5109,16 @@ Usage: titan [BASE_DIR] [options]\n\n\
             novelty_buf.push_back(mono_spec.detach());
         }
 
-        // --- POST-DSP RECURSIVE AUDIO PATH ---
-        // Every controller reward and self-observation describes the final
-        // pre-master signal, including noise, resonators, FDN, saturation and
-        // DC blocking. End-of-run global gain and i16 quantization remain a
-        // transparent mastering step outside the recursive loop.
+        // --- TRUTHFUL POST PATH ---
+        // The prior system let discrete controller actions inject spectral noise, modal
+        // ringing, and FDN echo *after* the differentiable source loss. That
+        // created an acoustic shortcut: the controller could buy entropy that
+        // the organism could neither predict nor learn to synthesize. Those
+        // effects and states are gone; the audible path is the learned renderer
+        // followed only by bounded saturation and a stateful DC blocker.
         let audio_normalized_vec = audio_normalized.to_vec2::<f32>()?;
         let mut audio_l = audio_normalized_vec[0].clone();
         let mut audio_r = audio_normalized_vec[1].clone();
-        spectral_noise.process(
-            &mut audio_l,
-            &mut audio_r,
-            &region_activity_host,
-            &current_control,
-            &mut rng,
-        );
-        modal_resonators.process(
-            &mut audio_l,
-            &mut audio_r,
-            &region_activity_host,
-            &current_control,
-            controller.meta.surprise(),
-        );
-        let echo_aperture =
-            (aperture.min(0.72) + current_control.echo_delta + 0.05 * current_control.recall_mix)
-                .clamp(0.02, 0.84);
-        let fdn_damping =
-            (0.28 + 0.42 * (1.0 - uncertainty.flatness) + 0.12 * current_control.inharmonicity)
-                .clamp(0.12, 0.88);
-        fractal_fdn_l.process(&mut audio_l, echo_aperture, fdn_damping);
-        fractal_fdn_r.process(&mut audio_r, echo_aperture, fdn_damping);
         for i in 0..CHUNK_SIZE {
             audio_l[i] = (audio_l[i] * 0.92).tanh();
             audio_r[i] = (audio_r[i] * 0.92).tanh();
@@ -5355,6 +5224,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 "morph_event": trace_morph_event,
                 "morph_event_step": if trace_morph_event.is_empty() { None } else { Some(trace_morph_event_step) },
             }));
+            let (target_file, target_frame, target_chunks_left) = target_loader.episode_info();
             uncertainty_trace.push(serde_json::json!({
                 "sample_index": sample_index, "step": absolute_step, "run_step": step,
                 "raw_movement": movement, "uncertainty_movement": uncertainty.movement,
@@ -5407,6 +5277,14 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 "motif_rejected_similarity": motif_diagnostics.rejected_similarity,
                 "motif_last_quality": motif_diagnostics.last_quality,
                 "motif_last_distance": motif_diagnostics.last_nearest_distance,
+                "carrier_freq_l": f_l, "carrier_freq_r": f_r,
+                "carrier_beat_hz": (f_l - f_r).abs(),
+                "mimic_coarse": mimic_drift, "mimic_fine": mimic_fine_val,
+                "boundary_loss": boundary_loss_val, "level_loss": level_loss_val,
+                "target_rms": target_rms_val, "target_file": target_file,
+                "target_frame": target_frame, "target_chunks_left": target_chunks_left,
+                "optimizer_updates": optimizer_update_count,
+                "ultrasonic_ratio": s_sig["ultrasonic_ratio"].as_f64().unwrap_or(0.0),
             }));
             pending_morph_event = None;
         }
@@ -5487,10 +5365,6 @@ Usage: titan [BASE_DIR] [options]\n\n\
                     &criticality,
                     &episodic,
                     &novelty_buf,
-                    &modal_resonators,
-                    &fractal_fdn_l,
-                    &fractal_fdn_r,
-                    &spectral_noise,
                     &controller,
                     &motifs,
                     &last_observation,
@@ -5696,10 +5570,12 @@ Usage: titan [BASE_DIR] [options]\n\n\
     } else {
         0.0
     };
-    let tone = if centroid < 900.0 {
+    let tone = if centroid < 800.0 {
         "dark subterranean low-end"
-    } else if centroid < 2200.0 {
+    } else if centroid < 2600.0 {
         "warm midrange body"
+    } else if centroid < 5200.0 {
+        "clear upper-mid spectrum"
     } else {
         "bright glassy upper spectrum"
     };
@@ -5918,6 +5794,19 @@ Usage: titan [BASE_DIR] [options]\n\n\
             t["motif_rejected_similarity"].to_string(),
             t["motif_last_quality"].to_string(),
             t["motif_last_distance"].to_string(),
+            t["carrier_freq_l"].to_string(),
+            t["carrier_freq_r"].to_string(),
+            t["carrier_beat_hz"].to_string(),
+            t["mimic_coarse"].to_string(),
+            t["mimic_fine"].to_string(),
+            t["boundary_loss"].to_string(),
+            t["level_loss"].to_string(),
+            t["target_rms"].to_string(),
+            t["target_file"].as_str().unwrap_or("").to_string(),
+            t["target_frame"].to_string(),
+            t["target_chunks_left"].to_string(),
+            t["optimizer_updates"].to_string(),
+            t["ultrasonic_ratio"].to_string(),
         ])?;
     }
     unc_writer.flush()?;
@@ -5951,10 +5840,6 @@ Usage: titan [BASE_DIR] [options]\n\n\
         &criticality,
         &episodic,
         &novelty_buf,
-        &modal_resonators,
-        &fractal_fdn_l,
-        &fractal_fdn_r,
-        &spectral_noise,
         &controller,
         &motifs,
         &last_observation,
@@ -5989,7 +5874,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
     );
     let metadata = std::fs::metadata(&model_path)?;
     let run_finished_unix_ms = unix_time_ms();
-    let run_metadata_path = format!("{}/titan_run_metadata_v6.json", base_dir);
+    let run_metadata_path = format!("{}/titan_run_metadata_v7.json", base_dir);
     let run_metadata_tmp = format!("{}.tmp", run_metadata_path);
     let run_metadata = serde_json::json!({
         "trace_schema_version": TRACE_SCHEMA_VERSION,
@@ -6427,6 +6312,49 @@ mod tests {
             .max_all()?
             .to_scalar::<f32>()?;
         assert!(distance < 1e-4);
+        Ok(())
+    }
+
+    #[test]
+    fn target_sampler_streams_contiguous_source_episodes() -> Result<()> {
+        let dir = std::env::temp_dir().join(format!(
+            "titan_target_episode_{}_{}",
+            std::process::id(),
+            unix_time_ms()
+        ));
+        std::fs::create_dir(&dir)?;
+        let wav_path = dir.join("episode.wav");
+        let spec = hound::WavSpec {
+            channels: 2,
+            sample_rate: SAMPLE_RATE,
+            bits_per_sample: 16,
+            sample_format: hound::SampleFormat::Int,
+        };
+        let frame_count = TARGET_EPISODE_CHUNKS * CHUNK_SIZE + CHUNK_SIZE;
+        let mut writer = hound::WavWriter::create(&wav_path, spec)?;
+        for i in 0..frame_count {
+            let sample = ((i % 32768) as i32 - 16384) as i16;
+            writer.write_sample(sample)?;
+            writer.write_sample(sample)?;
+        }
+        writer.finalize()?;
+
+        let device = Device::Cpu;
+        let mut rng = RuntimeRng::seed_from_u64(7);
+        let mut loader = TargetAudioLoader::new(dir.to_str().unwrap())?;
+        let first = loader.sample_chunks(TARGET_K, &mut rng, &device)?;
+        assert_eq!(first.dims(), &[TARGET_K, 2, CHUNK_SIZE]);
+        loader.commit_selection(1);
+        let (_, first_frame, first_left) = loader.episode_info();
+        let second = loader.sample_chunks(TARGET_K, &mut rng, &device)?;
+        assert_eq!(second.dims(), &[TARGET_K, 2, CHUNK_SIZE]);
+        let (_, second_frame, second_left) = loader.episode_info();
+        assert_eq!(second_frame, first_frame + CHUNK_SIZE);
+        assert_eq!(second_left + 1, first_left);
+
+        drop(loader);
+        std::fs::remove_file(wav_path)?;
+        std::fs::remove_dir(dir)?;
         Ok(())
     }
 

@@ -18,10 +18,15 @@ Those ingredients make edge-of-chaos behavior possible, but they do not prove it
 2. Existence of at least one statistical invariant regime is strongly supported and can be proved under standard continuity/Feller assumptions.
 3. The current scalar `sigma` is a movement-autocorrelation persistence estimate.  It is **not** a branching ratio and **not** a Lyapunov exponent.
 4. The potential `V` is a useful homeostatic shaping function, but it is not currently a global Lyapunov function for the complete dynamics.
-5. The latest measured trajectory is not at `sigma ~= 1` even by Titan's present proxy.  It looks bounded and viable, but subcritical and substantially noise-supported.
+5. The last pre-v7 measured trajectory was not at `sigma ~= 1` even by Titan's present proxy.  It looked bounded and viable, but subcritical and substantially noise-supported. The short v7 smoke tests improve bounded training and source tracking, but are not long enough to establish an attractor class.
 6. A deterministic strange attractor cannot be inferred from a noisy audio waveform or a single scalar trace.  With ongoing random forcing, the more appropriate objects are a random attractor, stationary measure, or metastable family of random attractors.
 
-The best scientific next step is therefore **instrumentation with frozen weights**, not another weight reset.  The present weights can remain untouched while we estimate common-noise Lyapunov exponents, damage spreading, correlation lengths, recurrence, attractor dimension, and basin structure.
+v7 deliberately starts a new weight generation because the earlier objective
+could not observe important audible degrees of freedom and allowed an
+after-loss noise shortcut. The best scientific next step after v7 establishes
+a nontrivial trained regime is **instrumentation with frozen weights**: estimate
+common-noise Lyapunov exponents, damage spreading, correlation lengths,
+recurrence, attractor dimension, and basin structure without optimizer drift.
 
 This document uses the following evidence labels:
 
@@ -53,8 +58,8 @@ where:
 - \(e_t\) is metabolic energy;
 - \(c_t\) is the compact adaptive-controller state;
 - \(q_t\) contains motif and episodic memories;
-- \(\varphi_t\in\mathbb{T}^4\) contains oscillator phases;
-- \(d_t\) contains bounded post-DSP delay/filter states;
+- \(\varphi_t\in\mathbb{T}^{42}\) contains carrier, FM, auxiliary, and regional-partial phases;
+- \(d_t\) contains the bounded stateful Haas and DC-blocker states;
 - \(r_t\) is the pseudorandom-generator state.
 
 For fixed network weights \(\theta\), the chunk map can be written
@@ -166,7 +171,9 @@ These equations are not a classical finite-state cellular automaton.  They are a
 
 5. Energy is clamped to \([0.18,0.96]\); temperature and controller features are clamped to compact intervals; phases are reduced modulo \(2\pi\); motif and episodic buffers have finite capacity.
 
-6. FDN buffers are clamped to \([-2,2]\), spectral-noise filter states to \([-4,4]\), and final audio samples pass through `tanh`.  The stable DC blocker has pole \(0.998<1\), so bounded input produces bounded state.
+6. Final audio samples pass through `tanh`. The stateful 16-sample Haas tail is
+   finite, and the stable DC blocker has pole \(0.998<1\), so bounded input
+   produces bounded renderer state.
 
 The finite Cartesian product of these bounded closed sets is compact in the implementation's finite-dimensional state space.  Thus the frozen-weight runtime enters and remains in a compact absorbing set. \(\square\)
 
@@ -612,7 +619,7 @@ The following are proposed research criteria, not immutable constants:
 | strange attractor | positive \(\lambda\), recurrence, stable finite correlation dimension, surrogate rejection |
 | one statistical attractor | occupation measures from distinct worlds converge with run length |
 | metastable lobes | recurrent clusters with state-dependent, reproducible transitions |
-| source-truthful audio | generated post-DSP multiscale statistics approach the target corpus without sample passthrough |
+| source-truthful audio | generated final-renderer multiscale statistics approach the target corpus without sample passthrough |
 
 No single console scalar should be allowed to satisfy more than one row.
 
@@ -634,7 +641,12 @@ giving a characteristic memory scale
 
 As \(\lambda\to0^-\), memory length grows.  This is one reason task performance can improve near the ordered side of an edge.  If \(\lambda>0\), however, source-conditioned details may be overwhelmed exponentially unless input forcing synchronizes the system.
 
-Titan currently samples a new random 85.3 ms source chunk at every step.  That target process has almost no cross-chunk musical continuity.  Even a perfect edge-of-chaos reservoir cannot learn long source patterns from a teacher that changes independently every chunk.  A scientifically honest improvement would choose contiguous target trajectories per gradient horizon and compare multiscale temporal statistics.  The CA would remain the only sound generator; no target samples need enter the output.
+v7 chooses a source passage once per 256-chunk episode (about 21.85 s) and
+advances contiguously. Its source objective compares 1,024-sample, 4,096-sample,
+and eight-chunk full-band log spectra, 256-sample frame energies, relative
+level, and cross-chunk seams. The CA remains the only sound generator; target
+samples never enter the output. Robust Charbonnier distances bound the
+spectral and log-level residual derivatives.
 
 The dynamical target should therefore be task-conditioned:
 
@@ -644,18 +656,22 @@ The dynamical target should therefore be task-conditioned:
 \lambda_{\max}\lesssim0,
 \]
 
-while minimizing post-DSP divergence from source-derived spectral and modulation statistics.  “Pleasantness” need not be hard-coded.
+while minimizing final-renderer divergence from source-derived spectral and modulation statistics.  “Pleasantness” need not be hard-coded.
 
-## 11. Recommended decision before changing weights
+## 11. Recommended experimental sequence for v7
 
-1. Keep the current 64-channel weights and world checkpoint.
-2. Add frozen analysis and common-RNG shadow execution.
+1. Train the clean v7 generation until source losses and activity health reach
+   a reproducible regime; do not compare its first few hundred chunks to a
+   mature earlier checkpoint.
+2. Freeze weights and add common-RNG shadow execution.
 3. Measure \(\lambda_{\max}\), damage spreading, and information transfer.
-4. Determine whether the high temperature is correcting negative \(\lambda\) or merely adding output noise.
-5. Add post-DSP/source-distance telemetry and contiguous target trajectories only after the internal regime is characterized.
+4. Ablate the small Gaussian kick and sparse radiation independently to test
+   whether complexity is endogenous or noise-supported.
+5. Compare multiple seeds and fresh worlds using the source, seam, oscillator,
+   topology, and clipping telemetry in schema v3.
 6. Retrain or reset weights only if the frozen diagnostics show that no nearby controller/gain regime produces coherent marginal stability.
 
-The current system is serviceable enough to preserve.  The next changes should improve observability and experimental identifiability before changing the learned organism.
+The 64-channel substrate and v7 objective are now the baseline worth preserving. The next changes should improve observability and experimental identifiability before another weight-generation break.
 
 ## 12. Research references
 
