@@ -5,7 +5,7 @@ artistic interpretation. The distinction matters when comparing experiments.
 
 ## Files and schema
 
-Telemetry schema v4 writes five complementary artifacts per run. With
+Telemetry schema v5 writes five complementary artifacts per run. With
 `--run-tag NAME`, every filename receives that tag instead of overwriting the
 untagged run:
 
@@ -51,11 +51,18 @@ The CSV trace is intentionally overwritten per process. Use the metadata
 - `output_low_band_ratio` and `target_low_band_ratio` compare the first
   supervised 20 Hz log band. They expose the sub-bass/RMS shortcut directly.
 - `output_side_mid_log_ratio` and `target_side_mid_log_ratio` expose stereo
-  side dominance; `stereo_balance_loss` trains the learned width control toward
-  the target relation without mixing target audio into the renderer.
+  side dominance. `decoder_stereo_corr`/`target_stereo_corr` and the two
+  `stereo_level_log_ratio` fields close the panned-mono loophole: channel gain
+  imbalance can no longer masquerade as spatial width. `stereo_balance_loss`
+  combines all three relations without mixing target audio into the renderer.
+- `development_best_spectral`, `development_mean_spectral`, and
+  `development_mean_chroma` use fixed, gradient-excluded development families.
+  `development_score`, `development_plateau_ready`, and
+  `development_relative_improvement` make the morphic-growth gate auditable.
 - `validation_best_spectral`, `validation_mean_spectral`, and
-  `validation_mean_chroma` score every emitted chunk against fixed held-out
-  probes. They are observational and never select a training target.
+  `validation_mean_chroma` score every emitted chunk against a separate fixed
+  test split. They are observational and never select a training target or an
+  architecture transition.
 - `target_file`, `target_frame`, and `target_chunks_left` identify the coherent
   source episode in force at each sample. This makes temporal-supervision bugs
   and corpus bias auditable.
@@ -86,9 +93,15 @@ The CSV trace is intentionally overwritten per process. Use the metadata
 - `optimizer_updates` is the persisted cumulative AdamW step count;
   `optimizer_updates_run` is the current process count and `optimizer_resumed`
   states whether matching moments were restored.
-- `stereo_corr` is the final pre-master Pearson correlation between channels. Strongly
-  negative values warn of mono cancellation even when width sounds impressive;
-  Haas side gain is capped at 1.25 to bound that risk.
+- `side_energy_width` is the old RMS channel-difference measure. It can be high
+  for panned mono and is retained as a diagnostic, not called true width.
+  `width` multiplies it by interchannel incoherence, so perfectly correlated
+  unequal-gain channels measure near zero. `stereo_corr` is the final post-DC,
+  pre-master normalized correlation. Strongly negative values warn of mono
+  cancellation; strongly positive values warn of mono collapse.
+- `morph_frozen` and `morph_max_depth` state the run's structural policy.
+  Growth additionally requires a strict development split and a completed
+  plateau window; validation metrics never participate in that decision.
 - `field_entropy` is the channel-archetype entropy in bits for the current
   micro field. It is not the entropy of the rendered waveform.
 - `crit_gain` is fixed at 1.0 in v7. `sigma` remains useful evidence, but no

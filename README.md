@@ -23,10 +23,12 @@ and truncated-BPTT options.
 
 Target WAVs are indexed, not loaded into RAM. On first use Titan creates
 `titan_corpus_manifest_v7.json`: generated Titan audio is quarantined, files
-are explicitly assigned to train/validation/exclude roles, and mastered/remix
-variants share a sampling family. At the beginning of a ~21.9 s episode, Titan
-samples a family independently of its own output and follows one passage
-contiguously. This removes the old nearest-target feedback loop.
+are explicitly assigned to train/development/validation/exclude roles, and
+mastered/remix variants share a sampling family. Development probes may govern
+architecture growth but receive no gradient; validation families remain an
+untouched final test surface. At the beginning of a ~21.9 s episode, Titan
+samples a training family independently of its own output and follows one
+passage contiguously. This removes the old nearest-target feedback loop.
 
 Supervision now covers 20 Hz--20 kHz at 1,024-, 4,096-, and tape scales, plus
 relative band energy, chroma/pitch salience, onset envelopes, modulation
@@ -55,18 +57,26 @@ retains CA, GRU, morphic, arbiter, and episodic weights. `--run-tag NAME`
 isolates all experiment artifacts, making current-decoder, fresh-decoder, and
 fresh-model comparisons safe.
 
-Morphic depth has two checkpoint-compatible development paths. Sustained
-ecological or mimic pressure may add one layer at a 512-chunk boundary. A
-healthy organism with both low normalized field entropy and low predictive
-structure may add one layer at the slower 2,048-chunk boundary. Pruning uses
-the slow boundary and requires a healthy, non-stagnant, structurally rich
-regime. Every structural event prints its reason. Motif memory retains up to
-64 diverse observations for long-horizon recall.
+`--freeze-morph` holds the active morphic depth for a controlled adaptation
+run. `--max-morph-depth N` permits pruning but blocks growth above `N` without
+discarding already-active layers. Normal growth now requires a fixed,
+gradient-excluded development score to plateau; random difficulty in the
+currently sampled training song cannot by itself trigger neurogenesis.
+
+Morphic depth has two checkpoint-compatible development paths, both gated by
+a development-probe plateau. Sustained ecological or mimic pressure may add
+one layer at a 512-chunk boundary. A healthy organism with both low normalized
+field entropy and low predictive structure may add one layer at the slower
+2,048-chunk boundary. Pruning uses the slow boundary and requires a healthy,
+non-stagnant, structurally rich regime. Every structural event prints its
+reason. Motif memory retains up to 64 diverse observations for long-horizon
+recall.
 
 Telemetry names and their scientific limitations are documented in
-[`METRICS.md`](METRICS.md). Schema v4 separates raw CA movement from the
+[`METRICS.md`](METRICS.md). Schema v5 separates raw CA movement from the
 uncertainty movement feature, records exact morph events, supplies a topology
-row index, and adds source-band, chroma, onset, modulation, recurrence,
-held-out-validation, sub-bass, and optimizer-continuity diagnostics. Run the
-verification suite with `cargo test` and
+row index, separates development from final validation, and adds correlation-
+aware width, channel-balance, source-band, chroma, onset, modulation,
+recurrence, sub-bass, and optimizer-continuity diagnostics. Run the verification
+suite with `cargo test` and
 `cargo clippy --all-targets -- -D warnings`.

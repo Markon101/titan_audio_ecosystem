@@ -106,7 +106,7 @@ const PLAN_EVERY: usize = 8;
 const WORLD_VERSION: u32 = 7;
 const WORLD_MAGIC: [u8; 8] = *b"TITANW7\0";
 const WORLD_SAVE_EVERY: usize = 256;
-const TRACE_SCHEMA_VERSION: u32 = 4;
+const TRACE_SCHEMA_VERSION: u32 = 5;
 const TRACE_EVERY: usize = 10;
 const BUILD_COMMIT: &str = env!("TITAN_GIT_COMMIT");
 const BUILD_DIRTY: &str = env!("TITAN_GIT_DIRTY");
@@ -138,6 +138,7 @@ const TARGET_K: usize = 1;
 // and transitions to the recurrent graph instead of presenting unrelated
 // 85 ms grains as if they were a sequence.
 const TARGET_EPISODE_CHUNKS: usize = 256;
+const DEVELOPMENT_PROBES: usize = 4;
 const VALIDATION_PROBES: usize = 4;
 const FEATURE_HISTORY_CHUNKS: usize = 65;
 const BAND_COUNT: usize = 12;
@@ -211,6 +212,13 @@ const MORPH_DEVELOPMENT_EVERY: u64 = 2048;
 const MORPH_FIELD_ENTROPY_FLOOR: f32 = 0.42; // normalized from the field's 0..3 bits
 const MORPH_PI_FLOOR: f32 = 0.04;
 const MORPH_ADDED_RESIDUAL_GAIN: f64 = 0.35;
+// Architecture decisions use a fixed development split, never the final
+// validation split. A full window spans ~21.8 seconds and must stop improving
+// before training difficulty is allowed to activate dormant capacity.
+const DEVELOPMENT_PLATEAU_WINDOW: usize = 256;
+const DEVELOPMENT_PLATEAU_MIN_SAMPLES: usize = 192;
+const DEVELOPMENT_PLATEAU_REL_EPS: f32 = 0.01;
+const DEVELOPMENT_SCORE_CHROMA_WEIGHT: f32 = 0.35;
 
 const RAD_AMP_INIT: f32 = 0.35;
 const RAD_AMP_MIN: f32 = 0.05;
@@ -285,10 +293,13 @@ const UNCERTAINTY_TRACE_HEADERS: &[&str] = &[
     "brightness",
     "flux",
     "width",
+    "side_energy_width",
     "stereo_corr",
     "structured_complexity",
     "novelty_dmin",
     "morph_depth",
+    "morph_frozen",
+    "morph_max_depth",
     "rad_amp",
     "morph_event",
     "morph_event_step",
@@ -336,6 +347,16 @@ const UNCERTAINTY_TRACE_HEADERS: &[&str] = &[
     "output_side_mid_log_ratio",
     "target_low_band_ratio",
     "target_side_mid_log_ratio",
+    "decoder_stereo_corr",
+    "target_stereo_corr",
+    "decoder_stereo_level_log_ratio",
+    "target_stereo_level_log_ratio",
+    "development_best_spectral",
+    "development_mean_spectral",
+    "development_mean_chroma",
+    "development_score",
+    "development_plateau_ready",
+    "development_relative_improvement",
     "validation_best_spectral",
     "validation_mean_spectral",
     "validation_mean_chroma",
@@ -788,6 +809,60 @@ struct MorphEvidence {
     mimic_baseline: f32,
     field_entropy_norm: f32,
     predictive_structure: f32,
+    development_plateau: bool,
+}
+
+#[derive(Clone, Copy, Debug)]
+struct MorphPolicy {
+    max_depth: usize,
+    frozen: bool,
+}
+
+#[derive(Clone, Copy, Debug, Default)]
+struct DevelopmentPlateauStatus {
+    score: f32,
+    relative_improvement: f32,
+    ready: bool,
+    plateau: bool,
+}
+
+struct DevelopmentPlateauTracker {
+    scores: VecDeque<f32>,
+}
+
+impl DevelopmentPlateauTracker {
+    fn new() -> Self {
+        Self {
+            scores: VecDeque::with_capacity(DEVELOPMENT_PLATEAU_WINDOW),
+        }
+    }
+
+    fn update(&mut self, spectral: f32, chroma: f32) -> DevelopmentPlateauStatus {
+        let score = spectral + DEVELOPMENT_SCORE_CHROMA_WEIGHT * chroma;
+        if score.is_finite() {
+            self.scores.push_back(score);
+            if self.scores.len() > DEVELOPMENT_PLATEAU_WINDOW {
+                self.scores.pop_front();
+            }
+        }
+        let ready = self.scores.len() >= DEVELOPMENT_PLATEAU_MIN_SAMPLES;
+        if !ready {
+            return DevelopmentPlateauStatus {
+                score,
+                ..Default::default()
+            };
+        }
+        let quarter = (self.scores.len() / 4).max(1);
+        let early = self.scores.iter().take(quarter).sum::<f32>() / quarter as f32;
+        let late = self.scores.iter().rev().take(quarter).sum::<f32>() / quarter as f32;
+        let relative_improvement = (early - late) / early.abs().max(1e-4);
+        DevelopmentPlateauStatus {
+            score,
+            relative_improvement,
+            ready,
+            plateau: relative_improvement <= DEVELOPMENT_PLATEAU_REL_EPS,
+        }
+    }
 }
 
 fn morph_boundary_crossed(absolute_step: u64, window_len: usize, period: u64) -> bool {
@@ -801,13 +876,22 @@ fn morph_decision(
     depth: usize,
     absolute_step: u64,
     window_len: usize,
+    policy: MorphPolicy,
 ) -> MorphDecision {
+    if policy.frozen {
+        return MorphDecision::Hold;
+    }
+    let may_grow = depth < policy.max_depth.min(MORPH_MAX_BLOCKS);
     let pressure_boundary = morph_boundary_crossed(absolute_step, window_len, MORPH_EVENT_COOLDOWN);
     let relative_pressure = evidence.mimic_avg > evidence.mimic_baseline * MORPH_GROWTH_REL;
     let ecological_pressure = ecology.samples > STAGNATION_WARMUP
         && ecology.stagnation > 0.58
         && ecology.activity_health < 0.55;
-    if pressure_boundary && depth < MORPH_MAX_BLOCKS && (relative_pressure || ecological_pressure) {
+    if pressure_boundary
+        && may_grow
+        && evidence.development_plateau
+        && (relative_pressure || ecological_pressure)
+    {
         return MorphDecision::GrowPressure;
     }
 
@@ -822,7 +906,7 @@ fn morph_decision(
         && evidence.predictive_structure < MORPH_PI_FLOOR;
     let development_ready =
         ecology.samples > STAGNATION_WARMUP && ecology.activity_health > 0.55 && structurally_poor;
-    if development_boundary && depth < MORPH_MAX_BLOCKS && development_ready {
+    if development_boundary && may_grow && evidence.development_plateau && development_ready {
         return MorphDecision::GrowDevelopment;
     }
 
@@ -1522,6 +1606,7 @@ impl PersistentAdamW {
 #[serde(rename_all = "snake_case")]
 enum CorpusRole {
     Train,
+    Development,
     Validation,
     Exclude,
 }
@@ -1607,15 +1692,27 @@ fn auto_corpus_manifest(wav_dir: &str) -> Result<CorpusManifest> {
         .map(|family| (stable_name_hash(family), family.clone()))
         .collect();
     ranked.sort();
-    let held_out: std::collections::HashSet<String> = if families.len() >= 8 {
-        ranked
-            .into_iter()
-            .take(VALIDATION_PROBES.min((families.len() / 5).max(1)))
-            .map(|(_, family)| family)
-            .collect()
+    let validation_count = if families.len() >= 8 {
+        VALIDATION_PROBES.min((families.len() / 5).max(1))
     } else {
-        Default::default()
+        0
     };
+    let development_count = if families.len() >= 12 {
+        DEVELOPMENT_PROBES.min(((families.len() - validation_count) / 6).max(1))
+    } else {
+        0
+    };
+    let held_out: std::collections::HashSet<String> = ranked
+        .iter()
+        .take(validation_count)
+        .map(|(_, family)| family.clone())
+        .collect();
+    let development: std::collections::HashSet<String> = ranked
+        .iter()
+        .skip(validation_count)
+        .take(development_count)
+        .map(|(_, family)| family.clone())
+        .collect();
     let entries = names
         .into_iter()
         .map(|file| {
@@ -1632,6 +1729,8 @@ fn auto_corpus_manifest(wav_dir: &str) -> Result<CorpusManifest> {
                     CorpusRole::Exclude
                 } else if held_out.contains(&family) {
                     CorpusRole::Validation
+                } else if development.contains(&family) {
+                    CorpusRole::Development
                 } else {
                     CorpusRole::Train
                 },
@@ -1640,7 +1739,7 @@ fn auto_corpus_manifest(wav_dir: &str) -> Result<CorpusManifest> {
         })
         .collect();
     Ok(CorpusManifest {
-        schema_version: 1,
+        schema_version: 2,
         generated_by: format!("titan {}", env!("CARGO_PKG_VERSION")),
         entries,
     })
@@ -1649,14 +1748,18 @@ fn auto_corpus_manifest(wav_dir: &str) -> Result<CorpusManifest> {
 fn load_or_create_corpus_manifest(wav_dir: &str, path: &str) -> Result<CorpusManifest> {
     if std::path::Path::new(path).exists() {
         let mut manifest: CorpusManifest = serde_json::from_slice(&std::fs::read(path)?)?;
-        if manifest.schema_version != 1 {
+        if !(1..=2).contains(&manifest.schema_version) {
             anyhow::bail!(
                 "unsupported corpus manifest schema {}",
                 manifest.schema_version
             );
         }
-        // Repair manifests generated by earlier v7.1 builds: validation must
-        // be held out by deduplicated family, not only by filename.
+        // Repair manifests generated by earlier v7.1 builds: validation and
+        // development must be held out by deduplicated family, not filename.
+        // Existing validation families are never repurposed; they remain the
+        // untouched final test surface. Development families are deterministically
+        // carved from the former training split and are used only for structural
+        // decisions, never for gradients.
         if manifest.generated_by.starts_with("titan ") {
             let held_out: std::collections::HashSet<String> = manifest
                 .entries
@@ -1671,11 +1774,62 @@ fn load_or_create_corpus_manifest(wav_dir: &str, path: &str) -> Result<CorpusMan
                     changed = true;
                 }
             }
+            let mut development: std::collections::HashSet<String> = manifest
+                .entries
+                .iter()
+                .filter(|entry| entry.role == CorpusRole::Development)
+                .map(|entry| entry.family.clone())
+                .collect();
+            if development.is_empty() {
+                let mut train_families: Vec<(u64, String)> = manifest
+                    .entries
+                    .iter()
+                    .filter(|entry| entry.role == CorpusRole::Train)
+                    .map(|entry| (stable_name_hash(&entry.family), entry.family.clone()))
+                    .collect();
+                train_families.sort();
+                train_families.dedup_by(|a, b| a.1 == b.1);
+                if train_families.len() >= 8 {
+                    development.extend(
+                        train_families
+                            .into_iter()
+                            .take(DEVELOPMENT_PROBES)
+                            .map(|(_, family)| family),
+                    );
+                }
+            }
+            for entry in &mut manifest.entries {
+                if entry.role == CorpusRole::Train && development.contains(&entry.family) {
+                    entry.role = CorpusRole::Development;
+                    changed = true;
+                }
+            }
+            // A partially edited generated manifest is repaired at the family
+            // boundary without changing which family owns each role.
+            for entry in &mut manifest.entries {
+                if development.contains(&entry.family)
+                    && entry.role != CorpusRole::Development
+                    && entry.role != CorpusRole::Validation
+                    && entry.role != CorpusRole::Exclude
+                {
+                    entry.role = CorpusRole::Development;
+                    changed = true;
+                }
+            }
+            if manifest.schema_version != 2 {
+                manifest.schema_version = 2;
+                changed = true;
+            }
+            let current_generator = format!("titan {}", env!("CARGO_PKG_VERSION"));
+            if manifest.generated_by != current_generator {
+                manifest.generated_by = current_generator;
+                changed = true;
+            }
             if changed {
                 let tmp = format!("{}.tmp", path);
                 std::fs::write(&tmp, serde_json::to_vec_pretty(&manifest)?)?;
                 std::fs::rename(&tmp, path)?;
-                println!("--> Repaired validation split at the corpus-family boundary.");
+                println!("--> Repaired development/test splits at corpus-family boundaries.");
             }
         }
         return Ok(manifest);
@@ -1710,8 +1864,11 @@ struct TargetCursor {
 struct TargetAudioLoader {
     files: Vec<TargetFile>,
     train_groups: Vec<Vec<usize>>,
+    development_files: Vec<usize>,
     validation_files: Vec<usize>,
+    development_held_out_files: usize,
     held_out_files: usize,
+    development_is_strict: bool,
     manifest_path: String,
     active: Option<TargetCursor>,
     pending: Vec<TargetCursor>,
@@ -1777,11 +1934,20 @@ impl TargetAudioLoader {
             anyhow::bail!("No usable training audio found in {}", path);
         }
         let mut grouped: BTreeMap<String, Vec<usize>> = BTreeMap::new();
+        let mut development_groups: BTreeMap<String, Vec<usize>> = BTreeMap::new();
         let mut validation_groups: BTreeMap<String, Vec<usize>> = BTreeMap::new();
+        let mut development_held_out_files = 0usize;
         let mut held_out_files = 0usize;
         for (idx, role) in roles.iter().enumerate() {
             match role {
                 CorpusRole::Train => grouped.entry(families[idx].clone()).or_default().push(idx),
+                CorpusRole::Development => {
+                    development_groups
+                        .entry(families[idx].clone())
+                        .or_default()
+                        .push(idx);
+                    development_held_out_files += 1;
+                }
                 CorpusRole::Validation => {
                     validation_groups
                         .entry(families[idx].clone())
@@ -1799,6 +1965,16 @@ impl TargetAudioLoader {
                 grouped.entry(family.clone()).or_default().push(idx);
             }
         }
+        let mut development_files: Vec<usize> = development_groups
+            .values()
+            .filter_map(|group| group.first().copied())
+            .collect();
+        let mut development_is_strict = !development_files.is_empty();
+        if development_files.is_empty() {
+            development_files.extend(grouped.values().filter_map(|v| v.first().copied()).take(1));
+            development_held_out_files = 0;
+            development_is_strict = false;
+        }
         let mut validation_files: Vec<usize> = validation_groups
             .values()
             .filter_map(|group| group.first().copied())
@@ -1814,10 +1990,12 @@ impl TargetAudioLoader {
             .map(|&idx| files[idx].output_frames)
             .sum();
         println!(
-            "--> Corpus: {} training files in {} balanced families ({:.2} h), {} held-out files / {} fixed family probes; coherent {:.1} s episodes.",
+            "--> Corpus: {} training files in {} balanced families ({:.2} h), {} development files / {} fixed probes, {} untouched test files / {} fixed probes; coherent {:.1} s episodes.",
             train_groups.iter().map(Vec::len).sum::<usize>(),
             train_groups.len(),
             total_output_frames as f64 / SAMPLE_RATE as f64 / 3600.0,
+            development_held_out_files,
+            development_files.len(),
             held_out_files,
             validation_files.len(),
             TARGET_EPISODE_CHUNKS as f64 * CHUNK_SIZE as f64 / SAMPLE_RATE as f64,
@@ -1825,8 +2003,11 @@ impl TargetAudioLoader {
         Ok(Self {
             files,
             train_groups,
+            development_files,
             validation_files,
+            development_held_out_files,
             held_out_files,
+            development_is_strict,
             manifest_path: manifest_path.to_string(),
             active: None,
             pending: Vec::with_capacity(TARGET_K),
@@ -1981,10 +2162,15 @@ impl TargetAudioLoader {
         }
     }
 
-    fn validation_chunks(&self, device: &Device) -> Result<Tensor> {
-        let count = self.validation_files.len().clamp(1, VALIDATION_PROBES);
+    fn probe_chunks(
+        &self,
+        file_indices: &[usize],
+        limit: usize,
+        device: &Device,
+    ) -> Result<Tensor> {
+        let count = file_indices.len().clamp(1, limit);
         let mut data = Vec::with_capacity(count * 2 * CHUNK_SIZE);
-        for &file_idx in self.validation_files.iter().take(count) {
+        for &file_idx in file_indices.iter().take(count) {
             let file = &self.files[file_idx];
             let available = file.output_frames.saturating_sub(CHUNK_SIZE).max(1);
             let name = file.path.file_name().and_then(|v| v.to_str()).unwrap_or("");
@@ -2000,11 +2186,22 @@ impl TargetAudioLoader {
         Ok(Tensor::from_vec(data, (count, 2, CHUNK_SIZE), device)?)
     }
 
+    fn development_chunks(&self, device: &Device) -> Result<Tensor> {
+        self.probe_chunks(&self.development_files, DEVELOPMENT_PROBES, device)
+    }
+
+    fn validation_chunks(&self, device: &Device) -> Result<Tensor> {
+        self.probe_chunks(&self.validation_files, VALIDATION_PROBES, device)
+    }
+
     fn corpus_summary(&self) -> serde_json::Value {
         serde_json::json!({
             "manifest": self.manifest_path,
             "training_files": self.train_groups.iter().map(Vec::len).sum::<usize>(),
             "training_families": self.train_groups.len(),
+            "development_files": self.development_held_out_files,
+            "development_family_probes": self.development_files.len(),
+            "development_is_strict": self.development_is_strict,
             "validation_files": self.held_out_files,
             "validation_family_probes": self.validation_files.len(),
             "selection": "uniform_family_then_uniform_variant",
@@ -2132,6 +2329,11 @@ fn morph_wave(phase: &Tensor, morph: &Tensor) -> CResult<Tensor> {
 
 fn stereo_side_gain(last_pan: f32, width_mult: f32) -> f32 {
     ((1.0 + last_pan.abs() * 0.8) * width_mult.clamp(0.5, 1.6)).clamp(0.5, MAX_STEREO_SIDE_GAIN)
+}
+
+fn correlation_aware_width(side_energy_width: f32, stereo_corr: f32) -> f32 {
+    let incoherence = ((1.0 - stereo_corr.clamp(-1.0, 1.0)) * 0.5).sqrt();
+    (side_energy_width * incoherence).clamp(0.0, 1.0)
 }
 
 fn smooth_lower_bound(value: &Tensor, floor: f64, width: f64) -> CResult<Tensor> {
@@ -2271,13 +2473,13 @@ impl ChromaProjector {
     }
 }
 
-struct FixedValidationBank {
+struct FixedProbeBank {
     spectra: Tensor,
     chroma: Tensor,
     count: usize,
 }
 
-impl FixedValidationBank {
+impl FixedProbeBank {
     fn new(targets: &Tensor, spec: &SpectralProjector, chroma: &ChromaProjector) -> CResult<Self> {
         let count = targets.dim(0)?;
         let stereo = targets.reshape((count * 2, CHUNK_SIZE))?;
@@ -2319,7 +2521,7 @@ impl FixedValidationBank {
         let spectral = Tensor::cat(&spectral_refs, 0)?;
         let tonal = Tensor::cat(&tonal_refs, 0)?;
         // Keep the output argument in the interface to make it explicit that
-        // validation is observational only; no target is fed into synthesis.
+        // fixed probes are observational only; no target is fed into synthesis.
         let _ = output;
         Ok((spectral.min(0)?, spectral.mean_all()?, tonal.mean_all()?))
     }
@@ -2331,24 +2533,43 @@ fn first_band_energy_ratio(log_bands: &Tensor) -> CResult<Tensor> {
     low.div(&power.sum_all()?.affine(1.0, 1e-6)?)
 }
 
-fn stereo_mid_side_log_ratio(stereo: &Tensor) -> CResult<Tensor> {
+struct StereoGeometryTensors {
+    side_mid_log_ratio: Tensor,
+    correlation: Tensor,
+    level_log_ratio: Tensor,
+}
+
+fn stereo_geometry(stereo: &Tensor) -> CResult<StereoGeometryTensors> {
     let left = stereo.narrow(0, 0, 1)?;
     let right = stereo.narrow(0, 1, 1)?;
+    let left = left.broadcast_sub(&left.mean_keepdim(D::Minus1)?)?;
+    let right = right.broadcast_sub(&right.mean_keepdim(D::Minus1)?)?;
+    let left_energy = left.sqr()?.mean_all()?.affine(1.0, 1e-6)?;
+    let right_energy = right.sqr()?.mean_all()?.affine(1.0, 1e-6)?;
     let mid_energy = left
         .add(&right)?
         .affine(0.5, 0.0)?
         .sqr()?
         .mean_all()?
-        .affine(1.0, 1e-4)?
-        .log()?;
+        .affine(1.0, 1e-6)?;
     let side_energy = left
         .sub(&right)?
         .affine(0.5, 0.0)?
         .sqr()?
         .mean_all()?
-        .affine(1.0, 1e-4)?
-        .log()?;
-    side_energy.sub(&mid_energy)
+        .affine(1.0, 1e-6)?;
+    let side_mid_log_ratio = side_energy.log()?.sub(&mid_energy.log()?)?;
+    let correlation = left
+        .mul(&right)?
+        .mean_all()?
+        .div(&left_energy.mul(&right_energy)?.sqrt()?)?
+        .clamp(-1.0f32, 1.0f32)?;
+    let level_log_ratio = left_energy.log()?.sub(&right_energy.log()?)?;
+    Ok(StereoGeometryTensors {
+        side_mid_log_ratio,
+        correlation,
+        level_log_ratio,
+    })
 }
 
 fn onset_curve(envelope: &Tensor) -> CResult<Tensor> {
@@ -2636,12 +2857,13 @@ impl SpectralEntropyMonitor {
         let flux = (flux_num.sqrt() / sum).clamp(0.0, 1.0);
         let rms = (sum_sq / n.max(1) as f32).sqrt();
         let crest = (peak / (rms + 1e-6) / 10.0).clamp(0.0, 1.0);
-        let width = if total_e > 1e-8 {
+        let side_energy_width = if total_e > 1e-8 {
             (side_e / total_e).sqrt().clamp(0.0, 1.0)
         } else {
             0.0
         };
         let stereo_corr = (cross_e / (left_e * right_e).sqrt().max(1e-8)).clamp(-1.0, 1.0);
+        let width = correlation_aware_width(side_energy_width, stereo_corr);
         let ultrasonic_ratio = mags
             .iter()
             .enumerate()
@@ -2682,6 +2904,7 @@ impl SpectralEntropyMonitor {
             "signal": entropy_norm, "avg": avg, "type": "post_dsp_spectral_ecology",
             "flatness": flatness, "brightness": brightness_hz, "centroid_norm": centroid_norm,
             "flux": flux, "rms": rms, "crest": crest, "width": width,
+            "side_energy_width": side_energy_width,
             "stereo_corr": stereo_corr,
             "ultrasonic_ratio": ultrasonic_ratio,
             "pe1": pe1, "pe4": pe4, "pe16": pe16, "pi_proxy": pi_proxy,
@@ -4732,6 +4955,8 @@ fn main() -> Result<()> {
     let mut fresh_model = false;
     let mut fresh_decoder = false;
     let mut fresh_world = false;
+    let mut freeze_morph = false;
+    let mut max_morph_depth = MORPH_MAX_BLOCKS;
     let mut state_override: Option<String> = None;
     let mut model_override: Option<String> = None;
     let mut import_model_override: Option<String> = None;
@@ -4830,6 +5055,18 @@ fn main() -> Result<()> {
                     anyhow::bail!("Missing value for --run-tag");
                 }
             }
+            "--freeze-morph" => {
+                freeze_morph = true;
+                arg_idx += 1;
+            }
+            "--max-morph-depth" => {
+                if arg_idx + 1 < args.len() {
+                    max_morph_depth = args[arg_idx + 1].parse::<usize>()?;
+                    arg_idx += 2;
+                } else {
+                    anyhow::bail!("Missing value for --max-morph-depth");
+                }
+            }
             "--fresh-world" => {
                 fresh_world = true;
                 arg_idx += 1;
@@ -4857,8 +5094,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
       --state PATH     World-checkpoint path\n\
       --model PATH     v7 model output/resume path\n\
       --import-model P Import compatible experimental tensors without overwriting source\n\
-      --corpus-manifest PATH  Explicit train/validation/exclude manifest\n\
+      --corpus-manifest PATH  Explicit train/development/validation/exclude manifest\n\
       --run-tag NAME   Isolate output, telemetry, model, and world artifacts\n\
+      --freeze-morph   Hold the checkpoint's current morphic depth for this run\n\
+      --max-morph-depth N  Allow growth only through depth N (1..12)\n\
       --fresh-world    Reset CA/DSP/memory while retaining compatible weights\n\
       --fresh-decoder  Retain CA/memory weights; reset only audible decoder tensors\n\
   -f, --fresh-model    Reset both learned weights and the world\n\
@@ -4888,6 +5127,12 @@ Usage: titan [BASE_DIR] [options]\n\n\
     }
     if bptt_window == 0 || bptt_window > 64 {
         anyhow::bail!("BPTT window must be between 1 and 64 chunks");
+    }
+    if !(1..=MORPH_MAX_BLOCKS).contains(&max_morph_depth) {
+        anyhow::bail!(
+            "maximum morphic depth must be between 1 and {}",
+            MORPH_MAX_BLOCKS
+        );
     }
     let run_started_unix_ms = unix_time_ms();
     n_threads = n_threads.max(1).min(available_threads.max(1));
@@ -4955,6 +5200,12 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let corpus_manifest_path = corpus_manifest_override
         .unwrap_or_else(|| format!("{}/titan_corpus_manifest_v7.json", base_dir));
     let mut target_loader = TargetAudioLoader::new_with_manifest(&wav_dir, &corpus_manifest_path)?;
+    let development_is_strict = target_loader.development_is_strict;
+    if !development_is_strict {
+        println!(
+            "--> No strict development split is available; morphic growth is disabled for this corpus."
+        );
+    }
     let corpus_summary = target_loader.corpus_summary();
     let varmap = VarMap::new();
     let vb = VBV::from_varmap(&varmap, DType::F32, &device);
@@ -4969,8 +5220,11 @@ Usage: titan [BASE_DIR] [options]\n\n\
         .map_err(anyhow::Error::msg)?;
     let chroma_proj = ChromaProjector::new(&device).map_err(anyhow::Error::msg)?;
     let modulation_proj = ModulationProjector::new(&device).map_err(anyhow::Error::msg)?;
+    let development_targets = target_loader.development_chunks(&device)?;
+    let development_bank = FixedProbeBank::new(&development_targets, &spec_proj, &chroma_proj)
+        .map_err(anyhow::Error::msg)?;
     let validation_targets = target_loader.validation_chunks(&device)?;
-    let validation_bank = FixedValidationBank::new(&validation_targets, &spec_proj, &chroma_proj)
+    let validation_bank = FixedProbeBank::new(&validation_targets, &spec_proj, &chroma_proj)
         .map_err(anyhow::Error::msg)?;
 
     // Initialize the full v7 parameter set deterministically first, then load
@@ -5173,6 +5427,27 @@ Usage: titan [BASE_DIR] [options]\n\n\
         rad_amp,
         if loaded_world { "resumed" } else { "new" }
     );
+    if max_morph_depth < model.depth() {
+        println!(
+            "--> Requested morph cap L{:02} is below active L{:02}; preserving active depth and blocking further growth.",
+            max_morph_depth,
+            model.depth()
+        );
+        max_morph_depth = model.depth();
+    }
+    let morph_policy = MorphPolicy {
+        max_depth: if freeze_morph {
+            model.depth()
+        } else {
+            max_morph_depth
+        },
+        frozen: freeze_morph,
+    };
+    println!(
+        "--> Morph policy: {} at/through L{:02}; growth requires a strict development-probe plateau.",
+        if morph_policy.frozen { "frozen" } else { "capped" },
+        morph_policy.max_depth
+    );
 
     let reset_mode = if fresh_model {
         "fresh_model"
@@ -5219,6 +5494,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let mut uncertainty_trace = Vec::new();
     let mut morph_events = Vec::new();
     let mut pending_morph_event: Option<(u64, &'static str)> = None;
+    let mut development_plateau_tracker = DevelopmentPlateauTracker::new();
+    let mut development_plateau = DevelopmentPlateauStatus::default();
 
     let mut phi = uncertainty.phi;
     let mut tape_loss: Option<Tensor> = None;
@@ -5524,10 +5801,33 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 .sub(&target_low_band_ratio.affine(1.0, 1e-4)?.log()?)?,
             0.05,
         )?;
-        let output_side_ratio = stereo_mid_side_log_ratio(&audio_for_loss)?;
-        let target_side_ratio = stereo_mid_side_log_ratio(&target_chunk)?.detach();
-        let stereo_balance_loss =
+        let output_stereo = stereo_geometry(&audio_for_loss)?;
+        let target_stereo = stereo_geometry(&target_chunk)?;
+        let output_side_ratio = output_stereo.side_mid_log_ratio;
+        let target_side_ratio = target_stereo.side_mid_log_ratio.detach();
+        let output_stereo_corr = output_stereo.correlation;
+        let target_stereo_corr = target_stereo.correlation.detach();
+        let output_stereo_level_ratio = output_stereo.level_log_ratio;
+        let target_stereo_level_ratio = target_stereo.level_log_ratio.detach();
+        let side_geometry_loss =
             robust_distance(&output_side_ratio.sub(&target_side_ratio)?, 0.05)?;
+        let correlation_loss =
+            robust_distance(&output_stereo_corr.sub(&target_stereo_corr)?, 0.03)?;
+        let stereo_level_loss = robust_distance(
+            &output_stereo_level_ratio.sub(&target_stereo_level_ratio)?,
+            0.05,
+        )?;
+        // A side/mid ratio alone admits the panned-mono shortcut L=a*x,
+        // R=b*x. Correlation remains +1 in that family, so jointly matching
+        // correlation and channel balance makes that degeneracy observable.
+        let stereo_balance_loss = side_geometry_loss
+            .add(&correlation_loss.affine(0.65, 0.0)?)?
+            .add(&stereo_level_loss.affine(0.20, 0.0)?)?;
+        let (development_best, development_mean, development_chroma) = development_bank.scores(
+            &audio_for_loss.detach(),
+            &out_spec.detach(),
+            &out_chroma.detach(),
+        )?;
         let (validation_best, validation_mean, validation_chroma) = validation_bank.scores(
             &audio_for_loss.detach(),
             &out_spec.detach(),
@@ -5736,6 +6036,13 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 &output_side_ratio.reshape((1,))?,
                 &target_low_band_ratio.reshape((1,))?,
                 &target_side_ratio.reshape((1,))?,
+                &output_stereo_corr.reshape((1,))?,
+                &target_stereo_corr.reshape((1,))?,
+                &output_stereo_level_ratio.reshape((1,))?,
+                &target_stereo_level_ratio.reshape((1,))?,
+                &development_best.reshape((1,))?,
+                &development_mean.reshape((1,))?,
+                &development_chroma.reshape((1,))?,
                 &validation_best.reshape((1,))?,
                 &validation_mean.reshape((1,))?,
                 &validation_chroma.reshape((1,))?,
@@ -5816,9 +6123,18 @@ Usage: titan [BASE_DIR] [options]\n\n\
         let output_side_ratio_val = metrics[tail_start + 15];
         let target_low_band_ratio_val = metrics[tail_start + 16];
         let target_side_ratio_val = metrics[tail_start + 17];
-        let validation_best_val = metrics[tail_start + 18];
-        let validation_mean_val = metrics[tail_start + 19];
-        let validation_chroma_val = metrics[tail_start + 20];
+        let output_stereo_corr_val = metrics[tail_start + 18];
+        let target_stereo_corr_val = metrics[tail_start + 19];
+        let output_stereo_level_ratio_val = metrics[tail_start + 20];
+        let target_stereo_level_ratio_val = metrics[tail_start + 21];
+        let development_best_val = metrics[tail_start + 22];
+        let development_mean_val = metrics[tail_start + 23];
+        let development_chroma_val = metrics[tail_start + 24];
+        let validation_best_val = metrics[tail_start + 25];
+        let validation_mean_val = metrics[tail_start + 26];
+        let validation_chroma_val = metrics[tail_start + 27];
+        development_plateau =
+            development_plateau_tracker.update(development_mean_val, development_chroma_val);
         if let (Some(actual), Some(_)) = (&last_observation, &pending_predictor_input) {
             controller
                 .meta
@@ -5937,11 +6253,13 @@ Usage: titan [BASE_DIR] [options]\n\n\
                             .as_ref()
                             .map(|obs| obs.values[10])
                             .unwrap_or(0.0),
+                        development_plateau: development_is_strict && development_plateau.plateau,
                     },
                     &adaptive_dynamics,
                     model.depth(),
                     absolute_step,
                     window_len,
+                    morph_policy,
                 ) {
                     MorphDecision::GrowPressure if model.grow() => {
                         rad_amp = (rad_amp * RAD_COOL).max(RAD_AMP_MIN);
@@ -6406,10 +6724,14 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 "brightness": s_sig["brightness"].as_f64().unwrap_or(0.0),
                 "flux": s_sig["flux"].as_f64().unwrap_or(0.0),
                 "width": s_sig["width"].as_f64().unwrap_or(0.0),
+                "side_energy_width": s_sig["side_energy_width"].as_f64().unwrap_or(0.0),
                 "stereo_corr": s_sig["stereo_corr"].as_f64().unwrap_or(0.0),
                 "structured_complexity": s_sig["structured_complexity"].as_f64().unwrap_or(0.0),
                 "novelty_dmin": novelty_dmin_val,
-                "morph_depth": model.depth(), "rad_amp": rad_amp,
+                "morph_depth": model.depth(),
+                "morph_frozen": morph_policy.frozen,
+                "morph_max_depth": morph_policy.max_depth,
+                "rad_amp": rad_amp,
                 "morph_event": trace_morph_event,
                 "morph_event_step": if trace_morph_event.is_empty() { None } else { Some(trace_morph_event_step) },
                 "action": current_action.label(),
@@ -6449,6 +6771,16 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 "output_side_mid_log_ratio": output_side_ratio_val,
                 "target_low_band_ratio": target_low_band_ratio_val,
                 "target_side_mid_log_ratio": target_side_ratio_val,
+                "decoder_stereo_corr": output_stereo_corr_val,
+                "target_stereo_corr": target_stereo_corr_val,
+                "decoder_stereo_level_log_ratio": output_stereo_level_ratio_val,
+                "target_stereo_level_log_ratio": target_stereo_level_ratio_val,
+                "development_best_spectral": development_best_val,
+                "development_mean_spectral": development_mean_val,
+                "development_mean_chroma": development_chroma_val,
+                "development_score": development_plateau.score,
+                "development_plateau_ready": development_plateau.ready,
+                "development_relative_improvement": development_plateau.relative_improvement,
                 "validation_best_spectral": validation_best_val,
                 "validation_mean_spectral": validation_mean_val,
                 "validation_mean_chroma": validation_chroma_val,
@@ -6483,6 +6815,13 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 pot.temp_terms[4], curiosity_factor, controlled_shear, radiation_probability,
                 field_signed_mean, field_rail_excess, latest_grad_norm, latest_clip_scale,
                 s_sig["stereo_corr"].as_f64().unwrap_or(0.0));
+            println!("  stereo width:{:.3} side-energy:{:.3} decoder/target corr:{:+.2}/{:+.2} | dev S/C:{:.3}/{:.3} Δ:{:+.2}% ready:{} plateau:{}",
+                s_sig["width"].as_f64().unwrap_or(0.0),
+                s_sig["side_energy_width"].as_f64().unwrap_or(0.0),
+                output_stereo_corr_val, target_stereo_corr_val,
+                development_mean_val, development_chroma_val,
+                development_plateau.relative_improvement * 100.0,
+                development_plateau.ready, development_plateau.plateau);
             println!("  ecology health:{:.2} stagnation:{:.2} escape:{:.2} | reward:{:+.3} μ:{:+.3} σr:{:.3} | motifs:{}/{} qrej:{} srej:{}",
                 adaptive_dynamics.activity_health, adaptive_dynamics.stagnation,
                 adaptive_dynamics.escape_strength(), reward, adaptive_dynamics.reward_mean,
@@ -6765,17 +7104,25 @@ Usage: titan [BASE_DIR] [options]\n\n\
     };
     let mut side_e = 0.0f32;
     let mut tot_e = 0.0f32;
+    let mut left_e = 0.0f32;
+    let mut right_e = 0.0f32;
+    let mut cross_e = 0.0f32;
     for i in 0..n_frames {
         let l = audio_frames[2 * i];
         let r = audio_frames[2 * i + 1];
         side_e += (l - r) * (l - r);
         tot_e += l * l + r * r;
+        left_e += l * l;
+        right_e += r * r;
+        cross_e += l * r;
     }
-    let width = if tot_e > 1e-6 {
-        (side_e / tot_e).sqrt()
+    let side_energy_width = if tot_e > 1e-6 {
+        (side_e / tot_e).sqrt().clamp(0.0, 1.0)
     } else {
         0.0
     };
+    let stereo_corr = (cross_e / (left_e * right_e).sqrt().max(1e-8)).clamp(-1.0, 1.0);
+    let width = correlation_aware_width(side_energy_width, stereo_corr);
     let width_word = if width > 0.85 {
         "ultra-wide stereo field"
     } else if width > 0.55 {
@@ -6791,8 +7138,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
         "free time, no fixed pulse".to_string()
     };
     println!(
-        "Features: {} · centroid {:.0} Hz ({}) · width {:.2} ({})",
-        tempo_txt, centroid, tone, width, width_word
+        "Features: {} · centroid {:.0} Hz ({}) · truthful width {:.2} ({}, side-energy {:.2}, corr {:+.2})",
+        tempo_txt, centroid, tone, width, width_word, side_energy_width, stereo_corr
     );
 
     let n_trace = uncertainty_trace.len().max(1) as f64;
@@ -6958,10 +7305,13 @@ Usage: titan [BASE_DIR] [options]\n\n\
             t["brightness"].to_string(),
             t["flux"].to_string(),
             t["width"].to_string(),
+            t["side_energy_width"].to_string(),
             t["stereo_corr"].to_string(),
             t["structured_complexity"].to_string(),
             t["novelty_dmin"].to_string(),
             t["morph_depth"].to_string(),
+            t["morph_frozen"].to_string(),
+            t["morph_max_depth"].to_string(),
             t["rad_amp"].to_string(),
             t["morph_event"].as_str().unwrap_or("").to_string(),
             morph_event_step,
@@ -7009,6 +7359,16 @@ Usage: titan [BASE_DIR] [options]\n\n\
             t["output_side_mid_log_ratio"].to_string(),
             t["target_low_band_ratio"].to_string(),
             t["target_side_mid_log_ratio"].to_string(),
+            t["decoder_stereo_corr"].to_string(),
+            t["target_stereo_corr"].to_string(),
+            t["decoder_stereo_level_log_ratio"].to_string(),
+            t["target_stereo_level_log_ratio"].to_string(),
+            t["development_best_spectral"].to_string(),
+            t["development_mean_spectral"].to_string(),
+            t["development_mean_chroma"].to_string(),
+            t["development_score"].to_string(),
+            t["development_plateau_ready"].to_string(),
+            t["development_relative_improvement"].to_string(),
             t["validation_best_spectral"].to_string(),
             t["validation_mean_spectral"].to_string(),
             t["validation_mean_chroma"].to_string(),
@@ -7124,6 +7484,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
             "world_loaded": loaded_world,
             "importing_model": importing_model,
             "fresh_decoder": fresh_decoder,
+            "freeze_morph": morph_policy.frozen,
+            "max_morph_depth": morph_policy.max_depth,
             "run_tag": run_tag,
         },
         "corpus": corpus_summary,
@@ -7150,6 +7512,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
             "optimizer_updates_run": optimizer_update_count,
             "optimizer_updates_cumulative": optimizer.cumulative_updates(),
             "optimizer_resumed": optimizer_resumed,
+            "development_plateau_ready": development_plateau.ready,
+            "development_relative_improvement": development_plateau.relative_improvement,
         },
         "final_state": {
             "raw_model_confidence": controller.meta.confidence,
@@ -7184,7 +7548,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
         },
         "notes": [
             "AdamW moments resume only when their saved global step matches the world checkpoint.",
-            "Validation probes are fixed and excluded from normal training for non-trivial corpora.",
+            "Development probes are fixed, excluded from gradients, and may govern morphic growth.",
+            "Validation probes are fixed, excluded from gradients, and never used for structural decisions.",
             "Bitwise reproducibility also requires the same thread count and build.",
         ],
     });
@@ -7240,6 +7605,14 @@ mod tests {
             mimic_baseline,
             field_entropy_norm,
             predictive_structure,
+            development_plateau: true,
+        }
+    }
+
+    fn open_morph_policy() -> MorphPolicy {
+        MorphPolicy {
+            max_depth: MORPH_MAX_BLOCKS,
+            frozen: false,
         }
     }
 
@@ -7296,6 +7669,21 @@ mod tests {
         assert_eq!(stereo_side_gain(0.0, 1.0), 1.0);
         assert!(stereo_side_gain(0.5, 0.62) < 1.0);
         assert_eq!(stereo_side_gain(0.5, 1.45), MAX_STEREO_SIDE_GAIN);
+    }
+
+    #[test]
+    fn truthful_width_rejects_panned_mono() -> Result<()> {
+        let stereo = Tensor::new(
+            &[[1.0f32, -1.0, 0.5, -0.5], [0.5, -0.5, 0.25, -0.25]],
+            &Device::Cpu,
+        )?;
+        let geometry = stereo_geometry(&stereo)?;
+        let corr = geometry.correlation.to_scalar::<f32>()?;
+        let side_ratio = geometry.side_mid_log_ratio.to_scalar::<f32>()?;
+        assert!(corr > 0.999);
+        assert!(side_ratio.is_finite());
+        assert!(correlation_aware_width(0.4, corr) < 0.001);
+        Ok(())
     }
 
     #[test]
@@ -7373,7 +7761,14 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(
-            morph_decision(morph_evidence(0.70, 0.70, 0.50, 0.10), &ecology, 1, 512, 12),
+            morph_decision(
+                morph_evidence(0.70, 0.70, 0.50, 0.10),
+                &ecology,
+                1,
+                512,
+                12,
+                open_morph_policy()
+            ),
             MorphDecision::GrowPressure
         );
     }
@@ -7387,9 +7782,80 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(
-            morph_decision(morph_evidence(0.80, 0.70, 0.50, 0.10), &ecology, 1, 600, 12),
+            morph_decision(
+                morph_evidence(0.80, 0.70, 0.50, 0.10),
+                &ecology,
+                1,
+                600,
+                12,
+                open_morph_policy()
+            ),
             MorphDecision::Hold
         );
+    }
+
+    #[test]
+    fn morphic_growth_requires_development_plateau_and_respects_freeze() {
+        let ecology = AdaptiveDynamics {
+            samples: 500,
+            activity_health: 0.42,
+            stagnation: 0.71,
+            ..Default::default()
+        };
+        let mut evidence = morph_evidence(0.80, 0.70, 0.50, 0.10);
+        evidence.development_plateau = false;
+        assert_eq!(
+            morph_decision(evidence, &ecology, 2, 512, 12, open_morph_policy()),
+            MorphDecision::Hold
+        );
+        assert_eq!(
+            morph_decision(
+                morph_evidence(0.80, 0.70, 0.50, 0.10),
+                &ecology,
+                2,
+                512,
+                12,
+                MorphPolicy {
+                    max_depth: 2,
+                    frozen: true,
+                }
+            ),
+            MorphDecision::Hold
+        );
+        assert_eq!(
+            morph_decision(
+                morph_evidence(0.80, 0.70, 0.50, 0.10),
+                &ecology,
+                2,
+                512,
+                12,
+                MorphPolicy {
+                    max_depth: 2,
+                    frozen: false,
+                }
+            ),
+            MorphDecision::Hold
+        );
+    }
+
+    #[test]
+    fn development_tracker_distinguishes_improvement_from_plateau() {
+        let mut improving = DevelopmentPlateauTracker::new();
+        let mut status = DevelopmentPlateauStatus::default();
+        for i in 0..DEVELOPMENT_PLATEAU_WINDOW {
+            status = improving.update(1.0 - i as f32 * 0.0015, 0.8 - i as f32 * 0.0005);
+        }
+        assert!(status.ready);
+        assert!(!status.plateau);
+        assert!(status.relative_improvement > DEVELOPMENT_PLATEAU_REL_EPS);
+
+        let mut flat = DevelopmentPlateauTracker::new();
+        for _ in 0..DEVELOPMENT_PLATEAU_WINDOW {
+            status = flat.update(0.7, 0.8);
+        }
+        assert!(status.ready);
+        assert!(status.plateau);
+        assert!(status.relative_improvement.abs() < 1e-6);
     }
 
     #[test]
@@ -7406,7 +7872,8 @@ mod tests {
                 &ecology,
                 1,
                 2048,
-                12
+                12,
+                open_morph_policy()
             ),
             MorphDecision::GrowDevelopment
         );
@@ -7416,7 +7883,8 @@ mod tests {
                 &ecology,
                 1,
                 2048,
-                12
+                12,
+                open_morph_policy()
             ),
             MorphDecision::Hold
         );
@@ -7447,7 +7915,8 @@ mod tests {
                 &healthy,
                 3,
                 2048,
-                14
+                14,
+                open_morph_policy()
             ),
             MorphDecision::Prune
         );
@@ -7461,7 +7930,8 @@ mod tests {
                 &stagnant,
                 3,
                 2048,
-                14
+                14,
+                open_morph_policy()
             ),
             MorphDecision::GrowPressure
         );
@@ -7641,6 +8111,60 @@ mod tests {
             .entries
             .iter()
             .all(|entry| entry.role == CorpusRole::Validation));
+        assert_eq!(repaired.schema_version, 2);
+        std::fs::remove_file(path)?;
+        std::fs::remove_dir(dir)?;
+        Ok(())
+    }
+
+    #[test]
+    fn generated_manifest_creates_family_disjoint_development_split() -> Result<()> {
+        let dir = std::env::temp_dir().join(format!(
+            "titan_manifest_development_{}_{}",
+            std::process::id(),
+            unix_time_ms()
+        ));
+        std::fs::create_dir(&dir)?;
+        let path = dir.join("manifest.json");
+        let mut entries = vec![CorpusEntry {
+            file: "heldout.wav".to_string(),
+            role: CorpusRole::Validation,
+            family: "heldout".to_string(),
+            provenance: "user_corpus".to_string(),
+        }];
+        for i in 0..8 {
+            entries.push(CorpusEntry {
+                file: format!("train_{i}.wav"),
+                role: CorpusRole::Train,
+                family: format!("family_{i}"),
+                provenance: "user_corpus".to_string(),
+            });
+        }
+        let manifest = CorpusManifest {
+            schema_version: 1,
+            generated_by: "titan 7.1.0".to_string(),
+            entries,
+        };
+        std::fs::write(&path, serde_json::to_vec_pretty(&manifest)?)?;
+        let repaired =
+            load_or_create_corpus_manifest(dir.to_str().unwrap(), path.to_str().unwrap())?;
+        assert_eq!(repaired.schema_version, 2);
+        assert_eq!(
+            repaired
+                .entries
+                .iter()
+                .filter(|entry| entry.role == CorpusRole::Development)
+                .count(),
+            DEVELOPMENT_PROBES
+        );
+        assert_eq!(
+            repaired
+                .entries
+                .iter()
+                .filter(|entry| entry.role == CorpusRole::Validation)
+                .count(),
+            1
+        );
         std::fs::remove_file(path)?;
         std::fs::remove_dir(dir)?;
         Ok(())
@@ -7704,6 +8228,11 @@ mod tests {
         assert_eq!(trace.len(), UNCERTAINTY_TRACE_HEADERS.len());
         assert!(trace.contains("raw_movement"));
         assert!(trace.contains("uncertainty_movement"));
+        assert!(trace.contains("side_energy_width"));
+        assert!(trace.contains("decoder_stereo_corr"));
+        assert!(trace.contains("development_mean_spectral"));
+        assert!(trace.contains("development_plateau_ready"));
+        assert!(trace.contains("validation_mean_spectral"));
         assert!(!trace.contains("movement"));
         for required in [
             "run_id",

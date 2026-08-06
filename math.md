@@ -732,7 +732,7 @@ while minimizing final-renderer divergence from source-derived spectral and modu
 4. Ablate the small Gaussian kick and sparse radiation independently to test
    whether complexity is endogenous or noise-supported.
 5. Compare multiple seeds and fresh worlds using the source, seam, oscillator,
-   topology, source-feature, validation, and clipping telemetry in schema v4.
+   topology, source-feature, development, validation, and clipping telemetry in schema v5.
 6. Retrain or reset weights only if the frozen diagnostics show that no nearby controller/gain regime produces coherent marginal stability.
 
 The 64-channel substrate and v7 objective are now the baseline worth preserving. The next changes should improve observability and experimental identifiability before another weight-generation break.
@@ -768,10 +768,10 @@ L_{src}={}&L_S+0.45L_B+0.25L_C+0.08L_{salience}
 \]
 
 where \(L_R\) matches cosine-recurrence geometry at lags 8, 32, and 64 chunks.
-Here \(L_{low}\) compares log first-band power ratios and \(L_{MS}\) compares
-the log side/mid energy ratio. These terms close two empirically observed
-loopholes: meeting global RMS with sub-bass and meeting channelwise spectra
-with antiphase stereo.
+Here \(L_{low}\) compares log first-band power ratios. In v7.2, \(L_{MS}\)
+denotes the full stereo-geometry term derived below rather than side/mid energy
+alone. These terms close empirically observed loopholes: meeting global RMS
+with sub-bass and meeting channelwise spectra with degenerate stereo.
 Past generated and target features are detached, so memory is bounded and the
 gradient is causal through the current state. This does not claim 64-chunk
 backpropagation: it supplies a long-horizon statistical teaching signal while
@@ -883,7 +883,133 @@ not merely \((\theta_t,z_t)\). v7.1 checkpoints \(m_t,v_t,k_t\) and restores
 them only when their global-step stamp equals the world stamp. This removes the
 repeated 32-update transient that dominated short resumed runs.
 
-## 13. Research references
+## 13. v7.2 controlled morphogenesis and identifiable stereo
+
+### 13.1 Architecture selection needs three corpus roles
+
+Let the family-disjoint corpus split be
+
+\[
+\mathcal D=\mathcal D_{train}\;\dot\cup\;
+\mathcal D_{dev}\;\dot\cup\;\mathcal D_{test}.
+\]
+
+Gradient updates use only \(\mathcal D_{train}\). Morphic depth decisions may
+observe the fixed \(\mathcal D_{dev}\) probes. Final validation telemetry uses
+\(\mathcal D_{test}\), and neither the optimizer nor automatic morphic policy
+reads it. Mastered/remix variants are assigned at the family boundary, so a
+variant cannot leak across roles.
+
+Define the development score
+
+\[
+q_t=L_{dev,spectral}(t)+0.35L_{dev,chroma}(t).
+\]
+
+For the current rolling window, let \(\bar q_E\) and \(\bar q_L\) be the means
+of its first and last quarters and
+
+\[
+I_t=\frac{\bar q_E-\bar q_L}{\max(|\bar q_E|,10^{-4})}.
+\]
+
+The gate is ready after 192 samples, retains at most 256 samples, and declares
+a plateau when \(I_t\le0.01\). Growth is now possible only when
+
+\[
+G_t=B_t\land P_t\land(I_t\le0.01)\land
+(d_t<d_{max})\land\neg F,
+\]
+
+where \(B_t\) is the appropriate global-step boundary, \(P_t\) is capacity or
+structural pressure, \(d_{max}\) is the run cap, and \(F\) is
+`--freeze-morph`.
+
+**Conditional Proposition 5 — measured improvement blocks morphic growth.**
+Once the gate is ready, if the measured early-to-late development improvement
+is greater than one percent, then \(I_t>0.01\), so the conjunction defining
+\(G_t\) is false. Training-song difficulty alone is therefore insufficient to
+grow the stack. This is an exact property of the implemented decision rule.
+It does not prove that a declared plateau is caused by insufficient capacity;
+optimizer failure, a poor decoder, or probe noise can also produce a plateau.
+\(\square\)
+
+**Conditional generalization statement.** If the family split was declared
+before architecture selection and no human or automatic decision uses
+\(\mathcal D_{test}\), then test telemetry remains untouched by optimizer and
+architecture selection. Repeated human inspection can still leak test
+information into later design decisions, so this is not an unconditional
+unbiasedness theorem.
+
+### 13.2 Why side energy admitted fake width
+
+Consider a mono signal copied with unequal gains,
+
+\[
+L=ax,\qquad R=bx,\qquad ab>0.
+\]
+
+Its centered interchannel correlation is \(\rho=1\), yet
+
+\[
+\frac{E_{side}}{E_{mid}}
+=\left(\frac{a-b}{a+b}\right)^2.
+\]
+
+Changing only \(a/b\) can therefore match many target side/mid ratios while
+producing no independent stereo information. This exactly explains why the
+old side-energy width reported a moderate image while rendered correlation
+remained approximately `+0.99`.
+
+v7.2 measures three differentiable coordinates from centered channels:
+
+\[
+r_{MS}=\log\frac{E_{side}+\epsilon}{E_{mid}+\epsilon},\qquad
+\rho=\frac{E[LR]}{\sqrt{E[L^2]E[R^2]}},\qquad
+\ell=\log\frac{E[L^2]+\epsilon}{E[R^2]+\epsilon}.
+\]
+
+The stereo term is
+
+\[
+L_{MS}=D(r_{MS},r^*_{MS})+0.65D(\rho,\rho^*)
+       +0.20D(\ell,\ell^*),
+\]
+
+with the same finite-gradient robust distance used elsewhere. The reported
+correlation-aware width is
+
+\[
+w_{truth}=\operatorname{clip}_{[0,1]}\left[
+w_{side}\sqrt{\frac{1-\rho}{2}}\right],\qquad
+w_{side}=\sqrt{\frac{\sum(L-R)^2}{\sum(L^2+R^2)}}.
+\]
+
+**Lemma 2 — panned mono has zero truthful width.** For \(L=ax,R=bx\) with
+\(ab>0\), \(\rho=1\); hence \(w_{truth}=0\) regardless of the gain imbalance
+or old side-energy width. If the target has \(\rho^*<1\), the correlation term
+also assigns nonzero loss to this shortcut. The level term prevents arbitrary
+panning from serving as its replacement. This removes one degeneracy; it does
+not prove perceptually convincing spatialization. \(\square\)
+
+### 13.3 Pre-intervention evidence and falsifier
+
+Across the canonical 60 s, 30 s, and 60 s continuations ending at global step
+2108, active depth grew at steps 1024 and 2048. During the final interval,
+fixed test mean spectral loss moved approximately `0.421 -> 0.385`, mean chroma
+`0.977 -> 0.438`, clipping occurred in about four percent of sampled rows,
+health ended near `0.93`, and stagnation near `0.08`. At the same time,
+rendered correlation remained about `+0.992`. These observations motivate
+holding L03 and correcting stereo identifiability, but continued optimization
+and changing training episodes confound any causal claim about L02 or L03.
+
+The immediate falsifier is a frozen-L03 continuation in which fixed test
+spectral/chroma scores regress persistently, gradients remain healthy, and
+correlation fails to move toward the fixed target distribution. That outcome
+would reject the claim that simple L03 maturation plus identifiable stereo is
+sufficient and would motivate a slow hierarchical recurrent state.
+
+## 14. Research references
 
 - Chris G. Langton, “Computation at the edge of chaos: Phase transitions and emergent computation,” *Physica D* 42 (1990), 12–37. [DOI](https://doi.org/10.1016/0167-2789(90)90064-V)
 - Joschka Boedecker, Oliver Obst, Joseph T. Lizier, N. Michael Mayer, and Minoru Asada, “Information processing in echo state networks at the edge of chaos,” *Theory in Biosciences* 131 (2012), 205–213. [DOI](https://doi.org/10.1007/s12064-011-0146-8)
