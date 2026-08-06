@@ -18,7 +18,11 @@ Those ingredients make edge-of-chaos behavior possible, but they do not prove it
 2. Existence of at least one statistical invariant regime is strongly supported and can be proved under standard continuity/Feller assumptions.
 3. The current scalar `sigma` is a movement-autocorrelation persistence estimate.  It is **not** a branching ratio and **not** a Lyapunov exponent.
 4. The potential `V` is a useful homeostatic shaping function, but it is not currently a global Lyapunov function for the complete dynamics.
-5. The last pre-v7 measured trajectory was not at `sigma ~= 1` even by Titan's present proxy.  It looked bounded and viable, but subcritical and substantially noise-supported. The short v7 smoke tests improve bounded training and source tracking, but are not long enough to establish an attractor class.
+5. The last long pre-v7 trajectory was not at `sigma ~= 1` even by Titan's
+   present proxy. A 30-second v7.1 modal-gain test materially reduced acoustic
+   collapse and improved fixed-probe spectral distance, but is far too short
+   to establish an attractor class or musical convergence. That run preceded
+   the manifest's strict family-boundary repair, so it is not held-out evidence.
 6. A deterministic strange attractor cannot be inferred from a noisy audio waveform or a single scalar trace.  With ongoing random forcing, the more appropriate objects are a random attractor, stationary measure, or metastable family of random attractors.
 
 v7 deliberately starts a new weight generation because the earlier objective
@@ -73,10 +77,17 @@ where \(\omega_t\) collects the stochastic cell masks, target selection, control
 During learning, the weights change:
 
 \[
-    \theta_{k+1}=\operatorname{AdamW}(\theta_k,\nabla_\theta \mathcal L_k,m_k,v_k).
+    (\theta_{k+1},m_{k+1},v_{k+1})
+    =\operatorname{AdamW}(\theta_k,\nabla_\theta \mathcal L_k,m_k,v_k).
 \]
 
-The learning process is consequently non-autonomous unless \((\theta,m,v)\) is included in the state.  Adam moments restart between processes, so two runs with identical saved model/world tensors are not the same full learning dynamical system after a restart.  Claims about an attractor should therefore be made in one of two clearly separated regimes:
+The learning process is consequently non-autonomous unless
+\((\theta,m,v,k)\) is included in the state. v7.1 persists Adam moments and
+the cumulative update count, accepting them only when their global-step stamp
+matches the world. A missing/mismatched optimizer still changes the full
+learning dynamical system because it restarts behind a 32-update warmup. Claims
+about an attractor should therefore be made in one of two clearly separated
+regimes:
 
 1. **Frozen organism:** fixed \(\theta\), no optimizer steps; appropriate for attractor and criticality analysis.
 2. **Adaptive organism:** changing \(\theta\); appropriate for studying tracking, drift, and a possible pullback or slowly moving statistical attractor.
@@ -369,7 +380,7 @@ Titan's estimator stores scalar movement \(m_t\), fits mean-centered regressions
 
 \[
 \widehat\sigma_k
-=\left(rac{\operatorname{Cov}(m_t,m_{t+k})}
+=\left(\frac{\operatorname{Cov}(m_t,m_{t+k})}
               {\operatorname{Var}(m_t)}\right)^{1/k}.
 \]
 
@@ -463,6 +474,8 @@ Finite runs cannot perfectly distinguish separate attractors from slow transitio
 
 ## 6. Current empirical status
 
+### 6.1 Long pre-v7 dynamical baseline
+
 The latest available telemetry inspected on 2026-08-04 is run `1785888816989-p29543-s42`, produced by build `27ea8a0f63e2`.  It is a 360-second resumed L06 run from global step 23,808 to 28,026.  The following values come from 422 trace samples:
 
 | Quantity | Mean | Standard deviation | Last | Interpretation |
@@ -489,6 +502,54 @@ Additional facts:
 **Empirical conclusion.**  This trajectory is bounded, ecologically serviceable, and not welded to the rails.  It is not evidence of an edge-of-chaos singularity or deterministic strange attractor.  The combination of low movement persistence, low PI proxy, and appreciable temperature is more consistent with a subcritical organism kept active by adaptive forcing.  Acoustic noisiness is not proof of internal chaos.
 
 This diagnosis does **not** imply that the weights should be discarded.  It implies that the present measurements are insufficient and that the control loop may be compensating for an overly contractive internal map.
+
+### 6.2 v7.1 modal-gain intervention (2026-08-05)
+
+**Empirical result.** Run `1785980433755-p21961-s42` used the real retained v7
+weights, a fresh world, schema-v4 objectives, and newly initialized continuous
+oscillator-gain and stereo-width heads. It generated 351 chunks (29.95 s) and
+44 AdamW updates. It is an intervention test, not an attractor measurement.
+It also preceded the automatic repair that prevents variants of one normalized
+family from straddling train and validation. Its fixed-probe values remain
+useful within-run diagnostics, but they are not strict family-held-out
+generalization evidence and must not be used to claim corpus generalization.
+
+Independent measurements of the final WAV, compared with the immediately
+preceding untagged output, were:
+
+| Audio quantity | Prior output | v7.1 modal gain | Direction |
+|---|---:|---:|---|
+| power from 20--80 Hz | 0.6277 | 0.3436 | less sub-bass concentration |
+| 256-sample envelope CV | 0.1855 | 0.2658 | more amplitude modulation |
+| mean 1 s log-band recurrence | 0.9970 | 0.5080 | stationary comb substantially broken |
+| stereo correlation | -0.2406 | 0.8102 | severe antiphase removed |
+| mono RMS retention | 0.6534 | 0.9200 | substantially safer mono projection |
+
+Within the run, the last-five-trace means were:
+
+| Training quantity | Last-five mean |
+|---|---:|
+| coarse source loss | 0.3351 |
+| band loss | 0.6464 |
+| output/target first-band ratio | 0.0258 / 0.0250 |
+| fixed-probe mean spectral distance | 0.4854 |
+| gradient norm | 2.3415 |
+| clip scale | 1.0000 |
+
+The mean gradient norm over the whole run was 44.47 because the new gain heads
+adapted sharply during their first updates; by the end, clipping was inactive.
+Fixed-probe mean spectral distance moved from 0.7390 at the first trace to
+0.4969 at the last. Validation chroma did not show the same clear improvement,
+so tonal learning remains unresolved.
+
+**Interpretation.** This rejects the hypothesis that the 7.9-million-parameter
+organism was simply too small. The binding defect was decoder controllability:
+carrier, auxiliary, regional, and side gains were fixed. Once recurrent state
+could attenuate those modes, the low-frequency stationary/antiphase attractor
+lost much of its acoustic dominance without source passthrough. The remaining
+64.5 Hz spectral peak and 34.36% sub-80 Hz power show that convergence is not
+complete. No conclusion about edge-of-chaos status follows from this audio
+improvement.
 
 ## 7. Falsifiable hypotheses
 
@@ -641,12 +702,15 @@ giving a characteristic memory scale
 
 As \(\lambda\to0^-\), memory length grows.  This is one reason task performance can improve near the ordered side of an edge.  If \(\lambda>0\), however, source-conditioned details may be overwhelmed exponentially unless input forcing synchronizes the system.
 
-v7 chooses a source passage once per 256-chunk episode (about 21.85 s) and
-advances contiguously. Its source objective compares 1,024-sample, 4,096-sample,
-and eight-chunk full-band log spectra, 256-sample frame energies, relative
-level, and cross-chunk seams. The CA remains the only sound generator; target
-samples never enter the output. Robust Charbonnier distances bound the
-spectral and log-level residual derivatives.
+v7.1 chooses a corpus family independently of current output once per
+256-chunk episode (about 21.85 s), chooses one declared variant, and advances
+contiguously. Its source objective compares 1,024-sample, 4,096-sample, and
+eight-chunk full-band log spectra; band energy; chroma and pitch salience;
+onset, modulation, and recurrence features; mid/side balance; relative level;
+and cross-chunk seams. The CA/modal system remains the only sound generator;
+target samples never enter the output. Robust Charbonnier distances bound the
+loss derivative with respect to each residual, while normalized projector
+floors bound gradients through near-null log magnitudes.
 
 The dynamical target should therefore be task-conditioned:
 
@@ -668,12 +732,158 @@ while minimizing final-renderer divergence from source-derived spectral and modu
 4. Ablate the small Gaussian kick and sparse radiation independently to test
    whether complexity is endogenous or noise-supported.
 5. Compare multiple seeds and fresh worlds using the source, seam, oscillator,
-   topology, and clipping telemetry in schema v3.
+   topology, source-feature, validation, and clipping telemetry in schema v4.
 6. Retrain or reset weights only if the frozen diagnostics show that no nearby controller/gain regime produces coherent marginal stability.
 
 The 64-channel substrate and v7 objective are now the baseline worth preserving. The next changes should improve observability and experimental identifiability before another weight-generation break.
 
-## 12. Research references
+## 12. v7.1 source-identifiability and modal-decoder corrections
+
+The previous nearest-of-\(K\) training rule selected
+
+\[
+j^*(\theta,z)=\arg\min_j d(G_\theta(z),x_j).
+\]
+
+Because the chosen target depends on the current generator, this objective has
+a self-confirming fixed point: any narrow output mode can keep selecting the
+corpus mode closest to itself. v7.1 instead samples a declared corpus family
+uniformly, then a variant within that family. Thus target selection is
+independent of \(G_\theta(z)\), and duplicate mastered/remix files do not alter
+the probability mass of a musical family. Generated Titan files have zero
+training probability by construction.
+
+Let \(S(x)\) be the 20 Hz--20 kHz log spectrum, \(B(x)\) its twelve log-band
+energies, \(C(x)\) centered log chroma, \(O(x)\) positive envelope increments,
+and \(M(x_{t-63:t})\) the 0.5--12 Hz modulation spectrum of 64 chunks. The
+source term is now
+
+\[
+\begin{aligned}
+L_{src}={}&L_S+0.45L_B+0.25L_C+0.08L_{salience}
+          +0.25L_O+0.20L_M\\
+         &+0.25L_R+0.35L_{env}+0.50L_{fine}
+          +0.50L_{low}+0.35L_{MS},
+\end{aligned}
+\]
+
+where \(L_R\) matches cosine-recurrence geometry at lags 8, 32, and 64 chunks.
+Here \(L_{low}\) compares log first-band power ratios and \(L_{MS}\) compares
+the log side/mid energy ratio. These terms close two empirically observed
+loopholes: meeting global RMS with sub-bass and meeting channelwise spectra
+with antiphase stereo.
+Past generated and target features are detached, so memory is bounded and the
+gradient is causal through the current state. This does not claim 64-chunk
+backpropagation: it supplies a long-horizon statistical teaching signal while
+the exact recurrent graph remains capped at eight chunks.
+
+**Lemma 1 — normalized log projectors have finite input gradients.** Let
+\(A\) be any finite DFT projection matrix and
+
+\[
+s(x)=\frac12\log(\|Ax\|_2^2+\varepsilon),\qquad \varepsilon>0.
+\]
+
+Then
+
+\[
+\|\nabla_xs\|
+\le \|A\|\frac{r}{r^2+\varepsilon}
+\le\frac{\|A\|}{2\sqrt\varepsilon},
+\quad r=\|Ax\|.
+\]
+
+The implemented spectral DFT is normalized by \(2/n\) and uses positive
+floors; chroma and modulation projectors do the same. Therefore spectral nulls
+cannot create an infinite mathematical gradient. The bound may still be large,
+so measured global norms and clip scales remain required diagnostics.
+\(\square\)
+
+The earlier sample-derivative penalty
+\(\|\Delta y-\Delta x\|^2\) was ill-posed for an autonomous oscillator because
+source phase is unavailable. It is replaced by a robust difference of log
+derivative energies. This retains a target-relative roughness constraint but
+does not reward phase-counterfeiting broadband noise.
+
+For recurrent state \(h_t\), define the smooth lower rail
+
+\[
+\ell_{a,w}(x)=a+\frac12\left[(x-a)+\sqrt{(x-a)^2+w^2}\right]
+\]
+
+and the smooth two-sided rail
+
+\[
+R_{a,b}(x)=b-\ell_{0,64}\!\left(b-\ell_{a,8}(x)\right).
+\]
+
+The modal decoder uses
+
+\[
+f_{c,t}=R_{24,4000}\!\left(
+R_{32,880}(e^{\beta_0})\exp(2\ln2\tanh(W_fh_t))+\epsilon_{CA}
+\right),
+\]
+
+\[
+r_{i,t}=r_i^{base}\exp(0.35\tanh(W_rh_t)),\qquad
+a_{i,t}=a_i^{field}(0.2+1.6\sigma(W_ah_t))
+\exp[-0.10\,r_{i,t}\sigma(W_dh_t)].
+\]
+
+The family gains and learned side gain are
+
+\[
+g_c=0.05+1.15\sigma(W_ch_t),\quad
+g_{aux}=0.02+0.43\sigma(W_{aux}h_t),
+\]
+
+\[
+g_{scan}=0.05+0.75\sigma(W_sh_t),\qquad
+g_{width}=0.05+1.15\sigma(W_wh_t).
+\]
+
+**Proposition 3 — the soft frequency rail has no dead half-space.** For finite
+\(x\) and \(w>0\),
+
+\[
+\ell'_{a,w}(x)=\frac12\left(1+
+\frac{x-a}{\sqrt{(x-a)^2+w^2}}\right)\in(0,1).
+\]
+
+Both derivatives composing \(R_{a,b}\) are strictly positive; therefore
+\(R'_{a,b}(x)>0\) for every finite \(x\). Also \(R_{a,b}(x)<b\), and its lower
+limit is the finite value \(b-\ell_{0,64}(b-a)\), approximately \(a\) when
+\(b-a\gg64\). Thus frequency is bounded but an oscillator below the nominal
+rail retains a nonzero learning direction. This specifically removes the
+zero-Jacobian absorbing region created by a hard `clamp`. \(\square\)
+
+**Proposition 4 — renderer controls are bounded.** Sigmoid outputs lie in
+\((0,1)\), hence \(g_c\in(0.05,1.20)\),
+\(g_{aux}\in(0.02,0.45)\), \(g_{scan}\in(0.05,0.80)\), and
+\(g_{width}\in(0.05,1.20)\). The learned width is multiplied by the bounded
+controller/host factor in \([0.5,1.25]\), so total side gain remains bounded.
+Modal damping is in \((0,1]\), the regional
+amplitudes are normalized before damping, active depth and field values are
+bounded, and final samples pass through `tanh`. Therefore adding learned gain
+control does not invalidate frozen forward boundedness. \(\square\)
+
+Every frequency and amplitude is continuous and bounded; oscillator phases are
+carried across chunks. No pitch grid, source waveform, or post-loss resonator
+enters the audible path. Consequently improved musical statistics must arise
+through learned recurrent/modal dynamics rather than passthrough.
+
+Finally, AdamW state is part of the dynamical training state:
+
+\[
+(\theta_t,m_t,v_t,k_t,z_t),
+\]
+
+not merely \((\theta_t,z_t)\). v7.1 checkpoints \(m_t,v_t,k_t\) and restores
+them only when their global-step stamp equals the world stamp. This removes the
+repeated 32-update transient that dominated short resumed runs.
+
+## 13. Research references
 
 - Chris G. Langton, “Computation at the edge of chaos: Phase transitions and emergent computation,” *Physica D* 42 (1990), 12–37. [DOI](https://doi.org/10.1016/0167-2789(90)90064-V)
 - Joschka Boedecker, Oliver Obst, Joseph T. Lizier, N. Michael Mayer, and Minoru Asada, “Information processing in echo state networks at the edge of chaos,” *Theory in Biosciences* 131 (2012), 205–213. [DOI](https://doi.org/10.1007/s12064-011-0146-8)

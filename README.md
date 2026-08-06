@@ -21,12 +21,20 @@ RUSTFLAGS="-C target-cpu=native" cargo build --release
 Use `./target/release/titan --help` for checkpoint, reset, thread, learning-rate,
 and truncated-BPTT options.
 
-Target WAVs are indexed, not loaded into RAM. At the beginning of a ~21.9 s
-episode, min-of-K chooses one nearby source passage; subsequent chunks follow
-that passage contiguously. Supervision combines 1,024-sample, 4,096-sample,
-and tape-scale full-band spectral views, time-aligned energy envelopes, and an
-explicit chunk-seam term. This gives temporal patterns a causal target while
-remaining phase-invariant where exact waveform phase would be misleading.
+Target WAVs are indexed, not loaded into RAM. On first use Titan creates
+`titan_corpus_manifest_v7.json`: generated Titan audio is quarantined, files
+are explicitly assigned to train/validation/exclude roles, and mastered/remix
+variants share a sampling family. At the beginning of a ~21.9 s episode, Titan
+samples a family independently of its own output and follows one passage
+contiguously. This removes the old nearest-target feedback loop.
+
+Supervision now covers 20 Hz--20 kHz at 1,024-, 4,096-, and tape scales, plus
+relative band energy, chroma/pitch salience, onset envelopes, modulation
+spectrum, 0.68/2.73/5.46-second recurrence geometry, level, and chunk seams.
+Exact waveform phase is not a target. The decoder is a phase-continuous modal
+bank whose carrier pitch, auxiliary modes, ratios, amplitudes, damping,
+family gains, and stereo width are continuous functions of recurrent memory
+and regional CA state.
 
 All oscillator families, the field scan, and stereo delay carry state across
 chunks. The audible post path is intentionally transparent: learned rendering,
@@ -40,6 +48,13 @@ in memory. Use the default `--bptt 8` for fresh models and fastest adaptation;
 larger values trade update frequency for lower-variance gradients and are most
 useful for already-developed organisms.
 
+AdamW first/second moments and cumulative update count are saved in
+`titan_optimizer_v7.safetensors`. They resume only when their global step
+matches the world checkpoint. `--fresh-decoder` resets the audible decoder but
+retains CA, GRU, morphic, arbiter, and episodic weights. `--run-tag NAME`
+isolates all experiment artifacts, making current-decoder, fresh-decoder, and
+fresh-model comparisons safe.
+
 Morphic depth has two checkpoint-compatible development paths. Sustained
 ecological or mimic pressure may add one layer at a 512-chunk boundary. A
 healthy organism with both low normalized field entropy and low predictive
@@ -49,8 +64,9 @@ regime. Every structural event prints its reason. Motif memory retains up to
 64 diverse observations for long-horizon recall.
 
 Telemetry names and their scientific limitations are documented in
-[`METRICS.md`](METRICS.md). Schema v3 separates raw CA movement from the
+[`METRICS.md`](METRICS.md). Schema v4 separates raw CA movement from the
 uncertainty movement feature, records exact morph events, supplies a topology
-row index, and adds oscillator, source-episode, seam, level, and fine-scale
-loss diagnostics. Run the verification
-suite with `cargo test` and `cargo clippy --all-targets -- -D warnings`.
+row index, and adds source-band, chroma, onset, modulation, recurrence,
+held-out-validation, sub-bass, and optimizer-continuity diagnostics. Run the
+verification suite with `cargo test` and
+`cargo clippy --all-targets -- -D warnings`.

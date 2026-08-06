@@ -26,13 +26,13 @@
 //    no v7 model exists.
 
 use anyhow::Result;
-use candle_core::{backprop::GradStore, DType, Device, Result as CResult, Tensor, D};
-use candle_nn::{AdamW, Conv2dConfig, Linear, Module, Optimizer, VarBuilder as VBV, VarMap};
+use candle_core::{backprop::GradStore, DType, Device, Result as CResult, Tensor, Var, D};
+use candle_nn::{Conv2dConfig, Linear, Module, ParamsAdamW, VarBuilder as VBV, VarMap};
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
 use rustfft::{num_complex::Complex, FftPlanner};
 use serde::{Deserialize, Serialize};
-use std::collections::VecDeque;
+use std::collections::{BTreeMap, HashMap, VecDeque};
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Read, Write};
 use std::sync::{
@@ -90,9 +90,8 @@ const KAN_BASIS_FUNCTIONS: usize = 8;
 
 // Scan-synth (the 2D field made directly audible)
 const SCAN_PARTIALS: usize = 16; // 4x4 regional agents -> partial amplitudes
-const SCAN_GAIN: f64 = 0.42;
-// Traverse only a few field columns per audio chunk. The old full-width scan
-// retriggered at 11.7 Hz and directly produced a small-engine amplitude buzz.
+                                 // Traverse only a few field columns per audio chunk. The old full-width scan
+                                 // retriggered at 11.7 Hz and directly produced a small-engine amplitude buzz.
 const SCAN_COLUMNS_PER_CHUNK: usize = 4;
 const REGION_ROWS: usize = 4;
 const REGION_COLS: usize = 4;
@@ -107,7 +106,7 @@ const PLAN_EVERY: usize = 8;
 const WORLD_VERSION: u32 = 7;
 const WORLD_MAGIC: [u8; 8] = *b"TITANW7\0";
 const WORLD_SAVE_EVERY: usize = 256;
-const TRACE_SCHEMA_VERSION: u32 = 3;
+const TRACE_SCHEMA_VERSION: u32 = 4;
 const TRACE_EVERY: usize = 10;
 const BUILD_COMMIT: &str = env!("TITAN_GIT_COMMIT");
 const BUILD_DIRTY: &str = env!("TITAN_GIT_DIRTY");
@@ -130,13 +129,18 @@ const NOVELTY_EVERY: usize = 4;
 const NOVELTY_MARGIN: f64 = 0.35;
 const NOVELTY_W: f64 = 0.25;
 
-// Min-of-K target sampling
-const TARGET_K: usize = 3;
+// A target episode is selected independently of the organism's current output.
+// The former min-of-K selector repeatedly chose the easiest self-similar mode,
+// which is a collapse mechanism for an unconditional generator.
+const TARGET_K: usize = 1;
 // Pick the nearest source mode once, then follow it for a real musical span.
 // 256 chunks is ~21.85 s at 48 kHz: long enough to expose rhythm, phrasing,
 // and transitions to the recurrent graph instead of presenting unrelated
 // 85 ms grains as if they were a sequence.
 const TARGET_EPISODE_CHUNKS: usize = 256;
+const VALIDATION_PROBES: usize = 4;
+const FEATURE_HISTORY_CHUNKS: usize = 65;
+const BAND_COUNT: usize = 12;
 
 // --- POTENTIAL CONTROLLER V(s) ---
 // Bowls (quadratic wells at setpoints), barriers (1/(1.02-a) rail walls),
@@ -321,6 +325,20 @@ const UNCERTAINTY_TRACE_HEADERS: &[&str] = &[
     "carrier_beat_hz",
     "mimic_coarse",
     "mimic_fine",
+    "band_loss",
+    "chroma_loss",
+    "onset_loss",
+    "recurrence_loss",
+    "modulation_loss",
+    "low_band_loss",
+    "stereo_balance_loss",
+    "output_low_band_ratio",
+    "output_side_mid_log_ratio",
+    "target_low_band_ratio",
+    "target_side_mid_log_ratio",
+    "validation_best_spectral",
+    "validation_mean_spectral",
+    "validation_mean_chroma",
     "boundary_loss",
     "level_loss",
     "target_rms",
@@ -328,6 +346,8 @@ const UNCERTAINTY_TRACE_HEADERS: &[&str] = &[
     "target_frame",
     "target_chunks_left",
     "optimizer_updates",
+    "optimizer_updates_run",
+    "optimizer_resumed",
     "ultrasonic_ratio",
 ];
 
@@ -1271,15 +1291,57 @@ impl CriticalityEstimator {
 // (bound = 1/sqrt(fan_in)), zeros for biases, N(0, 0.1) for the KAN "weights"
 // vectors, and the frequency constants are skipped (they are Const inits).
 fn deterministic_reinit(varmap: &VarMap, seed: u64, device: &Device) -> Result<usize> {
+    deterministic_reinit_where(varmap, seed, device, |_| true)
+}
+
+fn is_decoder_tensor(name: &str) -> bool {
+    [
+        "spatial_panner",
+        "fm_mod_",
+        "wave_morph_head",
+        "wavefolder_",
+        "base_freq_",
+        "carrier_pitch_head",
+        "auxiliary_pitch_head",
+        "partial_ratio_head",
+        "partial_amplitude_head",
+        "partial_damping_head",
+        "oscillator_gain_head",
+        "stereo_width_head",
+    ]
+    .iter()
+    .any(|needle| name.contains(needle))
+}
+
+fn deterministic_reinit_where<F>(
+    varmap: &VarMap,
+    seed: u64,
+    device: &Device,
+    predicate: F,
+) -> Result<usize>
+where
+    F: Fn(&str) -> bool,
+{
     let mut rng = RuntimeRng::seed_from_u64(seed ^ 0x5EED_1417);
     let data = varmap.data().lock().unwrap();
     let mut names: Vec<String> = data.keys().cloned().collect();
     names.sort(); // fixed iteration order => fixed draws
     let mut count = 0usize;
     for name in names {
+        if !predicate(&name) {
+            continue;
+        }
         let var = &data[&name];
         let dims = var.as_tensor().dims().to_vec();
         if name.contains("base_freq") {
+            let value = if name.contains("base_freq_l") {
+                BASE_FREQ_L.ln()
+            } else {
+                BASE_FREQ_R.ln()
+            };
+            var.set(&Tensor::from_vec(vec![value], dims, device)?)
+                .map_err(anyhow::Error::msg)?;
+            count += 1;
             continue;
         }
         let n: usize = dims.iter().product();
@@ -1303,7 +1365,330 @@ fn deterministic_reinit(varmap: &VarMap, seed: u64, device: &Device) -> Result<u
     Ok(count)
 }
 
+struct PersistentAdamVar {
+    name: String,
+    var: Var,
+    first_moment: Var,
+    second_moment: Var,
+}
+
+struct PersistentAdamW {
+    vars: Vec<PersistentAdamVar>,
+    step_t: u64,
+    params: ParamsAdamW,
+}
+
+impl PersistentAdamW {
+    fn new(varmap: &VarMap, learning_rate: f64) -> CResult<Self> {
+        let data = varmap.data().lock().unwrap();
+        let mut names: Vec<String> = data.keys().cloned().collect();
+        names.sort();
+        let mut vars = Vec::with_capacity(names.len());
+        for name in names {
+            let var = data[&name].clone();
+            if !var.dtype().is_float() {
+                continue;
+            }
+            vars.push(PersistentAdamVar {
+                name,
+                first_moment: Var::zeros(var.shape(), var.dtype(), var.device())?,
+                second_moment: Var::zeros(var.shape(), var.dtype(), var.device())?,
+                var,
+            });
+        }
+        Ok(Self {
+            vars,
+            step_t: 0,
+            params: ParamsAdamW {
+                lr: learning_rate,
+                ..Default::default()
+            },
+        })
+    }
+
+    fn set_learning_rate(&mut self, learning_rate: f64) {
+        self.params.lr = learning_rate;
+    }
+
+    fn cumulative_updates(&self) -> u64 {
+        self.step_t
+    }
+
+    fn step(&mut self, grads: &GradStore) -> CResult<()> {
+        self.step_t += 1;
+        let p = &self.params;
+        let scale_m = 1.0 / (1.0 - p.beta1.powi(self.step_t as i32));
+        let scale_v = 1.0 / (1.0 - p.beta2.powi(self.step_t as i32));
+        for state in &self.vars {
+            let Some(grad) = grads.get(state.var.as_tensor()) else {
+                continue;
+            };
+            let next_m = state
+                .first_moment
+                .as_tensor()
+                .affine(p.beta1, 0.0)?
+                .add(&grad.affine(1.0 - p.beta1, 0.0)?)?;
+            let next_v = state
+                .second_moment
+                .as_tensor()
+                .affine(p.beta2, 0.0)?
+                .add(&grad.sqr()?.affine(1.0 - p.beta2, 0.0)?)?;
+            let adjusted = next_m
+                .affine(scale_m, 0.0)?
+                .div(&next_v.affine(scale_v, 0.0)?.sqrt()?.affine(1.0, p.eps)?)?;
+            let next_theta = state
+                .var
+                .as_tensor()
+                .affine(1.0 - p.lr * p.weight_decay, 0.0)?
+                .sub(&adjusted.affine(p.lr, 0.0)?)?;
+            state.first_moment.set(&next_m)?;
+            state.second_moment.set(&next_v)?;
+            state.var.set(&next_theta)?;
+        }
+        Ok(())
+    }
+
+    fn save(&self, path: &str, global_step: u64, device: &Device) -> Result<()> {
+        let mut tensors: HashMap<String, Tensor> = HashMap::with_capacity(self.vars.len() * 2 + 2);
+        tensors.insert(
+            "optimizer.step_t".to_string(),
+            Tensor::new(self.step_t as i64, device)?,
+        );
+        tensors.insert(
+            "optimizer.global_step".to_string(),
+            Tensor::new(global_step as i64, device)?,
+        );
+        for state in &self.vars {
+            tensors.insert(
+                format!("optimizer.m.{}", state.name),
+                state.first_moment.as_tensor().clone(),
+            );
+            tensors.insert(
+                format!("optimizer.v.{}", state.name),
+                state.second_moment.as_tensor().clone(),
+            );
+        }
+        let tmp = format!("{}.tmp", path);
+        candle_core::safetensors::save(&tensors, &tmp).map_err(anyhow::Error::msg)?;
+        std::fs::rename(&tmp, path)?;
+        Ok(())
+    }
+
+    fn load(&mut self, path: &str, expected_global_step: u64, device: &Device) -> Result<usize> {
+        let tensors = candle_core::safetensors::load(path, device).map_err(anyhow::Error::msg)?;
+        let saved_global = tensors
+            .get("optimizer.global_step")
+            .ok_or_else(|| anyhow::anyhow!("optimizer checkpoint has no global step"))?
+            .to_scalar::<i64>()? as u64;
+        if saved_global != expected_global_step {
+            anyhow::bail!(
+                "optimizer/world step mismatch (optimizer {}, world {})",
+                saved_global,
+                expected_global_step
+            );
+        }
+        let saved_step = tensors
+            .get("optimizer.step_t")
+            .ok_or_else(|| anyhow::anyhow!("optimizer checkpoint has no update count"))?
+            .to_scalar::<i64>()? as u64;
+        let mut restored = 0usize;
+        for state in &self.vars {
+            let Some(first) = tensors.get(&format!("optimizer.m.{}", state.name)) else {
+                anyhow::bail!(
+                    "optimizer checkpoint is missing first moment for {}",
+                    state.name
+                );
+            };
+            let Some(second) = tensors.get(&format!("optimizer.v.{}", state.name)) else {
+                anyhow::bail!(
+                    "optimizer checkpoint is missing second moment for {}",
+                    state.name
+                );
+            };
+            if first.dims() != state.var.dims() || second.dims() != state.var.dims() {
+                anyhow::bail!("optimizer moment shape mismatch for {}", state.name);
+            }
+            state.first_moment.set(first)?;
+            state.second_moment.set(second)?;
+            restored += 1;
+        }
+        self.step_t = saved_step;
+        Ok(restored)
+    }
+}
+
 // --- AUDIO TARGET LOADER ---
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+enum CorpusRole {
+    Train,
+    Validation,
+    Exclude,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct CorpusEntry {
+    file: String,
+    role: CorpusRole,
+    family: String,
+    provenance: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct CorpusManifest {
+    schema_version: u32,
+    generated_by: String,
+    entries: Vec<CorpusEntry>,
+}
+
+fn stable_name_hash(name: &str) -> u64 {
+    checkpoint_checksum(name.as_bytes())
+}
+
+fn is_generated_audio_name(name: &str) -> bool {
+    let n = name.to_ascii_lowercase();
+    [
+        "rust_ecosystem_out",
+        "titan_prime",
+        "titan_output",
+        "ecosystem_out",
+    ]
+    .iter()
+    .any(|needle| n.contains(needle))
+}
+
+fn corpus_family(name: &str) -> String {
+    let stem = std::path::Path::new(name)
+        .file_stem()
+        .and_then(|v| v.to_str())
+        .unwrap_or(name)
+        .to_ascii_lowercase();
+    let noise = [
+        "mastered", "master", "remix", "extended", "ext", "version", "mix", "final", "wav", "v1",
+        "v2", "v3", "(1)", "(2)",
+    ];
+    let mut words = Vec::new();
+    for raw in stem.split(|c: char| !c.is_ascii_alphanumeric()) {
+        if raw.is_empty() || noise.contains(&raw) || raw.chars().all(|c| c.is_ascii_digit()) {
+            continue;
+        }
+        words.push(raw);
+    }
+    let family = words.join("_");
+    if family.is_empty() {
+        stem
+    } else {
+        family
+    }
+}
+
+fn auto_corpus_manifest(wav_dir: &str) -> Result<CorpusManifest> {
+    let mut names: Vec<String> = std::fs::read_dir(wav_dir)?
+        .filter_map(|entry| entry.ok())
+        .filter_map(|entry| {
+            let path = entry.path();
+            (path
+                .extension()
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("wav")))
+            .then(|| path.file_name()?.to_str().map(str::to_owned))
+            .flatten()
+        })
+        .collect();
+    names.sort();
+    let eligible: Vec<&String> = names
+        .iter()
+        .filter(|name| !is_generated_audio_name(name))
+        .collect();
+    let mut families: Vec<String> = eligible.iter().map(|name| corpus_family(name)).collect();
+    families.sort();
+    families.dedup();
+    let mut ranked: Vec<(u64, String)> = families
+        .iter()
+        .map(|family| (stable_name_hash(family), family.clone()))
+        .collect();
+    ranked.sort();
+    let held_out: std::collections::HashSet<String> = if families.len() >= 8 {
+        ranked
+            .into_iter()
+            .take(VALIDATION_PROBES.min((families.len() / 5).max(1)))
+            .map(|(_, family)| family)
+            .collect()
+    } else {
+        Default::default()
+    };
+    let entries = names
+        .into_iter()
+        .map(|file| {
+            let generated = is_generated_audio_name(&file);
+            let family = corpus_family(&file);
+            CorpusEntry {
+                family: family.clone(),
+                provenance: if generated {
+                    "titan_generated_quarantine".to_string()
+                } else {
+                    "user_corpus".to_string()
+                },
+                role: if generated {
+                    CorpusRole::Exclude
+                } else if held_out.contains(&family) {
+                    CorpusRole::Validation
+                } else {
+                    CorpusRole::Train
+                },
+                file,
+            }
+        })
+        .collect();
+    Ok(CorpusManifest {
+        schema_version: 1,
+        generated_by: format!("titan {}", env!("CARGO_PKG_VERSION")),
+        entries,
+    })
+}
+
+fn load_or_create_corpus_manifest(wav_dir: &str, path: &str) -> Result<CorpusManifest> {
+    if std::path::Path::new(path).exists() {
+        let mut manifest: CorpusManifest = serde_json::from_slice(&std::fs::read(path)?)?;
+        if manifest.schema_version != 1 {
+            anyhow::bail!(
+                "unsupported corpus manifest schema {}",
+                manifest.schema_version
+            );
+        }
+        // Repair manifests generated by earlier v7.1 builds: validation must
+        // be held out by deduplicated family, not only by filename.
+        if manifest.generated_by.starts_with("titan ") {
+            let held_out: std::collections::HashSet<String> = manifest
+                .entries
+                .iter()
+                .filter(|entry| entry.role == CorpusRole::Validation)
+                .map(|entry| entry.family.clone())
+                .collect();
+            let mut changed = false;
+            for entry in &mut manifest.entries {
+                if entry.role == CorpusRole::Train && held_out.contains(&entry.family) {
+                    entry.role = CorpusRole::Validation;
+                    changed = true;
+                }
+            }
+            if changed {
+                let tmp = format!("{}.tmp", path);
+                std::fs::write(&tmp, serde_json::to_vec_pretty(&manifest)?)?;
+                std::fs::rename(&tmp, path)?;
+                println!("--> Repaired validation split at the corpus-family boundary.");
+            }
+        }
+        return Ok(manifest);
+    }
+    let manifest = auto_corpus_manifest(wav_dir)?;
+    ensure_parent_dir(path)?;
+    let tmp = format!("{}.tmp", path);
+    std::fs::write(&tmp, serde_json::to_vec_pretty(&manifest)?)?;
+    std::fs::rename(&tmp, path)?;
+    println!("--> Created explicit corpus manifest at {}", path);
+    Ok(manifest)
+}
+
 #[derive(Clone)]
 struct TargetFile {
     path: std::path::PathBuf,
@@ -1324,23 +1709,62 @@ struct TargetCursor {
 
 struct TargetAudioLoader {
     files: Vec<TargetFile>,
+    train_groups: Vec<Vec<usize>>,
+    validation_files: Vec<usize>,
+    held_out_files: usize,
+    manifest_path: String,
     active: Option<TargetCursor>,
     pending: Vec<TargetCursor>,
     last_served: Option<TargetCursor>,
 }
 
 impl TargetAudioLoader {
+    #[cfg(test)]
     fn new(path: &str) -> Result<Self> {
+        let manifest_path = format!("{}/titan_corpus_manifest_v7.json", path);
+        Self::new_with_manifest(path, &manifest_path)
+    }
+
+    fn new_with_manifest(path: &str, manifest_path: &str) -> Result<Self> {
+        let manifest = load_or_create_corpus_manifest(path, manifest_path)?;
+        let entries: HashMap<&str, &CorpusEntry> = manifest
+            .entries
+            .iter()
+            .map(|entry| (entry.file.as_str(), entry))
+            .collect();
         let mut files = Vec::new();
+        let mut roles = Vec::new();
+        let mut families = Vec::new();
         let mut paths: Vec<std::path::PathBuf> = std::fs::read_dir(path)?
             .filter_map(|e| e.ok().map(|e| e.path()))
             .collect();
         paths.sort(); // deterministic buffer indexing across runs
         for p in paths {
-            let is_out = p.file_name().and_then(|n| n.to_str()) == Some("rust_ecosystem_out.wav");
-            if p.extension().is_some_and(|ext| ext == "wav") && !is_out {
+            let Some(name) = p.file_name().and_then(|n| n.to_str()) else {
+                continue;
+            };
+            let Some(entry) = entries.get(name).copied() else {
+                if p.extension()
+                    .is_some_and(|ext| ext.eq_ignore_ascii_case("wav"))
+                {
+                    println!(
+                        "--> Quarantining unlisted corpus file {:?}; add it to {} to train on it.",
+                        p, manifest_path
+                    );
+                }
+                continue;
+            };
+            if p.extension()
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("wav"))
+                && entry.role != CorpusRole::Exclude
+                && !is_generated_audio_name(name)
+            {
                 match Self::index_wav(&p) {
-                    Ok(file) if file.output_frames >= CHUNK_SIZE => files.push(file),
+                    Ok(file) if file.output_frames >= CHUNK_SIZE => {
+                        files.push(file);
+                        roles.push(entry.role.clone());
+                        families.push(entry.family.clone());
+                    }
                     Ok(file) => println!(
                         "--> Skipping {:?}: only {} samples after resample",
                         p, file.output_frames
@@ -1352,15 +1776,58 @@ impl TargetAudioLoader {
         if files.is_empty() {
             anyhow::bail!("No usable training audio found in {}", path);
         }
-        let total_output_frames: usize = files.iter().map(|f| f.output_frames).sum();
+        let mut grouped: BTreeMap<String, Vec<usize>> = BTreeMap::new();
+        let mut validation_groups: BTreeMap<String, Vec<usize>> = BTreeMap::new();
+        let mut held_out_files = 0usize;
+        for (idx, role) in roles.iter().enumerate() {
+            match role {
+                CorpusRole::Train => grouped.entry(families[idx].clone()).or_default().push(idx),
+                CorpusRole::Validation => {
+                    validation_groups
+                        .entry(families[idx].clone())
+                        .or_default()
+                        .push(idx);
+                    held_out_files += 1;
+                }
+                CorpusRole::Exclude => {}
+            }
+        }
+        // Tiny corpora remain usable in tests and experiments; a copy may act
+        // as a validation probe, but normal corpora keep held-out files strict.
+        if grouped.is_empty() {
+            for (idx, family) in families.iter().enumerate().take(files.len()) {
+                grouped.entry(family.clone()).or_default().push(idx);
+            }
+        }
+        let mut validation_files: Vec<usize> = validation_groups
+            .values()
+            .filter_map(|group| group.first().copied())
+            .collect();
+        if validation_files.is_empty() {
+            validation_files.extend(grouped.values().filter_map(|v| v.first().copied()).take(1));
+            held_out_files = 0;
+        }
+        let train_groups: Vec<Vec<usize>> = grouped.into_values().collect();
+        let total_output_frames: usize = train_groups
+            .iter()
+            .flatten()
+            .map(|&idx| files[idx].output_frames)
+            .sum();
         println!(
-            "--> Indexed {} target WAVs ({:.2} h); streaming coherent {:.1} s episodes (no corpus preload).",
-            files.len(),
+            "--> Corpus: {} training files in {} balanced families ({:.2} h), {} held-out files / {} fixed family probes; coherent {:.1} s episodes.",
+            train_groups.iter().map(Vec::len).sum::<usize>(),
+            train_groups.len(),
             total_output_frames as f64 / SAMPLE_RATE as f64 / 3600.0,
+            held_out_files,
+            validation_files.len(),
             TARGET_EPISODE_CHUNKS as f64 * CHUNK_SIZE as f64 / SAMPLE_RATE as f64,
         );
         Ok(Self {
             files,
+            train_groups,
+            validation_files,
+            held_out_files,
+            manifest_path: manifest_path.to_string(),
             active: None,
             pending: Vec::with_capacity(TARGET_K),
             last_served: None,
@@ -1446,9 +1913,8 @@ impl TargetAudioLoader {
         Ok((left, right))
     }
 
-    // Min-of-K sampling: return K candidate chunks stacked (K, 2, CHUNK). The
-    // caller computes a cheap coarse mimic per candidate and keeps the nearest —
-    // regressing to A mode of the target set instead of the blur of all modes.
+    // A family is sampled uniformly, then one of its declared variants. With
+    // TARGET_K=1, target choice is independent of current model output.
     fn sample_chunks(&mut self, k: usize, rng: &mut RuntimeRng, device: &Device) -> Result<Tensor> {
         let mut data = Vec::with_capacity(k * 2 * CHUNK_SIZE);
         self.pending.clear();
@@ -1464,7 +1930,9 @@ impl TargetAudioLoader {
             self.active = (cursor.chunks_left > 0).then_some(cursor);
         } else {
             for _ in 0..k {
-                let file_idx = rng.gen_range(0..self.files.len());
+                let family_idx = rng.gen_range(0..self.train_groups.len());
+                let family = &self.train_groups[family_idx];
+                let file_idx = family[rng.gen_range(0..family.len())];
                 let file = &self.files[file_idx];
                 let episode_chunks =
                     (file.output_frames / CHUNK_SIZE).clamp(1, TARGET_EPISODE_CHUNKS);
@@ -1511,6 +1979,36 @@ impl TargetAudioLoader {
             ),
             None => (String::new(), 0, 0),
         }
+    }
+
+    fn validation_chunks(&self, device: &Device) -> Result<Tensor> {
+        let count = self.validation_files.len().clamp(1, VALIDATION_PROBES);
+        let mut data = Vec::with_capacity(count * 2 * CHUNK_SIZE);
+        for &file_idx in self.validation_files.iter().take(count) {
+            let file = &self.files[file_idx];
+            let available = file.output_frames.saturating_sub(CHUNK_SIZE).max(1);
+            let name = file.path.file_name().and_then(|v| v.to_str()).unwrap_or("");
+            let start = (stable_name_hash(name) as usize % available).min(available - 1);
+            let (left, right) = self.decode_window(TargetCursor {
+                file: file_idx,
+                output_frame: start,
+                chunks_left: 1,
+            })?;
+            data.extend_from_slice(&left);
+            data.extend_from_slice(&right);
+        }
+        Ok(Tensor::from_vec(data, (count, 2, CHUNK_SIZE), device)?)
+    }
+
+    fn corpus_summary(&self) -> serde_json::Value {
+        serde_json::json!({
+            "manifest": self.manifest_path,
+            "training_files": self.train_groups.iter().map(Vec::len).sum::<usize>(),
+            "training_families": self.train_groups.len(),
+            "validation_files": self.held_out_files,
+            "validation_family_probes": self.validation_files.len(),
+            "selection": "uniform_family_then_uniform_variant",
+        })
     }
 }
 
@@ -1636,11 +2134,28 @@ fn stereo_side_gain(last_pan: f32, width_mult: f32) -> f32 {
     ((1.0 + last_pan.abs() * 0.8) * width_mult.clamp(0.5, 1.6)).clamp(0.5, MAX_STEREO_SIDE_GAIN)
 }
 
+fn smooth_lower_bound(value: &Tensor, floor: f64, width: f64) -> CResult<Tensor> {
+    // floor + 1/2[(x-floor)+sqrt((x-floor)^2+w^2)]. Unlike clamp, its
+    // derivative stays positive below the rail, so a collapsed oscillator can
+    // learn its way back into the audible/source-supported range.
+    let shifted = value.affine(1.0, -floor)?;
+    shifted
+        .add(&shifted.sqr()?.affine(1.0, width * width)?.sqrt()?)?
+        .affine(0.5, floor)
+}
+
+fn smooth_bounded_frequency(value: &Tensor, floor: f64, ceiling: f64) -> CResult<Tensor> {
+    let lower = smooth_lower_bound(value, floor, 8.0)?;
+    let distance_to_ceiling = lower.affine(-1.0, ceiling)?;
+    smooth_lower_bound(&distance_to_ceiling, 0.0, 64.0)?.affine(-1.0, ceiling)
+}
+
 // --- SPECTRAL PROJECTOR ---
 struct SpectralProjector {
     window: Tensor, // pre-unsqueezed (1, n)
     cos_m: Tensor,
     sin_m: Tensor,
+    dft_scale: f64,
 }
 impl SpectralProjector {
     fn new(device: &Device) -> CResult<Self> {
@@ -1651,7 +2166,10 @@ impl SpectralProjector {
         for i in 0..n {
             win.push(0.5 - 0.5 * (TWO_PI * i as f32 / (n as f32 - 1.0)).cos());
         }
-        let f_lo = 40.0f32;
+        // Twenty hertz closes the former 20--40 Hz supervision gap. A carrier
+        // could previously satisfy broadband RMS almost entirely below the
+        // first supervised bin, producing the observed lawnmower fundamental.
+        let f_lo = 20.0f32;
         // The old 8 kHz ceiling made harsh energy above the loss bandwidth
         // effectively free. Keep the logarithmic resolution but supervise the
         // full audible band below Nyquist.
@@ -1670,17 +2188,295 @@ impl SpectralProjector {
             window: Tensor::new(win, device)?.unsqueeze(0)?,
             cos_m: Tensor::from_vec(cos_v, (n, bins), device)?,
             sin_m: Tensor::from_vec(sin_v, (n, bins), device)?,
+            dft_scale: 2.0 / n as f64,
         })
     }
     fn log_mag(&self, x: &Tensor) -> CResult<Tensor> {
         let xw = x.broadcast_mul(&self.window)?;
-        let re = xw.matmul(&self.cos_m)?;
-        let im = xw.matmul(&self.sin_m)?;
+        // Normalize before the log. The old absolute epsilon became
+        // effectively microscopic for long windows, making spectral nulls
+        // dominate the gradient while global clipping hid the imbalance.
+        let re = xw.matmul(&self.cos_m)?.affine(self.dft_scale, 0.0)?;
+        let im = xw.matmul(&self.sin_m)?.affine(self.dft_scale, 0.0)?;
         re.sqr()?
             .add(&im.sqr()?)?
-            .affine(1.0, 1e-3)?
+            .affine(1.0, 1e-5)?
             .log()?
             .affine(0.5, 0.0)
+    }
+}
+
+fn log_band_energy(log_spectrum: &Tensor) -> CResult<Tensor> {
+    let dims = log_spectrum.dims();
+    let batch: usize = dims[..dims.len() - 1].iter().product();
+    log_spectrum
+        .reshape((batch, BAND_COUNT, SPEC_BINS / BAND_COUNT))?
+        .affine(2.0, 0.0)?
+        .exp()?
+        .mean(D::Minus1)?
+        .affine(1.0, 1e-6)?
+        .log()
+}
+
+struct ChromaProjector {
+    window: Tensor,
+    cos_m: Tensor,
+    sin_m: Tensor,
+    note_to_chroma: Tensor,
+}
+
+impl ChromaProjector {
+    fn new(device: &Device) -> CResult<Self> {
+        const NOTE_COUNT: usize = 84; // MIDI 24 (C1) through B7
+        let mut window = Vec::with_capacity(CHUNK_SIZE);
+        for i in 0..CHUNK_SIZE {
+            window.push(0.5 - 0.5 * (TWO_PI * i as f32 / (CHUNK_SIZE as f32 - 1.0)).cos());
+        }
+        let mut cos_v = vec![0.0f32; CHUNK_SIZE * NOTE_COUNT];
+        let mut sin_v = vec![0.0f32; CHUNK_SIZE * NOTE_COUNT];
+        let mut mapping = vec![0.0f32; NOTE_COUNT * 12];
+        for note in 0..NOTE_COUNT {
+            let midi = note as f32 + 24.0;
+            let frequency = 440.0 * 2.0f32.powf((midi - 69.0) / 12.0);
+            let omega = TWO_PI * frequency / SAMPLE_RATE as f32;
+            for i in 0..CHUNK_SIZE {
+                cos_v[i * NOTE_COUNT + note] = (omega * i as f32).cos();
+                sin_v[i * NOTE_COUNT + note] = (omega * i as f32).sin();
+            }
+            mapping[note * 12 + note % 12] = 1.0;
+        }
+        Ok(Self {
+            window: Tensor::new(window, device)?.unsqueeze(0)?,
+            cos_m: Tensor::from_vec(cos_v, (CHUNK_SIZE, NOTE_COUNT), device)?,
+            sin_m: Tensor::from_vec(sin_v, (CHUNK_SIZE, NOTE_COUNT), device)?,
+            note_to_chroma: Tensor::from_vec(mapping, (NOTE_COUNT, 12), device)?,
+        })
+    }
+
+    fn features(&self, x: &Tensor) -> CResult<Tensor> {
+        let xw = x.broadcast_mul(&self.window)?;
+        let re = xw
+            .matmul(&self.cos_m)?
+            .affine(2.0 / CHUNK_SIZE as f64, 0.0)?;
+        let im = xw
+            .matmul(&self.sin_m)?
+            .affine(2.0 / CHUNK_SIZE as f64, 0.0)?;
+        let chroma = re
+            .sqr()?
+            .add(&im.sqr()?)?
+            .matmul(&self.note_to_chroma)?
+            .affine(1.0, 1e-4)?
+            .log()?;
+        chroma.broadcast_sub(&chroma.mean_keepdim(D::Minus1)?)
+    }
+}
+
+struct FixedValidationBank {
+    spectra: Tensor,
+    chroma: Tensor,
+    count: usize,
+}
+
+impl FixedValidationBank {
+    fn new(targets: &Tensor, spec: &SpectralProjector, chroma: &ChromaProjector) -> CResult<Self> {
+        let count = targets.dim(0)?;
+        let stereo = targets.reshape((count * 2, CHUNK_SIZE))?;
+        Ok(Self {
+            spectra: spec.log_mag(&stereo)?.detach(),
+            chroma: chroma.features(&stereo)?.detach(),
+            count,
+        })
+    }
+
+    fn scores(
+        &self,
+        output: &Tensor,
+        spec: &Tensor,
+        chroma: &Tensor,
+    ) -> CResult<(Tensor, Tensor, Tensor)> {
+        let mut spectral = Vec::with_capacity(self.count);
+        let mut tonal = Vec::with_capacity(self.count);
+        for probe in 0..self.count {
+            spectral.push(
+                self.spectra
+                    .narrow(0, probe * 2, 2)?
+                    .sub(spec)?
+                    .sqr()?
+                    .mean_all()?
+                    .reshape((1,))?,
+            );
+            tonal.push(
+                self.chroma
+                    .narrow(0, probe * 2, 2)?
+                    .sub(chroma)?
+                    .sqr()?
+                    .mean_all()?
+                    .reshape((1,))?,
+            );
+        }
+        let spectral_refs: Vec<&Tensor> = spectral.iter().collect();
+        let tonal_refs: Vec<&Tensor> = tonal.iter().collect();
+        let spectral = Tensor::cat(&spectral_refs, 0)?;
+        let tonal = Tensor::cat(&tonal_refs, 0)?;
+        // Keep the output argument in the interface to make it explicit that
+        // validation is observational only; no target is fed into synthesis.
+        let _ = output;
+        Ok((spectral.min(0)?, spectral.mean_all()?, tonal.mean_all()?))
+    }
+}
+
+fn first_band_energy_ratio(log_bands: &Tensor) -> CResult<Tensor> {
+    let power = log_bands.exp()?;
+    let low = power.narrow(D::Minus1, 0, 1)?.sum_all()?;
+    low.div(&power.sum_all()?.affine(1.0, 1e-6)?)
+}
+
+fn stereo_mid_side_log_ratio(stereo: &Tensor) -> CResult<Tensor> {
+    let left = stereo.narrow(0, 0, 1)?;
+    let right = stereo.narrow(0, 1, 1)?;
+    let mid_energy = left
+        .add(&right)?
+        .affine(0.5, 0.0)?
+        .sqr()?
+        .mean_all()?
+        .affine(1.0, 1e-4)?
+        .log()?;
+    let side_energy = left
+        .sub(&right)?
+        .affine(0.5, 0.0)?
+        .sqr()?
+        .mean_all()?
+        .affine(1.0, 1e-4)?
+        .log()?;
+    side_energy.sub(&mid_energy)
+}
+
+fn onset_curve(envelope: &Tensor) -> CResult<Tensor> {
+    let n = envelope.dim(D::Minus1)?;
+    envelope
+        .narrow(D::Minus1, 1, n - 1)?
+        .sub(&envelope.narrow(D::Minus1, 0, n - 1)?)?
+        .relu()
+}
+
+fn cosine_similarity(a: &Tensor, b: &Tensor) -> CResult<Tensor> {
+    let dot = a.mul(b)?.sum_all()?;
+    let na = a.sqr()?.sum_all()?.affine(1.0, 1e-6)?.sqrt()?;
+    let nb = b.sqr()?.sum_all()?.affine(1.0, 1e-6)?.sqrt()?;
+    dot.div(&na.mul(&nb)?)
+}
+
+struct DetachedFeatureFrame {
+    output_band: Tensor,
+    target_band: Tensor,
+    output_chroma: Tensor,
+    target_chroma: Tensor,
+    output_envelope: Tensor,
+    target_envelope: Tensor,
+}
+
+struct ModulationProjector {
+    cos_m: Tensor,
+    sin_m: Tensor,
+}
+
+impl ModulationProjector {
+    fn new(device: &Device) -> CResult<Self> {
+        const N: usize = 64 * 16;
+        const MOD_FREQS: [f32; 10] = [0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0, 8.0, 12.0];
+        let frame_rate = SAMPLE_RATE as f32 / (CHUNK_SIZE / 16) as f32;
+        let mut cos_v = vec![0.0f32; N * MOD_FREQS.len()];
+        let mut sin_v = vec![0.0f32; N * MOD_FREQS.len()];
+        for (bin, frequency) in MOD_FREQS.into_iter().enumerate() {
+            let omega = TWO_PI * frequency / frame_rate;
+            for i in 0..N {
+                cos_v[i * 10 + bin] = (omega * i as f32).cos();
+                sin_v[i * 10 + bin] = (omega * i as f32).sin();
+            }
+        }
+        Ok(Self {
+            cos_m: Tensor::from_vec(cos_v, (N, 10), device)?,
+            sin_m: Tensor::from_vec(sin_v, (N, 10), device)?,
+        })
+    }
+
+    fn log_magnitude(&self, envelope: &Tensor) -> CResult<Tensor> {
+        let centered = envelope.broadcast_sub(&envelope.mean_keepdim(D::Minus1)?)?;
+        let re = centered.matmul(&self.cos_m)?.affine(2.0 / 1024.0, 0.0)?;
+        let im = centered.matmul(&self.sin_m)?.affine(2.0 / 1024.0, 0.0)?;
+        re.sqr()?
+            .add(&im.sqr()?)?
+            .affine(1.0, 1e-4)?
+            .log()?
+            .affine(0.5, 0.0)
+    }
+}
+
+fn target_relative_modulation_loss(
+    output_envelope: &Tensor,
+    target_envelope: &Tensor,
+    history: &VecDeque<DetachedFeatureFrame>,
+    projector: &ModulationProjector,
+    device: &Device,
+) -> CResult<Tensor> {
+    if history.len() < 63 {
+        return Tensor::new(0.0f32, device);
+    }
+    let recent: Vec<&DetachedFeatureFrame> = history.iter().rev().take(63).collect();
+    let mut out_parts: Vec<&Tensor> = recent
+        .iter()
+        .rev()
+        .map(|frame| &frame.output_envelope)
+        .collect();
+    let mut target_parts: Vec<&Tensor> = recent
+        .iter()
+        .rev()
+        .map(|frame| &frame.target_envelope)
+        .collect();
+    out_parts.push(output_envelope);
+    target_parts.push(target_envelope);
+    let output = Tensor::cat(&out_parts, 1)?;
+    let target = Tensor::cat(&target_parts, 1)?;
+    robust_distance(
+        &projector
+            .log_magnitude(&output)?
+            .sub(&projector.log_magnitude(&target)?.detach())?,
+        0.03,
+    )
+}
+
+fn target_relative_recurrence_loss(
+    output_band: &Tensor,
+    target_band: &Tensor,
+    output_chroma: &Tensor,
+    target_chroma: &Tensor,
+    history: &VecDeque<DetachedFeatureFrame>,
+    device: &Device,
+) -> CResult<Tensor> {
+    let mut losses = Vec::new();
+    // 0.68, 2.73, and 5.46 seconds at the native chunk cadence.
+    for lag in [8usize, 32, 64] {
+        if history.len() < lag {
+            continue;
+        }
+        let past = &history[history.len() - lag];
+        let out_rec = cosine_similarity(output_band, &past.output_band)?;
+        let target_rec = cosine_similarity(target_band, &past.target_band)?;
+        let out_chr = cosine_similarity(output_chroma, &past.output_chroma)?;
+        let target_chr = cosine_similarity(target_chroma, &past.target_chroma)?;
+        losses.push(
+            out_rec
+                .sub(&target_rec)?
+                .sqr()?
+                .add(&out_chr.sub(&target_chr)?.sqr()?)?
+                .affine(0.5, 0.0)?,
+        );
+    }
+    if losses.is_empty() {
+        Tensor::new(0.0f32, device)
+    } else {
+        let refs: Vec<&Tensor> = losses.iter().collect();
+        Tensor::stack(&refs, 0)?.mean_all()
     }
 }
 
@@ -2844,6 +3640,13 @@ struct ComplexAudioEcosystem {
     fm_mod_ratio: candle_nn::Sequential,
     fm_mod_index: candle_nn::Sequential,
     wave_morph_head: candle_nn::Sequential,
+    carrier_pitch_head: candle_nn::Sequential,
+    auxiliary_pitch_head: candle_nn::Sequential,
+    partial_ratio_head: candle_nn::Sequential,
+    partial_amplitude_head: candle_nn::Sequential,
+    partial_damping_head: candle_nn::Sequential,
+    oscillator_gain_head: candle_nn::Sequential,
+    stereo_width_head: candle_nn::Sequential,
     wavefolder_l: KANLayer,
     wavefolder_r: KANLayer,
     base_freq_l: Tensor,
@@ -2922,6 +3725,58 @@ impl ComplexAudioEcosystem {
                 vb.pp("wave_morph_head_0"),
             )?)
             .add(Sigmoid);
+        let carrier_pitch_head = candle_nn::seq()
+            .add(candle_nn::linear(
+                MEMORY_DIM,
+                2,
+                vb.pp("carrier_pitch_head_0"),
+            )?)
+            .add(Tanh);
+        let auxiliary_pitch_head = candle_nn::seq()
+            .add(candle_nn::linear(
+                MEMORY_DIM,
+                6,
+                vb.pp("auxiliary_pitch_head_0"),
+            )?)
+            .add(Tanh);
+        let partial_ratio_head = candle_nn::seq()
+            .add(candle_nn::linear(
+                MEMORY_DIM,
+                SCAN_PARTIALS,
+                vb.pp("partial_ratio_head_0"),
+            )?)
+            .add(Tanh);
+        let partial_amplitude_head = candle_nn::seq()
+            .add(candle_nn::linear(
+                MEMORY_DIM,
+                SCAN_PARTIALS,
+                vb.pp("partial_amplitude_head_0"),
+            )?)
+            .add(Sigmoid);
+        let partial_damping_head = candle_nn::seq()
+            .add(candle_nn::linear(
+                MEMORY_DIM,
+                SCAN_PARTIALS,
+                vb.pp("partial_damping_head_0"),
+            )?)
+            .add(Sigmoid);
+        // [carrier L/R, aux L0..2, aux R0..2, regional scan L/R]. The prior
+        // renderer fixed these gains, so a low carrier could not be suppressed
+        // even when the loss identified it correctly.
+        let oscillator_gain_head = candle_nn::seq()
+            .add(candle_nn::linear(
+                MEMORY_DIM,
+                10,
+                vb.pp("oscillator_gain_head_0"),
+            )?)
+            .add(Sigmoid);
+        let stereo_width_head = candle_nn::seq()
+            .add(candle_nn::linear(
+                MEMORY_DIM,
+                1,
+                vb.pp("stereo_width_head_0"),
+            )?)
+            .add(Sigmoid);
         let wavefolder_l = KANLayer::new(KAN_BASIS_FUNCTIONS, vb.pp("wavefolder_l"))?;
         let wavefolder_r = KANLayer::new(KAN_BASIS_FUNCTIONS, vb.pp("wavefolder_r"))?;
         let base_freq_l = vb.get_with_hints(
@@ -2996,6 +3851,13 @@ impl ComplexAudioEcosystem {
             fm_mod_ratio,
             fm_mod_index,
             wave_morph_head,
+            carrier_pitch_head,
+            auxiliary_pitch_head,
+            partial_ratio_head,
+            partial_amplitude_head,
+            partial_damping_head,
+            oscillator_gain_head,
+            stereo_width_head,
             wavefolder_l,
             wavefolder_r,
             base_freq_l,
@@ -3143,26 +4005,36 @@ impl ComplexAudioEcosystem {
         // Learned in log-Hz. The former abs(parameter) geometry had a cusp at
         // zero and let the carrier fall into sub-audio engine rates. Energy is
         // an amplitude budget, not a pitch control, so it no longer scales Hz.
-        let b_l = self
-            .base_freq_l
+        let b_l = smooth_bounded_frequency(&self.base_freq_l.reshape(())?.exp()?, 32.0, 880.0)?;
+        let b_r = smooth_bounded_frequency(&self.base_freq_r.reshape(())?.exp()?, 32.0, 880.0)?;
+
+        // The recurrent state now chooses pitch in log-frequency space. This
+        // is continuous (no scale snap or teacher waveform path), bounded to
+        // four octaves around the learned base, and gently perturbed by the
+        // spatial field so topology remains causally audible.
+        let carrier_pitch = self.carrier_pitch_head.forward(&refined_hidden)?;
+        let pitch_l = carrier_pitch
+            .narrow(1, 0, 1)?
             .reshape(())?
-            .exp()?
-            .clamp(32.0f32, 880.0f32)?;
-        let b_r = self
-            .base_freq_r
+            .affine(std::f64::consts::LN_2 * 2.0, 0.0)?
+            .exp()?;
+        let pitch_r = carrier_pitch
+            .narrow(1, 1, 1)?
             .reshape(())?
-            .exp()?
-            .clamp(32.0f32, 880.0f32)?;
+            .affine(std::f64::consts::LN_2 * 2.0, 0.0)?
+            .exp()?;
 
         let energy_factor = energy.clamp(0.15, 1.0);
-        let target_l = b_l
-            .add(&pop_l.affine(200.0, 0.0)?)?
-            .add(&movement_t.affine(100.0, 0.0)?)?
-            .clamp(32.0f32, 4000.0f32)?;
-        let target_r = b_r
-            .add(&pop_r.affine(200.0, 0.0)?)?
-            .add(&movement_t.affine(-100.0, 0.0)?)?
-            .clamp(32.0f32, 4000.0f32)?;
+        let target_l_raw = b_l
+            .mul(&pitch_l)?
+            .add(&pop_l.affine(36.0, 0.0)?)?
+            .add(&movement_t.affine(18.0, 0.0)?)?;
+        let target_r_raw = b_r
+            .mul(&pitch_r)?
+            .add(&pop_r.affine(36.0, 0.0)?)?
+            .add(&movement_t.affine(-18.0, 0.0)?)?;
+        let target_l = smooth_bounded_frequency(&target_l_raw, 24.0, 4000.0)?;
+        let target_r = smooth_bounded_frequency(&target_r_raw, 24.0, 4000.0)?;
 
         let g = FREQ_GLIDE_SPEED as f64;
         let cur_l = target_l.affine(g, self.current_freq_l as f64 * (1.0 - g))?;
@@ -3205,23 +4077,37 @@ impl ComplexAudioEcosystem {
         let morphs = self.wave_morph_head.forward(&refined_hidden)?;
         let morph_l = morphs.narrow(1, 0, 1)?.reshape(())?;
         let morph_r = morphs.narrow(1, 1, 1)?.reshape(())?;
+        let oscillator_gains = self.oscillator_gain_head.forward(&refined_hidden)?;
+        let carrier_gain_l = oscillator_gains
+            .narrow(1, 0, 1)?
+            .reshape(())?
+            .affine(1.15, 0.05)?;
+        let carrier_gain_r = oscillator_gains
+            .narrow(1, 1, 1)?
+            .reshape(())?
+            .affine(1.15, 0.05)?;
 
-        let mut audio_l = morph_wave(&ph_c_l, &morph_l)?;
-        let mut audio_r = morph_wave(&ph_c_r, &morph_r)?;
-        let aux_pairs = [
-            (
-                pop_l.affine(700.0, 300.0)?.clamp(60.0f32, 6000.0f32)?,
-                pop_r.affine(700.0, 300.0)?.clamp(60.0f32, 6000.0f32)?,
-            ),
-            (
-                movement_t.affine(1700.0, 800.0)?,
-                movement_t.affine(1700.0, 800.0)?,
-            ),
-            (
-                pop_l.affine(-500.0, 2000.0)?.clamp(60.0f32, 6000.0f32)?,
-                pop_r.affine(-500.0, 2000.0)?.clamp(60.0f32, 6000.0f32)?,
-            ),
-        ];
+        let mut audio_l = morph_wave(&ph_c_l, &morph_l)?.broadcast_mul(&carrier_gain_l)?;
+        let mut audio_r = morph_wave(&ph_c_r, &morph_r)?.broadcast_mul(&carrier_gain_r)?;
+        let auxiliary_pitch = self.auxiliary_pitch_head.forward(&refined_hidden)?;
+        let modal_bases = [2.03f64, 3.01, 5.07];
+        let mut aux_pairs = Vec::with_capacity(3);
+        for (j, base_ratio) in modal_bases.into_iter().enumerate() {
+            let ratio_l = auxiliary_pitch
+                .narrow(1, j, 1)?
+                .reshape(())?
+                .affine(std::f64::consts::LN_2, base_ratio.ln())?
+                .exp()?;
+            let ratio_r = auxiliary_pitch
+                .narrow(1, j + 3, 1)?
+                .reshape(())?
+                .affine(std::f64::consts::LN_2, base_ratio.ln())?
+                .exp()?;
+            aux_pairs.push((
+                cur_l.mul(&ratio_l)?.clamp(24.0f32, 12000.0f32)?,
+                cur_r.mul(&ratio_r)?.clamp(24.0f32, 12000.0f32)?,
+            ));
+        }
         let mut aux_freqs_l = Vec::with_capacity(3);
         let mut aux_freqs_r = Vec::with_capacity(3);
         for (j, (f_l, f_r)) in aux_pairs.into_iter().enumerate() {
@@ -3235,8 +4121,16 @@ impl ComplexAudioEcosystem {
                 .broadcast_mul(&f_r.affine(TWO_PI as f64, 0.0)?)?
                 .affine(1.0, self.aux_phase_r[j] as f64)?
                 .add(&theta_curve)?;
-            audio_l = audio_l.add(&morph_wave(&p_l, &morph_l)?.affine(0.3, 0.0)?)?;
-            audio_r = audio_r.add(&morph_wave(&p_r, &morph_r)?.affine(0.3, 0.0)?)?;
+            let aux_gain_l = oscillator_gains
+                .narrow(1, 2 + j, 1)?
+                .reshape(())?
+                .affine(0.43, 0.02)?;
+            let aux_gain_r = oscillator_gains
+                .narrow(1, 5 + j, 1)?
+                .reshape(())?
+                .affine(0.43, 0.02)?;
+            audio_l = audio_l.add(&morph_wave(&p_l, &morph_l)?.broadcast_mul(&aux_gain_l)?)?;
+            audio_r = audio_r.add(&morph_wave(&p_r, &morph_r)?.broadcast_mul(&aux_gain_r)?)?;
             aux_freqs_l.push(f_l.reshape((1,))?);
             aux_freqs_r.push(f_r.reshape((1,))?);
         }
@@ -3273,11 +4167,26 @@ impl ComplexAudioEcosystem {
             .scan_brightness
             .affine(control.spectral_tilt as f64, 1.0)?
             .clamp(0.18f32, 1.82f32)?;
-        let amps = amps.broadcast_mul(&tilt)?;
+        let learned_amps = self
+            .partial_amplitude_head
+            .forward(&refined_hidden)?
+            .reshape((SCAN_PARTIALS, 1))?
+            .affine(1.6, 0.20)?;
+        let damping = self
+            .partial_damping_head
+            .forward(&refined_hidden)?
+            .reshape((SCAN_PARTIALS, 1))?;
+        let amps = amps.broadcast_mul(&tilt)?.broadcast_mul(&learned_amps)?;
         let amp_sum = amps.sum_all()?.affine(1.0, 1e-4)?;
         let amps_n = amps.broadcast_div(&amp_sum)?;
 
         let inh = control.inharmonicity.clamp(0.0, 1.0);
+        let learned_ratio = self
+            .partial_ratio_head
+            .forward(&refined_hidden)?
+            .reshape((SCAN_PARTIALS, 1))?
+            .affine(0.35, 0.0)?
+            .exp()?;
         let ratios = self
             .scan_harmonic
             .affine((1.0 - inh) as f64, 0.0)?
@@ -3287,7 +4196,14 @@ impl ComplexAudioEcosystem {
                     .reshape((REGION_COUNT, 1))?
                     .broadcast_mul(&self.scan_detune)?
                     .affine((0.7 + 0.8 * inh) as f64, 0.0)?,
-            )?;
+            )?
+            .broadcast_mul(&learned_ratio)?;
+        // Damping is modal attenuation rather than an external filter: every
+        // audible partial remains an explicit solution of the learned
+        // oscillator bank. Higher modes may decay more strongly, closing the
+        // bright-comb shortcut while preserving phase continuity.
+        let modal_decay = damping.broadcast_mul(&ratios)?.affine(-0.10, 0.0)?.exp()?;
+        let amps_n = amps_n.broadcast_mul(&modal_decay)?;
 
         // Keep one global column envelope as a slow, coherent breath while the
         // regional agents retain spatially independent spectra.
@@ -3332,8 +4248,16 @@ impl ComplexAudioEcosystem {
             .broadcast_mul(&self.scan_pan_r)?;
         let scan_l = partials_l.sum(0)?.reshape((1, CHUNK_SIZE))?.mul(&env)?;
         let scan_r = partials_r.sum(0)?.reshape((1, CHUNK_SIZE))?.mul(&env)?;
-        audio_l = audio_l.add(&scan_l.affine(SCAN_GAIN, 0.0)?.reshape((CHUNK_SIZE,))?)?;
-        audio_r = audio_r.add(&scan_r.affine(SCAN_GAIN, 0.0)?.reshape((CHUNK_SIZE,))?)?;
+        let scan_gain_l = oscillator_gains
+            .narrow(1, 8, 1)?
+            .reshape(())?
+            .affine(0.75, 0.05)?;
+        let scan_gain_r = oscillator_gains
+            .narrow(1, 9, 1)?
+            .reshape(())?
+            .affine(0.75, 0.05)?;
+        audio_l = audio_l.add(&scan_l.broadcast_mul(&scan_gain_l)?.reshape((CHUNK_SIZE,))?)?;
+        audio_r = audio_r.add(&scan_r.broadcast_mul(&scan_gain_r)?.reshape((CHUNK_SIZE,))?)?;
 
         let audio_l = self
             .wavefolder_l
@@ -3366,7 +4290,14 @@ impl ComplexAudioEcosystem {
         // readback) — removes the one remaining per-step to_scalar sync. Width
         // is a slow spatial parameter; the 85 ms lag is inaudible.
         let width_val = stereo_side_gain(self.last_pan, control.width_mult);
-        let side_wide = side.affine(width_val as f64, 0.0)?;
+        let learned_width = self
+            .stereo_width_head
+            .forward(&refined_hidden)?
+            .reshape(())?
+            .affine(1.15, 0.05)?;
+        let side_wide = side
+            .affine(width_val as f64, 0.0)?
+            .broadcast_mul(&learned_width)?;
         let side_history = Tensor::cat(&[&self.prev_haas_side, &side_wide], 1)?;
         let side_delayed = side_history.narrow(1, 0, CHUNK_SIZE)?;
         let audio_l = mid.add(&side_delayed)?;
@@ -3619,6 +4550,25 @@ fn ensure_parent_dir(path: &str) -> Result<()> {
     Ok(())
 }
 
+fn artifact_path(base: &str, stem: &str, extension: &str, tag: Option<&str>) -> String {
+    match tag {
+        Some(tag) => format!("{}/{}_{}.{}", base, stem, tag, extension),
+        None => format!("{}/{}.{}", base, stem, extension),
+    }
+}
+
+fn validate_run_tag(tag: &str) -> Result<()> {
+    if tag.is_empty()
+        || tag.len() > 48
+        || !tag
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
+    {
+        anyhow::bail!("run tag must be 1..48 ASCII letters, digits, '-' or '_'");
+    }
+    Ok(())
+}
+
 fn checkpoint_checksum(bytes: &[u8]) -> u64 {
     // FNV-1a is not cryptographic; it is a fast corruption/truncation guard.
     let mut h = 0xcbf29ce484222325u64;
@@ -3780,10 +4730,13 @@ fn main() -> Result<()> {
     let mut sim_duration = DURATION_SECONDS;
     let mut bptt_window = BPTT_WINDOW;
     let mut fresh_model = false;
+    let mut fresh_decoder = false;
     let mut fresh_world = false;
     let mut state_override: Option<String> = None;
     let mut model_override: Option<String> = None;
     let mut import_model_override: Option<String> = None;
+    let mut corpus_manifest_override: Option<String> = None;
+    let mut run_tag: Option<String> = None;
     let mut seed: u64 = 42;
     let mut arg_idx = 1;
     while arg_idx < args.len() {
@@ -3860,7 +4813,29 @@ fn main() -> Result<()> {
                     anyhow::bail!("Missing value for --import-model");
                 }
             }
+            "--corpus-manifest" => {
+                if arg_idx + 1 < args.len() {
+                    corpus_manifest_override = Some(args[arg_idx + 1].clone());
+                    arg_idx += 2;
+                } else {
+                    anyhow::bail!("Missing value for --corpus-manifest");
+                }
+            }
+            "--run-tag" => {
+                if arg_idx + 1 < args.len() {
+                    validate_run_tag(&args[arg_idx + 1])?;
+                    run_tag = Some(args[arg_idx + 1].clone());
+                    arg_idx += 2;
+                } else {
+                    anyhow::bail!("Missing value for --run-tag");
+                }
+            }
             "--fresh-world" => {
+                fresh_world = true;
+                arg_idx += 1;
+            }
+            "--fresh-decoder" => {
+                fresh_decoder = true;
                 fresh_world = true;
                 arg_idx += 1;
             }
@@ -3882,7 +4857,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
       --state PATH     World-checkpoint path\n\
       --model PATH     v7 model output/resume path\n\
       --import-model P Import compatible experimental tensors without overwriting source\n\
+      --corpus-manifest PATH  Explicit train/validation/exclude manifest\n\
+      --run-tag NAME   Isolate output, telemetry, model, and world artifacts\n\
       --fresh-world    Reset CA/DSP/memory while retaining compatible weights\n\
+      --fresh-decoder  Retain CA/memory weights; reset only audible decoder tensors\n\
   -f, --fresh-model    Reset both learned weights and the world\n\
 \nCtrl-C finishes the active chunk, finalizes audio, and saves the organism.\n"
                 );
@@ -3939,23 +4917,45 @@ Usage: titan [BASE_DIR] [options]\n\n\
             );
         }
     }
-    println!("NOTE: CA/RNG/renderer state resumes from the v7 world. AdamW moments restart per process behind a 32-update LR warmup. Fresh reproducibility also requires the same --threads value.");
+    println!("NOTE: CA/RNG/renderer and matching AdamW moments resume from v7 checkpoints. A missing or mismatched optimizer uses a 32-update LR warmup. Fresh reproducibility also requires the same --threads value.");
 
     let wav_dir = format!("{}/OLD_WAVS", base_dir);
-    let model_path =
-        model_override.unwrap_or_else(|| format!("{}/titan_model_v7.safetensors", base_dir));
+    let model_path = model_override.unwrap_or_else(|| {
+        artifact_path(
+            &base_dir,
+            "titan_model_v7",
+            "safetensors",
+            run_tag.as_deref(),
+        )
+    });
     let importing_model = import_model_override.is_some();
     let load_model_path = if let Some(path) = import_model_override {
         path
     } else {
         model_path.clone()
     };
-    let world_path = state_override.unwrap_or_else(|| format!("{}/titan_world_v7.bin", base_dir));
+    let world_path = state_override
+        .unwrap_or_else(|| artifact_path(&base_dir, "titan_world_v7", "bin", run_tag.as_deref()));
     let load_world_path = world_path.clone();
-    let morph_path = format!("{}/titan_morph_state_v7.json", base_dir);
+    let morph_path = artifact_path(
+        &base_dir,
+        "titan_morph_state_v7",
+        "json",
+        run_tag.as_deref(),
+    );
+    let optimizer_path = artifact_path(
+        &base_dir,
+        "titan_optimizer_v7",
+        "safetensors",
+        run_tag.as_deref(),
+    );
     ensure_parent_dir(&model_path)?;
     ensure_parent_dir(&world_path)?;
-    let mut target_loader = TargetAudioLoader::new(&wav_dir)?;
+    ensure_parent_dir(&optimizer_path)?;
+    let corpus_manifest_path = corpus_manifest_override
+        .unwrap_or_else(|| format!("{}/titan_corpus_manifest_v7.json", base_dir));
+    let mut target_loader = TargetAudioLoader::new_with_manifest(&wav_dir, &corpus_manifest_path)?;
+    let corpus_summary = target_loader.corpus_summary();
     let varmap = VarMap::new();
     let vb = VBV::from_varmap(&varmap, DType::F32, &device);
     let mut model = ComplexAudioEcosystem::new(vb.pp("model"), &device)?;
@@ -3966,6 +4966,11 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let spec_proj_fine =
         SpectralProjector::new_with(1024, 48, &device).map_err(anyhow::Error::msg)?;
     let spec_proj_long = SpectralProjector::new_with(CHUNK_SIZE * tape_chunks, 128, &device)
+        .map_err(anyhow::Error::msg)?;
+    let chroma_proj = ChromaProjector::new(&device).map_err(anyhow::Error::msg)?;
+    let modulation_proj = ModulationProjector::new(&device).map_err(anyhow::Error::msg)?;
+    let validation_targets = target_loader.validation_chunks(&device)?;
+    let validation_bank = FixedValidationBank::new(&validation_targets, &spec_proj, &chroma_proj)
         .map_err(anyhow::Error::msg)?;
 
     // Initialize the full v7 parameter set deterministically first, then load
@@ -4019,6 +5024,19 @@ Usage: titan [BASE_DIR] [options]\n\n\
         );
         fresh_world = true;
     }
+    if fresh_decoder {
+        if !loaded_any {
+            anyhow::bail!("--fresh-decoder requires a compatible model checkpoint to retain");
+        }
+        let reset =
+            deterministic_reinit_where(&varmap, seed ^ 0xDEC0_DE70, &device, is_decoder_tensor)?;
+        println!(
+            "==> FRESH DECODER: reset {} synthesis tensors; CA, GRU, morphic, arbiter, and episodic weights retained.",
+            reset
+        );
+        loaded_full = false;
+        fresh_world = true;
+    }
 
     let mut rad_amp = RAD_AMP_INIT;
     if !fresh_world && loaded_full {
@@ -4052,7 +5070,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let mut novelty_buf: VecDeque<Tensor> = VecDeque::with_capacity(NOVELTY_SLOTS);
 
     let mut host_runtime = HostRuntimeState::default();
-    let mut optimizer = AdamW::new_lr(varmap.all_vars(), target_lr).map_err(anyhow::Error::msg)?;
+    let mut optimizer = PersistentAdamW::new(&varmap, target_lr).map_err(anyhow::Error::msg)?;
 
     let mut micro_tape = randn_t(&mut rng, &[1, CA_CHANNELS, GRID_H, GRID_W], 1.0, &device)
         .map_err(anyhow::Error::msg)?;
@@ -4125,6 +5143,29 @@ Usage: titan [BASE_DIR] [options]\n\n\
             "==> FRESH WORLD: retaining compatible model weights but resetting organism state."
         );
     }
+    let mut optimizer_resumed = false;
+    if loaded_world
+        && loaded_full
+        && !fresh_model
+        && !fresh_decoder
+        && !importing_model
+        && std::path::Path::new(&optimizer_path).exists()
+    {
+        match optimizer.load(&optimizer_path, global_step, &device) {
+            Ok(restored) => {
+                optimizer_resumed = true;
+                println!(
+                    "--> Resumed AdamW: {} moment pairs, {} cumulative updates.",
+                    restored,
+                    optimizer.cumulative_updates()
+                );
+            }
+            Err(error) => println!(
+                "--> Optimizer checkpoint rejected: {} — moments restart with warmup.",
+                error
+            ),
+        }
+    }
     println!(
         "--> Observer depth: L{:02} / {} · rad_amp {:.3} · world {}",
         model.depth(),
@@ -4135,6 +5176,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
 
     let reset_mode = if fresh_model {
         "fresh_model"
+    } else if fresh_decoder {
+        "fresh_decoder"
     } else if fresh_world {
         "fresh_world"
     } else if loaded_world {
@@ -4159,7 +5202,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
     // Mobile-safe output path: stream DC-blocked f32 samples to a temporary
     // file, then perform one normalization/transcode pass.  A 16-minute run
     // no longer retains ~350 MB of stereo f32 audio in RAM.
-    let raw_audio_path = format!("{}/.titan_audio_f32.tmp", base_dir);
+    let raw_audio_path = artifact_path(&base_dir, ".titan_audio_f32", "tmp", run_tag.as_deref());
     let raw_audio_file = File::create(&raw_audio_path)?;
     let mut raw_audio_writer = BufWriter::with_capacity(1 << 20, raw_audio_file);
     let (mut dc_x1_l, mut dc_y1_l, mut dc_x1_r, mut dc_y1_r) = (
@@ -4183,6 +5226,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let mut target_sequence: Vec<Tensor> = Vec::with_capacity(tape_chunks);
     let mut prev_audio_tail: Option<Tensor> = None;
     let mut prev_target_tail: Option<Tensor> = None;
+    let mut feature_history: VecDeque<DetachedFeatureFrame> =
+        VecDeque::with_capacity(FEATURE_HISTORY_CHUNKS);
     let mut steps_in_tape = 0usize;
     let mut steps_since_update = 0usize;
     let mut accumulated_steps = 0usize;
@@ -4413,6 +5458,16 @@ Usage: titan [BASE_DIR] [options]\n\n\
 
         let out_spec = Tensor::cat(&[&out_spec_l, &out_spec_r], 0)?; // (2, bins), grad-carrying
         let mimic_coarse = robust_distance(&out_spec.sub(&tgt_spec)?, 0.03)?;
+        let out_bands = log_band_energy(&out_spec)?;
+        let target_bands = log_band_energy(&tgt_spec)?.detach();
+        let band_loss = robust_distance(&out_bands.sub(&target_bands)?, 0.05)?;
+        let out_chroma = chroma_proj.features(&audio_for_loss)?;
+        let target_chroma = chroma_proj.features(&target_chunk)?.detach();
+        let chroma_loss = robust_distance(&out_chroma.sub(&target_chroma)?, 0.05)?;
+        let out_pitch_salience = out_chroma.abs()?.max(D::Minus1)?.mean_all()?;
+        let target_pitch_salience = target_chroma.abs()?.max(D::Minus1)?.mean_all()?;
+        let pitch_salience_loss =
+            robust_distance(&out_pitch_salience.sub(&target_pitch_salience)?, 0.05)?;
         let out_fine = spec_proj_fine.log_mag(&audio_for_loss.reshape((8, 1024))?)?;
         let tgt_fine = spec_proj_fine
             .log_mag(&target_chunk.reshape((8, 1024))?)?
@@ -4435,9 +5490,72 @@ Usage: titan [BASE_DIR] [options]\n\n\
             .sqrt()?
             .detach();
         let envelope_loss = out_env.sub(&target_env)?.sqr()?.mean_all()?;
+        let onset_loss = robust_distance(
+            &onset_curve(&out_env)?.sub(&onset_curve(&target_env)?)?,
+            0.02,
+        )?;
+        let mono_out_bands = out_bands.mean(0)?.reshape((1, BAND_COUNT))?;
+        let mono_target_bands = target_bands.mean(0)?.reshape((1, BAND_COUNT))?;
+        let mono_out_chroma = out_chroma.mean(0)?.reshape((1, 12))?;
+        let mono_target_chroma = target_chroma.mean(0)?.reshape((1, 12))?;
+        let recurrence_loss = target_relative_recurrence_loss(
+            &mono_out_bands,
+            &mono_target_bands,
+            &mono_out_chroma,
+            &mono_target_chroma,
+            &feature_history,
+            &device,
+        )?;
+        let mono_out_env = out_env.mean(0)?.reshape((1, 16))?;
+        let mono_target_env = target_env.mean(0)?.reshape((1, 16))?;
+        let modulation_loss = target_relative_modulation_loss(
+            &mono_out_env,
+            &mono_target_env,
+            &feature_history,
+            &modulation_proj,
+            &device,
+        )?;
+        let output_low_band_ratio = first_band_energy_ratio(&out_bands)?;
+        let target_low_band_ratio = first_band_energy_ratio(&target_bands)?;
+        let low_band_loss = robust_distance(
+            &output_low_band_ratio
+                .affine(1.0, 1e-4)?
+                .log()?
+                .sub(&target_low_band_ratio.affine(1.0, 1e-4)?.log()?)?,
+            0.05,
+        )?;
+        let output_side_ratio = stereo_mid_side_log_ratio(&audio_for_loss)?;
+        let target_side_ratio = stereo_mid_side_log_ratio(&target_chunk)?.detach();
+        let stereo_balance_loss =
+            robust_distance(&output_side_ratio.sub(&target_side_ratio)?, 0.05)?;
+        let (validation_best, validation_mean, validation_chroma) = validation_bank.scores(
+            &audio_for_loss.detach(),
+            &out_spec.detach(),
+            &out_chroma.detach(),
+        )?;
         let mimic_loss = mimic_coarse
             .add(&mimic_fine.affine(0.5, 0.0)?)?
-            .add(&envelope_loss.affine(0.35, 0.0)?)?;
+            .add(&envelope_loss.affine(0.35, 0.0)?)?
+            .add(&band_loss.affine(0.45, 0.0)?)?
+            .add(&chroma_loss.affine(0.25, 0.0)?)?
+            .add(&pitch_salience_loss.affine(0.08, 0.0)?)?
+            .add(&onset_loss.affine(0.25, 0.0)?)?
+            .add(&recurrence_loss.affine(0.25, 0.0)?)?
+            .add(&modulation_loss.affine(0.20, 0.0)?)?
+            .add(&low_band_loss.affine(0.50, 0.0)?)?
+            .add(&stereo_balance_loss.affine(0.35, 0.0)?)?;
+
+        if feature_history.len() >= FEATURE_HISTORY_CHUNKS {
+            feature_history.pop_front();
+        }
+        feature_history.push_back(DetachedFeatureFrame {
+            output_band: mono_out_bands.detach(),
+            target_band: mono_target_bands.detach(),
+            output_chroma: mono_out_chroma.detach(),
+            target_chroma: mono_target_chroma.detach(),
+            output_envelope: mono_out_env.detach(),
+            target_envelope: mono_target_env.detach(),
+        });
 
         // Explicitly supervise the seam between adjacent chunks. The prior
         // Hann-only objective discarded both endpoints, making retriggers and
@@ -4514,7 +5632,19 @@ Usage: titan [BASE_DIR] [options]\n\n\
         let target_diff = target_chunk
             .narrow(1, 1, CHUNK_SIZE - 1)?
             .sub(&target_chunk.narrow(1, 0, CHUNK_SIZE - 1)?)?;
-        let roughness_loss = diff.sub(&target_diff)?.sqr()?.mean_all()?;
+        // Match derivative ENERGY rather than waveform derivatives. Direct
+        // sample-wise derivative matching is phase-sensitive; for an
+        // autonomous oscillator it rewards broadband noise because the source
+        // phase is unavailable. Log derivative energy retains the intended
+        // roughness constraint without asking the model to counterfeit phase.
+        let diff_energy = diff.sqr()?.mean(D::Minus1)?.affine(1.0, 1e-4)?.log()?;
+        let target_diff_energy = target_diff
+            .sqr()?
+            .mean(D::Minus1)?
+            .affine(1.0, 1e-4)?
+            .log()?
+            .detach();
+        let roughness_loss = robust_distance(&diff_energy.sub(&target_diff_energy)?, 0.05)?;
         let reg_loss = stereo_chunk.sqr()?.mean_all()?;
         let empowerment_loss = empowerment_t.affine(1.0, -2.5)?.sqr()?;
         let synergy_loss = synergy_tensor
@@ -4595,6 +5725,20 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 &boundary_loss.reshape((1,))?,
                 &level_loss.reshape((1,))?,
                 &target_rms.reshape((1,))?,
+                &band_loss.reshape((1,))?,
+                &chroma_loss.reshape((1,))?,
+                &onset_loss.reshape((1,))?,
+                &recurrence_loss.reshape((1,))?,
+                &modulation_loss.reshape((1,))?,
+                &low_band_loss.reshape((1,))?,
+                &stereo_balance_loss.reshape((1,))?,
+                &output_low_band_ratio.reshape((1,))?,
+                &output_side_ratio.reshape((1,))?,
+                &target_low_band_ratio.reshape((1,))?,
+                &target_side_ratio.reshape((1,))?,
+                &validation_best.reshape((1,))?,
+                &validation_mean.reshape((1,))?,
+                &validation_chroma.reshape((1,))?,
             ],
             0,
         )?
@@ -4661,6 +5805,20 @@ Usage: titan [BASE_DIR] [options]\n\n\
         let boundary_loss_val = metrics[tail_start + 4];
         let level_loss_val = metrics[tail_start + 5];
         let target_rms_val = metrics[tail_start + 6];
+        let band_loss_val = metrics[tail_start + 7];
+        let chroma_loss_val = metrics[tail_start + 8];
+        let onset_loss_val = metrics[tail_start + 9];
+        let recurrence_loss_val = metrics[tail_start + 10];
+        let modulation_loss_val = metrics[tail_start + 11];
+        let low_band_loss_val = metrics[tail_start + 12];
+        let stereo_balance_loss_val = metrics[tail_start + 13];
+        let output_low_band_ratio_val = metrics[tail_start + 14];
+        let output_side_ratio_val = metrics[tail_start + 15];
+        let target_low_band_ratio_val = metrics[tail_start + 16];
+        let target_side_ratio_val = metrics[tail_start + 17];
+        let validation_best_val = metrics[tail_start + 18];
+        let validation_mean_val = metrics[tail_start + 19];
+        let validation_chroma_val = metrics[tail_start + 20];
         if let (Some(actual), Some(_)) = (&last_observation, &pending_predictor_input) {
             controller
                 .meta
@@ -4684,6 +5842,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
             target_sequence.clear();
             prev_audio_tail = None;
             prev_target_tail = None;
+            feature_history.clear();
             adaptive_dynamics.low_motion_run = 0;
             adaptive_dynamics.stagnation = 0.0;
             adaptive_dynamics.escape_cooldown = 0;
@@ -5026,8 +6185,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
                             }
                         }
                         let mean_lr_gain = accumulated_lr_gain_sum / accumulated_steps as f64;
-                        let moment_warmup =
-                            (0.20 + 0.80 * (optimizer_update_count + 1) as f64 / 32.0).min(1.0);
+                        let moment_warmup = (0.20
+                            + 0.80 * (optimizer.cumulative_updates() + 1) as f64 / 32.0)
+                            .min(1.0);
                         optimizer.set_learning_rate(target_lr * mean_lr_gain * moment_warmup);
                         let _ = optimizer.step(&grads);
                         optimizer_update_count += 1;
@@ -5280,10 +6440,24 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 "carrier_freq_l": f_l, "carrier_freq_r": f_r,
                 "carrier_beat_hz": (f_l - f_r).abs(),
                 "mimic_coarse": mimic_drift, "mimic_fine": mimic_fine_val,
+                "band_loss": band_loss_val, "chroma_loss": chroma_loss_val,
+                "onset_loss": onset_loss_val, "recurrence_loss": recurrence_loss_val,
+                "modulation_loss": modulation_loss_val,
+                "low_band_loss": low_band_loss_val,
+                "stereo_balance_loss": stereo_balance_loss_val,
+                "output_low_band_ratio": output_low_band_ratio_val,
+                "output_side_mid_log_ratio": output_side_ratio_val,
+                "target_low_band_ratio": target_low_band_ratio_val,
+                "target_side_mid_log_ratio": target_side_ratio_val,
+                "validation_best_spectral": validation_best_val,
+                "validation_mean_spectral": validation_mean_val,
+                "validation_mean_chroma": validation_chroma_val,
                 "boundary_loss": boundary_loss_val, "level_loss": level_loss_val,
                 "target_rms": target_rms_val, "target_file": target_file,
                 "target_frame": target_frame, "target_chunks_left": target_chunks_left,
-                "optimizer_updates": optimizer_update_count,
+                "optimizer_updates": optimizer.cumulative_updates(),
+                "optimizer_updates_run": optimizer_update_count,
+                "optimizer_resumed": optimizer_resumed,
                 "ultrasonic_ratio": s_sig["ultrasonic_ratio"].as_f64().unwrap_or(0.0),
             }));
             pending_morph_event = None;
@@ -5344,7 +6518,12 @@ Usage: titan [BASE_DIR] [options]\n\n\
             // the model may be one checkpoint ahead of the world; that state is
             // recoverable, but the next run is not mathematically bit-exact.
             let model_tmp = format!("{}.tmp", model_path);
-            if varmap.save(&model_tmp).is_ok() && std::fs::rename(&model_tmp, &model_path).is_ok() {
+            if varmap.save(&model_tmp).is_ok()
+                && std::fs::rename(&model_tmp, &model_path).is_ok()
+                && optimizer
+                    .save(&optimizer_path, absolute_step + 1, &device)
+                    .is_ok()
+            {
                 match capture_world(
                     absolute_step + 1,
                     seed,
@@ -5457,8 +6636,13 @@ Usage: titan [BASE_DIR] [options]\n\n\
         bits_per_sample: 16,
         sample_format: hound::SampleFormat::Int,
     };
-    let output_path = format!("{}/rust_ecosystem_out.wav", base_dir);
-    let prime_path = format!("{}/titan_prime_{}s.wav", base_dir, prime_secs as u32);
+    let output_path = artifact_path(&base_dir, "rust_ecosystem_out", "wav", run_tag.as_deref());
+    let prime_path = artifact_path(
+        &base_dir,
+        &format!("titan_prime_{}s", prime_secs as u32),
+        "wav",
+        run_tag.as_deref(),
+    );
     let mut output_writer = hound::WavWriter::create(&output_path, spec)?;
     let mut prime_writer = hound::WavWriter::create(&prime_path, spec)?;
     let mut raw_reader = BufReader::with_capacity(1 << 20, File::open(&raw_audio_path)?);
@@ -5592,10 +6776,12 @@ Usage: titan [BASE_DIR] [options]\n\n\
     } else {
         0.0
     };
-    let width_word = if width > 0.5 {
+    let width_word = if width > 0.85 {
         "ultra-wide stereo field"
-    } else if width > 0.2 {
+    } else if width > 0.55 {
         "wide stereo image"
+    } else if width > 0.25 {
+        "moderate stereo image"
     } else {
         "focused center image"
     };
@@ -5663,16 +6849,31 @@ Usage: titan [BASE_DIR] [options]\n\n\
         motifs.entries.len(), seed
     );
     println!("\n=== GENERATIVE PRIMING PROMPT ===\n{}", prompt);
-    std::fs::write(format!("{}/suno_priming_prompt.txt", base_dir), &prompt)?;
+    let prompt_path = artifact_path(&base_dir, "suno_priming_prompt", "txt", run_tag.as_deref());
+    std::fs::write(&prompt_path, &prompt)?;
 
-    let mut topo_writer = csv::Writer::from_path(format!("{}/ca_topology_rust.csv", base_dir))?;
+    let topology_path = artifact_path(&base_dir, "ca_topology_rust", "csv", run_tag.as_deref());
+    let topology_index_path = artifact_path(
+        &base_dir,
+        "ca_topology_index_rust",
+        "csv",
+        run_tag.as_deref(),
+    );
+    let morph_events_path =
+        artifact_path(&base_dir, "morph_events_rust", "csv", run_tag.as_deref());
+    let uncertainty_trace_path = artifact_path(
+        &base_dir,
+        "uncertainty_trace_rust",
+        "csv",
+        run_tag.as_deref(),
+    );
+    let mut topo_writer = csv::Writer::from_path(&topology_path)?;
     for row in topology_history {
         topo_writer.write_record(row.iter().map(|f| f.to_string()))?;
     }
     topo_writer.flush()?;
 
-    let mut topology_index_writer =
-        csv::Writer::from_path(format!("{}/ca_topology_index_rust.csv", base_dir))?;
+    let mut topology_index_writer = csv::Writer::from_path(&topology_index_path)?;
     topology_index_writer.write_record(TOPOLOGY_INDEX_HEADERS)?;
     for t in &topology_index_history {
         let morph_event_step = t["morph_event_step"]
@@ -5694,8 +6895,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
     }
     topology_index_writer.flush()?;
 
-    let mut morph_event_writer =
-        csv::Writer::from_path(format!("{}/morph_events_rust.csv", base_dir))?;
+    let mut morph_event_writer = csv::Writer::from_path(&morph_events_path)?;
     morph_event_writer.write_record(MORPH_EVENT_HEADERS)?;
     for event in &morph_events {
         morph_event_writer.write_record(&[
@@ -5710,8 +6910,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
     }
     morph_event_writer.flush()?;
 
-    let mut unc_writer =
-        csv::Writer::from_path(format!("{}/uncertainty_trace_rust.csv", base_dir))?;
+    let mut unc_writer = csv::Writer::from_path(&uncertainty_trace_path)?;
     unc_writer.write_record(UNCERTAINTY_TRACE_HEADERS)?;
     for t in &uncertainty_trace {
         let morph_event_step = t["morph_event_step"]
@@ -5799,6 +6998,20 @@ Usage: titan [BASE_DIR] [options]\n\n\
             t["carrier_beat_hz"].to_string(),
             t["mimic_coarse"].to_string(),
             t["mimic_fine"].to_string(),
+            t["band_loss"].to_string(),
+            t["chroma_loss"].to_string(),
+            t["onset_loss"].to_string(),
+            t["recurrence_loss"].to_string(),
+            t["modulation_loss"].to_string(),
+            t["low_band_loss"].to_string(),
+            t["stereo_balance_loss"].to_string(),
+            t["output_low_band_ratio"].to_string(),
+            t["output_side_mid_log_ratio"].to_string(),
+            t["target_low_band_ratio"].to_string(),
+            t["target_side_mid_log_ratio"].to_string(),
+            t["validation_best_spectral"].to_string(),
+            t["validation_mean_spectral"].to_string(),
+            t["validation_mean_chroma"].to_string(),
             t["boundary_loss"].to_string(),
             t["level_loss"].to_string(),
             t["target_rms"].to_string(),
@@ -5806,6 +7019,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
             t["target_frame"].to_string(),
             t["target_chunks_left"].to_string(),
             t["optimizer_updates"].to_string(),
+            t["optimizer_updates_run"].to_string(),
+            t["optimizer_resumed"].to_string(),
             t["ultrasonic_ratio"].to_string(),
         ])?;
     }
@@ -5820,6 +7035,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let tmp = format!("{}.tmp", model_path);
     varmap.save(&tmp).map_err(anyhow::Error::msg)?;
     std::fs::rename(&tmp, &model_path)?;
+    optimizer.save(&optimizer_path, final_global_step, &device)?;
     let world = capture_world(
         final_global_step,
         seed,
@@ -5874,7 +7090,12 @@ Usage: titan [BASE_DIR] [options]\n\n\
     );
     let metadata = std::fs::metadata(&model_path)?;
     let run_finished_unix_ms = unix_time_ms();
-    let run_metadata_path = format!("{}/titan_run_metadata_v7.json", base_dir);
+    let run_metadata_path = artifact_path(
+        &base_dir,
+        "titan_run_metadata_v7",
+        "json",
+        run_tag.as_deref(),
+    );
     let run_metadata_tmp = format!("{}.tmp", run_metadata_path);
     let run_metadata = serde_json::json!({
         "trace_schema_version": TRACE_SCHEMA_VERSION,
@@ -5902,7 +7123,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
             "model_fully_compatible": loaded_full,
             "world_loaded": loaded_world,
             "importing_model": importing_model,
+            "fresh_decoder": fresh_decoder,
+            "run_tag": run_tag,
         },
+        "corpus": corpus_summary,
         "field": {
             "channels": CA_CHANNELS,
             "height": GRID_H,
@@ -5923,6 +7147,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
             "start_rad_amp": start_rad_amp,
             "end_rad_amp": rad_amp,
             "morph_event_count": morph_events.len(),
+            "optimizer_updates_run": optimizer_update_count,
+            "optimizer_updates_cumulative": optimizer.cumulative_updates(),
+            "optimizer_resumed": optimizer_resumed,
         },
         "final_state": {
             "raw_model_confidence": controller.meta.confidence,
@@ -5937,10 +7164,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
             "trace_stride_chunks": TRACE_EVERY,
             "trace_rows": uncertainty_trace.len(),
             "topology_rows": topology_index_history.len(),
-            "uncertainty_trace": "uncertainty_trace_rust.csv",
-            "topology_values": "ca_topology_rust.csv",
-            "topology_index": "ca_topology_index_rust.csv",
-            "morph_events": "morph_events_rust.csv",
+            "uncertainty_trace": uncertainty_trace_path,
+            "topology_values": topology_path,
+            "topology_index": topology_index_path,
+            "morph_events": morph_events_path,
             "movement_semantics": {
                 "raw_movement": "mean absolute micro-field delta per chunk; this is the console Move value",
                 "uncertainty_movement": "bounded uncertainty feature derived from movement trend and model surprise",
@@ -5951,10 +7178,13 @@ Usage: titan [BASE_DIR] [options]\n\n\
             "prime": prime_path,
             "model": model_path,
             "world": world_path,
+            "optimizer": optimizer_path,
             "morph_state": morph_path,
+            "prompt": prompt_path,
         },
         "notes": [
-            "AdamW moment buffers restart per process and are not present in the world checkpoint.",
+            "AdamW moments resume only when their saved global step matches the world checkpoint.",
+            "Validation probes are fixed and excluded from normal training for non-trivial corpora.",
             "Bitwise reproducibility also requires the same thread count and build.",
         ],
     });
@@ -6344,7 +7574,7 @@ mod tests {
         let mut loader = TargetAudioLoader::new(dir.to_str().unwrap())?;
         let first = loader.sample_chunks(TARGET_K, &mut rng, &device)?;
         assert_eq!(first.dims(), &[TARGET_K, 2, CHUNK_SIZE]);
-        loader.commit_selection(1);
+        loader.commit_selection(0);
         let (_, first_frame, first_left) = loader.episode_info();
         let second = loader.sample_chunks(TARGET_K, &mut rng, &device)?;
         assert_eq!(second.dims(), &[TARGET_K, 2, CHUNK_SIZE]);
@@ -6354,7 +7584,115 @@ mod tests {
 
         drop(loader);
         std::fs::remove_file(wav_path)?;
+        std::fs::remove_file(dir.join("titan_corpus_manifest_v7.json"))?;
         std::fs::remove_dir(dir)?;
+        Ok(())
+    }
+
+    #[test]
+    fn generated_audio_is_quarantined_and_variants_share_a_family() -> Result<()> {
+        assert!(is_generated_audio_name(
+            "rust_ecosystem_out_countryhop_chaos.wav"
+        ));
+        assert!(is_generated_audio_name("TITAN_PRIME_60s.wav"));
+        assert!(!is_generated_audio_name("The Same Verb.wav"));
+        assert_eq!(
+            corpus_family("Cosmic Whispers_mastered.wav"),
+            corpus_family("Cosmic Whispers.wav")
+        );
+        assert_eq!(
+            corpus_family("Curiosity Unbound remix v2_200553391.wav"),
+            corpus_family("Curiosity Unbound remix v1_200554874.wav")
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn generated_manifest_repairs_validation_at_family_boundary() -> Result<()> {
+        let dir = std::env::temp_dir().join(format!(
+            "titan_manifest_family_{}_{}",
+            std::process::id(),
+            unix_time_ms()
+        ));
+        std::fs::create_dir(&dir)?;
+        let path = dir.join("manifest.json");
+        let manifest = CorpusManifest {
+            schema_version: 1,
+            generated_by: "titan 7.1.0".to_string(),
+            entries: vec![
+                CorpusEntry {
+                    file: "song remix v1.wav".to_string(),
+                    role: CorpusRole::Validation,
+                    family: "song".to_string(),
+                    provenance: "user_corpus".to_string(),
+                },
+                CorpusEntry {
+                    file: "song remix v2.wav".to_string(),
+                    role: CorpusRole::Train,
+                    family: "song".to_string(),
+                    provenance: "user_corpus".to_string(),
+                },
+            ],
+        };
+        std::fs::write(&path, serde_json::to_vec_pretty(&manifest)?)?;
+        let repaired =
+            load_or_create_corpus_manifest(dir.to_str().unwrap(), path.to_str().unwrap())?;
+        assert!(repaired
+            .entries
+            .iter()
+            .all(|entry| entry.role == CorpusRole::Validation));
+        std::fs::remove_file(path)?;
+        std::fs::remove_dir(dir)?;
+        Ok(())
+    }
+
+    #[test]
+    fn persistent_adam_round_trips_update_count_and_moments() -> Result<()> {
+        let device = Device::Cpu;
+        let varmap = VarMap::new();
+        let vb = VBV::from_varmap(&varmap, DType::F32, &device);
+        let weight = vb.get_with_hints((2,), "test_weight", candle_nn::Init::Const(1.0))?;
+        let loss = weight.sqr()?.sum_all()?;
+        let grads = loss.backward()?;
+        let mut first = PersistentAdamW::new(&varmap, 1e-3)?;
+        first.step(&grads)?;
+
+        let path = std::env::temp_dir().join(format!(
+            "titan_optimizer_roundtrip_{}_{}.safetensors",
+            std::process::id(),
+            unix_time_ms()
+        ));
+        first.save(path.to_str().unwrap(), 77, &device)?;
+        let mut restored = PersistentAdamW::new(&varmap, 1e-3)?;
+        let count = restored.load(path.to_str().unwrap(), 77, &device)?;
+        assert_eq!(count, 1);
+        assert_eq!(restored.cumulative_updates(), 1);
+        assert!(restored.load(path.to_str().unwrap(), 78, &device).is_err());
+        std::fs::remove_file(path)?;
+        Ok(())
+    }
+
+    #[test]
+    fn target_relative_recurrence_is_zero_for_matching_geometry() -> Result<()> {
+        let device = Device::Cpu;
+        let current = Tensor::new(&[[1.0f32, 2.0, 3.0]], &device)?;
+        let past = Tensor::new(&[[3.0f32, 1.0, 2.0]], &device)?;
+        let mut history = VecDeque::new();
+        for _ in 0..8 {
+            history.push_back(DetachedFeatureFrame {
+                output_band: past.clone(),
+                target_band: past.clone(),
+                output_chroma: past.clone(),
+                target_chroma: past.clone(),
+                output_envelope: past.clone(),
+                target_envelope: past.clone(),
+            });
+        }
+        let loss = target_relative_recurrence_loss(
+            &current, &current, &current, &current, &history, &device,
+        )?
+        .to_scalar::<f32>()?;
+        assert!(loss < 1e-7);
         Ok(())
     }
 

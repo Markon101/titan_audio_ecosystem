@@ -5,7 +5,9 @@ artistic interpretation. The distinction matters when comparing experiments.
 
 ## Files and schema
 
-Telemetry schema v3 writes five complementary artifacts per run:
+Telemetry schema v4 writes five complementary artifacts per run. With
+`--run-tag NAME`, every filename receives that tag instead of overwriting the
+untagged run:
 
 - `uncertainty_trace_rust.csv` is the sampled scalar trace. `raw_movement` is
   the mean absolute micro-field delta printed as `Move:` in the console.
@@ -21,6 +23,8 @@ Telemetry schema v3 writes five complementary artifacts per run:
 - `titan_run_metadata_v7.json` records the build commit, dirty/release flags,
   invocation, reset mode, seed, thread count, requested BPTT and bounded tape,
   field dimensions, start/end state, output paths, and trace semantics.
+  It also records the corpus manifest summary and optimizer resume/update
+  counts.
 
 The CSV trace is intentionally overwritten per process. Use the metadata
 `run_id` when archiving or joining artifacts from multiple runs.
@@ -40,9 +44,18 @@ The CSV trace is intentionally overwritten per process. Use the metadata
 - `novelty_dmin` is distance to recent, level-normalized log-spectral shapes.
   It detects timbral change, not semantic or compositional novelty.
 - `carrier_freq_l`, `carrier_freq_r`, and `carrier_beat_hz` expose low-frequency
-  beating directly. `mimic_coarse`, `mimic_fine`, `boundary_loss`, `level_loss`,
-  and `target_rms` separate the source-grounding terms instead of collapsing
-  them into one score.
+  beating directly. `mimic_coarse`, `mimic_fine`, `band_loss`, `chroma_loss`,
+  `onset_loss`, `modulation_loss`, `recurrence_loss`, `boundary_loss`, and
+  `level_loss` separate source-grounding terms instead of collapsing them into
+  one score.
+- `output_low_band_ratio` and `target_low_band_ratio` compare the first
+  supervised 20 Hz log band. They expose the sub-bass/RMS shortcut directly.
+- `output_side_mid_log_ratio` and `target_side_mid_log_ratio` expose stereo
+  side dominance; `stereo_balance_loss` trains the learned width control toward
+  the target relation without mixing target audio into the renderer.
+- `validation_best_spectral`, `validation_mean_spectral`, and
+  `validation_mean_chroma` score every emitted chunk against fixed held-out
+  probes. They are observational and never select a training target.
 - `target_file`, `target_frame`, and `target_chunks_left` identify the coherent
   source episode in force at each sample. This makes temporal-supervision bugs
   and corpus bias auditable.
@@ -70,6 +83,9 @@ The CSV trace is intentionally overwritten per process. Use the metadata
 - `grad_norm` is the requested-horizon mean gradient norm before global
   clipping and `clip_scale` is the factor applied before AdamW updates its
   moments. Horizons above 8 accumulate bounded, detached tape segments.
+- `optimizer_updates` is the persisted cumulative AdamW step count;
+  `optimizer_updates_run` is the current process count and `optimizer_resumed`
+  states whether matching moments were restored.
 - `stereo_corr` is the final pre-master Pearson correlation between channels. Strongly
   negative values warn of mono cancellation even when width sounds impressive;
   Haas side gain is capped at 1.25 to bound that risk.
