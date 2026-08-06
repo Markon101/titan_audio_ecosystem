@@ -1089,6 +1089,32 @@ separately in telemetry schema v6. Whether this is sufficient to escape the
 near-collinear attractor remains an empirical question; no proof of audible
 stereo emergence is claimed.
 
+### 13.5 First v7.2.1 intervention result
+
+A 30-second canonical frozen-L03 continuation covered global steps 3514--3865
+and AdamW updates 440--484. The immediate geometric prediction passed. The
+rendered full-file log power ratio changed from `1.09994` to `0.50722`, just
+below the derived $\log(5/3)=0.51083$ limit, and the old side/mid measure fell
+from `0.2753` to `0.1405`. This confirms that the former apparent width was
+largely the hard-pan shortcut.
+
+The stronger claim did not pass: rendered correlation changed only from
+`0.992354` to `0.992347`. Truthful width consequently fell from `0.0170` to
+`0.0087`; the system became more honestly center-focused rather than genuinely
+stereo. The combined stereo loss decreased across the short run, but target
+episodes vary, so that trend is not a controlled generalization result. Four
+of 36 sampled rows reported clipping during one contiguous target episode,
+including one large pre-clip norm; later rows recovered to finite, unclipped
+updates. This should be watched in the next run rather than used to justify
+another immediate coefficient change.
+
+The present result supports keeping the tested v7.2.1 binary and L03 weights as
+a stable experimental checkpoint. It does not support L04 or a larger model as
+the next intervention. A later branch should test a field-derived
+antisymmetric side state or a slower hierarchical recurrent state against this
+checkpoint, with locked evaluation data and without reintroducing an external
+stereo effect.
+
 ## 14. Research references
 
 - Chris G. Langton, “Computation at the edge of chaos: Phase transitions and emergent computation,” *Physica D* 42 (1990), 12–37. [DOI](https://doi.org/10.1016/0167-2789(90)90064-V)
