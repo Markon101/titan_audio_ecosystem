@@ -106,7 +106,7 @@ const PLAN_EVERY: usize = 8;
 const WORLD_VERSION: u32 = 7;
 const WORLD_MAGIC: [u8; 8] = *b"TITANW7\0";
 const WORLD_SAVE_EVERY: usize = 256;
-const TRACE_SCHEMA_VERSION: u32 = 5;
+const TRACE_SCHEMA_VERSION: u32 = 6;
 const TRACE_EVERY: usize = 10;
 const BUILD_COMMIT: &str = env!("TITAN_GIT_COMMIT");
 const BUILD_DIRTY: &str = env!("TITAN_GIT_DIRTY");
@@ -189,8 +189,17 @@ const GRAD_NORM_MAX: f32 = 5.0; // global-norm ceiling applied directly to gradi
 const RADIATION_REFERENCE_WINDOW: f32 = BPTT_WINDOW as f32;
 const LOCAL_RAIL_START: f32 = 0.70;
 const LOCAL_RAIL_STRENGTH: f64 = 0.08;
-const GLOBAL_MEAN_DAMP: f64 = 0.035; // damp only the spatial/channel DC mode
-const MAX_STEREO_SIDE_GAIN: f32 = 1.25; // width without persistent anti-phase dominance
+// Damp only the spatial/channel DC mode.
+const GLOBAL_MEAN_DAMP: f64 = 0.035;
+// Width without persistent anti-phase dominance.
+const MAX_STEREO_SIDE_GAIN: f32 = 1.25;
+// The regional field is already the primary stereo map. Global pan is only a
+// residual coordinate, kept smooth and modest so it cannot replace spatial
+// structure with a fixed interchannel level difference.
+const GLOBAL_PAN_LIMIT: f64 = 0.25;
+const STEREO_SIDE_LOSS_WEIGHT: f64 = 0.25;
+const STEREO_CORRELATION_LOSS_WEIGHT: f64 = 0.85;
+const STEREO_LEVEL_LOSS_WEIGHT: f64 = 0.45;
 const TWO_PI: f32 = 2.0 * std::f32::consts::PI;
 
 const ENERGY_HOMEO_RATE: f32 = 0.025; // energy bowl strength applied directly to the scalar
@@ -334,6 +343,7 @@ const UNCERTAINTY_TRACE_HEADERS: &[&str] = &[
     "carrier_freq_l",
     "carrier_freq_r",
     "carrier_beat_hz",
+    "decoder_pan",
     "mimic_coarse",
     "mimic_fine",
     "band_loss",
@@ -343,6 +353,9 @@ const UNCERTAINTY_TRACE_HEADERS: &[&str] = &[
     "modulation_loss",
     "low_band_loss",
     "stereo_balance_loss",
+    "stereo_side_geometry_loss",
+    "stereo_correlation_loss",
+    "stereo_level_loss",
     "output_low_band_ratio",
     "output_side_mid_log_ratio",
     "target_low_band_ratio",
@@ -2331,6 +2344,17 @@ fn stereo_side_gain(last_pan: f32, width_mult: f32) -> f32 {
     ((1.0 + last_pan.abs() * 0.8) * width_mult.clamp(0.5, 1.6)).clamp(0.5, MAX_STEREO_SIDE_GAIN)
 }
 
+fn soft_global_pan(raw: &Tensor) -> CResult<Tensor> {
+    // p = p_max tanh(z) has dp/dz > 0 for every finite z. The previous
+    // clip(tanh(z), -0.5, 0.5) had an exactly zero gradient once saturated.
+    raw.tanh()?.affine(GLOBAL_PAN_LIMIT, 0.0)
+}
+
+fn regional_pan_position(partial: usize) -> f32 {
+    let column = partial % REGION_COLS;
+    column as f32 / (REGION_COLS - 1) as f32 * 2.0 - 1.0
+}
+
 fn correlation_aware_width(side_energy_width: f32, stereo_corr: f32) -> f32 {
     let incoherence = ((1.0 - stereo_corr.clamp(-1.0, 1.0)) * 0.5).sqrt();
     (side_energy_width * incoherence).clamp(0.0, 1.0)
@@ -3932,9 +3956,8 @@ impl ComplexAudioEcosystem {
             CA_CHANNELS,
             vb.pp("asymp_contract"),
         )?;
-        let spatial_panner = candle_nn::seq()
-            .add(candle_nn::linear(MEMORY_DIM, 1, vb.pp("spatial_panner_0"))?)
-            .add(Tanh);
+        let spatial_panner =
+            candle_nn::seq().add(candle_nn::linear(MEMORY_DIM, 1, vb.pp("spatial_panner_0"))?);
         let fm_mod_ratio = candle_nn::seq()
             .add(candle_nn::linear(MEMORY_DIM, 2, vb.pp("fm_mod_ratio_0"))?)
             .add(Relu);
@@ -4049,7 +4072,10 @@ impl ComplexAudioEcosystem {
         let mut pan_l = Vec::with_capacity(SCAN_PARTIALS);
         let mut pan_r = Vec::with_capacity(SCAN_PARTIALS);
         for i in 0..SCAN_PARTIALS {
-            let x = i as f32 / (SCAN_PARTIALS - 1) as f32 * 2.0 - 1.0;
+            // region_grid is flattened row-major. Stereo location follows its
+            // horizontal column and is invariant to row; using the flat index
+            // accidentally mapped the vertical axis almost entirely to pan.
+            let x = regional_pan_position(i);
             pan_l.push(((1.0 - x) * 0.5).sqrt());
             pan_r.push(((1.0 + x) * 0.5).sqrt());
         }
@@ -4504,11 +4530,8 @@ impl ComplexAudioEcosystem {
 
         let mid = audio_l.add(&audio_r)?.affine(0.5, 0.0)?;
         let side = audio_l.sub(&audio_r)?.affine(0.5, 0.0)?;
-        let pan_t = self
-            .spatial_panner
-            .forward(&refined_hidden)?
-            .reshape(())?
-            .clamp(-0.5f32, 0.5f32)?;
+        let pan_raw = self.spatial_panner.forward(&refined_hidden)?.reshape(())?;
+        let pan_t = soft_global_pan(&pan_raw)?;
         // Haas width from LAST step's pan (host mirror, updated by the batched
         // readback) — removes the one remaining per-step to_scalar sync. Width
         // is a slow spatial parameter; the 85 ms lag is inaudible.
@@ -5821,8 +5844,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
         // R=b*x. Correlation remains +1 in that family, so jointly matching
         // correlation and channel balance makes that degeneracy observable.
         let stereo_balance_loss = side_geometry_loss
-            .add(&correlation_loss.affine(0.65, 0.0)?)?
-            .add(&stereo_level_loss.affine(0.20, 0.0)?)?;
+            .affine(STEREO_SIDE_LOSS_WEIGHT, 0.0)?
+            .add(&correlation_loss.affine(STEREO_CORRELATION_LOSS_WEIGHT, 0.0)?)?
+            .add(&stereo_level_loss.affine(STEREO_LEVEL_LOSS_WEIGHT, 0.0)?)?;
         let (development_best, development_mean, development_chroma) = development_bank.scores(
             &audio_for_loss.detach(),
             &out_spec.detach(),
@@ -5843,7 +5867,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
             .add(&recurrence_loss.affine(0.25, 0.0)?)?
             .add(&modulation_loss.affine(0.20, 0.0)?)?
             .add(&low_band_loss.affine(0.50, 0.0)?)?
-            .add(&stereo_balance_loss.affine(0.35, 0.0)?)?;
+            .add(&stereo_balance_loss)?;
 
         if feature_history.len() >= FEATURE_HISTORY_CHUNKS {
             feature_history.pop_front();
@@ -6032,6 +6056,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 &modulation_loss.reshape((1,))?,
                 &low_band_loss.reshape((1,))?,
                 &stereo_balance_loss.reshape((1,))?,
+                &side_geometry_loss.reshape((1,))?,
+                &correlation_loss.reshape((1,))?,
+                &stereo_level_loss.reshape((1,))?,
                 &output_low_band_ratio.reshape((1,))?,
                 &output_side_ratio.reshape((1,))?,
                 &target_low_band_ratio.reshape((1,))?,
@@ -6065,7 +6092,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
         let empowerment_val = metrics[12];
         let self_model_loss_val = metrics[13];
         let (f_l, f_r, mf_l, mf_r) = (metrics[14], metrics[15], metrics[16], metrics[17]);
-        model.last_pan = metrics[18];
+        let decoder_pan_val = metrics[18];
+        model.last_pan = decoder_pan_val;
         theta_prev2 = theta_prev;
         theta_prev = metrics[20].atan2(metrics[19] + 1e-6);
         let oscillator_start = 21;
@@ -6119,20 +6147,23 @@ Usage: titan [BASE_DIR] [options]\n\n\
         let modulation_loss_val = metrics[tail_start + 11];
         let low_band_loss_val = metrics[tail_start + 12];
         let stereo_balance_loss_val = metrics[tail_start + 13];
-        let output_low_band_ratio_val = metrics[tail_start + 14];
-        let output_side_ratio_val = metrics[tail_start + 15];
-        let target_low_band_ratio_val = metrics[tail_start + 16];
-        let target_side_ratio_val = metrics[tail_start + 17];
-        let output_stereo_corr_val = metrics[tail_start + 18];
-        let target_stereo_corr_val = metrics[tail_start + 19];
-        let output_stereo_level_ratio_val = metrics[tail_start + 20];
-        let target_stereo_level_ratio_val = metrics[tail_start + 21];
-        let development_best_val = metrics[tail_start + 22];
-        let development_mean_val = metrics[tail_start + 23];
-        let development_chroma_val = metrics[tail_start + 24];
-        let validation_best_val = metrics[tail_start + 25];
-        let validation_mean_val = metrics[tail_start + 26];
-        let validation_chroma_val = metrics[tail_start + 27];
+        let stereo_side_geometry_loss_val = metrics[tail_start + 14];
+        let stereo_correlation_loss_val = metrics[tail_start + 15];
+        let stereo_level_loss_val = metrics[tail_start + 16];
+        let output_low_band_ratio_val = metrics[tail_start + 17];
+        let output_side_ratio_val = metrics[tail_start + 18];
+        let target_low_band_ratio_val = metrics[tail_start + 19];
+        let target_side_ratio_val = metrics[tail_start + 20];
+        let output_stereo_corr_val = metrics[tail_start + 21];
+        let target_stereo_corr_val = metrics[tail_start + 22];
+        let output_stereo_level_ratio_val = metrics[tail_start + 23];
+        let target_stereo_level_ratio_val = metrics[tail_start + 24];
+        let development_best_val = metrics[tail_start + 25];
+        let development_mean_val = metrics[tail_start + 26];
+        let development_chroma_val = metrics[tail_start + 27];
+        let validation_best_val = metrics[tail_start + 28];
+        let validation_mean_val = metrics[tail_start + 29];
+        let validation_chroma_val = metrics[tail_start + 30];
         development_plateau =
             development_plateau_tracker.update(development_mean_val, development_chroma_val);
         if let (Some(actual), Some(_)) = (&last_observation, &pending_predictor_input) {
@@ -6761,12 +6792,16 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 "motif_last_distance": motif_diagnostics.last_nearest_distance,
                 "carrier_freq_l": f_l, "carrier_freq_r": f_r,
                 "carrier_beat_hz": (f_l - f_r).abs(),
+                "decoder_pan": decoder_pan_val,
                 "mimic_coarse": mimic_drift, "mimic_fine": mimic_fine_val,
                 "band_loss": band_loss_val, "chroma_loss": chroma_loss_val,
                 "onset_loss": onset_loss_val, "recurrence_loss": recurrence_loss_val,
                 "modulation_loss": modulation_loss_val,
                 "low_band_loss": low_band_loss_val,
                 "stereo_balance_loss": stereo_balance_loss_val,
+                "stereo_side_geometry_loss": stereo_side_geometry_loss_val,
+                "stereo_correlation_loss": stereo_correlation_loss_val,
+                "stereo_level_loss": stereo_level_loss_val,
                 "output_low_band_ratio": output_low_band_ratio_val,
                 "output_side_mid_log_ratio": output_side_ratio_val,
                 "target_low_band_ratio": target_low_band_ratio_val,
@@ -6815,10 +6850,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 pot.temp_terms[4], curiosity_factor, controlled_shear, radiation_probability,
                 field_signed_mean, field_rail_excess, latest_grad_norm, latest_clip_scale,
                 s_sig["stereo_corr"].as_f64().unwrap_or(0.0));
-            println!("  stereo width:{:.3} side-energy:{:.3} decoder/target corr:{:+.2}/{:+.2} | dev S/C:{:.3}/{:.3} Δ:{:+.2}% ready:{} plateau:{}",
+            println!("  stereo width:{:.3} side-energy:{:.3} pan:{:+.2} decoder/target corr:{:+.2}/{:+.2} | dev S/C:{:.3}/{:.3} Δ:{:+.2}% ready:{} plateau:{}",
                 s_sig["width"].as_f64().unwrap_or(0.0),
                 s_sig["side_energy_width"].as_f64().unwrap_or(0.0),
-                output_stereo_corr_val, target_stereo_corr_val,
+                decoder_pan_val, output_stereo_corr_val, target_stereo_corr_val,
                 development_mean_val, development_chroma_val,
                 development_plateau.relative_improvement * 100.0,
                 development_plateau.ready, development_plateau.plateau);
@@ -7346,6 +7381,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
             t["carrier_freq_l"].to_string(),
             t["carrier_freq_r"].to_string(),
             t["carrier_beat_hz"].to_string(),
+            t["decoder_pan"].to_string(),
             t["mimic_coarse"].to_string(),
             t["mimic_fine"].to_string(),
             t["band_loss"].to_string(),
@@ -7355,6 +7391,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
             t["modulation_loss"].to_string(),
             t["low_band_loss"].to_string(),
             t["stereo_balance_loss"].to_string(),
+            t["stereo_side_geometry_loss"].to_string(),
+            t["stereo_correlation_loss"].to_string(),
+            t["stereo_level_loss"].to_string(),
             t["output_low_band_ratio"].to_string(),
             t["output_side_mid_log_ratio"].to_string(),
             t["target_low_band_ratio"].to_string(),
@@ -7669,6 +7708,34 @@ mod tests {
         assert_eq!(stereo_side_gain(0.0, 1.0), 1.0);
         assert!(stereo_side_gain(0.5, 0.62) < 1.0);
         assert_eq!(stereo_side_gain(0.5, 1.45), MAX_STEREO_SIDE_GAIN);
+    }
+
+    #[test]
+    fn global_pan_is_smoothly_bounded_without_a_hard_clip() -> Result<()> {
+        let raw = Tensor::new(&[-100.0f32, -1.0, 0.0, 1.0, 100.0], &Device::Cpu)?;
+        let values = soft_global_pan(&raw)?.to_vec1::<f32>()?;
+        assert!(values.iter().all(|p| p.abs() <= GLOBAL_PAN_LIMIT as f32));
+        assert!(values[0] < values[1]);
+        assert!(values[1] < values[2]);
+        assert!(values[2] < values[3]);
+        assert!(values[3] < values[4]);
+        assert_eq!(values[2], 0.0);
+        Ok(())
+    }
+
+    #[test]
+    fn regional_stereo_map_tracks_columns_not_flat_indices() {
+        let first_row: Vec<f32> = (0..REGION_COLS).map(regional_pan_position).collect();
+        for row in 1..REGION_ROWS {
+            let offset = row * REGION_COLS;
+            let positions: Vec<f32> = (offset..offset + REGION_COLS)
+                .map(regional_pan_position)
+                .collect();
+            assert_eq!(positions, first_row);
+        }
+        assert!((first_row.iter().sum::<f32>()).abs() < 1e-6);
+        assert_eq!(first_row[0], -1.0);
+        assert_eq!(first_row[REGION_COLS - 1], 1.0);
     }
 
     #[test]

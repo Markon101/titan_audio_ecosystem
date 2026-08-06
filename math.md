@@ -732,7 +732,7 @@ while minimizing final-renderer divergence from source-derived spectral and modu
 4. Ablate the small Gaussian kick and sparse radiation independently to test
    whether complexity is endogenous or noise-supported.
 5. Compare multiple seeds and fresh worlds using the source, seam, oscillator,
-   topology, source-feature, development, validation, and clipping telemetry in schema v5.
+   topology, source-feature, development, validation, and clipping telemetry in schema v6.
 6. Retrain or reset weights only if the frozen diagnostics show that no nearby controller/gain regime produces coherent marginal stability.
 
 The 64-channel substrate and v7 objective are now the baseline worth preserving. The next changes should improve observability and experimental identifiability before another weight-generation break.
@@ -763,15 +763,16 @@ source term is now
 L_{src}={}&L_S+0.45L_B+0.25L_C+0.08L_{salience}
           +0.25L_O+0.20L_M\\
          &+0.25L_R+0.35L_{env}+0.50L_{fine}
-          +0.50L_{low}+0.35L_{MS},
+          +0.50L_{low}+L_{stereo},
 \end{aligned}
 \]
 
 where \(L_R\) matches cosine-recurrence geometry at lags 8, 32, and 64 chunks.
-Here \(L_{low}\) compares log first-band power ratios. In v7.2, \(L_{MS}\)
-denotes the full stereo-geometry term derived below rather than side/mid energy
-alone. These terms close empirically observed loopholes: meeting global RMS
-with sub-bass and meeting channelwise spectra with degenerate stereo.
+Here \(L_{low}\) compares log first-band power ratios. In v7.2.1,
+\(L_{stereo}\) denotes the weighted stereo-geometry term derived below rather
+than side/mid energy alone. These terms close empirically observed loopholes:
+meeting global RMS with sub-bass and meeting channelwise spectra with
+degenerate stereo.
 Past generated and target features are detached, so memory is bounded and the
 gradient is causal through the current state. This does not claim 64-chunk
 backpropagation: it supplies a long-horizon statistical teaching signal while
@@ -883,7 +884,7 @@ not merely \((\theta_t,z_t)\). v7.1 checkpoints \(m_t,v_t,k_t\) and restores
 them only when their global-step stamp equals the world stamp. This removes the
 repeated 32-update transient that dominated short resumed runs.
 
-## 13. v7.2 controlled morphogenesis and identifiable stereo
+## 13. v7.2--v7.2.1 controlled morphogenesis and identifiable stereo
 
 ### 13.1 Architecture selection needs three corpus roles
 
@@ -969,7 +970,7 @@ r_{MS}=\log\frac{E_{side}+\epsilon}{E_{mid}+\epsilon},\qquad
 \ell=\log\frac{E[L^2]+\epsilon}{E[R^2]+\epsilon}.
 \]
 
-The stereo term is
+The v7.2 term was
 
 \[
 L_{MS}=D(r_{MS},r^*_{MS})+0.65D(\rho,\rho^*)
@@ -1008,6 +1009,85 @@ spectral/chroma scores regress persistently, gradients remain healthy, and
 correlation fails to move toward the fixed target distribution. That outcome
 would reject the claim that simple L03 maturation plus identifiable stereo is
 sufficient and would motivate a slow hierarchical recurrent state.
+
+That falsifier occurred. Two frozen-L03 canonical continuations covered global
+steps 2108--3514 and AdamW updates 264--439. Mean decoder correlation was
+`0.9918` and `0.9923`, while the selected-target means were `0.9290` and
+`0.8774`. Mean decoder log power ratio moved from `1.069` to `1.115` rather
+than toward the near-zero target means. Gradients stayed finite and the second
+run did not clip. Source losses improved on average, but the fixed validation
+probe regressed in the second run. This rejects more blind L03 continuation as
+the strongest next experiment and provides no evidence for activating L04.
+
+These validation results have now informed a human design decision. They must
+therefore be treated as development evidence, not as untouched evidence for a
+future final claim. A future confirmatory evaluation requires newly locked
+families or an external corpus that is not inspected during development.
+
+### 13.4 The hard-pan trap and the spatial map correction
+
+The former global pan coordinate was
+
+\[
+p=\operatorname{clip}(\tanh z,-1/2,1/2).
+\]
+
+Whenever \(|\tanh z|>1/2\), \(\partial p/\partial z=0\). Equal-power gains were
+
+\[
+g_L^2=\tfrac12-\tfrac12p,\qquad
+g_R^2=\tfrac12+\tfrac12p.
+\]
+
+At the observed negative endpoint, the resulting log power ratio is
+
+\[
+\ell=\log\frac{3/4}{1/4}=\log 3=1.0986,
+\]
+
+which quantitatively accounts for the measured `1.069` and `1.115`. The head
+could not learn away from that shortcut because the clamp erased its gradient.
+v7.2.1 instead uses
+
+\[
+p=0.25\tanh z,\qquad
+\frac{\partial p}{\partial z}=0.25\operatorname{sech}^2z>0
+\]
+
+for every finite \(z\). Its maximum pan-only log power imbalance is
+\(\log(5/3)=0.511\), and the derivative has no finite hard-dead region. The
+global coordinate is deliberately residual: spatial structure should come
+from the regional field, not a master channel-gain shortcut.
+
+For region row \(r\) and column \(c\) in the 4x4 readout, v7.2.1 defines
+
+\[
+x_{r,c}=2\frac{c}{3}-1,\qquad
+g_L(x)=\sqrt{\frac{1-x}{2}},\quad
+g_R(x)=\sqrt{\frac{1+x}{2}}.
+\]
+
+Thus \(g_L^2+g_R^2=1\), every row has the same left-to-right map, and a
+horizontally symmetric activity pattern has balanced aggregate pan energy.
+The previous flat-index coordinate \(x_i=2i/15-1\) accidentally mapped row
+number primarily onto stereo position. The corrected map is a declared
+projection from the toroidal CA to a listening axis; because any line
+projection introduces a seam into a torus, it is not claimed to be the unique
+or topology-preserving map.
+
+Finally, v7.2.1 reweights the source-conditioned stereo objective to
+
+\[
+L_{stereo}=0.25D(r_{MS},r^*_{MS})+0.85D(\rho,\rho^*)
+             +0.45D(\ell,\ell^*).
+\]
+
+The per-target correlation term does not impose artificial width: mono-like
+targets still request \(\rho^*\approx1\). It only makes the measured target
+geometry harder to ignore. The three unweighted distances and \(p\) are logged
+separately in telemetry schema v6. Whether this is sufficient to escape the
+near-collinear attractor remains an empirical question; no proof of audible
+stereo emergence is claimed.
 
 ## 14. Research references
 

@@ -5,7 +5,7 @@ artistic interpretation. The distinction matters when comparing experiments.
 
 ## Files and schema
 
-Telemetry schema v5 writes five complementary artifacts per run. With
+Telemetry schema v6 writes five complementary artifacts per run. With
 `--run-tag NAME`, every filename receives that tag instead of overwriting the
 untagged run:
 
@@ -55,6 +55,11 @@ The CSV trace is intentionally overwritten per process. Use the metadata
   `stereo_level_log_ratio` fields close the panned-mono loophole: channel gain
   imbalance can no longer masquerade as spatial width. `stereo_balance_loss`
   combines all three relations without mixing target audio into the renderer.
+  `stereo_side_geometry_loss`, `stereo_correlation_loss`, and
+  `stereo_level_loss` expose its unweighted components. `decoder_pan` is the
+  bounded global residual after the 4x4 field-to-stereo map; persistent values
+  near its +/-0.25 limit indicate saturation but no longer create a zero-
+  gradient hard-clamp region.
 - `development_best_spectral`, `development_mean_spectral`, and
   `development_mean_chroma` use fixed, gradient-excluded development families.
   `development_score`, `development_plateau_ready`, and

@@ -36,7 +36,10 @@ spectrum, 0.68/2.73/5.46-second recurrence geometry, level, and chunk seams.
 Exact waveform phase is not a target. The decoder is a phase-continuous modal
 bank whose carrier pitch, auxiliary modes, ratios, amplitudes, damping,
 family gains, and stereo width are continuous functions of recurrent memory
-and regional CA state.
+and regional CA state. The 4x4 regional readout maps field columns to
+equal-power stereo positions; row is no longer accidentally treated as pan.
+A small smooth global-pan residual remains learnable, but cannot hard-clamp or
+stand in for independent left/right structure.
 
 All oscillator families, the field scan, and stereo delay carry state across
 chunks. The audible post path is intentionally transparent: learned rendering,
@@ -73,10 +76,10 @@ reason. Motif memory retains up to 64 diverse observations for long-horizon
 recall.
 
 Telemetry names and their scientific limitations are documented in
-[`METRICS.md`](METRICS.md). Schema v5 separates raw CA movement from the
+[`METRICS.md`](METRICS.md). Schema v6 separates raw CA movement from the
 uncertainty movement feature, records exact morph events, supplies a topology
 row index, separates development from final validation, and adds correlation-
-aware width, channel-balance, source-band, chroma, onset, modulation,
-recurrence, sub-bass, and optimizer-continuity diagnostics. Run the verification
-suite with `cargo test` and
+aware width, decoder-pan and component stereo losses, channel balance,
+source-band, chroma, onset, modulation, recurrence, sub-bass, and optimizer-
+continuity diagnostics. Run the verification suite with `cargo test` and
 `cargo clippy --all-targets -- -D warnings`.
