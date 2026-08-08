@@ -1,5 +1,9 @@
 # Audio Implementation Scratchpad: Surgical Code Changes
 
+> Historical design scratchpad. It predates the 64-channel v7/v8 organism and
+> is not an active task list. Several dimensions and proposed mechanisms below
+> are obsolete; `README.md`, `math.md`, and `src/main.rs` define v8.
+
 This scratchpad lists specific code-level modifications for `src/main.rs` to realize the "Resonant Audio Evolution" vision.
 
 ## 1. Implement IT-FM (Phase-Locked Synthesis)

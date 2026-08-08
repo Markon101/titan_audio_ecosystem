@@ -1,85 +1,109 @@
-# TITAN Audio Ecosystem v7
+# TITAN Audio Ecosystem v8
 
-An adaptive, deterministic 2D neural-cellular-automata audio ecosystem for
-CPU-based training and rendering on Termux. TITAN couples a 64-channel 2D CA,
-episodic and motif memory, adaptive control, target-audio grounding, and a
-differentiable, phase-continuous synthesis path.
+TITAN is an adaptive, deterministic neural-cellular-automata audio ecosystem
+for sustained CPU training and rendering in Termux. v8 is a phone-first model:
+it keeps corpus and telemetry memory bounded, reduces the expensive spatial CA
+rule, and spends most of its approximately 14.9 million parameters in a
+channel-aware decoder that runs at 32 control frames per audio chunk.
 
-v7 is a clean training generation; it does not load or overwrite earlier model
-or world files. Its defaults are `titan_model_v7.safetensors` and
-`titan_world_v7.bin`. Start it with fresh weights for the new renderer/loss
-geometry:
+v8 writes independent artifacts and never overwrites v7 model or world state:
 
-Training WAV files are read from `OLD_WAVS` beneath the selected base directory.
-Model, world-state, telemetry, and rendered WAV files are saved alongside it.
+- `titan_model_v8.safetensors`
+- `titan_optimizer_v8.safetensors`
+- `titan_world_v8.bin`
+- `titan_morph_state_v8.json`
+- `titan_run_metadata_v8.json`
+
+The corpus classification remains in `titan_corpus_manifest_v7.json`. Its
+train/development/validation family semantics are data policy rather than model
+architecture, so v8 deliberately reuses it.
+
+## Build and run
 
 ```bash
 RUSTFLAGS="-C target-cpu=native" cargo build --release
 ./target/release/titan --base-dir /sdcard/Download --duration 240 --seed 42 --fresh-model
 ```
 
-Use `./target/release/titan --help` for checkpoint, reset, thread, learning-rate,
-and truncated-BPTT options.
+Training WAVs live in `OLD_WAVS` under the selected base directory. Use
+`./target/release/titan --help` for all checkpoint, reset, thread, learning-rate,
+run-tag, BPTT, and core-update options.
 
-Target WAVs are indexed, not loaded into RAM. On first use Titan creates
-`titan_corpus_manifest_v7.json`: generated Titan audio is quarantined, files
-are explicitly assigned to train/development/validation/exclude roles, and
-mastered/remix variants share a sampling family. Development probes may govern
-architecture growth but receive no gradient; validation families remain an
-untouched final test surface. At the beginning of a ~21.9 s episode, Titan
-samples a training family independently of its own output and follows one
-passage contiguously. This removes the old nearest-target feedback loop.
+To migrate compatible recurrent/control tensors from v7 while deliberately
+resetting the incompatible audible path:
 
-Supervision now covers 20 Hz--20 kHz at 1,024-, 4,096-, and tape scales, plus
-relative band energy, chroma/pitch salience, onset envelopes, modulation
-spectrum, 0.68/2.73/5.46-second recurrence geometry, level, and chunk seams.
-Exact waveform phase is not a target. The decoder is a phase-continuous modal
-bank whose carrier pitch, auxiliary modes, ratios, amplitudes, damping,
-family gains, and stereo width are continuous functions of recurrent memory
-and regional CA state. The 4x4 regional readout maps field columns to
-equal-power stereo positions; row is no longer accidentally treated as pan.
-A small smooth global-pan residual remains learnable, but cannot hard-clamp or
-stand in for independent left/right structure.
+```bash
+./target/release/titan \
+  --base-dir /sdcard/Download \
+  --import-model /sdcard/Download/titan_model_v7.safetensors \
+  --fresh-decoder
+```
 
-All oscillator families, the field scan, and stereo delay carry state across
-chunks. The audible post path is intentionally transparent: learned rendering,
-bounded saturation, and a stateful DC blocker. Discrete control can no longer
-inject untrained noise, resonators, or echo after the source loss.
+## Architecture
 
-`--bptt` selects the optimizer's gradient-averaging horizon. The differentiable
-recurrent tape is capped at 8 chunks and longer horizons accumulate detached
-8-chunk gradient segments, so `--bptt 64` no longer retains a 64-chunk CA graph
-in memory. Use the default `--bptt 8` for fresh models and fastest adaptation;
-larger values trade update frequency for lower-variance gradients and are most
-useful for already-developed organisms.
+The organism has two 64-channel toroidal neural cellular automata:
 
-AdamW first/second moments and cumulative update count are saved in
-`titan_optimizer_v7.safetensors`. They resume only when their global step
-matches the world checkpoint. `--fresh-decoder` resets the audible decoder but
-retains CA, GRU, morphic, arbiter, and episodic weights. `--run-tag NAME`
-isolates all experiment artifacts, making current-decoder, fresh-decoder, and
-fresh-model comparisons safe.
+- a 64x64 micro field updated every chunk;
+- a 32x32 macro field eligible to evolve on a four-chunk clock.
 
-`--freeze-morph` holds the active morphic depth for a controlled adaptation
-run. `--max-morph-depth N` permits pruning but blocks growth above `N` without
-discarding already-active layers. Normal growth now requires a fixed,
-gradient-excluded development score to plateau; random difficulty in the
-currently sampled training song cannot by itself trigger neurogenesis.
+Each CA uses a depthwise 3x3 spatial perception kernel followed by learned
+64-to-128 and 128-to-64 pointwise channel mixing. This reduces the dominant
+spatial multiply count by roughly 4.8x relative to v7's dense 3x3 rule.
+Precomputed deterministic cell-clock masks remove per-chunk mask allocation and
+random-number generation.
 
-Morphic depth has two checkpoint-compatible development paths, both gated by
-a development-probe plateau. Sustained ecological or mimic pressure may add
-one layer at a 512-chunk boundary. A healthy organism with both low normalized
-field entropy and low predictive structure may add one layer at the slower
-2,048-chunk boundary. Pruning uses the slow boundary and requires a healthy,
-non-stagnant, structurally rich regime. Every structural event prints its
-reason. Motif memory retains up to 64 diverse observations for long-horizon
-recall.
+Global micro-channel means and a 64-dimensional episodic attention readout feed
+a 512-unit GRU. Its output passes through an RMS-normalized, Swish residual
+MorphicStack with up to 12 blocks. The audible decoder also reads the fields
+directly: 64 micro tokens from an 8x8 grid and 16 macro tokens from a 4x4 grid
+are projected and attended by recurrent memory.
 
-Telemetry names and their scientific limitations are documented in
-[`METRICS.md`](METRICS.md). Schema v6 separates raw CA movement from the
-uncertainty movement feature, records exact morph events, supplies a topology
-row index, separates development from final validation, and adds correlation-
-aware width, decoder-pan and component stereo losses, channel balance,
-source-band, chroma, onset, modulation, recurrence, sub-bass, and optimizer-
-continuity diagnostics. Run the verification suite with `cargo test` and
-`cargo clippy --all-targets -- -D warnings`.
+The resulting context is decoded into 32 temporal control frames per 4,096
+samples. Six low-rate residual blocks produce independent time-varying controls
+for carrier phase and drive, 32 regional partials, differentiable mid/side
+excitation, channel openness, KAN drive, and mid/side dynamics. Linear
+interpolation expands those controls to sample rate. Phase-continuous carrier,
+FM, auxiliary and modal oscillators remain the primary sound source.
+
+Separate left and right eight-basis KAN-inspired sinusoidal wavefolders remain
+active. A bounded global pan is only a residual after independently decoded
+left/right and mid/side structure.
+
+## Online training and memory behavior
+
+Target audio is indexed by manifest, not loaded into RAM. A coherent source
+episode is seek-decoded in blocks of at most 16 chunks (about 0.5 MiB of stereo
+FP32 audio), amortizing file-open and resampling work while preserving constant
+memory. Generated Titan audio remains quarantined from the training corpus.
+
+`--bptt` controls the optimizer's gradient-averaging horizon; the differentiable
+tape remains capped at eight chunks. `--core-update-every N` performs full
+CA/GRU/Morphic backward on one of every N tapes and trains the decoder on the
+intervening tapes. The default is 4. Use `1` for full end-to-end BPTT on every
+tape when maximum adaptation matters more than speed.
+
+The phase profiler reports model forward, target I/O, loss/metrics, backward,
+optimizer, output I/O and checkpoint time per completed chunk. These values are
+also written to run metadata, so thread counts and architecture changes can be
+compared after thermal soak rather than from cold-start speed.
+
+Large topology and scalar trace records are streamed during the run and
+converted to their stable CSV formats at finalization. Audio is streamed to a
+temporary FP32 file and normalized in a second pass. Full, mutually consistent
+model/optimizer/world checkpoints are written every 1,024 chunks and on clean
+shutdown, limiting storage traffic from the larger model.
+
+## Supervision and verification
+
+Supervision covers 20 Hz--20 kHz at 1,024-, 4,096-, and tape scales, together
+with relative band energy, chroma/pitch salience, onset envelopes, modulation,
+multi-lag recurrence, level, chunk seams, and correlation-aware stereo
+geometry. Target phase is not supplied to the renderer.
+
+Telemetry semantics and their scientific limitations are documented in
+[`METRICS.md`](METRICS.md). Verify a build with:
+
+```bash
+cargo test
+cargo clippy --all-targets -- -D warnings
+```

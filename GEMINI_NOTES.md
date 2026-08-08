@@ -1,5 +1,10 @@
 # Titan Audio Ecosystem: Rust Edition - Agent Briefing
 
+> Archived April 2026 briefing. Its sizes, paths, and 144-channel architecture
+> are obsolete. v8 uses 64-channel 64x64/32x32 fields, a 512-unit GRU, an
+> approximately 14.9M-parameter spatial-temporal decoder, and versioned v8
+> checkpoints as documented in `README.md`.
+
 ## Project Overview
 This is a generative audio engine that uses **Neural Cellular Automata (NCA)** coupled with **FM Synthesis** and **KAN-based Wavefolding**. The system is designed for "online" continuous learning, mimicking target audio samples while maintaining an autonomous, evolving internal state.
 

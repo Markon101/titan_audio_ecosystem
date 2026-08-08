@@ -5,7 +5,7 @@ artistic interpretation. The distinction matters when comparing experiments.
 
 ## Files and schema
 
-Telemetry schema v6 writes five complementary artifacts per run. With
+Telemetry schema v7 writes five complementary artifacts per run. With
 `--run-tag NAME`, every filename receives that tag instead of overwriting the
 untagged run:
 
@@ -13,18 +13,25 @@ untagged run:
   the mean absolute micro-field delta printed as `Move:` in the console.
   `uncertainty_movement` is a different bounded feature derived from movement
   trend and model surprise. The old ambiguous `movement` heading is removed.
-- `ca_topology_rust.csv` remains a headerless matrix of 4,096 macro-field
-  values per sampled row so numerical consumers retain a fixed shape.
+- `ca_topology_rust.csv` is a headerless matrix of 1,024 macro-field values
+  per sampled row. v8's macro CA is 32x32; this is intentionally incompatible
+  with the 4,096-column v7 topology matrix.
 - `ca_topology_index_rust.csv` maps every topology row to `run_id`, sample
   index, global and local step, depth, radiation amplitude, field entropy, and
   any morph event observed since the prior sample.
 - `morph_events_rust.csv` records neurogenesis and pruning at their exact
   global and local steps, including the resulting depth and radiation value.
-- `titan_run_metadata_v7.json` records the build commit, dirty/release flags,
+- `titan_run_metadata_v8.json` records the build commit, dirty/release flags,
   invocation, reset mode, seed, thread count, requested BPTT and bounded tape,
   field dimensions, start/end state, output paths, and trace semantics.
   It also records the corpus manifest summary and optimizer resume/update
-  counts.
+  counts. v8 additionally records micro/macro dimensions, parameter count,
+  core-update cadence, decoder control rate, and phase timings.
+
+The large topology matrix is written incrementally. Scalar and topology-index
+records are streamed to bounded temporary JSONL spools and converted to the
+stable CSV schemas during finalization; they are no longer retained as an
+ever-growing in-memory JSON collection.
 
 The CSV trace is intentionally overwritten per process. Use the metadata
 `run_id` when archiving or joining artifacts from multiple runs.
@@ -57,7 +64,7 @@ The CSV trace is intentionally overwritten per process. Use the metadata
   combines all three relations without mixing target audio into the renderer.
   `stereo_side_geometry_loss`, `stereo_correlation_loss`, and
   `stereo_level_loss` expose its unweighted components. `decoder_pan` is the
-  bounded global residual after the 4x4 field-to-stereo map; persistent values
+  bounded global residual after the 4x8 field-to-stereo map; persistent values
   near its +/-0.25 limit indicate saturation but no longer create a zero-
   gradient hard-clamp region.
 - `development_best_spectral`, `development_mean_spectral`, and
@@ -98,6 +105,13 @@ The CSV trace is intentionally overwritten per process. Use the metadata
 - `optimizer_updates` is the persisted cumulative AdamW step count;
   `optimizer_updates_run` is the current process count and `optimizer_resumed`
   states whether matching moments were restored.
+- `core_update_every_tapes` in run metadata is the two-timescale optimization
+  cadence. Decoder weights receive every optimizer horizon; CA, GRU, episodic,
+  and MorphicStack gradients are retained only on the scheduled full tapes.
+- `phase_profile` reports average milliseconds per completed chunk for model
+  forward, target loading, loss/metrics, backward, optimizer, output I/O, and
+  checkpoint work. Target-loading time is a measured subset of loss/metrics,
+  not an additional mutually exclusive bucket.
 - `side_energy_width` is the old RMS channel-difference measure. It can be high
   for panned mono and is retained as a diagnostic, not called true width.
   `width` multiplies it by interchannel incoherence, so perfectly correlated
@@ -109,7 +123,7 @@ The CSV trace is intentionally overwritten per process. Use the metadata
   plateau window; validation metrics never participate in that decision.
 - `field_entropy` is the channel-archetype entropy in bits for the current
   micro field. It is not the entropy of the rendered waveform.
-- `crit_gain` is fixed at 1.0 in v7. `sigma` remains useful evidence, but no
+- `crit_gain` is fixed at 1.0 in v8. `sigma` remains useful evidence, but no
   learning-rate singularity is applied until calibration establishes a real
   critical surface rather than merely naming one.
 

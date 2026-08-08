@@ -25,10 +25,13 @@ Those ingredients make edge-of-chaos behavior possible, but they do not prove it
    the manifest's strict family-boundary repair, so it is not held-out evidence.
 6. A deterministic strange attractor cannot be inferred from a noisy audio waveform or a single scalar trace.  With ongoing random forcing, the more appropriate objects are a random attractor, stationary measure, or metastable family of random attractors.
 
-v7 deliberately starts a new weight generation because the earlier objective
+v7 deliberately started a new weight generation because the earlier objective
 could not observe important audible degrees of freedom and allowed an
-after-loss noise shortcut. The best scientific next step after v7 establishes
-a nontrivial trained regime is **instrumentation with frozen weights**: estimate
+after-loss noise shortcut. v8 is a second intentional generation break: it
+retains the 64-channel organism and source objective while replacing the narrow
+global readout with a direct spatial-temporal decoder, reducing the macro field
+to 32x32, and moving it to a four-chunk clock. The scientific next step after a
+nontrivial v8 regime is **instrumentation with frozen weights**: estimate
 common-noise Lyapunov exponents, damage spreading, correlation lengths,
 recurrence, attractor dimension, and basin structure without optimizer drift.
 
@@ -57,12 +60,12 @@ z_t = (x_t,y_t,h_t,e_t,c_t,q_t,\varphi_t,d_t,r_t),
 where:
 
 - \(x_t\in\mathbb{R}^{64\times64\times64}\) is the micro field;
-- \(y_t\in\mathbb{R}^{64\times64\times64}\) is the macro field;
+- \(y_t\in\mathbb{R}^{64\times32\times32}\) is the macro field;
 - \(h_t\in\mathbb{R}^{512}\) is GRU memory;
 - \(e_t\) is metabolic energy;
 - \(c_t\) is the compact adaptive-controller state;
 - \(q_t\) contains motif and episodic memories;
-- \(\varphi_t\in\mathbb{T}^{42}\) contains carrier, FM, auxiliary, and regional-partial phases;
+- \(\varphi_t\in\mathbb{T}^{74}\) contains carrier, FM, auxiliary, and regional-partial phases;
 - \(d_t\) contains the bounded stateful Haas and DC-blocker states;
 - \(r_t\) is the pseudorandom-generator state.
 
@@ -72,7 +75,13 @@ For fixed network weights \(\theta\), the chunk map can be written
     z_{t+1}=F_\theta(z_t,\omega_t),
 \]
 
-where \(\omega_t\) collects the stochastic cell masks, target selection, control exploration, radiation event, and Langevin kick at time \(t\).  This is naturally a **random dynamical system**.  For a fixed seed and saved RNG state it is also a deterministic skew-product system on the enlarged state \((z_t,r_t)\).
+where \(\omega_t\) collects target selection, control exploration, radiation
+events, and Langevin kicks at time \(t\). The asynchronous cell clock is now an
+eight-mask deterministic bank selected by a hash of the absolute step, avoiding
+a forced eight-chunk period. This remains a
+**random dynamical system** because of the other forcing terms. For a fixed
+seed, saved RNG state, and absolute step it is also a deterministic
+skew-product system on the enlarged state \((z_t,r_t)\).
 
 During learning, the weights change:
 
@@ -82,7 +91,7 @@ During learning, the weights change:
 \]
 
 The learning process is consequently non-autonomous unless
-\((\theta,m,v,k)\) is included in the state. v7.1 persists Adam moments and
+\((\theta,m,v,k)\) is included in the state. v8 continues to persist Adam moments and
 the cumulative update count, accepting them only when their global-step stamp
 matches the world. A missing/mismatched optimizer still changes the full
 learning dynamical system because it restarts behind a 32-update warmup. Claims
@@ -96,17 +105,25 @@ Mixing these regimes makes an attractor claim ambiguous.
 
 ## 2. Implemented neural-CA equations
 
-Ignoring batching notation, each neural CA has a residual local rule
+Ignoring batching notation, each v8 neural CA has a depthwise-separable
+residual local rule
 
 \[
-R_\theta(x)=W_2*\operatorname{ReLU}(W_1*x),
+P_\theta(x)=K_{dw}*_{dw}x,
+\qquad
+R_\theta(x)=W_c*_{1\times1}
+    \operatorname{ReLU}(W_e*_{1\times1}P_\theta(x)),
 \]
 
-where \(*\) is a circular 2-D convolution on the torus.  A fixed anisotropy field \(A\), optional macro modulation \(u\), local restoring bias \(b(x)\), and asynchronous Bernoulli mask \(M_t\) produce an update of the form
+where \(*_{dw}\) is a per-channel circular 3x3 convolution on the torus and
+the two pointwise transforms provide learned cross-channel mixing. A fixed
+anisotropy field \(A\), optional macro modulation \(u\), local restoring bias
+\(b(x)\), and deterministically scheduled asynchronous mask \(M_{s(t)}\) from
+the eight-mask bank produce an update of the form
 
 \[
 \widetilde x_{t+1}
-=x_t+\alpha M_t\odot\left[A\odot u_t\odot R_\theta(x_t)+b(x_t)\right],
+=x_t+\alpha M_{s(t)}\odot\left[A\odot u_t\odot R_\theta(x_t)+b(x_t)\right],
 \qquad \alpha=0.1.
 \]
 
@@ -132,7 +149,10 @@ where:
 - \(\eta_t\) is the temperature-dependent Gaussian kick;
 - \(g_x(t)\in[0.6,1.4]\) is the potential controller's micro gain.
 
-The macro map is intermittently advanced, passed through `tanh`, damped, driven by a normalized multioctave shear field, and gain-scaled:
+The macro map is eligible for a learned CA advance every fourth chunk, passed
+through `tanh`, damped, driven by a normalized multioctave shear field, and
+gain-scaled. Between macro clock ticks its state is retained apart from the
+bounded global-mean control:
 
 \[
 y_{t+1}
@@ -722,7 +742,7 @@ The dynamical target should therefore be task-conditioned:
 
 while minimizing final-renderer divergence from source-derived spectral and modulation statistics.  “Pleasantness” need not be hard-coded.
 
-## 11. Recommended experimental sequence for v7
+## 11. Historical recommended experimental sequence for v7
 
 1. Train the clean v7 generation until source losses and activity health reach
    a reproducible regime; do not compare its first few hundred chunks to a
@@ -735,7 +755,9 @@ while minimizing final-renderer divergence from source-derived spectral and modu
    topology, source-feature, development, validation, and clipping telemetry in schema v6.
 6. Retrain or reset weights only if the frozen diagnostics show that no nearby controller/gain regime produces coherent marginal stability.
 
-The 64-channel substrate and v7 objective are now the baseline worth preserving. The next changes should improve observability and experimental identifiability before another weight-generation break.
+This sequence records the reasoning that established the 64-channel substrate
+and v7 objective as the baseline later carried into v8. Section 14 describes
+the subsequent, deliberately incompatible architecture change.
 
 ## 12. v7.1 source-identifiability and modal-decoder corrections
 
@@ -1115,7 +1137,65 @@ antisymmetric side state or a slower hierarchical recurrent state against this
 checkpoint, with locked evaluation data and without reintroducing an external
 stereo effect.
 
-## 14. Research references
+## 14. v8 multirate decoder and phone-training geometry
+
+The v7.2.1 intervention showed that removing a pan shortcut did not create
+independent channel structure: correlation remained approximately 0.9923.
+v8 therefore makes the field observable to the renderer at multiple spatial
+scales instead of asking one global recurrent vector to recover all local
+variation.
+
+Average pooling maps the micro and macro fields to 64 and 16 channel-aware
+tokens respectively. With learned 256-dimensional projections, their union is
+
+\[
+T_t=[P_x\operatorname{pool}_{8\times8}(x_t);
+     P_y\operatorname{pool}_{4\times4}(y_t)]\in\mathbb{R}^{80\times256}.
+\]
+
+The 512-dimensional recurrent state queries these tokens with single-query
+scaled dot-product attention:
+
+\[
+a_t=\operatorname{softmax}\left(
+ \frac{Qh_t(KT_t)^\top}{\sqrt{256}}
+\right),\qquad c_t=a_tVT_t.
+\]
+
+A learned projection reshapes \([h_t,c_t]\) into 32 frames of width 224. Six
+RMS-normalized Swish residual MLP blocks transform those frames before a
+76-coordinate head emits 12 global controls and independent left/right
+amplitude controls for 32 spatial partials. Fixed linear interpolation maps the
+32 control frames onto 4,096 audio samples. This puts approximately 14.9
+million trainable parameters primarily in low-rate temporal modeling rather
+than waveform-rate processing.
+
+The differentiable renderer combines phase-continuous carrier, FM, auxiliary,
+and 32-partial oscillators with independent channel openness, mid/side drive,
+and deterministic continuous excitation tables. The excitation is inside the
+loss-visible renderer, so it cannot recreate the former after-loss noise
+shortcut. Separate eight-basis left/right KAN-inspired sinusoidal wavefolders
+remain active. Thus KAN wavefolding is retained, but it is one nonlinear stage
+inside a wider decoder rather than the decoder's sole source of timbral
+capacity.
+
+The named architectural components are MobileNet-style depthwise-separable
+convolutions, a GRU, scaled dot-product cross-attention, RMSNorm/Swish residual
+MLPs, and KAN-inspired basis wavefolding. v8 does not use diffusion. Iterative
+waveform denoising would multiply CPU inference and backpropagation cost; the
+low-rate control decoder gives the latent fields many direct audible paths
+while keeping one differentiable render pass per chunk.
+
+Online optimization uses two clocks. The decoder receives gradients on every
+tape, while the CA, GRU, episodic path, and MorphicStack receive end-to-end
+gradients once every \(N\) tapes (`--core-update-every`, default \(N=4\)). The
+macro CA itself is eligible to advance every four chunks. These schedules do not make the
+corpus resident: the manifest remains an index, and a bounded 16-chunk decode
+buffer amortizes file open, seek, and resampling work. Large telemetry is
+spooled incrementally and full consistent checkpoints move to a 1,024-chunk
+cadence, preserving bounded RAM and storage traffic on the S25 Ultra.
+
+## 15. Research references
 
 - Chris G. Langton, “Computation at the edge of chaos: Phase transitions and emergent computation,” *Physica D* 42 (1990), 12–37. [DOI](https://doi.org/10.1016/0167-2789(90)90064-V)
 - Joschka Boedecker, Oliver Obst, Joseph T. Lizier, N. Michael Mayer, and Minoru Asada, “Information processing in echo state networks at the edge of chaos,” *Theory in Biosciences* 131 (2012), 205–213. [DOI](https://doi.org/10.1007/s12064-011-0146-8)

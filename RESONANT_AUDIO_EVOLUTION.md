@@ -1,5 +1,9 @@
 # Resonant Audio Evolution: Bridging Information Physics & Generative Sound
 
+> Historical concept document. It records early design intent, not the current
+> implementation. For v8's actual multirate CA, attention decoder, KAN stage,
+> renderer, and online-training behavior, see `README.md` and `math.md`.
+
 This document outlines a high-level strategic and technical framework for evolving the `titan-audio-ecosystem` using the "Resonant Autonomy" principles developed in the Fractal CA project. The goal is to transform the current Neural Cellular Automata (NCA) synthesis into a sovereign, "breathing" information-theoretic audio organism.
 
 ## 1. The Core Philosophy: Audio as a Dissipative Structure

@@ -1,19 +1,21 @@
 #![recursion_limit = "512"]
 
 // =====================================================================
-// TITAN AUDIO ECOSYSTEM — RUST EDITION v7 ("TRUTHFUL RESONANT ECOLOGY")
+// TITAN AUDIO ECOSYSTEM — RUST EDITION v8 ("MULTIRATE RESONANT ECOLOGY")
 // =====================================================================
 // BUILD (Termux / Snapdragon 8 Elite):
 //   RUSTFLAGS="-C target-cpu=native" cargo build --release
 //
-// DESIGN RECORD (v7):
+// DESIGN RECORD (v8):
 //
-// 1. The 64-channel 64x64 toroidal neural CA remains the organism. The
-//    migration changes the observation/synthesis coupling, not the field size.
+// 1. A 64-channel 64x64 micro CA is coupled to a slower 32x32 macro CA.
+//    Depthwise spatial perception and pointwise channel mixing preserve the
+//    toroidal ecology while making sustained phone training tractable.
 // 2. Target WAVs are seek-decoded into coherent ~22 s episodes. Multi-scale
 //    full-band spectral, envelope, level, and seam losses provide causal
 //    musical evidence without requiring arbitrary waveform-phase matching.
-// 3. Carrier, FM, auxiliary, regional-partial, scan, and Haas-delay state are
+// 3. Multiscale CA tokens and recurrent memory drive a 32-frame temporal
+//    decoder. Carrier, FM, regional-partial, excitation, and stereo state are
 //    continuous across chunks and checkpointed.
 // 4. The audible post path is learned synthesis -> bounded saturation ->
 //    stateful DC block. No discrete controller may add untrained timbre after
@@ -21,25 +23,25 @@
 // 5. Movement and novelty are bounded homeostats. Source grounding has a
 //    non-zero floor. The movement-persistence statistic is telemetry, not a
 //    claimed Lyapunov exponent or a learning-rate singularity.
-// 6. v7 model/world filenames and schemas are independent. Earlier worlds are
-//    intentionally rejected; fresh deterministic weights are the default when
-//    no v7 model exists.
+// 6. v8 model/world filenames and schemas are independent. Earlier worlds are
+//    intentionally rejected; compatible learned tensors may be imported while
+//    the new dynamical state starts fresh.
 
 use anyhow::Result;
 use candle_core::{backprop::GradStore, DType, Device, Result as CResult, Tensor, Var, D};
-use candle_nn::{Conv2dConfig, Linear, Module, ParamsAdamW, VarBuilder as VBV, VarMap};
+use candle_nn::{Conv2dConfig, Linear, Module, ParamsAdamW, RmsNorm, VarBuilder as VBV, VarMap};
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
 use rustfft::{num_complex::Complex, FftPlanner};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap, VecDeque};
 use std::fs::File;
-use std::io::{BufReader, BufWriter, Read, Write};
+use std::io::{BufRead, BufReader, BufWriter, Read, Write};
 use std::sync::{
     atomic::{AtomicBool, Ordering as AtomicOrdering},
     Arc,
 };
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 type RuntimeRng = ChaCha8Rng;
 
@@ -71,12 +73,16 @@ const CHUNK_SIZE: usize = 4096;
 // thermal/RAM controls for other devices.
 const GRID_H: usize = 64;
 const GRID_W: usize = 64;
+const MACRO_H: usize = 32;
+const MACRO_W: usize = 32;
+const MACRO_UPDATE_EVERY: u64 = 4;
 const CA_CHANNELS: usize = 64;
 const CA_HIDDEN: usize = 128; // conv hidden channels
-const CA_UPDATE_PROB: f32 = 0.71; // stochastic cell clock (anti-limit-cycle)
+const CA_UPDATE_PROB: f32 = 0.71; // deterministic asynchronous cell clock
 
 const MEMORY_DIM: usize = 512;
 const BPTT_WINDOW: usize = 8;
+const CORE_UPDATE_EVERY: usize = 4;
 // The recurrent CA graph is large enough that retaining 64 differentiable
 // chunks can exhaust mobile memory before backward starts. Longer requested
 // horizons still reduce gradient variance, but are accumulated from bounded
@@ -89,24 +95,41 @@ const SPEC_BINS: usize = 96;
 const KAN_BASIS_FUNCTIONS: usize = 8;
 
 // Scan-synth (the 2D field made directly audible)
-const SCAN_PARTIALS: usize = 16; // 4x4 regional agents -> partial amplitudes
+const SCAN_PARTIALS: usize = 32; // 4x8 regional agents -> partial amplitudes
                                  // Traverse only a few field columns per audio chunk. The old full-width scan
                                  // retriggered at 11.7 Hz and directly produced a small-engine amplitude buzz.
 const SCAN_COLUMNS_PER_CHUNK: usize = 4;
 const REGION_ROWS: usize = 4;
-const REGION_COLS: usize = 4;
+const REGION_COLS: usize = 8;
 const REGION_COUNT: usize = REGION_ROWS * REGION_COLS;
 const REGION_H: usize = GRID_H / REGION_ROWS;
 const REGION_W: usize = GRID_W / REGION_COLS;
+
+// Channel-aware, low-rate audio decoder. Most v8 parameters execute only on
+// 32 control frames per 4,096-sample chunk, rather than at waveform rate.
+const DECODER_MICRO_ROWS: usize = 8;
+const DECODER_MICRO_COLS: usize = 8;
+const DECODER_MACRO_ROWS: usize = 4;
+const DECODER_MACRO_COLS: usize = 4;
+const DECODER_TOKEN_DIM: usize = 256;
+const DECODER_CONTROL_FRAMES: usize = 32;
+const DECODER_WIDTH: usize = 224;
+const DECODER_EXPANSION: usize = 448;
+const DECODER_BLOCKS: usize = 6;
+const DECODER_GLOBAL_CONTROLS: usize = 12;
+const DECODER_CONTROL_COUNT: usize = DECODER_GLOBAL_CONTROLS + SCAN_PARTIALS * 2;
+const EXCITATION_TABLE_LEN: usize = CHUNK_SIZE * 16;
+const TARGET_PREFETCH_CHUNKS: usize = 16;
+const CELL_CLOCK_MASKS: usize = 8;
 
 // Recursive self-model / hybrid control
 const OBS_DIM: usize = 12;
 const ACTION_COUNT: usize = 10;
 const PLAN_EVERY: usize = 8;
-const WORLD_VERSION: u32 = 7;
-const WORLD_MAGIC: [u8; 8] = *b"TITANW7\0";
-const WORLD_SAVE_EVERY: usize = 256;
-const TRACE_SCHEMA_VERSION: u32 = 6;
+const WORLD_VERSION: u32 = 8;
+const WORLD_MAGIC: [u8; 8] = *b"TITANW8\0";
+const WORLD_SAVE_EVERY: usize = 1024;
+const TRACE_SCHEMA_VERSION: u32 = 7;
 const TRACE_EVERY: usize = 10;
 const BUILD_COMMIT: &str = env!("TITAN_GIT_COMMIT");
 const BUILD_DIRTY: &str = env!("TITAN_GIT_DIRTY");
@@ -413,6 +436,50 @@ fn unix_time_ms() -> u128 {
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
         .as_millis()
+}
+
+#[derive(Default)]
+struct PhaseProfiler {
+    target_load: Duration,
+    model_forward: Duration,
+    loss_and_metrics: Duration,
+    backward: Duration,
+    optimizer: Duration,
+    output_io: Duration,
+    checkpoints: Duration,
+}
+impl PhaseProfiler {
+    fn milliseconds(duration: Duration) -> f64 {
+        duration.as_secs_f64() * 1000.0
+    }
+
+    fn report(&self, steps: usize) {
+        let divisor = steps.max(1) as f64;
+        println!("Phase time per completed chunk:");
+        println!(
+            "  forward {:.2} ms | loss/metrics {:.2} ms (target I/O {:.2} ms) | backward {:.2} ms | optimizer {:.2} ms | output I/O {:.2} ms | checkpoints {:.2} ms",
+            Self::milliseconds(self.model_forward) / divisor,
+            Self::milliseconds(self.loss_and_metrics) / divisor,
+            Self::milliseconds(self.target_load) / divisor,
+            Self::milliseconds(self.backward) / divisor,
+            Self::milliseconds(self.optimizer) / divisor,
+            Self::milliseconds(self.output_io) / divisor,
+            Self::milliseconds(self.checkpoints) / divisor,
+        );
+    }
+
+    fn json(&self, steps: usize) -> serde_json::Value {
+        let divisor = steps.max(1) as f64;
+        serde_json::json!({
+            "model_forward_ms_per_chunk": Self::milliseconds(self.model_forward) / divisor,
+            "loss_and_metrics_ms_per_chunk": Self::milliseconds(self.loss_and_metrics) / divisor,
+            "target_load_ms_per_chunk": Self::milliseconds(self.target_load) / divisor,
+            "backward_ms_per_chunk": Self::milliseconds(self.backward) / divisor,
+            "optimizer_ms_per_chunk": Self::milliseconds(self.optimizer) / divisor,
+            "output_io_ms_per_chunk": Self::milliseconds(self.output_io) / divisor,
+            "checkpoint_ms_per_chunk": Self::milliseconds(self.checkpoints) / divisor,
+        })
+    }
 }
 
 // --- DETERMINISTIC RANDOM TENSOR HELPERS ---
@@ -912,7 +979,7 @@ fn morph_decision(
     // At a much slower boundary, persistent poverty in both field vocabulary
     // and temporal predictive structure is evidence that the current depth
     // is expressive but not structurally rich. Global-step boundaries make
-    // this work across process restarts in the v7 world format.
+    // this work across process restarts in the versioned world format.
     let development_boundary =
         morph_boundary_crossed(absolute_step, window_len, MORPH_DEVELOPMENT_EVERY);
     let structurally_poor = evidence.field_entropy_norm < MORPH_FIELD_ENTROPY_FLOOR
@@ -1391,6 +1458,16 @@ fn deterministic_reinit(varmap: &VarMap, seed: u64, device: &Device) -> Result<u
     deterministic_reinit_where(varmap, seed, device, |_| true)
 }
 
+fn parameter_count(varmap: &VarMap) -> usize {
+    varmap
+        .data()
+        .lock()
+        .unwrap()
+        .values()
+        .map(|var| var.as_tensor().elem_count())
+        .sum()
+}
+
 fn is_decoder_tensor(name: &str) -> bool {
     [
         "spatial_panner",
@@ -1405,6 +1482,7 @@ fn is_decoder_tensor(name: &str) -> bool {
         "partial_damping_head",
         "oscillator_gain_head",
         "stereo_width_head",
+        "temporal_decoder",
     ]
     .iter()
     .any(|needle| name.contains(needle))
@@ -1442,7 +1520,9 @@ where
             continue;
         }
         let n: usize = dims.iter().product();
-        let vals: Vec<f32> = if name.ends_with("weights") {
+        let vals: Vec<f32> = if name.contains("norm") && name.ends_with("weight") {
+            vec![1.0; n]
+        } else if name.ends_with("weights") {
             (0..n).map(|_| rng_normal(&mut rng) * 0.1).collect()
         } else if name.contains("bias") {
             vec![0.0; n]
@@ -1867,11 +1947,17 @@ struct TargetFile {
     output_frames: usize,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 struct TargetCursor {
     file: usize,
     output_frame: usize,
     chunks_left: usize,
+}
+
+struct BufferedTargetChunk {
+    cursor: TargetCursor,
+    left: Vec<f32>,
+    right: Vec<f32>,
 }
 
 struct TargetAudioLoader {
@@ -1885,6 +1971,7 @@ struct TargetAudioLoader {
     manifest_path: String,
     active: Option<TargetCursor>,
     pending: Vec<TargetCursor>,
+    prefetched: VecDeque<BufferedTargetChunk>,
     last_served: Option<TargetCursor>,
 }
 
@@ -2024,6 +2111,7 @@ impl TargetAudioLoader {
             manifest_path: manifest_path.to_string(),
             active: None,
             pending: Vec::with_capacity(TARGET_K),
+            prefetched: VecDeque::with_capacity(TARGET_PREFETCH_CHUNKS),
             last_served: None,
         })
     }
@@ -2052,12 +2140,20 @@ impl TargetAudioLoader {
     }
 
     fn decode_window(&self, cursor: TargetCursor) -> Result<(Vec<f32>, Vec<f32>)> {
+        self.decode_span(cursor, CHUNK_SIZE)
+    }
+
+    fn decode_span(
+        &self,
+        cursor: TargetCursor,
+        output_frames: usize,
+    ) -> Result<(Vec<f32>, Vec<f32>)> {
         let file = &self.files[cursor.file];
         let rate_ratio = file.sample_rate as f64 / SAMPLE_RATE as f64;
         let source_pos = cursor.output_frame as f64 * rate_ratio;
         let source_start = source_pos.floor() as usize;
         let frac0 = source_pos - source_start as f64;
-        let needed_frames = ((frac0 + (CHUNK_SIZE - 1) as f64 * rate_ratio).ceil() as usize + 2)
+        let needed_frames = ((frac0 + (output_frames - 1) as f64 * rate_ratio).ceil() as usize + 2)
             .min(file.source_frames.saturating_sub(source_start));
         if needed_frames < 2 {
             anyhow::bail!("target cursor reached the end of {:?}", file.path);
@@ -2089,9 +2185,9 @@ impl TargetAudioLoader {
         if frames_read < 2 {
             anyhow::bail!("short target read from {:?}", file.path);
         }
-        let mut left = Vec::with_capacity(CHUNK_SIZE);
-        let mut right = Vec::with_capacity(CHUNK_SIZE);
-        for i in 0..CHUNK_SIZE {
+        let mut left = Vec::with_capacity(output_frames);
+        let mut right = Vec::with_capacity(output_frames);
+        for i in 0..output_frames {
             let pos = frac0 + i as f64 * rate_ratio;
             let j = (pos.floor() as usize).min(frames_read - 1);
             let j1 = (j + 1).min(frames_read - 1);
@@ -2107,17 +2203,47 @@ impl TargetAudioLoader {
         Ok((left, right))
     }
 
+    fn refill_prefetch(&mut self, cursor: TargetCursor) -> Result<()> {
+        self.prefetched.clear();
+        let chunks = cursor.chunks_left.min(TARGET_PREFETCH_CHUNKS);
+        let (left, right) = self.decode_span(cursor, chunks * CHUNK_SIZE)?;
+        for chunk in 0..chunks {
+            let start = chunk * CHUNK_SIZE;
+            let end = start + CHUNK_SIZE;
+            self.prefetched.push_back(BufferedTargetChunk {
+                cursor: TargetCursor {
+                    file: cursor.file,
+                    output_frame: cursor.output_frame + start,
+                    chunks_left: cursor.chunks_left - chunk,
+                },
+                left: left[start..end].to_vec(),
+                right: right[start..end].to_vec(),
+            });
+        }
+        Ok(())
+    }
+
     // A family is sampled uniformly, then one of its declared variants. With
     // TARGET_K=1, target choice is independent of current model output.
     fn sample_chunks(&mut self, k: usize, rng: &mut RuntimeRng, device: &Device) -> Result<Tensor> {
         let mut data = Vec::with_capacity(k * 2 * CHUNK_SIZE);
         self.pending.clear();
         if let Some(mut cursor) = self.active {
-            let (l, r) = self.decode_window(cursor)?;
+            let matches = self
+                .prefetched
+                .front()
+                .is_some_and(|chunk| chunk.cursor == cursor);
+            if !matches {
+                self.refill_prefetch(cursor)?;
+            }
+            let chunk = self
+                .prefetched
+                .pop_front()
+                .ok_or_else(|| anyhow::anyhow!("target prefetch produced no chunks"))?;
             self.last_served = Some(cursor);
             for _ in 0..k {
-                data.extend_from_slice(&l);
-                data.extend_from_slice(&r);
+                data.extend_from_slice(&chunk.left);
+                data.extend_from_slice(&chunk.right);
             }
             cursor.output_frame += CHUNK_SIZE;
             cursor.chunks_left = cursor.chunks_left.saturating_sub(1);
@@ -2152,6 +2278,7 @@ impl TargetAudioLoader {
 
     fn commit_selection(&mut self, selected: usize) {
         if let Some(mut cursor) = self.pending.get(selected).copied() {
+            self.prefetched.clear();
             self.last_served = Some(cursor);
             cursor.output_frame += CHUNK_SIZE;
             cursor.chunks_left = cursor.chunks_left.saturating_sub(1);
@@ -2218,6 +2345,7 @@ impl TargetAudioLoader {
             "validation_files": self.held_out_files,
             "validation_family_probes": self.validation_files.len(),
             "selection": "uniform_family_then_uniform_variant",
+            "prefetch_chunks": TARGET_PREFETCH_CHUNKS,
         })
     }
 }
@@ -2274,7 +2402,7 @@ fn decimate2_2d(x: &Tensor) -> CResult<Tensor> {
 
 fn calculate_cross_layer_synergy_tensor(micro: &Tensor, macro_t: &Tensor) -> CResult<Tensor> {
     let micro_flat = micro.flatten_all()?;
-    let macro_flat = macro_t.flatten_all()?;
+    let macro_flat = macro_t.upsample_nearest2d(GRID_H, GRID_W)?.flatten_all()?;
     let micro_mean = micro_flat.mean_all()?;
     let macro_mean = macro_flat.mean_all()?;
     let micro_norm = micro_flat.broadcast_sub(&micro_mean)?;
@@ -2305,11 +2433,18 @@ type TensorTransform = Box<dyn Fn(&Tensor) -> CResult<Tensor>>;
 // Circular (torus) 2D convolution: wrap-pad both spatial dims, then conv with
 // padding 0. The torus removes boundary artifacts that would otherwise pin
 // patterns to the edges.
-fn conv2d_torus(in_c: usize, out_c: usize, k: usize, vb: VBV) -> Result<TensorTransform> {
+fn conv2d_torus_grouped(
+    in_c: usize,
+    out_c: usize,
+    k: usize,
+    groups: usize,
+    vb: VBV,
+) -> Result<TensorTransform> {
     let pad = k / 2;
     let config = Conv2dConfig {
         padding: 0,
         stride: 1,
+        groups,
         ..Default::default()
     };
     let conv = candle_nn::conv2d(in_c, out_c, k, config, vb)?;
@@ -2327,6 +2462,10 @@ fn conv2d_torus(in_c: usize, out_c: usize, k: usize, vb: VBV) -> Result<TensorTr
         let xh = Tensor::cat(&[&left, &xv, &right], D::Minus1)?;
         conv.forward(&xh)
     }))
+}
+
+fn conv2d_torus(in_c: usize, out_c: usize, k: usize, vb: VBV) -> Result<TensorTransform> {
+    conv2d_torus_grouped(in_c, out_c, k, 1, vb)
 }
 
 fn morph_wave(phase: &Tensor, morph: &Tensor) -> CResult<Tensor> {
@@ -3265,6 +3404,9 @@ struct ShearField2D {
     cos_a: Vec<f32>,
     freqs: [f32; SHEAR_OCTAVES],
     weights: [f32; SHEAR_OCTAVES],
+    channels: usize,
+    height: usize,
+    width: usize,
     cl: usize,
     scratch: Vec<f32>,
 }
@@ -3303,6 +3445,9 @@ impl ShearField2D {
             cos_a,
             freqs,
             weights,
+            channels,
+            height: h,
+            width: w,
             cl,
             scratch: vec![0.0f32; cl],
         }
@@ -3328,7 +3473,11 @@ impl ShearField2D {
         for v in self.scratch.iter_mut() {
             *v *= scale;
         }
-        Tensor::from_slice(&self.scratch, (1, CA_CHANNELS, GRID_H, GRID_W), device)
+        Tensor::from_slice(
+            &self.scratch,
+            (1, self.channels, self.height, self.width),
+            device,
+        )
     }
 }
 
@@ -3704,21 +3853,25 @@ impl KANLayer {
 
 struct MorphicStack {
     layers: Vec<candle_nn::Sequential>,
+    norms: Vec<RmsNorm>,
     active_depth: usize,
 }
 impl MorphicStack {
     fn new(dim: usize, max_depth: usize, vb: VBV) -> Result<Self> {
         let mut layers = Vec::new();
+        let mut norms = Vec::new();
         for i in 0..max_depth {
+            norms.push(candle_nn::rms_norm(dim, 1e-5, vb.pp(format!("norm{}", i)))?);
             let seq = candle_nn::seq()
                 .add(candle_nn::linear(dim, dim, vb.pp(format!("l{}_1", i)))?)
-                .add(Relu)
+                .add(candle_nn::Activation::Swish)
                 .add(candle_nn::linear(dim, dim, vb.pp(format!("l{}_2", i)))?)
-                .add(Tanh);
+                .add(candle_nn::Activation::Swish);
             layers.push(seq);
         }
         Ok(Self {
             layers,
+            norms,
             active_depth: MORPH_START_DEPTH,
         })
     }
@@ -3726,7 +3879,7 @@ impl MorphicStack {
         let mut out = x.clone();
         for i in 0..self.active_depth {
             let residual = self.layers[i]
-                .forward(&out)?
+                .forward(&self.norms[i].forward(&out)?)?
                 .affine(morphic_residual_gain(i), 0.0)?;
             out = out.add(&residual)?;
         }
@@ -3799,24 +3952,80 @@ impl GRUCell {
 }
 
 // --- 2D NEURAL CA on a torus ---
+struct CellClockBank {
+    masks: Vec<Tensor>,
+    schedule_salt: u64,
+}
+impl CellClockBank {
+    fn new(
+        channels: usize,
+        height: usize,
+        width: usize,
+        salt: u64,
+        device: &Device,
+    ) -> Result<Self> {
+        let n = channels * height * width;
+        let mut masks = Vec::with_capacity(CELL_CLOCK_MASKS);
+        for clock in 0..CELL_CLOCK_MASKS {
+            let values: Vec<f32> = (0..n)
+                .map(|i| {
+                    let mut z = (i as u64)
+                        .wrapping_add((clock as u64).wrapping_mul(0x9e3779b97f4a7c15))
+                        ^ salt;
+                    z = (z ^ (z >> 30)).wrapping_mul(0xbf58476d1ce4e5b9);
+                    z = (z ^ (z >> 27)).wrapping_mul(0x94d049bb133111eb);
+                    z ^= z >> 31;
+                    let unit = (z >> 40) as f32 / (1u32 << 24) as f32;
+                    f32::from(unit < CA_UPDATE_PROB)
+                })
+                .collect();
+            masks.push(Tensor::from_vec(
+                values,
+                (1, channels, height, width),
+                device,
+            )?);
+        }
+        Ok(Self {
+            masks,
+            schedule_salt: salt ^ 0xA5A5_5A5A_D3C4_B2E1,
+        })
+    }
+
+    fn get(&self, absolute_step: u64) -> &Tensor {
+        // A stateless SplitMix64 schedule avoids imposing an eight-chunk
+        // period while retaining a small, allocation-free tensor bank.
+        let mut z = absolute_step ^ self.schedule_salt;
+        z = (z ^ (z >> 30)).wrapping_mul(0xbf58476d1ce4e5b9);
+        z = (z ^ (z >> 27)).wrapping_mul(0x94d049bb133111eb);
+        z ^= z >> 31;
+        &self.masks[(z as usize) % self.masks.len()]
+    }
+}
+
 struct NeuralCA2D {
-    conv1: TensorTransform,
-    conv2: TensorTransform,
+    perception: TensorTransform,
+    expand: TensorTransform,
+    contract: TensorTransform,
     anisotropic_mask: Tensor,
 }
 impl NeuralCA2D {
-    fn new(channels: usize, hidden: usize, vb: VBV) -> Result<Self> {
-        let conv1 = conv2d_torus(channels, hidden, 3, vb.pp("c1"))?;
-        let conv2 = conv2d_torus(hidden, channels, 1, vb.pp("c2"))?;
+    fn new(channels: usize, hidden: usize, height: usize, width: usize, vb: VBV) -> Result<Self> {
+        // MobileNet-style depthwise perception removes the dense 3x3
+        // channel-mixing cost. Two 1x1 transforms retain learned cross-channel
+        // interaction at each cell.
+        let perception =
+            conv2d_torus_grouped(channels, channels, 3, channels, vb.pp("perception"))?;
+        let expand = conv2d_torus(channels, hidden, 1, vb.pp("expand"))?;
+        let contract = conv2d_torus(hidden, channels, 1, vb.pp("contract"))?;
         // Fixed anisotropy: a gentle per-channel 2D interference pattern so the
         // learned rule is not forced to break symmetry from pure noise.
-        let mut pattern = vec![0.0f32; channels * GRID_H * GRID_W];
+        let mut pattern = vec![0.0f32; channels * height * width];
         for c in 0..channels {
-            for i in 0..GRID_H {
-                for j in 0..GRID_W {
-                    let pi = (i as f32 / GRID_H as f32) * TWO_PI;
-                    let pj = (j as f32 / GRID_W as f32) * TWO_PI;
-                    pattern[c * GRID_H * GRID_W + i * GRID_W + j] = 0.8
+            for i in 0..height {
+                for j in 0..width {
+                    let pi = (i as f32 / height as f32) * TWO_PI;
+                    let pj = (j as f32 / width as f32) * TWO_PI;
+                    pattern[c * height * width + i * width + j] = 0.8
                         + 0.4
                             * ((pi * (1.0 + (c % 3) as f32)
                                 + pj * (1.0 + (c % 2) as f32)
@@ -3826,15 +4035,16 @@ impl NeuralCA2D {
             }
         }
         let anisotropic_mask =
-            Tensor::from_vec(pattern, (1, channels, GRID_H, GRID_W), vb.device())?;
+            Tensor::from_vec(pattern, (1, channels, height, width), vb.device())?;
         Ok(Self {
-            conv1,
-            conv2,
+            perception,
+            expand,
+            contract,
             anisotropic_mask,
         })
     }
-    // Stochastic cell clock: the keep-mask is supplied by the caller (built
-    // from the master seeded RNG), constant w.r.t. the graph.
+    // Asynchronous cell clock: the caller supplies one mask from the
+    // deterministically scheduled bank, constant with respect to the graph.
     fn forward(
         &self,
         x: &Tensor,
@@ -3842,8 +4052,9 @@ impl NeuralCA2D {
         field_bias: Option<&Tensor>,
         keep: &Tensor,
     ) -> CResult<Tensor> {
-        let h = (self.conv1)(x)?.relu()?;
-        let mut out = (self.conv2)(&h)?;
+        let perceived = (self.perception)(x)?;
+        let h = (self.expand)(&perceived)?.relu()?;
+        let mut out = (self.contract)(&h)?;
         out = out.broadcast_mul(&self.anisotropic_mask)?;
         if let Some(m) = ext_mod {
             out = out.broadcast_mul(&m.unsqueeze(2)?.unsqueeze(3)?)?;
@@ -3852,6 +4063,187 @@ impl NeuralCA2D {
             out = out.add(f)?;
         }
         x.add(&out.mul(keep)?.affine(0.1, 0.0)?)
+    }
+}
+
+fn spatial_tokens(x: &Tensor, rows: usize, cols: usize) -> CResult<Tensor> {
+    let (batch, channels, height, width) = x.dims4()?;
+    if batch != 1 || !height.is_multiple_of(rows) || !width.is_multiple_of(cols) {
+        candle_core::bail!(
+            "cannot pool {:?} into a {}x{} token grid",
+            x.dims(),
+            rows,
+            cols
+        );
+    }
+    x.reshape((1, channels, rows, height / rows, cols, width / cols))?
+        .mean(5)?
+        .mean(3)?
+        .permute((0, 2, 3, 1))?
+        .reshape((rows * cols, channels))
+}
+
+struct TemporalDecoderBlock {
+    norm: RmsNorm,
+    expand: Linear,
+    contract: Linear,
+}
+impl TemporalDecoderBlock {
+    fn new(vb: VBV) -> Result<Self> {
+        Ok(Self {
+            norm: candle_nn::rms_norm(DECODER_WIDTH, 1e-5, vb.pp("norm"))?,
+            expand: candle_nn::linear(DECODER_WIDTH, DECODER_EXPANSION, vb.pp("expand"))?,
+            contract: candle_nn::linear(DECODER_EXPANSION, DECODER_WIDTH, vb.pp("contract"))?,
+        })
+    }
+
+    fn forward(&self, x: &Tensor) -> CResult<Tensor> {
+        let expanded = self.expand.forward(&self.norm.forward(x)?)?;
+        let residual = self
+            .contract
+            .forward(&candle_nn::Activation::Swish.forward(&expanded)?)?
+            .affine(0.35, 0.0)?;
+        x.add(&residual)
+    }
+}
+
+struct SpatialTemporalDecoder {
+    micro_projection: Linear,
+    macro_projection: Linear,
+    query: Linear,
+    key: Linear,
+    value: Linear,
+    seed: Linear,
+    blocks: Vec<TemporalDecoderBlock>,
+    control_head: Linear,
+    interpolation: Tensor,
+}
+impl SpatialTemporalDecoder {
+    fn new(vb: VBV, device: &Device) -> Result<Self> {
+        let micro_projection =
+            candle_nn::linear(CA_CHANNELS, DECODER_TOKEN_DIM, vb.pp("micro_projection"))?;
+        let macro_projection =
+            candle_nn::linear(CA_CHANNELS, DECODER_TOKEN_DIM, vb.pp("macro_projection"))?;
+        let query = candle_nn::linear(MEMORY_DIM, DECODER_TOKEN_DIM, vb.pp("query"))?;
+        let key = candle_nn::linear(DECODER_TOKEN_DIM, DECODER_TOKEN_DIM, vb.pp("key"))?;
+        let value = candle_nn::linear(DECODER_TOKEN_DIM, DECODER_TOKEN_DIM, vb.pp("value"))?;
+        let seed = candle_nn::linear(
+            MEMORY_DIM + DECODER_TOKEN_DIM,
+            DECODER_CONTROL_FRAMES * DECODER_WIDTH,
+            vb.pp("seed"),
+        )?;
+        let mut blocks = Vec::with_capacity(DECODER_BLOCKS);
+        for i in 0..DECODER_BLOCKS {
+            blocks.push(TemporalDecoderBlock::new(vb.pp(format!("block{}", i)))?);
+        }
+        let control_head =
+            candle_nn::linear(DECODER_WIDTH, DECODER_CONTROL_COUNT, vb.pp("control_head"))?;
+
+        let mut interpolation = vec![0.0f32; DECODER_CONTROL_FRAMES * CHUNK_SIZE];
+        for sample in 0..CHUNK_SIZE {
+            let position =
+                sample as f32 * (DECODER_CONTROL_FRAMES - 1) as f32 / (CHUNK_SIZE - 1) as f32;
+            let left = position.floor() as usize;
+            let right = (left + 1).min(DECODER_CONTROL_FRAMES - 1);
+            let fraction = position - left as f32;
+            interpolation[left * CHUNK_SIZE + sample] += 1.0 - fraction;
+            interpolation[right * CHUNK_SIZE + sample] += fraction;
+        }
+        Ok(Self {
+            micro_projection,
+            macro_projection,
+            query,
+            key,
+            value,
+            seed,
+            blocks,
+            control_head,
+            interpolation: Tensor::from_vec(
+                interpolation,
+                (DECODER_CONTROL_FRAMES, CHUNK_SIZE),
+                device,
+            )?,
+        })
+    }
+
+    // Returns bounded controls shaped (global + 2*partials, samples).
+    fn forward(&self, micro: &Tensor, macro_t: &Tensor, memory: &Tensor) -> CResult<Tensor> {
+        let micro = self.micro_projection.forward(&spatial_tokens(
+            micro,
+            DECODER_MICRO_ROWS,
+            DECODER_MICRO_COLS,
+        )?)?;
+        let macro_t = self.macro_projection.forward(&spatial_tokens(
+            macro_t,
+            DECODER_MACRO_ROWS,
+            DECODER_MACRO_COLS,
+        )?)?;
+        let tokens = Tensor::cat(&[&micro, &macro_t], 0)?;
+        let query = self.query.forward(memory)?;
+        let keys = self.key.forward(&tokens)?;
+        let values = self.value.forward(&tokens)?;
+        let attention = candle_nn::ops::softmax(
+            &query
+                .matmul(&keys.t()?)?
+                .affine(1.0 / (DECODER_TOKEN_DIM as f64).sqrt(), 0.0)?,
+            D::Minus1,
+        )?;
+        let context = attention.matmul(&values)?;
+        let seed_input = Tensor::cat(&[memory, &context], D::Minus1)?;
+        let mut frames = self
+            .seed
+            .forward(&seed_input)?
+            .reshape((DECODER_CONTROL_FRAMES, DECODER_WIDTH))?;
+        for block in &self.blocks {
+            frames = block.forward(&frames)?;
+        }
+        self.control_head
+            .forward(&frames)?
+            .t()?
+            .matmul(&self.interpolation)?
+            .tanh()
+    }
+}
+
+fn excitation_table(seed: u64, highpass: bool) -> Vec<f32> {
+    let mut rng = RuntimeRng::seed_from_u64(seed);
+    let mut low = 0.0f32;
+    let mut previous = 0.0f32;
+    let mut values = Vec::with_capacity(EXCITATION_TABLE_LEN);
+    for _ in 0..EXCITATION_TABLE_LEN {
+        let white = rng.gen_range(-1.0f32..1.0f32);
+        low += 0.075 * (white - low);
+        let sample = if highpass {
+            let high = white - previous;
+            previous = white;
+            0.65 * high + 0.35 * white
+        } else {
+            0.72 * low + 0.28 * white
+        };
+        values.push(sample);
+    }
+    let rms = (values.iter().map(|v| v * v).sum::<f32>() / values.len() as f32)
+        .sqrt()
+        .max(1e-6);
+    for value in &mut values {
+        *value /= rms;
+    }
+    values
+}
+
+fn ring_window(table: &Tensor, offset: usize, len: usize) -> CResult<Tensor> {
+    let table_len = table.dim(0)?;
+    let offset = offset % table_len;
+    if offset + len <= table_len {
+        table.narrow(0, offset, len)
+    } else {
+        Tensor::cat(
+            &[
+                &table.narrow(0, offset, table_len - offset)?,
+                &table.narrow(0, 0, len - (table_len - offset))?,
+            ],
+            0,
+        )
     }
 }
 
@@ -3871,17 +4263,20 @@ struct ForwardOut {
     pair_sums: Tensor,   // (2,) — theta for the NEXT step (1-step lag, no sync)
     aux_freqs_l: Tensor, // (3,) phase-continuous auxiliary oscillators
     aux_freqs_r: Tensor,
-    scan_freqs_l: Tensor, // (16,) phase-continuous regional partials
+    scan_freqs_l: Tensor, // phase-continuous regional partials
     scan_freqs_r: Tensor,
-    region_activity: Tensor, // (16,) 4x4 spatial summary for DSP/control
-    region_change: Tensor,   // (16,) local temporal activity
+    region_activity: Tensor, // 4x8 spatial summary for DSP/control
+    region_change: Tensor,   // local temporal activity
 }
 
 struct ComplexAudioEcosystem {
     micro_ca: NeuralCA2D,
     macro_ca: NeuralCA2D,
+    micro_clocks: CellClockBank,
+    macro_clocks: CellClockBank,
     gru_memory: GRUCell,
     morphic: MorphicStack,
+    temporal_decoder: SpatialTemporalDecoder,
     asymptotic_contraction: AsymptoticContractionLayer,
     spatial_panner: candle_nn::Sequential,
     fm_mod_ratio: candle_nn::Sequential,
@@ -3907,6 +4302,8 @@ struct ComplexAudioEcosystem {
     scan_pan_r: Tensor,
     scan_brightness: Tensor,
     scan_interp: Tensor, // (CHUNK_SIZE, GRID_W) linear-interp upsampler for the column envelope
+    excitation_mid: Tensor,
+    excitation_side: Tensor,
     // Host-side mirrors (phases and glide frequencies live OFF the device: the
     // v3 mod_2pi tensor round-trip synced every step and carried no gradient
     // anyway — these are pure f32 now).
@@ -3923,6 +4320,7 @@ struct ComplexAudioEcosystem {
     scan_phase_l: [f32; SCAN_PARTIALS],
     scan_phase_r: [f32; SCAN_PARTIALS],
     scan_column_offset: usize,
+    excitation_offset: usize,
     prev_haas_side: Tensor,
 }
 
@@ -3946,10 +4344,14 @@ impl AsymptoticContractionLayer {
 
 impl ComplexAudioEcosystem {
     fn new(vb: VBV, dev: &Device) -> Result<Self> {
-        let micro_ca = NeuralCA2D::new(CA_CHANNELS, CA_HIDDEN, vb.pp("micro_ca"))?;
-        let macro_ca = NeuralCA2D::new(CA_CHANNELS, CA_HIDDEN, vb.pp("macro_ca"))?;
+        let micro_ca = NeuralCA2D::new(CA_CHANNELS, CA_HIDDEN, GRID_H, GRID_W, vb.pp("micro_ca"))?;
+        let macro_ca =
+            NeuralCA2D::new(CA_CHANNELS, CA_HIDDEN, MACRO_H, MACRO_W, vb.pp("macro_ca"))?;
+        let micro_clocks = CellClockBank::new(CA_CHANNELS, GRID_H, GRID_W, 0xC10C_0001, dev)?;
+        let macro_clocks = CellClockBank::new(CA_CHANNELS, MACRO_H, MACRO_W, 0xC10C_0002, dev)?;
         let gru_memory = GRUCell::new(CA_CHANNELS + EPI_DIM, MEMORY_DIM, vb.pp("gru_memory"))?;
         let morphic = MorphicStack::new(MEMORY_DIM, MORPH_MAX_BLOCKS, vb.pp("morphic"))?;
+        let temporal_decoder = SpatialTemporalDecoder::new(vb.pp("temporal_decoder"), dev)?;
         let asymptotic_contraction = AsymptoticContractionLayer::new(
             MEMORY_DIM,
             LARGE_D_DIM,
@@ -4042,24 +4444,13 @@ impl ComplexAudioEcosystem {
             .map(|i| i as f32 / (CHUNK_SIZE as f32 - 1.0))
             .collect();
         let harmonic_vec: Vec<f32> = (1..=SCAN_PARTIALS).map(|i| i as f32).collect();
-        let inharmonic_vec = vec![
-            1.0f32,
-            std::f32::consts::SQRT_2,
-            2.0,
-            2.6180,
-            3.0,
-            3.7321,
-            4.2361,
-            5.0,
-            5.3852,
-            std::f32::consts::TAU,
-            7.0711,
-            7.8540,
-            8.4853,
-            9.1925,
-            10.0,
-            11.0902,
-        ];
+        let inharmonic_vec: Vec<f32> = (0..SCAN_PARTIALS)
+            .map(|i| {
+                let harmonic = i as f32 + 1.0;
+                let irrational = (harmonic * std::f32::consts::SQRT_2 + 0.17 * i as f32).max(1.0);
+                0.55 * harmonic + 0.45 * irrational
+            })
+            .collect();
         let detune_vec: Vec<f32> = (0..SCAN_PARTIALS)
             .map(|i| (((i * 7 + 3) % 11) as f32 / 10.0 - 0.5) * 0.18)
             .collect();
@@ -4093,8 +4484,11 @@ impl ComplexAudioEcosystem {
         Ok(Self {
             micro_ca,
             macro_ca,
+            micro_clocks,
+            macro_clocks,
             gru_memory,
             morphic,
+            temporal_decoder,
             asymptotic_contraction,
             spatial_panner,
             fm_mod_ratio,
@@ -4120,6 +4514,16 @@ impl ComplexAudioEcosystem {
             scan_pan_r: Tensor::from_vec(pan_r, (SCAN_PARTIALS, 1), dev)?,
             scan_brightness: Tensor::from_vec(brightness_vec, (SCAN_PARTIALS, 1), dev)?,
             scan_interp: Tensor::from_vec(interp, (CHUNK_SIZE, GRID_W), dev)?,
+            excitation_mid: Tensor::from_vec(
+                excitation_table(0xE8C1_7A71, false),
+                (EXCITATION_TABLE_LEN,),
+                dev,
+            )?,
+            excitation_side: Tensor::from_vec(
+                excitation_table(0xE8C1_7A72, true),
+                (EXCITATION_TABLE_LEN,),
+                dev,
+            )?,
             current_freq_l: BASE_FREQ_L,
             current_freq_r: BASE_FREQ_R,
             last_pan: 0.0,
@@ -4138,6 +4542,7 @@ impl ComplexAudioEcosystem {
                 .try_into()
                 .unwrap(),
             scan_column_offset: 0,
+            excitation_offset: 0,
             prev_haas_side: Tensor::zeros((1, 16), DType::F32, dev)?,
         })
     }
@@ -4172,38 +4577,27 @@ impl ComplexAudioEcosystem {
         theta_prev: f32,  // theta from last step's batched readout (1-step lag)
         theta_prev2: f32,
         force: bool,
+        absolute_step: u64,
+        train_ecology: bool,
         energy: f32,
         control: &SynthesisControl,
-        rng: &mut RuntimeRng,
     ) -> Result<ForwardOut> {
         let dev = micro.device();
         let [pc_l, pc_r, pm_l, pm_r] = phases;
-
-        // Stochastic cell clocks from the master seed (deterministic).
-        let keep_thresh = 1.0 - CA_UPDATE_PROB;
-        let mk_keep = |rng: &mut RuntimeRng| -> CResult<Tensor> {
-            let n = CA_CHANNELS * GRID_H * GRID_W;
-            let v: Vec<f32> = (0..n)
-                .map(|_| {
-                    if rng.gen_range(0.0f32..1.0) >= keep_thresh {
-                        1.0
-                    } else {
-                        0.0
-                    }
-                })
-                .collect();
-            Tensor::from_vec(v, (1, CA_CHANNELS, GRID_H, GRID_W), dev)
-        };
 
         let mut next_macro = macro_t.clone();
         if force {
             // Sign-symmetric local anti-rail restoring field (the global-mean
             // amplitude barrier lives in the PotentialController).
             let field = local_rail_bias(macro_t)?;
-            let keep = mk_keep(rng)?;
             next_macro = self
                 .macro_ca
-                .forward(macro_t, None, Some(&field), &keep)?
+                .forward(
+                    macro_t,
+                    None,
+                    Some(&field),
+                    self.macro_clocks.get(absolute_step),
+                )?
                 .tanh()?
                 .affine(0.95, 0.0)?;
         }
@@ -4215,29 +4609,47 @@ impl ComplexAudioEcosystem {
         let macro_ch = next_macro.mean(D::Minus1)?.mean(D::Minus1)?; // (1, C)
         let macro_mod = contracted_mem.add(&macro_ch)?;
         let micro_field = local_rail_bias(micro)?;
-        let keep_m = mk_keep(rng)?;
-        let raw_next_micro =
-            self.micro_ca
-                .forward(micro, Some(&macro_mod), Some(&micro_field), &keep_m)?;
+        let raw_next_micro = self.micro_ca.forward(
+            micro,
+            Some(&macro_mod),
+            Some(&micro_field),
+            self.micro_clocks.get(absolute_step),
+        )?;
         let next_micro = micro
             .broadcast_mul(&inv_metab)?
             .add(&raw_next_micro.broadcast_mul(&metab)?)?
             .clamp(-1.0f32, 1.0f32)?;
         let next_micro = damp_global_mean(&next_micro)?.clamp(-1.0f32, 1.0f32)?;
-        let movement_t = next_micro.sub(micro)?.abs()?.mean_all()?;
 
-        // Channel features (spatial mean) — population readouts + GRU input.
+        // GRU input = channel features ++ episodic attention readout.
+        let core_micro_feats = next_micro.mean(D::Minus1)?.mean(D::Minus1)?; // (1, C)
+        let gru_in = Tensor::cat(&[&core_micro_feats, epi_out], 1)?; // (1, C + EPI_DIM)
+        let next_hidden = self.gru_memory.forward(&gru_in, mem)?;
+        let refined_hidden = self.morphic.forward(&next_hidden)?;
+
+        // Most horizons adapt the audible decoder only. Detaching here keeps
+        // forward ecology exact while preventing the large CA graph from
+        // participating in backward. Periodic full horizons retain end-to-end
+        // credit assignment.
+        let (next_micro, next_macro, next_hidden, refined_hidden) = if train_ecology {
+            (next_micro, next_macro, next_hidden, refined_hidden)
+        } else {
+            (
+                next_micro.detach(),
+                next_macro.detach(),
+                next_hidden.detach(),
+                refined_hidden.detach(),
+            )
+        };
+        let movement_t = next_micro.sub(&micro.detach())?.abs()?.mean_all()?;
         let micro_feats = next_micro.mean(D::Minus1)?.mean(D::Minus1)?; // (1, C)
         let pop_l = micro_feats.narrow(1, 0, 1)?.reshape(())?;
         let pop_r = micro_feats.narrow(1, 1, 1)?.reshape(())?;
-        // Theta pair sums, read back in the batched metrics sync (no host sync here).
         let paired = micro_feats.reshape((CA_CHANNELS / 2, 2))?;
         let pair_sums = paired.sum(0)?; // (2,)
-
-        // GRU input = channel features ++ episodic attention readout.
-        let gru_in = Tensor::cat(&[&micro_feats, epi_out], 1)?; // (1, C + EPI_DIM)
-        let next_hidden = self.gru_memory.forward(&gru_in, mem)?;
-        let refined_hidden = self.morphic.forward(&next_hidden)?;
+        let temporal_controls =
+            self.temporal_decoder
+                .forward(&next_micro, &next_macro, &refined_hidden)?;
 
         let fm_ratios = self
             .fm_mod_ratio
@@ -4315,13 +4727,25 @@ impl ComplexAudioEcosystem {
             .broadcast_mul(&omega_c_l)?
             .affine(1.0, pc_l as f64)?
             .add(&theta_curve)?
-            .add(&modulator_l)?;
+            .add(&modulator_l)?
+            .add(
+                &temporal_controls
+                    .narrow(0, 2, 1)?
+                    .reshape((CHUNK_SIZE,))?
+                    .affine(0.35, 0.0)?,
+            )?;
         let ph_c_r = self
             .t_steps
             .broadcast_mul(&omega_c_r)?
             .affine(1.0, pc_r as f64)?
             .add(&theta_curve)?
-            .add(&modulator_r)?;
+            .add(&modulator_r)?
+            .add(
+                &temporal_controls
+                    .narrow(0, 3, 1)?
+                    .reshape((CHUNK_SIZE,))?
+                    .affine(0.35, 0.0)?,
+            )?;
 
         let morphs = self.wave_morph_head.forward(&refined_hidden)?;
         let morph_l = morphs.narrow(1, 0, 1)?.reshape(())?;
@@ -4390,14 +4814,14 @@ impl ComplexAudioEcosystem {
 
         // --- REGIONAL SPECTRAL FIELD ---
         // The previous row/column projection discarded most 2-D topology.  A
-        // 4x4 regional readout now drives sixteen independently panned partial
+        // 4x8 regional readout now drives thirty-two independently panned partial
         // agents.  The ratios continuously interpolate between harmonic and
         // inharmonic modal sets; local temporal change adds micro-detuning.
         let field_cm = next_micro.mean(1)?; // (1, H, W)
         let region_grid = field_cm
             .reshape((REGION_ROWS, REGION_H, REGION_COLS, REGION_W))?
             .mean(D::Minus1)?
-            .mean(1)?; // (4,4)
+            .mean(1)?; // (4,8)
         let region_activity = region_grid.reshape((REGION_COUNT,))?;
         let delta_cm = next_micro.sub(micro)?.mean(1)?;
         let region_change = delta_cm
@@ -4487,14 +4911,22 @@ impl ComplexAudioEcosystem {
             .broadcast_mul(&self.t_steps)?
             .affine(TWO_PI as f64, 0.0)?
             .broadcast_add(&scan_phase_r)?;
+        let partial_mod_l = temporal_controls
+            .narrow(0, DECODER_GLOBAL_CONTROLS, SCAN_PARTIALS)?
+            .affine(0.65, 1.0)?;
+        let partial_mod_r = temporal_controls
+            .narrow(0, DECODER_GLOBAL_CONTROLS + SCAN_PARTIALS, SCAN_PARTIALS)?
+            .affine(0.65, 1.0)?;
         let partials_l = ph_l
             .sin()?
             .broadcast_mul(&amps_n)?
-            .broadcast_mul(&self.scan_pan_l)?;
+            .broadcast_mul(&self.scan_pan_l)?
+            .mul(&partial_mod_l)?;
         let partials_r = ph_r
             .sin()?
             .broadcast_mul(&amps_n)?
-            .broadcast_mul(&self.scan_pan_r)?;
+            .broadcast_mul(&self.scan_pan_r)?
+            .mul(&partial_mod_r)?;
         let scan_l = partials_l.sum(0)?.reshape((1, CHUNK_SIZE))?.mul(&env)?;
         let scan_r = partials_r.sum(0)?.reshape((1, CHUNK_SIZE))?.mul(&env)?;
         let scan_gain_l = oscillator_gains
@@ -4508,13 +4940,55 @@ impl ComplexAudioEcosystem {
         audio_l = audio_l.add(&scan_l.broadcast_mul(&scan_gain_l)?.reshape((CHUNK_SIZE,))?)?;
         audio_r = audio_r.add(&scan_r.broadcast_mul(&scan_gain_r)?.reshape((CHUNK_SIZE,))?)?;
 
+        // Learned broad-band and transient excitation is inside the
+        // differentiable renderer. The deterministic tables carry no target
+        // information; the temporal decoder must learn when and how strongly
+        // each mid/side component is audible.
+        let excitation_mid = ring_window(&self.excitation_mid, self.excitation_offset, CHUNK_SIZE)?;
+        let excitation_side =
+            ring_window(&self.excitation_side, self.excitation_offset, CHUNK_SIZE)?;
+        let noise_mid = excitation_mid.mul(
+            &temporal_controls
+                .narrow(0, 6, 1)?
+                .reshape((CHUNK_SIZE,))?
+                .affine(0.055, 0.0)?,
+        )?;
+        let noise_side = excitation_side.mul(
+            &temporal_controls
+                .narrow(0, 7, 1)?
+                .reshape((CHUNK_SIZE,))?
+                .affine(0.045, 0.0)?,
+        )?;
+        audio_l = audio_l.add(&noise_mid)?.add(&noise_side)?;
+        audio_r = audio_r.add(&noise_mid)?.sub(&noise_side)?;
+        audio_l = audio_l.mul(
+            &temporal_controls
+                .narrow(0, 0, 1)?
+                .reshape((CHUNK_SIZE,))?
+                .affine(0.35, 1.0)?,
+        )?;
+        audio_r = audio_r.mul(
+            &temporal_controls
+                .narrow(0, 1, 1)?
+                .reshape((CHUNK_SIZE,))?
+                .affine(0.35, 1.0)?,
+        )?;
+        let fold_drive_l = temporal_controls
+            .narrow(0, 10, 1)?
+            .reshape((1, CHUNK_SIZE))?
+            .affine(0.30, 1.0)?;
+        let fold_drive_r = temporal_controls
+            .narrow(0, 11, 1)?
+            .reshape((1, CHUNK_SIZE))?
+            .affine(0.30, 1.0)?;
+
         let audio_l = self
             .wavefolder_l
-            .forward(&audio_l.unsqueeze(0)?, &refined_hidden)?
+            .forward(&audio_l.unsqueeze(0)?.mul(&fold_drive_l)?, &refined_hidden)?
             .reshape((1, CHUNK_SIZE))?;
         let audio_r = self
             .wavefolder_r
-            .forward(&audio_r.unsqueeze(0)?, &refined_hidden)?
+            .forward(&audio_r.unsqueeze(0)?.mul(&fold_drive_r)?, &refined_hidden)?
             .reshape((1, CHUNK_SIZE))?;
 
         let open_t = refined_hidden
@@ -4525,11 +4999,33 @@ impl ComplexAudioEcosystem {
             .clamp(0.4f32, 1.0f32)?
             .affine(energy_factor as f64, 0.0)?;
         let open_curve = self.ramp_param(&open_t, &self.prev_openness)?;
-        let audio_l = audio_l.broadcast_mul(&open_curve.unsqueeze(0)?)?;
-        let audio_r = audio_r.broadcast_mul(&open_curve.unsqueeze(0)?)?;
+        let open_l = open_curve
+            .add(
+                &temporal_controls
+                    .narrow(0, 8, 1)?
+                    .reshape((CHUNK_SIZE,))?
+                    .affine(0.25, 0.0)?,
+            )?
+            .clamp(0.10f32, 1.25f32)?;
+        let open_r = open_curve
+            .add(
+                &temporal_controls
+                    .narrow(0, 9, 1)?
+                    .reshape((CHUNK_SIZE,))?
+                    .affine(0.25, 0.0)?,
+            )?
+            .clamp(0.10f32, 1.25f32)?;
+        let audio_l = audio_l.broadcast_mul(&open_l.unsqueeze(0)?)?;
+        let audio_r = audio_r.broadcast_mul(&open_r.unsqueeze(0)?)?;
 
-        let mid = audio_l.add(&audio_r)?.affine(0.5, 0.0)?;
-        let side = audio_l.sub(&audio_r)?.affine(0.5, 0.0)?;
+        let mid = audio_l
+            .add(&audio_r)?
+            .affine(0.5, 0.0)?
+            .mul(&temporal_controls.narrow(0, 4, 1)?.affine(0.30, 1.0)?)?;
+        let side = audio_l
+            .sub(&audio_r)?
+            .affine(0.5, 0.0)?
+            .mul(&temporal_controls.narrow(0, 5, 1)?.affine(0.55, 1.0)?)?;
         let pan_raw = self.spatial_panner.forward(&refined_hidden)?.reshape(())?;
         let pan_t = soft_global_pan(&pan_raw)?;
         // Haas width from LAST step's pan (host mirror, updated by the batched
@@ -4569,6 +5065,7 @@ impl ComplexAudioEcosystem {
         self.prev_gain_r = gain_r.detach();
         self.prev_haas_side = side_wide.narrow(1, CHUNK_SIZE - 16, 16)?.detach();
         self.scan_column_offset = (self.scan_column_offset + SCAN_COLUMNS_PER_CHUNK) % GRID_W;
+        self.excitation_offset = (self.excitation_offset + CHUNK_SIZE) % EXCITATION_TABLE_LEN;
 
         Ok(ForwardOut {
             stereo,
@@ -4608,6 +5105,7 @@ struct ModelRuntimeState {
     scan_phase_l: [f32; SCAN_PARTIALS],
     scan_phase_r: [f32; SCAN_PARTIALS],
     scan_column_offset: usize,
+    excitation_offset: usize,
     prev_haas_side: Vec<f32>,
 }
 impl ComplexAudioEcosystem {
@@ -4626,6 +5124,7 @@ impl ComplexAudioEcosystem {
             scan_phase_l: self.scan_phase_l,
             scan_phase_r: self.scan_phase_r,
             scan_column_offset: self.scan_column_offset,
+            excitation_offset: self.excitation_offset,
             prev_haas_side: self.prev_haas_side.flatten_all()?.to_vec1::<f32>()?,
         })
     }
@@ -4643,6 +5142,7 @@ impl ComplexAudioEcosystem {
         self.scan_phase_l = state.scan_phase_l;
         self.scan_phase_r = state.scan_phase_r;
         self.scan_column_offset = state.scan_column_offset % GRID_W;
+        self.excitation_offset = state.excitation_offset % EXCITATION_TABLE_LEN;
         if state.prev_haas_side.len() == 16 {
             self.prev_haas_side = Tensor::from_vec(state.prev_haas_side.clone(), (1, 16), device)?;
         }
@@ -4715,6 +5215,8 @@ struct WorldCheckpoint {
     seed: u64,
     grid_h: usize,
     grid_w: usize,
+    macro_h: usize,
+    macro_w: usize,
     ca_channels: usize,
     rng: RuntimeRng,
     micro_tape: Vec<f32>,
@@ -4754,20 +5256,30 @@ impl WorldCheckpoint {
                 WORLD_VERSION
             );
         }
-        if self.grid_h != GRID_H || self.grid_w != GRID_W || self.ca_channels != CA_CHANNELS {
+        if self.grid_h != GRID_H
+            || self.grid_w != GRID_W
+            || self.macro_h != MACRO_H
+            || self.macro_w != MACRO_W
+            || self.ca_channels != CA_CHANNELS
+        {
             anyhow::bail!(
-                "world dimensions {}ch x {}x{} do not match this build ({}ch x {}x{})",
+                "world dimensions {}ch micro {}x{} macro {}x{} do not match this build ({}ch micro {}x{} macro {}x{})",
                 self.ca_channels,
                 self.grid_h,
                 self.grid_w,
+                self.macro_h,
+                self.macro_w,
                 CA_CHANNELS,
                 GRID_H,
-                GRID_W
+                GRID_W,
+                MACRO_H,
+                MACRO_W,
             );
         }
-        let ca_n = CA_CHANNELS * GRID_H * GRID_W;
-        if self.micro_tape.len() != ca_n
-            || self.macro_tape.len() != ca_n
+        let micro_n = CA_CHANNELS * GRID_H * GRID_W;
+        let macro_n = CA_CHANNELS * MACRO_H * MACRO_W;
+        if self.micro_tape.len() != micro_n
+            || self.macro_tape.len() != macro_n
             || self.hidden_mem.len() != MEMORY_DIM
         {
             anyhow::bail!("world checkpoint tensor sizes are invalid or truncated");
@@ -4845,7 +5357,7 @@ fn load_world(path: &str) -> Result<WorldCheckpoint> {
     let magic = &bytes[..8];
     if magic != WORLD_MAGIC.as_slice() {
         anyhow::bail!(
-            "world checkpoint is not a TITAN v7 world; use --fresh-world or a v7 --state"
+            "world checkpoint is not a TITAN v8 world; use --fresh-world or a v8 --state"
         );
     }
     let payload_len = u64::from_le_bytes(bytes[8..16].try_into().unwrap()) as usize;
@@ -4929,6 +5441,8 @@ fn capture_world(
         seed,
         grid_h: GRID_H,
         grid_w: GRID_W,
+        macro_h: MACRO_H,
+        macro_w: MACRO_W,
         ca_channels: CA_CHANNELS,
         rng: rng.clone(),
         micro_tape: flatten_tensor(micro_tape)?,
@@ -4975,6 +5489,7 @@ fn main() -> Result<()> {
     let mut target_lr = BASE_LR;
     let mut sim_duration = DURATION_SECONDS;
     let mut bptt_window = BPTT_WINDOW;
+    let mut core_update_every = CORE_UPDATE_EVERY;
     let mut fresh_model = false;
     let mut fresh_decoder = false;
     let mut fresh_world = false;
@@ -5027,6 +5542,14 @@ fn main() -> Result<()> {
                     arg_idx += 2;
                 } else {
                     anyhow::bail!("Missing value for --bptt");
+                }
+            }
+            "--core-update-every" => {
+                if arg_idx + 1 < args.len() {
+                    core_update_every = args[arg_idx + 1].parse::<usize>()?;
+                    arg_idx += 2;
+                } else {
+                    anyhow::bail!("Missing value for --core-update-every");
                 }
             }
             "--seed" | "-s" => {
@@ -5106,16 +5629,17 @@ fn main() -> Result<()> {
             }
             "--help" | "-h" => {
                 println!(
-                    "TITAN v7 Truthful Resonant Ecology\n\n\
+                    "TITAN v8 Multirate Resonant Ecology\n\n\
 Usage: titan [BASE_DIR] [options]\n\n\
   -b, --base-dir DIR   Output/training root (default /sdcard/Download)\n\
   -d, --duration SEC   Render duration (default 240)\n\
   -t, --threads N      Rayon/Candle CPU threads (default min(device cores, 6))\n\
   -w, --bptt N         Gradient horizon 1..64; tape is memory-capped at 8 (default 8)\n\
+      --core-update-every N  Full CA/GRU backward every N tapes (default 4)\n\
   -l, --lr VALUE       Base AdamW learning rate\n\
   -s, --seed N         Seed for a fresh deterministic organism\n\
       --state PATH     World-checkpoint path\n\
-      --model PATH     v7 model output/resume path\n\
+      --model PATH     v8 model output/resume path\n\
       --import-model P Import compatible experimental tensors without overwriting source\n\
       --corpus-manifest PATH  Explicit train/development/validation/exclude manifest\n\
       --run-tag NAME   Isolate output, telemetry, model, and world artifacts\n\
@@ -5151,6 +5675,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
     if bptt_window == 0 || bptt_window > 64 {
         anyhow::bail!("BPTT window must be between 1 and 64 chunks");
     }
+    if core_update_every == 0 || core_update_every > 16 {
+        anyhow::bail!("core update cadence must be between 1 and 16 tapes");
+    }
     if !(1..=MORPH_MAX_BLOCKS).contains(&max_morph_depth) {
         anyhow::bail!(
             "maximum morphic depth must be between 1 and {}",
@@ -5174,8 +5701,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
         })?;
     }
     std::fs::create_dir_all(&base_dir)?;
-    println!("=== TITAN AUDIO ECOSYSTEM: RUST EDITION v7 (TRUTHFUL RESONANT ECOLOGY) ===");
-    println!("Seed: {} | Threads: {} | Gradient horizon: {} | Autograd tape: {} | Field: {}ch x {}x{} torus | LR: {:.2e} | Duration: {}s", seed, n_threads, bptt_window, tape_chunks, CA_CHANNELS, GRID_H, GRID_W, target_lr, sim_duration);
+    println!("=== TITAN AUDIO ECOSYSTEM: RUST EDITION v8 (MULTIRATE RESONANT ECOLOGY) ===");
+    println!("Seed: {} | Threads: {} | Gradient horizon: {} | Autograd tape: {} | Core cadence: 1/{} tapes | Field: {}ch micro {}x{} macro {}x{} | LR: {:.2e} | Duration: {}s", seed, n_threads, bptt_window, tape_chunks, core_update_every, CA_CHANNELS, GRID_H, GRID_W, MACRO_H, MACRO_W, target_lr, sim_duration);
     if bptt_window > tape_chunks {
         println!("--> Memory-safe TBPTT: accumulating {}-chunk tape segments across a {}-chunk optimizer horizon.", tape_chunks, bptt_window);
         if fresh_model {
@@ -5185,13 +5712,13 @@ Usage: titan [BASE_DIR] [options]\n\n\
             );
         }
     }
-    println!("NOTE: CA/RNG/renderer and matching AdamW moments resume from v7 checkpoints. A missing or mismatched optimizer uses a 32-update LR warmup. Fresh reproducibility also requires the same --threads value.");
+    println!("NOTE: CA/RNG/renderer and matching AdamW moments resume from v8 checkpoints. A missing or mismatched optimizer uses a 32-update LR warmup. Fresh reproducibility also requires the same --threads value.");
 
     let wav_dir = format!("{}/OLD_WAVS", base_dir);
     let model_path = model_override.unwrap_or_else(|| {
         artifact_path(
             &base_dir,
-            "titan_model_v7",
+            "titan_model_v8",
             "safetensors",
             run_tag.as_deref(),
         )
@@ -5203,17 +5730,17 @@ Usage: titan [BASE_DIR] [options]\n\n\
         model_path.clone()
     };
     let world_path = state_override
-        .unwrap_or_else(|| artifact_path(&base_dir, "titan_world_v7", "bin", run_tag.as_deref()));
+        .unwrap_or_else(|| artifact_path(&base_dir, "titan_world_v8", "bin", run_tag.as_deref()));
     let load_world_path = world_path.clone();
     let morph_path = artifact_path(
         &base_dir,
-        "titan_morph_state_v7",
+        "titan_morph_state_v8",
         "json",
         run_tag.as_deref(),
     );
     let optimizer_path = artifact_path(
         &base_dir,
-        "titan_optimizer_v7",
+        "titan_optimizer_v8",
         "safetensors",
         run_tag.as_deref(),
     );
@@ -5249,8 +5776,15 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let validation_targets = target_loader.validation_chunks(&device)?;
     let validation_bank = FixedProbeBank::new(&validation_targets, &spec_proj, &chroma_proj)
         .map_err(anyhow::Error::msg)?;
+    let model_parameters = parameter_count(&varmap);
+    println!(
+        "--> Trainable parameters: {} ({:.2}M, {:.1} MiB FP32 weights).",
+        model_parameters,
+        model_parameters as f64 / 1_000_000.0,
+        model_parameters as f64 * 4.0 / (1024.0 * 1024.0),
+    );
 
-    // Initialize the full v7 parameter set deterministically first, then load
+    // Initialize the full v8 parameter set deterministically first, then load
     // every compatible tensor from an older or current checkpoint on top.
     // This permits older tensor migration without discarding the learned CA just
     // because the new self-model head has different dimensions.
@@ -5272,7 +5806,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 println!("--> Loaded {} compatible tensors from {} ({} new/missing, {} shape-mismatched)",
                     hit, load_model_path, miss, mismatch);
                 if !loaded_full {
-                    println!("--> Migrated checkpoint: compatible learned weights retained; new v7 tensors use deterministic seed {}.", seed);
+                    println!("--> Migrated checkpoint: compatible learned weights retained; new v8 tensors use deterministic seed {}.", seed);
                     fresh_world = true; // old dynamical state does not match the migrated control plane
                 }
             }
@@ -5292,7 +5826,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
         fresh_world = true;
     }
     if !loaded_any && !fresh_model && std::path::Path::new(&load_model_path).exists() {
-        println!("--> No compatible tensors were found; this run starts as a fresh v7 model.");
+        println!("--> No compatible tensors were found; this run starts as a fresh v8 model.");
     }
     if importing_model && loaded_any {
         println!(
@@ -5332,7 +5866,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let mut spectral_mon = SpectralEntropyMonitor::new(20);
     let mut movement_mon = MovementCoherenceMonitor::new(20);
     let mut potential = PotentialController::new();
-    let mut shear_gen = ShearField2D::new(CA_CHANNELS, GRID_H, GRID_W);
+    let mut shear_gen = ShearField2D::new(CA_CHANNELS, MACRO_H, MACRO_W);
     let mut shear_phase = 0.0f32;
     let mut uncertainty = AudioUncertaintyState::new();
     let mut semantic = SemanticField::new();
@@ -5351,7 +5885,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
 
     let mut micro_tape = randn_t(&mut rng, &[1, CA_CHANNELS, GRID_H, GRID_W], 1.0, &device)
         .map_err(anyhow::Error::msg)?;
-    let mut macro_tape = randn_t(&mut rng, &[1, CA_CHANNELS, GRID_H, GRID_W], 1.0, &device)
+    let mut macro_tape = randn_t(&mut rng, &[1, CA_CHANNELS, MACRO_H, MACRO_W], 1.0, &device)
         .map_err(anyhow::Error::msg)?;
     let mut hidden_mem =
         Tensor::zeros((1, MEMORY_DIM), DType::F32, &device).map_err(anyhow::Error::msg)?;
@@ -5369,8 +5903,11 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 rng = world.rng;
                 micro_tape =
                     Tensor::from_vec(world.micro_tape, (1, CA_CHANNELS, GRID_H, GRID_W), &device)?;
-                macro_tape =
-                    Tensor::from_vec(world.macro_tape, (1, CA_CHANNELS, GRID_H, GRID_W), &device)?;
+                macro_tape = Tensor::from_vec(
+                    world.macro_tape,
+                    (1, CA_CHANNELS, MACRO_H, MACRO_W),
+                    &device,
+                )?;
                 hidden_mem = Tensor::from_vec(world.hidden_mem, (1, MEMORY_DIM), &device)?;
                 phases = world.phases;
                 theta_prev = world.theta_prev;
@@ -5501,8 +6038,42 @@ Usage: titan [BASE_DIR] [options]\n\n\
     // file, then perform one normalization/transcode pass.  A 16-minute run
     // no longer retains ~350 MB of stereo f32 audio in RAM.
     let raw_audio_path = artifact_path(&base_dir, ".titan_audio_f32", "tmp", run_tag.as_deref());
+    let topology_path = artifact_path(&base_dir, "ca_topology_rust", "csv", run_tag.as_deref());
+    let topology_tmp_path = format!("{}.tmp", topology_path);
+    let topology_index_path = artifact_path(
+        &base_dir,
+        "ca_topology_index_rust",
+        "csv",
+        run_tag.as_deref(),
+    );
+    let morph_events_path =
+        artifact_path(&base_dir, "morph_events_rust", "csv", run_tag.as_deref());
+    let uncertainty_trace_path = artifact_path(
+        &base_dir,
+        "uncertainty_trace_rust",
+        "csv",
+        run_tag.as_deref(),
+    );
+    let trace_spool_path = artifact_path(
+        &base_dir,
+        ".titan_uncertainty_spool",
+        "jsonl.tmp",
+        run_tag.as_deref(),
+    );
+    let topology_index_spool_path = artifact_path(
+        &base_dir,
+        ".titan_topology_index_spool",
+        "jsonl.tmp",
+        run_tag.as_deref(),
+    );
     let raw_audio_file = File::create(&raw_audio_path)?;
     let mut raw_audio_writer = BufWriter::with_capacity(1 << 20, raw_audio_file);
+    let mut topology_writer = csv::WriterBuilder::new()
+        .has_headers(false)
+        .from_path(&topology_tmp_path)?;
+    let mut trace_spool = BufWriter::new(File::create(&trace_spool_path)?);
+    let mut topology_index_spool = BufWriter::new(File::create(&topology_index_spool_path)?);
+    let mut raw_chunk_bytes = vec![0u8; CHUNK_SIZE * 2 * std::mem::size_of::<f32>()];
     let (mut dc_x1_l, mut dc_y1_l, mut dc_x1_r, mut dc_y1_r) = (
         host_runtime.dc_x1_l,
         host_runtime.dc_y1_l,
@@ -5512,9 +6083,14 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let dc_pole = 0.998f32;
     let mut raw_peak = 1e-6f32;
     let mut chunk_scores: Vec<f32> = Vec::with_capacity(total_chunks);
-    let mut topology_history = Vec::new();
-    let mut topology_index_history = Vec::new();
-    let mut uncertainty_trace = Vec::new();
+    let mut trace_rows = 0usize;
+    let mut topology_rows = 0usize;
+    let mut trace_phi_sum = 0.0f64;
+    let mut trace_aperture_sum = 0.0f64;
+    let mut trace_synergy_sum = 0.0f64;
+    let mut trace_temp_sum = 0.0f64;
+    let mut trace_sigma_sum = 0.0f64;
+    let mut trace_pi_sum = 0.0f64;
     let mut morph_events = Vec::new();
     let mut pending_morph_event: Option<(u64, &'static str)> = None;
     let mut development_plateau_tracker = DevelopmentPlateauTracker::new();
@@ -5529,6 +6105,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let mut feature_history: VecDeque<DetachedFeatureFrame> =
         VecDeque::with_capacity(FEATURE_HISTORY_CHUNKS);
     let mut steps_in_tape = 0usize;
+    let mut train_ecology_tape = true;
     let mut steps_since_update = 0usize;
     let mut accumulated_steps = 0usize;
     let mut accumulated_grads: Option<GradStore> = None;
@@ -5561,6 +6138,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
 
     let timer_start = std::time::Instant::now();
     let mut profiling_lap = std::time::Instant::now();
+    let mut phase_profiler = PhaseProfiler::default();
     let mut completed_chunks = 0usize; // chunks committed to the raw audio stream
     let mut evolved_chunks = 0usize; // includes a NaN-triggered ecological reset
 
@@ -5573,6 +6151,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
             break;
         }
         let absolute_step = global_step + step as u64;
+        if steps_in_tape == 0 {
+            let tape_index = absolute_step / tape_chunks.max(1) as u64;
+            train_ecology_tape = tape_index.is_multiple_of(core_update_every as u64);
+        }
         let aperture = uncertainty.branch_aperture();
         let escape_strength = adaptive_dynamics.escape_strength();
         let curiosity_factor = ecological_curiosity(&adaptive_dynamics, stagnation_ticks);
@@ -5661,11 +6243,13 @@ Usage: titan [BASE_DIR] [options]\n\n\
             + 0.10 * controller.meta.surprise()
             + 0.32 * escape_strength)
             .clamp(0.05, 0.98);
-        let force_macro = rng.gen_range(0.0f32..1.0) < force_probability;
+        let force_macro = absolute_step.is_multiple_of(MACRO_UPDATE_EVERY)
+            && rng.gen_range(0.0f32..1.0) < force_probability;
 
         // Episodic attention readout from the current memory (before this step's GRU).
         let epi_out = episodic.read(&hidden_mem, &device)?;
 
+        let forward_started = Instant::now();
         let out = model.forward(
             &micro_tape,
             &macro_tape,
@@ -5675,10 +6259,12 @@ Usage: titan [BASE_DIR] [options]\n\n\
             theta_prev,
             theta_prev2,
             force_macro,
+            absolute_step,
+            train_ecology_tape,
             energy_state,
             &current_control,
-            &mut rng,
         )?;
+        phase_profiler.model_forward += forward_started.elapsed();
         let ForwardOut {
             stereo: stereo_chunk,
             next_micro,
@@ -5700,6 +6286,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
             region_change,
         } = out;
 
+        let loss_started = Instant::now();
+
         let synergy_tensor = calculate_cross_layer_synergy_tensor(&next_micro, &next_macro)?;
         let memory_delta = next_hidden.sub(&hidden_mem)?;
         let tape_delta = next_micro.sub(&micro_tape)?;
@@ -5715,11 +6303,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
             .clamp(0.0f32, 5.0f32)?
             .mul(&movement_t.affine(1.0, 1.0)?)?;
         let coarse_micro = decimate2_2d(&next_micro)?;
-        let coarse_macro = decimate2_2d(&next_macro)?;
-        let rg_loss = coarse_micro
-            .sub(&coarse_macro.detach())?
-            .sqr()?
-            .mean_all()?;
+        let rg_loss = coarse_micro.sub(&next_macro.detach())?.sqr()?.mean_all()?;
 
         // --- MIN-OF-K TARGET SELECTION ---
         // K candidate chunks; the coarse mimic picks the NEAREST, so the model
@@ -5727,31 +6311,39 @@ Usage: titan [BASE_DIR] [options]\n\n\
         let audio_for_loss = stereo_chunk.tanh()?;
         let out_spec_l = spec_proj.log_mag(&audio_for_loss.narrow(0, 0, 1)?)?;
         let out_spec_r = spec_proj.log_mag(&audio_for_loss.narrow(0, 1, 1)?)?;
+        let target_started = Instant::now();
         let targets = target_loader.sample_chunks(TARGET_K, &mut rng, &device)?;
+        phase_profiler.target_load += target_started.elapsed();
         let tgt_specs = spec_proj
             .log_mag(&targets.reshape((TARGET_K * 2, CHUNK_SIZE))?)?
             .detach(); // (K*2, bins)
-        let out_lr = Tensor::cat(&[&out_spec_l, &out_spec_r], 0)?.detach(); // (2, bins) — selection only
-        let mut dists = Vec::with_capacity(TARGET_K);
-        for k in 0..TARGET_K {
-            let d = tgt_specs
-                .narrow(0, k * 2, 2)?
-                .sub(&out_lr)?
-                .sqr()?
-                .mean_all()?
-                .reshape((1,))?;
-            dists.push(d);
-        }
-        let dist_refs: Vec<&Tensor> = dists.iter().collect();
-        // Small dedicated sync (K floats): selection must resolve before the loss
-        // graph is built, so it can't ride the end-of-step batched readback.
-        let dist_v = Tensor::cat(&dist_refs, 0)?.to_vec1::<f32>()?;
-        let best_k = dist_v
-            .iter()
-            .enumerate()
-            .min_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal))
-            .map(|(i, _)| i)
-            .unwrap_or(0);
+        let best_k = if TARGET_K == 1 {
+            // The v8 manifest sampler intentionally uses one independently
+            // selected family. Avoid building and synchronizing a vacuous
+            // nearest-candidate graph.
+            0
+        } else {
+            let out_lr = Tensor::cat(&[&out_spec_l, &out_spec_r], 0)?.detach();
+            let mut dists = Vec::with_capacity(TARGET_K);
+            for k in 0..TARGET_K {
+                dists.push(
+                    tgt_specs
+                        .narrow(0, k * 2, 2)?
+                        .sub(&out_lr)?
+                        .sqr()?
+                        .mean_all()?
+                        .reshape((1,))?,
+                );
+            }
+            let dist_refs: Vec<&Tensor> = dists.iter().collect();
+            let dist_v = Tensor::cat(&dist_refs, 0)?.to_vec1::<f32>()?;
+            dist_v
+                .iter()
+                .enumerate()
+                .min_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal))
+                .map(|(i, _)| i)
+                .unwrap_or(0)
+        };
         target_loader.commit_selection(best_k);
         let target_chunk = targets.narrow(0, best_k, 1)?.reshape((2, CHUNK_SIZE))?;
         let tgt_spec = tgt_specs.narrow(0, best_k * 2, 2)?;
@@ -6077,6 +6669,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
             0,
         )?
         .to_vec1::<f32>()?;
+        phase_profiler.loss_and_metrics += loss_started.elapsed();
         let movement = metrics[0];
         let mimic_drift = metrics[1];
         let rms_val = metrics[2];
@@ -6176,7 +6769,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
         if !movement.is_finite() || !micro_abs.is_finite() {
             println!("! BIO-RESET: Tape corruption detected (NaN). Re-seeding primordial soup.");
             micro_tape = randn_t(&mut rng, &[1, CA_CHANNELS, GRID_H, GRID_W], 1.0, &device)?;
-            macro_tape = randn_t(&mut rng, &[1, CA_CHANNELS, GRID_H, GRID_W], 1.0, &device)?;
+            macro_tape = randn_t(&mut rng, &[1, CA_CHANNELS, MACRO_H, MACRO_W], 1.0, &device)?;
             hidden_mem = Tensor::zeros((1, MEMORY_DIM), DType::F32, &device)?;
             tape_loss = None;
             steps_in_tape = 0;
@@ -6458,7 +7051,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 let segment_mean = w.affine(1.0 / segment_steps as f64, 0.0)?;
                 match segment_mean.to_scalar::<f32>() {
                     Ok(loss_val) if loss_val.is_finite() && tape_lr_gain_sum.is_finite() => {
-                        match segment_mean.backward() {
+                        let backward_started = Instant::now();
+                        let backward_result = segment_mean.backward();
+                        phase_profiler.backward += backward_started.elapsed();
+                        match backward_result {
                             Ok(mut segment_grads) => {
                                 // Store a weighted SUM across bounded tape segments.
                                 // Dividing once at the optimizer boundary makes -w 64
@@ -6538,7 +7134,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
                             + 0.80 * (optimizer.cumulative_updates() + 1) as f64 / 32.0)
                             .min(1.0);
                         optimizer.set_learning_rate(target_lr * mean_lr_gain * moment_warmup);
+                        let optimizer_started = Instant::now();
                         let _ = optimizer.step(&grads);
+                        phase_profiler.optimizer += optimizer_started.elapsed();
                         optimizer_update_count += 1;
                     } else {
                         println!("! WARNING: non-finite grad norm — skipping horizon.");
@@ -6585,13 +7183,17 @@ Usage: titan [BASE_DIR] [options]\n\n\
         }
 
         // --- LANGEVIN STEP: drift (-grad V gains) + temperature noise ---
-        shear_phase += SHEAR_PHASE_VEL * (0.82 + 0.28 * current_control.shear_mult);
         let controlled_shear = (pot.shear_amp * current_control.shear_mult).clamp(0.0, 0.75);
-        let shear = shear_gen.generate(controlled_shear, shear_phase, &device)?;
-        macro_tape = macro_tape
-            .add(&shear)?
-            .tanh()?
-            .affine(pot.macro_gain as f64, 0.0)?;
+        if absolute_step.is_multiple_of(MACRO_UPDATE_EVERY) {
+            shear_phase += SHEAR_PHASE_VEL
+                * MACRO_UPDATE_EVERY as f32
+                * (0.82 + 0.28 * current_control.shear_mult);
+            let shear = shear_gen.generate(controlled_shear, shear_phase, &device)?;
+            macro_tape = macro_tape
+                .add(&shear)?
+                .tanh()?
+                .affine(pot.macro_gain as f64, 0.0)?;
+        }
         let controlled_kick = (pot.micro_kick * current_control.kick_mult).clamp(0.0, 0.10);
         if controlled_kick > 1e-3 {
             let kick = randn_t(
@@ -6625,6 +7227,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
         // the organism could neither predict nor learn to synthesize. Those
         // effects and states are gone; the audible path is the learned renderer
         // followed only by bounded saturation and a stateful DC blocker.
+        let output_started = Instant::now();
         let audio_normalized_vec = audio_normalized.to_vec2::<f32>()?;
         let mut audio_l = audio_normalized_vec[0].clone();
         let mut audio_r = audio_normalized_vec[1].clone();
@@ -6703,9 +7306,12 @@ Usage: titan [BASE_DIR] [options]\n\n\
         pending_predictor_input = Some(current_predictor_input);
 
         for i in 0..CHUNK_SIZE {
-            raw_audio_writer.write_all(&audio_l[i].to_le_bytes())?;
-            raw_audio_writer.write_all(&audio_r[i].to_le_bytes())?;
+            let byte = i * 8;
+            raw_chunk_bytes[byte..byte + 4].copy_from_slice(&audio_l[i].to_le_bytes());
+            raw_chunk_bytes[byte + 4..byte + 8].copy_from_slice(&audio_r[i].to_le_bytes());
         }
+        raw_audio_writer.write_all(&raw_chunk_bytes)?;
+        phase_profiler.output_io += output_started.elapsed();
         chunk_scores.push(
             field_entropy * (0.25 + 0.50 * adaptive_dynamics.activity_health)
                 + structured_complexity * 0.75
@@ -6715,15 +7321,16 @@ Usage: titan [BASE_DIR] [options]\n\n\
         evolved_chunks = step + 1;
 
         if step % TRACE_EVERY == 0 {
-            let sample_index = topology_history.len();
+            let sample_index = trace_rows;
             let (trace_morph_event_step, trace_morph_event) =
                 pending_morph_event.unwrap_or((0, ""));
             let topology_state = macro_tape
                 .mean(1)?
-                .reshape((GRID_H * GRID_W,))?
+                .reshape((MACRO_H * MACRO_W,))?
                 .to_vec1::<f32>()?;
-            topology_history.push(topology_state);
-            topology_index_history.push(serde_json::json!({
+            topology_writer.write_record(topology_state.iter().map(|value| value.to_string()))?;
+            topology_rows += 1;
+            let topology_index_row = serde_json::json!({
                 "sample_index": sample_index,
                 "step": absolute_step,
                 "run_step": step,
@@ -6732,9 +7339,11 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 "field_entropy": field_entropy,
                 "morph_event": trace_morph_event,
                 "morph_event_step": if trace_morph_event.is_empty() { None } else { Some(trace_morph_event_step) },
-            }));
+            });
+            serde_json::to_writer(&mut topology_index_spool, &topology_index_row)?;
+            topology_index_spool.write_all(b"\n")?;
             let (target_file, target_frame, target_chunks_left) = target_loader.episode_info();
-            uncertainty_trace.push(serde_json::json!({
+            let trace_row = serde_json::json!({
                 "sample_index": sample_index, "step": absolute_step, "run_step": step,
                 "raw_movement": movement, "uncertainty_movement": uncertainty.movement,
                 "spectral": uncertainty.spectral,
@@ -6826,7 +7435,21 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 "optimizer_updates_run": optimizer_update_count,
                 "optimizer_resumed": optimizer_resumed,
                 "ultrasonic_ratio": s_sig["ultrasonic_ratio"].as_f64().unwrap_or(0.0),
-            }));
+            });
+            trace_phi_sum += phi as f64;
+            trace_aperture_sum += aperture as f64;
+            trace_synergy_sum += synergy_val as f64;
+            trace_temp_sum += pot.temp as f64;
+            trace_sigma_sum += sigma as f64;
+            trace_pi_sum += s_sig["pi_proxy"].as_f64().unwrap_or(0.0);
+            serde_json::to_writer(&mut trace_spool, &trace_row)?;
+            trace_spool.write_all(b"\n")?;
+            trace_rows += 1;
+            if trace_rows.is_multiple_of(64) {
+                topology_writer.flush()?;
+                trace_spool.flush()?;
+                topology_index_spool.flush()?;
+            }
             pending_morph_event = None;
         }
         if step % 50 == 0 {
@@ -6887,6 +7510,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
         if absolute_step > global_step
             && (absolute_step + 1).is_multiple_of(WORLD_SAVE_EVERY as u64)
         {
+            let checkpoint_started = Instant::now();
             // Save the learned model first, then the world that refers to it.
             // Each file is atomic. If Termux is killed between the two renames,
             // the model may be one checkpoint ahead of the world; that state is
@@ -6959,14 +7583,24 @@ Usage: titan [BASE_DIR] [options]\n\n\
                     Err(e) => println!("! world checkpoint failed: {}", e),
                 }
             }
+            phase_profiler.checkpoints += checkpoint_started.elapsed();
         }
     }
+
+    topology_writer.flush()?;
+    drop(topology_writer);
+    std::fs::rename(&topology_tmp_path, &topology_path)?;
+    trace_spool.flush()?;
+    topology_index_spool.flush()?;
+    drop(trace_spool);
+    drop(topology_index_spool);
 
     let total_elapsed = timer_start.elapsed().as_secs_f32();
     let overall_sps = completed_chunks as f32 / total_elapsed.max(1e-6);
     println!("\n=== PERFORMANCE REPORT ===");
     println!("Total simulation elapsed: {:.2}s", total_elapsed);
     println!("Overall performance speed: {:.2} steps/sec", overall_sps);
+    phase_profiler.report(completed_chunks);
 
     // ---- STREAMED MASTERING + PRIME EXTRACTION ----
     raw_audio_writer.flush()?;
@@ -7177,37 +7811,17 @@ Usage: titan [BASE_DIR] [options]\n\n\
         tempo_txt, centroid, tone, width, width_word, side_energy_width, stereo_corr
     );
 
-    let n_trace = uncertainty_trace.len().max(1) as f64;
-    let avg_phi = uncertainty_trace
-        .iter()
-        .map(|t| t["phi"].as_f64().unwrap_or(0.0))
-        .sum::<f64>()
-        / n_trace;
-    let avg_aperture = uncertainty_trace
-        .iter()
-        .map(|t| t["aperture"].as_f64().unwrap_or(0.0))
-        .sum::<f64>()
-        / n_trace;
-    let avg_synergy = uncertainty_trace
-        .iter()
-        .map(|t| t["synergy"].as_f64().unwrap_or(0.0))
-        .sum::<f64>()
-        / n_trace;
-    let avg_temp = uncertainty_trace
-        .iter()
-        .map(|t| t["temp"].as_f64().unwrap_or(0.0))
-        .sum::<f64>()
-        / n_trace;
-    let avg_sigma = uncertainty_trace
-        .iter()
-        .map(|t| t["sigma"].as_f64().unwrap_or(1.0))
-        .sum::<f64>()
-        / n_trace;
-    let avg_pi = uncertainty_trace
-        .iter()
-        .map(|t| t["pi_proxy"].as_f64().unwrap_or(0.0))
-        .sum::<f64>()
-        / n_trace;
+    let n_trace = trace_rows.max(1) as f64;
+    let avg_phi = trace_phi_sum / n_trace;
+    let avg_aperture = trace_aperture_sum / n_trace;
+    let avg_synergy = trace_synergy_sum / n_trace;
+    let avg_temp = trace_temp_sum / n_trace;
+    let avg_sigma = if trace_rows > 0 {
+        trace_sigma_sum / n_trace
+    } else {
+        1.0
+    };
+    let avg_pi = trace_pi_sum / n_trace;
     let avg_field_h = if field_entropy_n > 0 {
         field_entropy_sum / field_entropy_n as f64
     } else {
@@ -7234,30 +7848,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let prompt_path = artifact_path(&base_dir, "suno_priming_prompt", "txt", run_tag.as_deref());
     std::fs::write(&prompt_path, &prompt)?;
 
-    let topology_path = artifact_path(&base_dir, "ca_topology_rust", "csv", run_tag.as_deref());
-    let topology_index_path = artifact_path(
-        &base_dir,
-        "ca_topology_index_rust",
-        "csv",
-        run_tag.as_deref(),
-    );
-    let morph_events_path =
-        artifact_path(&base_dir, "morph_events_rust", "csv", run_tag.as_deref());
-    let uncertainty_trace_path = artifact_path(
-        &base_dir,
-        "uncertainty_trace_rust",
-        "csv",
-        run_tag.as_deref(),
-    );
-    let mut topo_writer = csv::Writer::from_path(&topology_path)?;
-    for row in topology_history {
-        topo_writer.write_record(row.iter().map(|f| f.to_string()))?;
-    }
-    topo_writer.flush()?;
-
     let mut topology_index_writer = csv::Writer::from_path(&topology_index_path)?;
     topology_index_writer.write_record(TOPOLOGY_INDEX_HEADERS)?;
-    for t in &topology_index_history {
+    for line in BufReader::new(File::open(&topology_index_spool_path)?).lines() {
+        let t: serde_json::Value = serde_json::from_str(&line?)?;
         let morph_event_step = t["morph_event_step"]
             .as_u64()
             .map(|value| value.to_string())
@@ -7294,7 +7888,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
 
     let mut unc_writer = csv::Writer::from_path(&uncertainty_trace_path)?;
     unc_writer.write_record(UNCERTAINTY_TRACE_HEADERS)?;
-    for t in &uncertainty_trace {
+    for line in BufReader::new(File::open(&trace_spool_path)?).lines() {
+        let t: serde_json::Value = serde_json::from_str(&line?)?;
         let morph_event_step = t["morph_event_step"]
             .as_u64()
             .map(|value| value.to_string())
@@ -7424,6 +8019,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
         ])?;
     }
     unc_writer.flush()?;
+    let _ = std::fs::remove_file(&trace_spool_path);
+    let _ = std::fs::remove_file(&topology_index_spool_path);
     println!(
         "Telemetry schema v{} saved to {} (trace, topology index, and morph events).",
         TRACE_SCHEMA_VERSION, base_dir
@@ -7491,7 +8088,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let run_finished_unix_ms = unix_time_ms();
     let run_metadata_path = artifact_path(
         &base_dir,
-        "titan_run_metadata_v7",
+        "titan_run_metadata_v8",
         "json",
         run_tag.as_deref(),
     );
@@ -7518,6 +8115,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
             "duration_requested_seconds": sim_duration,
             "bptt_requested_chunks": bptt_window,
             "autograd_tape_chunks": tape_chunks,
+            "core_update_every_tapes": core_update_every,
             "model_loaded": loaded_any,
             "model_fully_compatible": loaded_full,
             "world_loaded": loaded_world,
@@ -7530,11 +8128,21 @@ Usage: titan [BASE_DIR] [options]\n\n\
         "corpus": corpus_summary,
         "field": {
             "channels": CA_CHANNELS,
-            "height": GRID_H,
-            "width": GRID_W,
-            "cells": CA_CHANNELS * GRID_H * GRID_W,
+            "micro_height": GRID_H,
+            "micro_width": GRID_W,
+            "micro_cells": CA_CHANNELS * GRID_H * GRID_W,
+            "macro_height": MACRO_H,
+            "macro_width": MACRO_W,
+            "macro_cells": CA_CHANNELS * MACRO_H * MACRO_W,
+            "macro_update_every_chunks": MACRO_UPDATE_EVERY,
             "sample_rate": SAMPLE_RATE,
             "chunk_size": CHUNK_SIZE,
+        },
+        "model": {
+            "parameters": model_parameters,
+            "fp32_weight_mib": model_parameters as f64 * 4.0 / (1024.0 * 1024.0),
+            "decoder_control_frames": DECODER_CONTROL_FRAMES,
+            "regional_partials": SCAN_PARTIALS,
         },
         "run": {
             "start_global_step": start_global_step,
@@ -7553,6 +8161,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
             "optimizer_resumed": optimizer_resumed,
             "development_plateau_ready": development_plateau.ready,
             "development_relative_improvement": development_plateau.relative_improvement,
+            "phase_profile": phase_profiler.json(completed_chunks),
         },
         "final_state": {
             "raw_model_confidence": controller.meta.confidence,
@@ -7565,8 +8174,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
         },
         "telemetry": {
             "trace_stride_chunks": TRACE_EVERY,
-            "trace_rows": uncertainty_trace.len(),
-            "topology_rows": topology_index_history.len(),
+            "trace_rows": trace_rows,
+            "topology_rows": topology_rows,
             "uncertainty_trace": uncertainty_trace_path,
             "topology_values": topology_path,
             "topology_index": topology_index_path,
@@ -7653,6 +8262,64 @@ mod tests {
             max_depth: MORPH_MAX_BLOCKS,
             frozen: false,
         }
+    }
+
+    #[test]
+    fn v8_model_stays_near_the_fifteen_million_parameter_budget() -> Result<()> {
+        let device = Device::Cpu;
+        let varmap = VarMap::new();
+        let vb = VBV::from_varmap(&varmap, DType::F32, &device);
+        let _model = ComplexAudioEcosystem::new(vb.pp("model"), &device)?;
+        let _arbiter = AudioArbiter::new(vb.pp("arbiter"))?;
+        let _monitor = MonitorHead::new(vb.pp("monitor_head"))?;
+        let _episodic = EpisodicMemory::new(vb.pp("episodic"))?;
+        let parameters = parameter_count(&varmap);
+        println!("v8 parameter count: {parameters}");
+        assert!(
+            (14_000_000..=16_000_000).contains(&parameters),
+            "v8 parameter budget drifted to {parameters}"
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn v8_multirate_decoder_supports_end_to_end_backward() -> Result<()> {
+        let device = Device::Cpu;
+        let varmap = VarMap::new();
+        let vb = VBV::from_varmap(&varmap, DType::F32, &device);
+        let mut model = ComplexAudioEcosystem::new(vb.pp("model"), &device)?;
+        deterministic_reinit(&varmap, 42, &device)?;
+        let micro = Tensor::zeros((1, CA_CHANNELS, GRID_H, GRID_W), DType::F32, &device)?;
+        let macro_t = Tensor::zeros((1, CA_CHANNELS, MACRO_H, MACRO_W), DType::F32, &device)?;
+        let memory = Tensor::zeros((1, MEMORY_DIM), DType::F32, &device)?;
+        let episodic = Tensor::zeros((1, EPI_DIM), DType::F32, &device)?;
+        let out = model.forward(
+            &micro,
+            &macro_t,
+            &memory,
+            &episodic,
+            [0.0; 4],
+            0.0,
+            0.0,
+            true,
+            0,
+            true,
+            0.7,
+            &SynthesisControl::default(),
+        )?;
+        assert_eq!(out.stereo.dims(), &[2, CHUNK_SIZE]);
+        assert_eq!(out.next_micro.dims(), &[1, CA_CHANNELS, GRID_H, GRID_W]);
+        assert_eq!(out.next_macro.dims(), &[1, CA_CHANNELS, MACRO_H, MACRO_W]);
+        let loss = out.stereo.sqr()?.mean_all()?;
+        let gradients = loss.backward()?;
+        assert!(
+            varmap
+                .all_vars()
+                .iter()
+                .any(|var| gradients.get(var.as_tensor()).is_some()),
+            "decoder smoke loss produced no trainable gradients"
+        );
+        Ok(())
     }
 
     #[test]
@@ -7808,12 +8475,11 @@ mod tests {
     #[test]
     fn shear_generator_honors_requested_rms() -> Result<()> {
         let device = Device::Cpu;
-        let mut shear = ShearField2D::new(CA_CHANNELS, GRID_H, GRID_W);
+        let mut shear = ShearField2D::new(CA_CHANNELS, MACRO_H, MACRO_W);
         let requested = 0.23f32;
-        let values = shear
-            .generate(requested, 1.234, &device)?
-            .flatten_all()?
-            .to_vec1::<f32>()?;
+        let generated = shear.generate(requested, 1.234, &device)?;
+        assert_eq!(generated.dims(), &[1, CA_CHANNELS, MACRO_H, MACRO_W]);
+        let values = generated.flatten_all()?.to_vec1::<f32>()?;
         let rms = (values.iter().map(|v| v * v).sum::<f32>() / values.len() as f32).sqrt();
         assert!((rms - requested).abs() < 1e-5);
         Ok(())
