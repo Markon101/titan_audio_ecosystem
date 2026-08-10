@@ -75,7 +75,8 @@ its 512-dimensional external interface:
   --base-dir /sdcard/Download \
   --morph-layers 16 \
   --morph-width 768 \
-  --max-morph-depth 16
+  --max-morph-depth 16 \
+  --motif-capacity 256
 ```
 
 `--morph-layers N` constructs 1--64 blocks. `--morph-width N` selects an
@@ -84,6 +85,12 @@ explicitly overrides the active depth restored from the world, while
 `--max-morph-depth N` remains the adaptive-growth ceiling. Active depth and
 physical capacity are separate: dormant blocks occupy checkpoint and optimizer
 memory but do not execute in the forward pass.
+
+Motif memory is independently runtime-sized with `--motif-capacity N` from 1
+through 4096 (default 64). Increasing it on a resumed world retains every saved
+motif. Decreasing it keeps the newest `N` motifs and reports how many oldest
+entries were discarded. The selected capacity is recorded in run metadata;
+the motifs themselves continue to travel with the world checkpoint.
 
 Resizing preserves block indices. Growing a checkpoint from 12 to 16 blocks
 copies blocks 0--11 and their AdamW moments exactly, then appends blocks 12--15

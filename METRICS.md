@@ -129,6 +129,10 @@ the metadata `run_id` when joining their rows.
   Run metadata additionally records the physically constructed `morph_layers`
   and internal `morph_width`; these determine parameter and optimizer size but
   do not change the MorphicStack's 512-dimensional external interface.
+- `motif_capacity` in run metadata is the selected host-memory limit (1--4096,
+  default 64). `motifs_active` is the retained entry count at finalization.
+  Resume-time growth retains every motif; shrinking retains the newest entries
+  and discards the oldest first.
 - `field_entropy` is the channel-archetype entropy in bits for the current
   micro field. It is not the entropy of the rendered waveform.
 - `crit_gain` is fixed at 1.0 in v8. `sigma` remains useful evidence, but no

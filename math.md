@@ -206,7 +206,10 @@ These equations are not a classical finite-state cellular automaton.  They are a
    Induction over those residual blocks therefore keeps the refined hidden
    vector bounded even though it need not remain in \([-1,1]\).
 
-5. Energy is clamped to \([0.18,0.96]\); temperature and controller features are clamped to compact intervals; phases are reduced modulo \(2\pi\); motif and episodic buffers have finite capacity.
+5. Energy is clamped to \([0.18,0.96]\); temperature and controller features are
+   clamped to compact intervals; phases are reduced modulo \(2\pi\); motif and
+   episodic buffers have finite capacity. The motif limit is selected at process
+   start from the finite range 1--4096 (default 64).
 
 6. Final audio samples pass through `tanh`. The stateful 16-sample Haas tail is
    finite, and the stable DC blocker has pole \(0.998<1\), so bounded input
@@ -1232,6 +1235,17 @@ blocks or hidden coordinates is generally lossy because a narrower nonlinear
 residual network need not represent the same map. Morph-only resizing remains
 world-compatible because the CA fields, GRU memory, decoder interface, and DSP
 state dimensions do not change.
+
+### 14.2 Runtime motif-memory capacity
+
+The host-side motif deque has runtime capacity \(K\in[1,4096]\), selected by
+`--motif-capacity` and defaulting to 64. Its serialized entries remain part of
+the world checkpoint, so capacity growth from \(K\) to \(K'>K\) retains the
+entire learned motif set. Capacity reduction keeps the newest \(K'\) entries
+and removes the oldest prefix. This is deliberately lossy, but follows the
+same FIFO eviction order used when a full motif memory admits a new candidate.
+Because motif observations and controls have fixed dimensions, changing
+\(K\) requires no tensor migration or checkpoint-schema revision.
 
 ## 15. Research references
 

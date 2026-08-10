@@ -133,7 +133,8 @@ const TRACE_SCHEMA_VERSION: u32 = 7;
 const TRACE_EVERY: usize = 10;
 const BUILD_COMMIT: &str = env!("TITAN_GIT_COMMIT");
 const BUILD_DIRTY: &str = env!("TITAN_GIT_DIRTY");
-const MOTIF_SLOTS: usize = 64;
+const MOTIF_DEFAULT_CAPACITY: usize = 64;
+const MOTIF_RUNTIME_MAX_CAPACITY: usize = 4096;
 const MOTIF_EVERY: usize = 16;
 const MOTIF_MIN_AGE: u64 = 128;
 const STAGNATION_WARMUP: u64 = 48;
@@ -1291,11 +1292,29 @@ impl Default for MotifDiagnostics {
 }
 
 impl MotifMemory {
+    fn with_capacity(capacity: usize) -> Self {
+        Self {
+            entries: VecDeque::with_capacity(capacity),
+        }
+    }
+
+    fn apply_capacity(&mut self, capacity: usize) -> usize {
+        let mut dropped = 0usize;
+        while self.entries.len() > capacity {
+            self.entries.pop_front();
+            dropped += 1;
+        }
+        self.entries
+            .reserve(capacity.saturating_sub(self.entries.len()));
+        dropped
+    }
+
     fn maybe_store(
         &mut self,
         obs: &AudioObservation,
         control: SynthesisControl,
         step: u64,
+        capacity: usize,
         ecology: &AdaptiveDynamics,
         diagnostics: &mut MotifDiagnostics,
     ) -> bool {
@@ -1335,7 +1354,7 @@ impl MotifMemory {
             diagnostics.rejected_similarity = diagnostics.rejected_similarity.saturating_add(1);
             return false;
         }
-        if self.entries.len() >= MOTIF_SLOTS {
+        if self.entries.len() >= capacity {
             self.entries.pop_front();
         }
         self.entries.push_back(Motif {
@@ -5468,6 +5487,9 @@ impl WorldCheckpoint {
         {
             anyhow::bail!("world checkpoint memory slots are malformed");
         }
+        if self.motifs.entries.len() > MOTIF_RUNTIME_MAX_CAPACITY {
+            anyhow::bail!("world checkpoint motif memory exceeds the runtime limit");
+        }
         Ok(())
     }
 }
@@ -5703,6 +5725,7 @@ fn main() -> Result<()> {
     let mut freeze_morph = false;
     let mut morph_blocks = MORPH_DEFAULT_BLOCKS;
     let mut morph_width = MORPH_DEFAULT_WIDTH;
+    let mut motif_capacity = MOTIF_DEFAULT_CAPACITY;
     let mut morph_depth_override: Option<usize> = None;
     let mut max_morph_depth_override: Option<usize> = None;
     let mut state_override: Option<String> = None;
@@ -5839,6 +5862,14 @@ fn main() -> Result<()> {
                     anyhow::bail!("Missing value for --morph-width");
                 }
             }
+            "--motif-capacity" => {
+                if arg_idx + 1 < args.len() {
+                    motif_capacity = args[arg_idx + 1].parse::<usize>()?;
+                    arg_idx += 2;
+                } else {
+                    anyhow::bail!("Missing value for --motif-capacity");
+                }
+            }
             "--morph-depth" => {
                 if arg_idx + 1 < args.len() {
                     morph_depth_override = Some(args[arg_idx + 1].parse::<usize>()?);
@@ -5880,6 +5911,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
       --freeze-morph   Hold the checkpoint's current morphic depth for this run\n\
       --morph-layers N Physically construct N append-preserving morph blocks (default 12)\n\
       --morph-width N  Internal morph-block width, 64..4096 (default 512)\n\
+      --motif-capacity N  Runtime motif-memory slots, 1..4096 (default 64)\n\
       --morph-depth N  Override the resumed/initially active morph depth\n\
       --max-morph-depth N  Allow adaptive growth only through depth N\n\
       --fresh-world    Reset CA/DSP/memory while retaining compatible weights\n\
@@ -5928,6 +5960,12 @@ Usage: titan [BASE_DIR] [options]\n\n\
             "morphic width must be a multiple of 64 between {} and {}",
             MORPH_RUNTIME_MIN_WIDTH,
             MORPH_RUNTIME_MAX_WIDTH
+        );
+    }
+    if !(1..=MOTIF_RUNTIME_MAX_CAPACITY).contains(&motif_capacity) {
+        anyhow::bail!(
+            "motif capacity must be between 1 and {}",
+            MOTIF_RUNTIME_MAX_CAPACITY
         );
     }
     if let Some(depth) = morph_depth_override {
@@ -6181,7 +6219,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let mut criticality = CriticalityEstimator::default();
     let mut controller = HybridController::default();
     let mut adaptive_dynamics = AdaptiveDynamics::default();
-    let mut motifs = MotifMemory::default();
+    let mut motifs = MotifMemory::with_capacity(motif_capacity);
     let mut motif_diagnostics = MotifDiagnostics::default();
     let mut last_observation: Option<AudioObservation> = None;
     let mut pending_predictor_input: Option<Tensor> = None;
@@ -6242,6 +6280,14 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 controller = world.controller;
                 adaptive_dynamics = world.adaptive_dynamics;
                 motifs = world.motifs;
+                let dropped_motifs = motifs.apply_capacity(motif_capacity);
+                if dropped_motifs > 0 {
+                    println!(
+                        "--> Motif downsize: discarded {} oldest entries; retained {} newest.",
+                        dropped_motifs,
+                        motifs.entries.len()
+                    );
+                }
                 motif_diagnostics = world.motif_diagnostics;
                 last_observation = world.last_observation;
                 if let Some(v) = world.pending_predictor_input {
@@ -6316,6 +6362,11 @@ Usage: titan [BASE_DIR] [options]\n\n\
         morph_width,
         rad_amp,
         if loaded_world { "resumed" } else { "new" }
+    );
+    println!(
+        "--> Motif memory: {}/{} entries · growth preserves all; shrink retains newest.",
+        motifs.entries.len(),
+        motif_capacity
     );
     if max_morph_depth < model.depth() {
         println!(
@@ -7631,6 +7682,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 &post.observation,
                 current_control,
                 absolute_step,
+                motif_capacity,
                 &adaptive_dynamics,
                 &mut motif_diagnostics,
             );
@@ -7813,10 +7865,11 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 development_mean_val, development_chroma_val,
                 development_plateau.relative_improvement * 100.0,
                 development_plateau.ready, development_plateau.plateau);
-            println!("  ecology health:{:.2} stagnation:{:.2} escape:{:.2} | reward:{:+.3} μ:{:+.3} σr:{:.3} | motifs:{}/{} qrej:{} srej:{}",
+            println!("  ecology health:{:.2} stagnation:{:.2} escape:{:.2} | reward:{:+.3} μ:{:+.3} σr:{:.3} | motifs:{}/{} candidates:{} qrej:{} srej:{}",
                 adaptive_dynamics.activity_health, adaptive_dynamics.stagnation,
                 adaptive_dynamics.escape_strength(), reward, adaptive_dynamics.reward_mean,
-                adaptive_dynamics.reward_std(), motifs.entries.len(), motif_diagnostics.candidates,
+                adaptive_dynamics.reward_std(), motifs.entries.len(), motif_capacity,
+                motif_diagnostics.candidates,
                 motif_diagnostics.rejected_quality, motif_diagnostics.rejected_similarity);
             println!(
                 "  proposals model:{} bandit:{} selected:{} | action age:{} usage:{:.2}",
@@ -8175,7 +8228,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let final_depth = model.depth();
 
     let prompt = format!(
-        "Style: {}, {}, {}, {}. Texture: {}. Tempo: {}. Tone: {}. Space: {}. Field: {} regime · {} archetype · depth L{:02}. [Phi: {:.2}, Sigma: {:.3}, Temp: {:.2}, PI-proxy: {:.2}, Aperture: {:.2}, Synergy: {:.2}, Field-Entropy: {:.2}b, Energy: {:.2}, Model-Confidence raw/effective: {:.2}/{:.2}, Ecology-Health: {:.2}, Stagnation: {:.2}, Motifs: {}, Seed: {}]",
+        "Style: {}, {}, {}, {}. Texture: {}. Tempo: {}. Tone: {}. Space: {}. Field: {} regime · {} archetype · depth L{:02}. [Phi: {:.2}, Sigma: {:.3}, Temp: {:.2}, PI-proxy: {:.2}, Aperture: {:.2}, Synergy: {:.2}, Field-Entropy: {:.2}b, Energy: {:.2}, Model-Confidence raw/effective: {:.2}/{:.2}, Ecology-Health: {:.2}, Stagnation: {:.2}, Motifs: {}/{}, Seed: {}]",
         if avg_phi > 0.85 { "Hyper-Resonant" } else { "Chaotic" },
         if avg_aperture > 0.5 { "Evolving" } else { "Stable" },
         if total_complexity > 500.0 { "Dense" } else { "Minimal" },
@@ -8185,7 +8238,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
         avg_phi, avg_sigma, avg_temp, avg_pi, avg_aperture, avg_synergy, avg_field_h,
         energy_state, controller.meta.confidence, adaptive_dynamics.effective_model_weight,
         adaptive_dynamics.activity_health, adaptive_dynamics.stagnation,
-        motifs.entries.len(), seed
+        motifs.entries.len(), motif_capacity, seed
     );
     println!("\n=== GENERATIVE PRIMING PROMPT ===\n{}", prompt);
     let prompt_path = artifact_path(&base_dir, "suno_priming_prompt", "txt", run_tag.as_deref());
@@ -8476,6 +8529,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
             "fresh_decoder": fresh_decoder,
             "freeze_morph": morph_policy.frozen,
             "max_morph_depth": morph_policy.max_depth,
+            "motif_capacity": motif_capacity,
             "run_tag": run_tag,
             "load_paths": {
                 "model": load_model_path,
@@ -8531,6 +8585,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
             "activity_health": adaptive_dynamics.activity_health,
             "stagnation": adaptive_dynamics.stagnation,
             "motifs_active": motifs.entries.len(),
+            "motif_capacity": motif_capacity,
             "motif_candidates": motif_diagnostics.candidates,
             "motif_stored_total": motif_diagnostics.stored_total,
         },
@@ -9265,6 +9320,7 @@ mod tests {
             &rich_observation(),
             SynthesisControl::default(),
             256,
+            MOTIF_DEFAULT_CAPACITY,
             &AdaptiveDynamics::default(),
             &mut diagnostics,
         );
@@ -9272,6 +9328,59 @@ mod tests {
         assert_eq!(memory.entries.len(), 1);
         assert_eq!(diagnostics.candidates, 1);
         assert_eq!(diagnostics.stored_total, 1);
+    }
+
+    #[test]
+    fn motif_capacity_resize_preserves_newest_entries() {
+        let mut memory = MotifMemory::with_capacity(5);
+        for born_step in 0..5 {
+            memory.entries.push_back(Motif {
+                observation: rich_observation(),
+                control: SynthesisControl::default(),
+                born_step,
+                quality: 0.75,
+            });
+        }
+
+        assert_eq!(memory.apply_capacity(3), 2);
+        assert_eq!(
+            memory
+                .entries
+                .iter()
+                .map(|motif| motif.born_step)
+                .collect::<Vec<_>>(),
+            vec![2, 3, 4]
+        );
+        assert_eq!(memory.apply_capacity(8), 0);
+        assert_eq!(memory.entries.len(), 3);
+    }
+
+    #[test]
+    fn motif_storage_evicts_at_the_selected_capacity() {
+        let mut memory = MotifMemory::with_capacity(1);
+        let mut diagnostics = MotifDiagnostics::default();
+        let first = rich_observation();
+        assert!(memory.maybe_store(
+            &first,
+            SynthesisControl::default(),
+            256,
+            1,
+            &AdaptiveDynamics::default(),
+            &mut diagnostics,
+        ));
+
+        let mut second = rich_observation();
+        second.values[0] = 0.62;
+        assert!(memory.maybe_store(
+            &second,
+            SynthesisControl::default(),
+            512,
+            1,
+            &AdaptiveDynamics::default(),
+            &mut diagnostics,
+        ));
+        assert_eq!(memory.entries.len(), 1);
+        assert_eq!(memory.entries.front().unwrap().born_step, 512);
     }
 
     #[test]
