@@ -1,10 +1,22 @@
 # Generated artifacts
 target/
+bin/
 *.wav
 *.csv
+*.csv.tmp
+*.jsonl.tmp
+.titan_audio_f32*.tmp
+titan_world_v*.bin
+titan_world_v*.bin.tmp
+titan_morph_state_v*.json
+titan_run_metadata_v*.json
+titan_run_metadata_v*.json.tmp
+titan_corpus_manifest_v*.json
+suno_priming_prompt*.txt
 
 # Safetensors models
 *.safetensors
+*.safetensors.tmp
 
 # OS files
 .DS_Store

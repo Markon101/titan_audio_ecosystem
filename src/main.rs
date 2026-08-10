@@ -229,7 +229,11 @@ const ENERGY_HOMEO_RATE: f32 = 0.025; // energy bowl strength applied directly t
 
 const LARGE_D_DIM: usize = 512;
 
-const MORPH_MAX_BLOCKS: usize = 12;
+const MORPH_DEFAULT_BLOCKS: usize = 12;
+const MORPH_DEFAULT_WIDTH: usize = MEMORY_DIM;
+const MORPH_RUNTIME_MAX_BLOCKS: usize = 64;
+const MORPH_RUNTIME_MIN_WIDTH: usize = 64;
+const MORPH_RUNTIME_MAX_WIDTH: usize = 4096;
 const MORPH_START_DEPTH: usize = 1;
 const MORPH_PATIENCE_BASE: usize = 10;
 const MORPH_WARMUP: usize = 48;
@@ -898,6 +902,21 @@ struct MorphPolicy {
     frozen: bool,
 }
 
+#[derive(Clone, Copy, Debug, Serialize)]
+struct MorphArchitecture {
+    blocks: usize,
+    width: usize,
+}
+
+impl Default for MorphArchitecture {
+    fn default() -> Self {
+        Self {
+            blocks: MORPH_DEFAULT_BLOCKS,
+            width: MORPH_DEFAULT_WIDTH,
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, Default)]
 struct DevelopmentPlateauStatus {
     score: f32,
@@ -961,7 +980,7 @@ fn morph_decision(
     if policy.frozen {
         return MorphDecision::Hold;
     }
-    let may_grow = depth < policy.max_depth.min(MORPH_MAX_BLOCKS);
+    let may_grow = depth < policy.max_depth;
     let pressure_boundary = morph_boundary_crossed(absolute_step, window_len, MORPH_EVENT_COOLDOWN);
     let relative_pressure = evidence.mimic_avg > evidence.mimic_baseline * MORPH_GROWTH_REL;
     let ecological_pressure = ecology.samples > STAGNATION_WARMUP
@@ -1555,6 +1574,13 @@ struct PersistentAdamW {
     params: ParamsAdamW,
 }
 
+#[derive(Clone, Copy, Debug, Default, Serialize)]
+struct OptimizerLoadReport {
+    exact: usize,
+    resized: usize,
+    initialized: usize,
+}
+
 impl PersistentAdamW {
     fn new(varmap: &VarMap, learning_rate: f64) -> CResult<Self> {
         let data = varmap.data().lock().unwrap();
@@ -1651,7 +1677,12 @@ impl PersistentAdamW {
         Ok(())
     }
 
-    fn load(&mut self, path: &str, expected_global_step: u64, device: &Device) -> Result<usize> {
+    fn load(
+        &mut self,
+        path: &str,
+        expected_global_step: u64,
+        device: &Device,
+    ) -> Result<OptimizerLoadReport> {
         let tensors = candle_core::safetensors::load(path, device).map_err(anyhow::Error::msg)?;
         let saved_global = tensors
             .get("optimizer.global_step")
@@ -1668,29 +1699,36 @@ impl PersistentAdamW {
             .get("optimizer.step_t")
             .ok_or_else(|| anyhow::anyhow!("optimizer checkpoint has no update count"))?
             .to_scalar::<i64>()? as u64;
-        let mut restored = 0usize;
+        let mut report = OptimizerLoadReport::default();
         for state in &self.vars {
-            let Some(first) = tensors.get(&format!("optimizer.m.{}", state.name)) else {
-                anyhow::bail!(
-                    "optimizer checkpoint is missing first moment for {}",
-                    state.name
-                );
+            let first_name = format!("optimizer.m.{}", state.name);
+            let second_name = format!("optimizer.v.{}", state.name);
+            let (Some(first), Some(second)) = (tensors.get(&first_name), tensors.get(&second_name))
+            else {
+                if is_morphic_tensor(&state.name) {
+                    report.initialized += 1;
+                    continue;
+                }
+                anyhow::bail!("optimizer checkpoint is missing moments for {}", state.name);
             };
-            let Some(second) = tensors.get(&format!("optimizer.v.{}", state.name)) else {
-                anyhow::bail!(
-                    "optimizer checkpoint is missing second moment for {}",
-                    state.name
-                );
-            };
-            if first.dims() != state.var.dims() || second.dims() != state.var.dims() {
+            if first.dims() == state.var.dims() && second.dims() == state.var.dims() {
+                state.first_moment.set(first)?;
+                state.second_moment.set(second)?;
+                report.exact += 1;
+            } else if is_morphic_tensor(&state.name) {
+                let migrated_first =
+                    overlap_tensor(first, state.first_moment.as_tensor(), false, device)?;
+                let migrated_second =
+                    overlap_tensor(second, state.second_moment.as_tensor(), false, device)?;
+                state.first_moment.set(&migrated_first)?;
+                state.second_moment.set(&migrated_second)?;
+                report.resized += 1;
+            } else {
                 anyhow::bail!("optimizer moment shape mismatch for {}", state.name);
             }
-            state.first_moment.set(first)?;
-            state.second_moment.set(second)?;
-            restored += 1;
         }
         self.step_t = saved_step;
-        Ok(restored)
+        Ok(report)
     }
 }
 
@@ -2377,21 +2415,150 @@ fn var_all(x: &Tensor) -> CResult<Tensor> {
     x.broadcast_sub(&mean)?.sqr()?.mean_all()
 }
 
-fn load_into_varmap(varmap: &VarMap, path: &str, device: &Device) -> Result<(usize, usize, usize)> {
+#[derive(Clone, Copy, Debug, Default, Serialize)]
+struct ModelLoadReport {
+    exact: usize,
+    morph_resized: usize,
+    morph_initialized: usize,
+    non_morph_missing: usize,
+    non_morph_mismatch: usize,
+    source_morph_dropped: usize,
+    source_non_morph_dropped: usize,
+}
+
+impl ModelLoadReport {
+    fn loaded(&self) -> usize {
+        self.exact + self.morph_resized
+    }
+
+    fn fully_exact(&self) -> bool {
+        self.loaded() > 0
+            && self.morph_resized == 0
+            && self.morph_initialized == 0
+            && self.non_morph_missing == 0
+            && self.non_morph_mismatch == 0
+            && self.source_morph_dropped == 0
+            && self.source_non_morph_dropped == 0
+    }
+
+    fn world_compatible(&self) -> bool {
+        self.loaded() > 0
+            && self.non_morph_missing == 0
+            && self.non_morph_mismatch == 0
+            && self.source_non_morph_dropped == 0
+    }
+
+    fn architecture_resized(&self) -> bool {
+        self.morph_resized > 0 || self.morph_initialized > 0 || self.source_morph_dropped > 0
+    }
+}
+
+fn is_morphic_tensor(name: &str) -> bool {
+    name.contains(".morphic.")
+}
+
+fn is_morphic_output_weight(name: &str) -> bool {
+    is_morphic_tensor(name) && name.ends_with("_2.weight")
+}
+
+fn is_morphic_output_projection(name: &str) -> bool {
+    is_morphic_tensor(name) && (name.ends_with("_2.weight") || name.ends_with("_2.bias"))
+}
+
+fn overlap_tensor(
+    source: &Tensor,
+    target: &Tensor,
+    zero_added_output_columns: bool,
+    device: &Device,
+) -> Result<Tensor> {
+    let source_dims = source.dims();
+    let target_dims = target.dims();
+    let source_values = source
+        .to_dtype(DType::F32)?
+        .flatten_all()?
+        .to_vec1::<f32>()?;
+    let mut target_values = target
+        .to_dtype(DType::F32)?
+        .flatten_all()?
+        .to_vec1::<f32>()?;
+    match (source_dims, target_dims) {
+        ([source_len], [target_len]) => {
+            let overlap = (*source_len).min(*target_len);
+            target_values[..overlap].copy_from_slice(&source_values[..overlap]);
+        }
+        ([source_rows, source_cols], [target_rows, target_cols]) => {
+            if zero_added_output_columns && target_cols > source_cols {
+                for row in 0..*target_rows {
+                    target_values[row * target_cols + source_cols..(row + 1) * target_cols]
+                        .fill(0.0);
+                }
+            }
+            for row in 0..(*source_rows).min(*target_rows) {
+                let cols = (*source_cols).min(*target_cols);
+                let source_start = row * source_cols;
+                let target_start = row * target_cols;
+                target_values[target_start..target_start + cols]
+                    .copy_from_slice(&source_values[source_start..source_start + cols]);
+            }
+        }
+        _ => anyhow::bail!(
+            "cannot overlap tensor rank/shape {:?} into {:?}",
+            source_dims,
+            target_dims
+        ),
+    }
+    Ok(Tensor::from_vec(
+        target_values,
+        target_dims.to_vec(),
+        device,
+    )?)
+}
+
+fn load_into_varmap(varmap: &VarMap, path: &str, device: &Device) -> Result<ModelLoadReport> {
     let loaded = candle_core::safetensors::load(path, device).map_err(anyhow::Error::msg)?;
     let data = varmap.data().lock().unwrap();
-    let (mut hit, mut miss, mut mismatch) = (0, 0, 0);
+    let mut report = ModelLoadReport::default();
     for (name, var) in data.iter() {
         match loaded.get(name) {
             Some(t) if t.dims() == var.as_tensor().dims() => {
                 var.set(t).map_err(anyhow::Error::msg)?;
-                hit += 1;
+                report.exact += 1;
             }
-            Some(_) => mismatch += 1,
-            None => miss += 1,
+            Some(t) if is_morphic_tensor(name) => {
+                let migrated =
+                    overlap_tensor(t, var.as_tensor(), is_morphic_output_weight(name), device)?;
+                var.set(&migrated).map_err(anyhow::Error::msg)?;
+                report.morph_resized += 1;
+            }
+            Some(_) => {
+                report.non_morph_mismatch += 1;
+            }
+            None if is_morphic_tensor(name) => {
+                // A newly appended residual block must be functionally dormant
+                // even if the user activates it immediately. Random incoming
+                // features plus a zero output projection preserve the parent
+                // model exactly while leaving a gradient path into the new
+                // output weights on its first training step.
+                if is_morphic_output_projection(name) {
+                    let zero =
+                        Tensor::zeros(var.as_tensor().shape(), var.as_tensor().dtype(), device)?;
+                    var.set(&zero).map_err(anyhow::Error::msg)?;
+                }
+                report.morph_initialized += 1;
+            }
+            None => report.non_morph_missing += 1,
         }
     }
-    Ok((hit, miss, mismatch))
+    for name in loaded.keys() {
+        if !data.contains_key(name) {
+            if is_morphic_tensor(name) {
+                report.source_morph_dropped += 1;
+            } else {
+                report.source_non_morph_dropped += 1;
+            }
+        }
+    }
+    Ok(report)
 }
 
 // 2x2 average pooling for the renormalization-group loss on 2D fields.
@@ -3857,15 +4024,15 @@ struct MorphicStack {
     active_depth: usize,
 }
 impl MorphicStack {
-    fn new(dim: usize, max_depth: usize, vb: VBV) -> Result<Self> {
+    fn new(dim: usize, width: usize, max_depth: usize, vb: VBV) -> Result<Self> {
         let mut layers = Vec::new();
         let mut norms = Vec::new();
         for i in 0..max_depth {
             norms.push(candle_nn::rms_norm(dim, 1e-5, vb.pp(format!("norm{}", i)))?);
             let seq = candle_nn::seq()
-                .add(candle_nn::linear(dim, dim, vb.pp(format!("l{}_1", i)))?)
+                .add(candle_nn::linear(dim, width, vb.pp(format!("l{}_1", i)))?)
                 .add(candle_nn::Activation::Swish)
-                .add(candle_nn::linear(dim, dim, vb.pp(format!("l{}_2", i)))?)
+                .add(candle_nn::linear(width, dim, vb.pp(format!("l{}_2", i)))?)
                 .add(candle_nn::Activation::Swish);
             layers.push(seq);
         }
@@ -3887,6 +4054,9 @@ impl MorphicStack {
     }
     fn depth(&self) -> usize {
         self.active_depth
+    }
+    fn capacity(&self) -> usize {
+        self.layers.len()
     }
     fn set_depth(&mut self, d: usize) {
         self.active_depth = d.clamp(1, self.layers.len());
@@ -4343,14 +4513,14 @@ impl AsymptoticContractionLayer {
 }
 
 impl ComplexAudioEcosystem {
-    fn new(vb: VBV, dev: &Device) -> Result<Self> {
+    fn new(vb: VBV, dev: &Device, morph: MorphArchitecture) -> Result<Self> {
         let micro_ca = NeuralCA2D::new(CA_CHANNELS, CA_HIDDEN, GRID_H, GRID_W, vb.pp("micro_ca"))?;
         let macro_ca =
             NeuralCA2D::new(CA_CHANNELS, CA_HIDDEN, MACRO_H, MACRO_W, vb.pp("macro_ca"))?;
         let micro_clocks = CellClockBank::new(CA_CHANNELS, GRID_H, GRID_W, 0xC10C_0001, dev)?;
         let macro_clocks = CellClockBank::new(CA_CHANNELS, MACRO_H, MACRO_W, 0xC10C_0002, dev)?;
         let gru_memory = GRUCell::new(CA_CHANNELS + EPI_DIM, MEMORY_DIM, vb.pp("gru_memory"))?;
-        let morphic = MorphicStack::new(MEMORY_DIM, MORPH_MAX_BLOCKS, vb.pp("morphic"))?;
+        let morphic = MorphicStack::new(MEMORY_DIM, morph.width, morph.blocks, vb.pp("morphic"))?;
         let temporal_decoder = SpatialTemporalDecoder::new(vb.pp("temporal_decoder"), dev)?;
         let asymptotic_contraction = AsymptoticContractionLayer::new(
             MEMORY_DIM,
@@ -4548,6 +4718,9 @@ impl ComplexAudioEcosystem {
     }
     fn depth(&self) -> usize {
         self.morphic.depth()
+    }
+    fn morph_capacity(&self) -> usize {
+        self.morphic.capacity()
     }
     fn set_depth(&mut self, d: usize) {
         self.morphic.set_depth(d);
@@ -5287,7 +5460,7 @@ impl WorldCheckpoint {
         if self.spectral_prev_mags.len() != CHUNK_SIZE / 2 {
             anyhow::bail!("world checkpoint spectral memory has the wrong size");
         }
-        if self.active_depth == 0 || self.active_depth > MORPH_MAX_BLOCKS {
+        if self.active_depth == 0 || self.active_depth > MORPH_RUNTIME_MAX_BLOCKS {
             anyhow::bail!("world checkpoint morphic depth is invalid");
         }
         if self.episodic_slots.iter().any(|v| v.len() != MEMORY_DIM)
@@ -5313,6 +5486,40 @@ fn artifact_path(base: &str, stem: &str, extension: &str, tag: Option<&str>) -> 
         Some(tag) => format!("{}/{}_{}.{}", base, stem, tag, extension),
         None => format!("{}/{}.{}", base, stem, extension),
     }
+}
+
+fn model_companion_path(model_path: &str, companion_stem: &str, extension: &str) -> Option<String> {
+    let path = std::path::Path::new(model_path);
+    let model_stem = path.file_stem()?.to_str()?;
+    let suffix = model_stem.strip_prefix("titan_model")?;
+    let filename = format!("{}{}.{}", companion_stem, suffix, extension);
+    Some(path.parent()?.join(filename).to_string_lossy().into_owned())
+}
+
+fn hashed_audio_path(base: &str, stem: &str, tag: Option<&str>, audio_hash: &str) -> String {
+    let unique_tag = match tag {
+        Some(tag) => format!("{}_{}", tag, audio_hash),
+        None => audio_hash.to_string(),
+    };
+    artifact_path(base, stem, "wav", Some(&unique_tag))
+}
+
+fn unique_audio_hash(base: &str) -> Result<String> {
+    let mut rng = rand::thread_rng();
+    for _ in 0..1024 {
+        let candidate = format!("{:012x}", rng.gen::<u64>() & 0xffff_ffff_ffff);
+        let suffix = format!("_{}.wav", candidate);
+        let collision = std::fs::read_dir(base)?.any(|entry| {
+            entry
+                .ok()
+                .and_then(|entry| entry.file_name().into_string().ok())
+                .is_some_and(|name| name.ends_with(&suffix))
+        });
+        if !collision {
+            return Ok(candidate);
+        }
+    }
+    anyhow::bail!("could not allocate a unique random audio filename hash")
 }
 
 fn validate_run_tag(tag: &str) -> Result<()> {
@@ -5494,7 +5701,10 @@ fn main() -> Result<()> {
     let mut fresh_decoder = false;
     let mut fresh_world = false;
     let mut freeze_morph = false;
-    let mut max_morph_depth = MORPH_MAX_BLOCKS;
+    let mut morph_blocks = MORPH_DEFAULT_BLOCKS;
+    let mut morph_width = MORPH_DEFAULT_WIDTH;
+    let mut morph_depth_override: Option<usize> = None;
+    let mut max_morph_depth_override: Option<usize> = None;
     let mut state_override: Option<String> = None;
     let mut model_override: Option<String> = None;
     let mut import_model_override: Option<String> = None;
@@ -5607,10 +5817,34 @@ fn main() -> Result<()> {
             }
             "--max-morph-depth" => {
                 if arg_idx + 1 < args.len() {
-                    max_morph_depth = args[arg_idx + 1].parse::<usize>()?;
+                    max_morph_depth_override = Some(args[arg_idx + 1].parse::<usize>()?);
                     arg_idx += 2;
                 } else {
                     anyhow::bail!("Missing value for --max-morph-depth");
+                }
+            }
+            "--morph-layers" | "--morph-blocks" => {
+                if arg_idx + 1 < args.len() {
+                    morph_blocks = args[arg_idx + 1].parse::<usize>()?;
+                    arg_idx += 2;
+                } else {
+                    anyhow::bail!("Missing value for --morph-layers");
+                }
+            }
+            "--morph-width" => {
+                if arg_idx + 1 < args.len() {
+                    morph_width = args[arg_idx + 1].parse::<usize>()?;
+                    arg_idx += 2;
+                } else {
+                    anyhow::bail!("Missing value for --morph-width");
+                }
+            }
+            "--morph-depth" => {
+                if arg_idx + 1 < args.len() {
+                    morph_depth_override = Some(args[arg_idx + 1].parse::<usize>()?);
+                    arg_idx += 2;
+                } else {
+                    anyhow::bail!("Missing value for --morph-depth");
                 }
             }
             "--fresh-world" => {
@@ -5644,7 +5878,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
       --corpus-manifest PATH  Explicit train/development/validation/exclude manifest\n\
       --run-tag NAME   Isolate output, telemetry, model, and world artifacts\n\
       --freeze-morph   Hold the checkpoint's current morphic depth for this run\n\
-      --max-morph-depth N  Allow growth only through depth N (1..12)\n\
+      --morph-layers N Physically construct N append-preserving morph blocks (default 12)\n\
+      --morph-width N  Internal morph-block width, 64..4096 (default 512)\n\
+      --morph-depth N  Override the resumed/initially active morph depth\n\
+      --max-morph-depth N  Allow adaptive growth only through depth N\n\
       --fresh-world    Reset CA/DSP/memory while retaining compatible weights\n\
       --fresh-decoder  Retain CA/memory weights; reset only audible decoder tensors\n\
   -f, --fresh-model    Reset both learned weights and the world\n\
@@ -5678,12 +5915,40 @@ Usage: titan [BASE_DIR] [options]\n\n\
     if core_update_every == 0 || core_update_every > 16 {
         anyhow::bail!("core update cadence must be between 1 and 16 tapes");
     }
-    if !(1..=MORPH_MAX_BLOCKS).contains(&max_morph_depth) {
+    if !(1..=MORPH_RUNTIME_MAX_BLOCKS).contains(&morph_blocks) {
         anyhow::bail!(
-            "maximum morphic depth must be between 1 and {}",
-            MORPH_MAX_BLOCKS
+            "morphic layer count must be between 1 and {}",
+            MORPH_RUNTIME_MAX_BLOCKS
         );
     }
+    if !(MORPH_RUNTIME_MIN_WIDTH..=MORPH_RUNTIME_MAX_WIDTH).contains(&morph_width)
+        || !morph_width.is_multiple_of(64)
+    {
+        anyhow::bail!(
+            "morphic width must be a multiple of 64 between {} and {}",
+            MORPH_RUNTIME_MIN_WIDTH,
+            MORPH_RUNTIME_MAX_WIDTH
+        );
+    }
+    if let Some(depth) = morph_depth_override {
+        if !(1..=morph_blocks).contains(&depth) {
+            anyhow::bail!(
+                "morphic depth must be between 1 and the {} constructed layers",
+                morph_blocks
+            );
+        }
+    }
+    let mut max_morph_depth = max_morph_depth_override.unwrap_or(morph_blocks);
+    if !(1..=morph_blocks).contains(&max_morph_depth) {
+        anyhow::bail!(
+            "maximum morphic depth must be between 1 and the {} constructed layers",
+            morph_blocks
+        );
+    }
+    let morph_architecture = MorphArchitecture {
+        blocks: morph_blocks,
+        width: morph_width,
+    };
     let run_started_unix_ms = unix_time_ms();
     n_threads = n_threads.max(1).min(available_threads.max(1));
     rayon::ThreadPoolBuilder::new()
@@ -5729,9 +5994,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
     } else {
         model_path.clone()
     };
+    let state_was_overridden = state_override.is_some();
     let world_path = state_override
         .unwrap_or_else(|| artifact_path(&base_dir, "titan_world_v8", "bin", run_tag.as_deref()));
-    let load_world_path = world_path.clone();
     let morph_path = artifact_path(
         &base_dir,
         "titan_morph_state_v8",
@@ -5744,6 +6009,24 @@ Usage: titan [BASE_DIR] [options]\n\n\
         "safetensors",
         run_tag.as_deref(),
     );
+    let load_world_path = if importing_model && !state_was_overridden {
+        model_companion_path(&load_model_path, "titan_world", "bin")
+            .unwrap_or_else(|| world_path.clone())
+    } else {
+        world_path.clone()
+    };
+    let load_optimizer_path = if importing_model {
+        model_companion_path(&load_model_path, "titan_optimizer", "safetensors")
+            .unwrap_or_else(|| optimizer_path.clone())
+    } else {
+        optimizer_path.clone()
+    };
+    let load_morph_path = if importing_model {
+        model_companion_path(&load_model_path, "titan_morph_state", "json")
+            .unwrap_or_else(|| morph_path.clone())
+    } else {
+        morph_path.clone()
+    };
     ensure_parent_dir(&model_path)?;
     ensure_parent_dir(&world_path)?;
     ensure_parent_dir(&optimizer_path)?;
@@ -5759,7 +6042,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let corpus_summary = target_loader.corpus_summary();
     let varmap = VarMap::new();
     let vb = VBV::from_varmap(&varmap, DType::F32, &device);
-    let mut model = ComplexAudioEcosystem::new(vb.pp("model"), &device)?;
+    let mut model = ComplexAudioEcosystem::new(vb.pp("model"), &device, morph_architecture)?;
     let arbiter = AudioArbiter::new(vb.pp("arbiter"))?;
     let monitor_head = MonitorHead::new(vb.pp("monitor_head"))?;
     let mut episodic = EpisodicMemory::new(vb.pp("episodic"))?;
@@ -5791,6 +6074,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let initialized = deterministic_reinit(&varmap, seed, &device)?;
     let mut loaded_full = false;
     let mut loaded_any = false;
+    let mut model_world_compatible = false;
+    let mut model_resized = false;
+    let mut model_load_report = ModelLoadReport::default();
     if fresh_model {
         println!("==> FRESH MODEL: ignoring model and world checkpoints.");
         println!(
@@ -5800,14 +6086,32 @@ Usage: titan [BASE_DIR] [options]\n\n\
         fresh_world = true;
     } else if std::path::Path::new(&load_model_path).exists() {
         match load_into_varmap(&varmap, &load_model_path, &device) {
-            Ok((hit, miss, mismatch)) => {
-                loaded_any = hit > 0;
-                loaded_full = miss == 0 && mismatch == 0 && loaded_any;
-                println!("--> Loaded {} compatible tensors from {} ({} new/missing, {} shape-mismatched)",
-                    hit, load_model_path, miss, mismatch);
-                if !loaded_full {
-                    println!("--> Migrated checkpoint: compatible learned weights retained; new v8 tensors use deterministic seed {}.", seed);
-                    fresh_world = true; // old dynamical state does not match the migrated control plane
+            Ok(report) => {
+                model_load_report = report;
+                loaded_any = report.loaded() > 0;
+                loaded_full = report.fully_exact();
+                model_world_compatible = report.world_compatible();
+                model_resized = report.architecture_resized();
+                println!(
+                    "--> Model migration from {}: {} exact, {} resized morphic, {} new morphic, {} dropped morphic, {} incompatible non-morphic.",
+                    load_model_path,
+                    report.exact,
+                    report.morph_resized,
+                    report.morph_initialized,
+                    report.source_morph_dropped,
+                    report.non_morph_missing
+                        + report.non_morph_mismatch
+                        + report.source_non_morph_dropped
+                );
+                if model_resized {
+                    println!(
+                        "--> Morphic resize retained existing block indices; added capacity uses deterministic seed {}.",
+                        seed
+                    );
+                }
+                if !model_world_compatible {
+                    println!("--> Migrated checkpoint changed non-morphic tensors; the dynamical world will restart.");
+                    fresh_world = true;
                 }
             }
             Err(e) => {
@@ -5833,7 +6137,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
             "--> Import source retained at {}; future checkpoints will be written to {}.",
             load_model_path, model_path
         );
-        fresh_world = true;
+        println!(
+            "--> Companion resume sources: world {} · optimizer {} · morph state {}.",
+            load_world_path, load_optimizer_path, load_morph_path
+        );
     }
     if fresh_decoder {
         if !loaded_any {
@@ -5846,12 +6153,13 @@ Usage: titan [BASE_DIR] [options]\n\n\
             reset
         );
         loaded_full = false;
+        model_world_compatible = false;
         fresh_world = true;
     }
 
     let mut rad_amp = RAD_AMP_INIT;
-    if !fresh_world && loaded_full {
-        if let Ok(txt) = std::fs::read_to_string(&morph_path) {
+    if !fresh_world && model_world_compatible {
+        if let Ok(txt) = std::fs::read_to_string(&load_morph_path) {
             if let Ok(j) = serde_json::from_str::<serde_json::Value>(&txt) {
                 if let Some(d) = j["active_depth"].as_u64() {
                     model.set_depth(d as usize);
@@ -5913,7 +6221,15 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 theta_prev = world.theta_prev;
                 theta_prev2 = world.theta_prev2;
                 model.restore_runtime_state(&world.model_runtime, &device)?;
-                model.set_depth(world.active_depth);
+                let saved_depth = world.active_depth;
+                model.set_depth(saved_depth);
+                if model.depth() != saved_depth {
+                    println!(
+                        "--> Morphic downsize: world depth L{:02} truncated to constructed depth L{:02}.",
+                        saved_depth,
+                        model.depth()
+                    );
+                }
                 rad_amp = world.rad_amp.clamp(RAD_AMP_MIN, RAD_AMP_MAX);
                 energy_state = world.energy_state.clamp(0.18, 0.96);
                 shear_phase = world.shear_phase;
@@ -5957,20 +6273,33 @@ Usage: titan [BASE_DIR] [options]\n\n\
             "==> FRESH WORLD: retaining compatible model weights but resetting organism state."
         );
     }
+    if let Some(depth) = morph_depth_override {
+        let previous_depth = model.depth();
+        model.set_depth(depth);
+        println!(
+            "--> Morph depth override: L{:02} -> L{:02}.",
+            previous_depth,
+            model.depth()
+        );
+    }
     let mut optimizer_resumed = false;
+    let mut optimizer_load_report = OptimizerLoadReport::default();
     if loaded_world
-        && loaded_full
+        && loaded_any
+        && model_world_compatible
         && !fresh_model
         && !fresh_decoder
-        && !importing_model
-        && std::path::Path::new(&optimizer_path).exists()
+        && std::path::Path::new(&load_optimizer_path).exists()
     {
-        match optimizer.load(&optimizer_path, global_step, &device) {
-            Ok(restored) => {
+        match optimizer.load(&load_optimizer_path, global_step, &device) {
+            Ok(report) => {
+                optimizer_load_report = report;
                 optimizer_resumed = true;
                 println!(
-                    "--> Resumed AdamW: {} moment pairs, {} cumulative updates.",
-                    restored,
+                    "--> Resumed AdamW: {} exact, {} resized, {} new moment pairs; {} cumulative updates.",
+                    report.exact,
+                    report.resized,
+                    report.initialized,
                     optimizer.cumulative_updates()
                 );
             }
@@ -5981,9 +6310,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
         }
     }
     println!(
-        "--> Observer depth: L{:02} / {} · rad_amp {:.3} · world {}",
+        "--> Morphic stack: L{:02} active / {} blocks × {} width · rad_amp {:.3} · world {}",
         model.depth(),
-        MORPH_MAX_BLOCKS,
+        model.morph_capacity(),
+        morph_width,
         rad_amp,
         if loaded_world { "resumed" } else { "new" }
     );
@@ -6021,6 +6351,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
         "new_world"
     };
     let run_id = format!("{}-p{}-s{}", run_started_unix_ms, std::process::id(), seed);
+    // Keep filename uniqueness outside RuntimeRng so a random filename never
+    // perturbs deterministic model/world evolution for a fixed training seed.
+    let audio_file_hash = unique_audio_hash(&base_dir)?;
     let start_global_step = global_step;
     let start_depth = model.depth();
     let start_rad_amp = rad_amp;
@@ -7574,8 +7907,13 @@ Usage: titan [BASE_DIR] [options]\n\n\
                     Ok(()) => {
                         let _ = std::fs::write(
                             &morph_path,
-                            serde_json::json!({"active_depth": model.depth(), "rad_amp": rad_amp})
-                                .to_string(),
+                            serde_json::json!({
+                                "active_depth": model.depth(),
+                                "morph_layers": model.morph_capacity(),
+                                "morph_width": morph_width,
+                                "rad_amp": rad_amp
+                            })
+                            .to_string(),
                         );
                         println!("--> Model + organism checkpoint saved at global step {} (L{:02}, motifs {}, conf {:.2})",
                             absolute_step + 1, model.depth(), motifs.entries.len(), controller.meta.confidence);
@@ -7644,12 +7982,17 @@ Usage: titan [BASE_DIR] [options]\n\n\
         bits_per_sample: 16,
         sample_format: hound::SampleFormat::Int,
     };
-    let output_path = artifact_path(&base_dir, "rust_ecosystem_out", "wav", run_tag.as_deref());
-    let prime_path = artifact_path(
+    let output_path = hashed_audio_path(
+        &base_dir,
+        "rust_ecosystem_out",
+        run_tag.as_deref(),
+        &audio_file_hash,
+    );
+    let prime_path = hashed_audio_path(
         &base_dir,
         &format!("titan_prime_{}s", prime_secs as u32),
-        "wav",
         run_tag.as_deref(),
+        &audio_file_hash,
     );
     let mut output_writer = hound::WavWriter::create(&output_path, spec)?;
     let mut prime_writer = hound::WavWriter::create(&prime_path, spec)?;
@@ -8082,7 +8425,13 @@ Usage: titan [BASE_DIR] [options]\n\n\
     atomic_save_world(&world_path, &world)?;
     let _ = std::fs::write(
         &morph_path,
-        serde_json::json!({"active_depth": model.depth(), "rad_amp": rad_amp}).to_string(),
+        serde_json::json!({
+            "active_depth": model.depth(),
+            "morph_layers": model.morph_capacity(),
+            "morph_width": morph_width,
+            "rad_amp": rad_amp
+        })
+        .to_string(),
     );
     let metadata = std::fs::metadata(&model_path)?;
     let run_finished_unix_ms = unix_time_ms();
@@ -8096,6 +8445,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let run_metadata = serde_json::json!({
         "trace_schema_version": TRACE_SCHEMA_VERSION,
         "run_id": run_id,
+        "audio_file_hash": audio_file_hash,
         "started_unix_ms": run_started_unix_ms,
         "finished_unix_ms": run_finished_unix_ms,
         "build": {
@@ -8118,12 +8468,21 @@ Usage: titan [BASE_DIR] [options]\n\n\
             "core_update_every_tapes": core_update_every,
             "model_loaded": loaded_any,
             "model_fully_compatible": loaded_full,
+            "model_world_compatible": model_world_compatible,
+            "model_resized": model_resized,
+            "model_migration": model_load_report,
             "world_loaded": loaded_world,
             "importing_model": importing_model,
             "fresh_decoder": fresh_decoder,
             "freeze_morph": morph_policy.frozen,
             "max_morph_depth": morph_policy.max_depth,
             "run_tag": run_tag,
+            "load_paths": {
+                "model": load_model_path,
+                "world": load_world_path,
+                "optimizer": load_optimizer_path,
+                "morph_state": load_morph_path,
+            },
         },
         "corpus": corpus_summary,
         "field": {
@@ -8141,6 +8500,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
         "model": {
             "parameters": model_parameters,
             "fp32_weight_mib": model_parameters as f64 * 4.0 / (1024.0 * 1024.0),
+            "morph_layers": model.morph_capacity(),
+            "morph_width": morph_width,
             "decoder_control_frames": DECODER_CONTROL_FRAMES,
             "regional_partials": SCAN_PARTIALS,
         },
@@ -8159,6 +8520,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
             "optimizer_updates_run": optimizer_update_count,
             "optimizer_updates_cumulative": optimizer.cumulative_updates(),
             "optimizer_resumed": optimizer_resumed,
+            "optimizer_migration": optimizer_load_report,
             "development_plateau_ready": development_plateau.ready,
             "development_relative_improvement": development_plateau.relative_improvement,
             "phase_profile": phase_profiler.json(completed_chunks),
@@ -8242,6 +8604,41 @@ mod tests {
         }
     }
 
+    #[test]
+    fn finalized_audio_paths_end_in_the_shared_run_hash() {
+        assert_eq!(
+            hashed_audio_path("/tmp/titan", "rust_ecosystem_out", None, "a1b2c3d4e5f6"),
+            "/tmp/titan/rust_ecosystem_out_a1b2c3d4e5f6.wav"
+        );
+        assert_eq!(
+            hashed_audio_path(
+                "/tmp/titan",
+                "titan_prime_60s",
+                Some("study"),
+                "a1b2c3d4e5f6"
+            ),
+            "/tmp/titan/titan_prime_60s_study_a1b2c3d4e5f6.wav"
+        );
+    }
+
+    #[test]
+    fn imported_model_discovers_matching_checkpoint_companions() {
+        let model = "/sdcard/Download/titan_model_v8_parent.safetensors";
+        assert_eq!(
+            model_companion_path(model, "titan_world", "bin").as_deref(),
+            Some("/sdcard/Download/titan_world_v8_parent.bin")
+        );
+        assert_eq!(
+            model_companion_path(model, "titan_optimizer", "safetensors").as_deref(),
+            Some("/sdcard/Download/titan_optimizer_v8_parent.safetensors")
+        );
+        assert_eq!(
+            model_companion_path(model, "titan_morph_state", "json").as_deref(),
+            Some("/sdcard/Download/titan_morph_state_v8_parent.json")
+        );
+        assert!(model_companion_path("/tmp/custom.safetensors", "titan_world", "bin").is_none());
+    }
+
     fn morph_evidence(
         mimic_avg: f32,
         mimic_baseline: f32,
@@ -8259,7 +8656,7 @@ mod tests {
 
     fn open_morph_policy() -> MorphPolicy {
         MorphPolicy {
-            max_depth: MORPH_MAX_BLOCKS,
+            max_depth: MORPH_DEFAULT_BLOCKS,
             frozen: false,
         }
     }
@@ -8269,7 +8666,8 @@ mod tests {
         let device = Device::Cpu;
         let varmap = VarMap::new();
         let vb = VBV::from_varmap(&varmap, DType::F32, &device);
-        let _model = ComplexAudioEcosystem::new(vb.pp("model"), &device)?;
+        let _model =
+            ComplexAudioEcosystem::new(vb.pp("model"), &device, MorphArchitecture::default())?;
         let _arbiter = AudioArbiter::new(vb.pp("arbiter"))?;
         let _monitor = MonitorHead::new(vb.pp("monitor_head"))?;
         let _episodic = EpisodicMemory::new(vb.pp("episodic"))?;
@@ -8287,7 +8685,8 @@ mod tests {
         let device = Device::Cpu;
         let varmap = VarMap::new();
         let vb = VBV::from_varmap(&varmap, DType::F32, &device);
-        let mut model = ComplexAudioEcosystem::new(vb.pp("model"), &device)?;
+        let mut model =
+            ComplexAudioEcosystem::new(vb.pp("model"), &device, MorphArchitecture::default())?;
         deterministic_reinit(&varmap, 42, &device)?;
         let micro = Tensor::zeros((1, CA_CHANNELS, GRID_H, GRID_W), DType::F32, &device)?;
         let macro_t = Tensor::zeros((1, CA_CHANNELS, MACRO_H, MACRO_W), DType::F32, &device)?;
@@ -8627,11 +9026,199 @@ mod tests {
     fn added_morphic_layers_have_bounded_decreasing_residuals() {
         assert_eq!(morphic_residual_gain(0), 1.0);
         assert!(morphic_residual_gain(1) < 0.26);
-        for i in 2..MORPH_MAX_BLOCKS {
+        for i in 2..MORPH_DEFAULT_BLOCKS {
             assert!(morphic_residual_gain(i) < morphic_residual_gain(i - 1));
         }
-        let added_gain: f64 = (1..MORPH_MAX_BLOCKS).map(morphic_residual_gain).sum();
+        let added_gain: f64 = (1..MORPH_DEFAULT_BLOCKS).map(morphic_residual_gain).sum();
         assert!(added_gain < 1.8);
+    }
+
+    fn morph_checkpoint_path(label: &str) -> std::path::PathBuf {
+        std::env::temp_dir().join(format!(
+            "titan_morph_resize_{}_{}_{}.safetensors",
+            label,
+            std::process::id(),
+            unix_time_ms()
+        ))
+    }
+
+    #[test]
+    fn appending_morphic_blocks_preserves_existing_stack_output() -> Result<()> {
+        let device = Device::Cpu;
+        let source_map = VarMap::new();
+        let source_vb = VBV::from_varmap(&source_map, DType::F32, &device);
+        let mut source = MorphicStack::new(
+            MEMORY_DIM,
+            MORPH_DEFAULT_WIDTH,
+            2,
+            source_vb.pp("model").pp("morphic"),
+        )?;
+        deterministic_reinit(&source_map, 7, &device)?;
+        source.set_depth(2);
+        let input = Tensor::from_vec(
+            (0..MEMORY_DIM)
+                .map(|i| (i as f32 * 0.017).sin())
+                .collect::<Vec<_>>(),
+            (1, MEMORY_DIM),
+            &device,
+        )?;
+        let expected = source.forward(&input)?.detach();
+        let path = morph_checkpoint_path("append");
+        source_map.save(path.to_str().unwrap())?;
+
+        let target_map = VarMap::new();
+        let target_vb = VBV::from_varmap(&target_map, DType::F32, &device);
+        let mut target = MorphicStack::new(
+            MEMORY_DIM,
+            MORPH_DEFAULT_WIDTH,
+            4,
+            target_vb.pp("model").pp("morphic"),
+        )?;
+        deterministic_reinit(&target_map, 99, &device)?;
+        let report = load_into_varmap(&target_map, path.to_str().unwrap(), &device)?;
+        target.set_depth(3);
+        let actual = target.forward(&input)?;
+        let max_delta = actual
+            .sub(&expected)?
+            .abs()?
+            .max_all()?
+            .to_scalar::<f32>()?;
+        assert!(max_delta < 1e-6, "append changed output by {max_delta}");
+        assert_eq!(report.morph_initialized, 10);
+        assert_eq!(report.source_morph_dropped, 0);
+        assert!(report.world_compatible());
+        std::fs::remove_file(path)?;
+        Ok(())
+    }
+
+    #[test]
+    fn widening_morphic_blocks_preserves_existing_stack_output() -> Result<()> {
+        let device = Device::Cpu;
+        let source_map = VarMap::new();
+        let source_vb = VBV::from_varmap(&source_map, DType::F32, &device);
+        let source = MorphicStack::new(
+            MEMORY_DIM,
+            MORPH_DEFAULT_WIDTH,
+            1,
+            source_vb.pp("model").pp("morphic"),
+        )?;
+        deterministic_reinit(&source_map, 11, &device)?;
+        let input = Tensor::from_vec(
+            (0..MEMORY_DIM)
+                .map(|i| (i as f32 * 0.013).cos())
+                .collect::<Vec<_>>(),
+            (1, MEMORY_DIM),
+            &device,
+        )?;
+        let expected = source.forward(&input)?.detach();
+        let path = morph_checkpoint_path("widen");
+        source_map.save(path.to_str().unwrap())?;
+
+        let target_map = VarMap::new();
+        let target_vb = VBV::from_varmap(&target_map, DType::F32, &device);
+        let target = MorphicStack::new(
+            MEMORY_DIM,
+            MORPH_DEFAULT_WIDTH + 256,
+            1,
+            target_vb.pp("model").pp("morphic"),
+        )?;
+        deterministic_reinit(&target_map, 101, &device)?;
+        let report = load_into_varmap(&target_map, path.to_str().unwrap(), &device)?;
+        let actual = target.forward(&input)?;
+        let max_delta = actual
+            .sub(&expected)?
+            .abs()?
+            .max_all()?
+            .to_scalar::<f32>()?;
+        assert!(
+            max_delta < 1e-6,
+            "width growth changed output by {max_delta}"
+        );
+        assert_eq!(report.morph_resized, 3);
+        assert!(report.world_compatible());
+        std::fs::remove_file(path)?;
+        Ok(())
+    }
+
+    #[test]
+    fn removing_inactive_morphic_blocks_preserves_existing_stack_output() -> Result<()> {
+        let device = Device::Cpu;
+        let source_map = VarMap::new();
+        let source_vb = VBV::from_varmap(&source_map, DType::F32, &device);
+        let source = MorphicStack::new(
+            MEMORY_DIM,
+            MORPH_DEFAULT_WIDTH,
+            4,
+            source_vb.pp("model").pp("morphic"),
+        )?;
+        deterministic_reinit(&source_map, 17, &device)?;
+        let input = Tensor::ones((1, MEMORY_DIM), DType::F32, &device)?;
+        let expected = source.forward(&input)?.detach();
+        let path = morph_checkpoint_path("shrink");
+        source_map.save(path.to_str().unwrap())?;
+
+        let target_map = VarMap::new();
+        let target_vb = VBV::from_varmap(&target_map, DType::F32, &device);
+        let target = MorphicStack::new(
+            MEMORY_DIM,
+            MORPH_DEFAULT_WIDTH,
+            2,
+            target_vb.pp("model").pp("morphic"),
+        )?;
+        deterministic_reinit(&target_map, 103, &device)?;
+        let report = load_into_varmap(&target_map, path.to_str().unwrap(), &device)?;
+        let actual = target.forward(&input)?;
+        let max_delta = actual
+            .sub(&expected)?
+            .abs()?
+            .max_all()?
+            .to_scalar::<f32>()?;
+        assert!(
+            max_delta < 1e-6,
+            "inactive shrink changed output by {max_delta}"
+        );
+        assert_eq!(report.source_morph_dropped, 10);
+        assert!(report.world_compatible());
+        std::fs::remove_file(path)?;
+        Ok(())
+    }
+
+    #[test]
+    fn appending_morphic_blocks_retains_old_optimizer_moments() -> Result<()> {
+        let device = Device::Cpu;
+        let source_map = VarMap::new();
+        let source_vb = VBV::from_varmap(&source_map, DType::F32, &device);
+        let source = MorphicStack::new(
+            MEMORY_DIM,
+            MORPH_DEFAULT_WIDTH,
+            1,
+            source_vb.pp("model").pp("morphic"),
+        )?;
+        deterministic_reinit(&source_map, 23, &device)?;
+        let input = Tensor::ones((1, MEMORY_DIM), DType::F32, &device)?;
+        let loss = source.forward(&input)?.sqr()?.mean_all()?;
+        let gradients = loss.backward()?;
+        let mut source_optimizer = PersistentAdamW::new(&source_map, 1e-3)?;
+        source_optimizer.step(&gradients)?;
+        let path = morph_checkpoint_path("optimizer_append");
+        source_optimizer.save(path.to_str().unwrap(), 91, &device)?;
+
+        let target_map = VarMap::new();
+        let target_vb = VBV::from_varmap(&target_map, DType::F32, &device);
+        let _target = MorphicStack::new(
+            MEMORY_DIM,
+            MORPH_DEFAULT_WIDTH,
+            2,
+            target_vb.pp("model").pp("morphic"),
+        )?;
+        let mut target_optimizer = PersistentAdamW::new(&target_map, 1e-3)?;
+        let report = target_optimizer.load(path.to_str().unwrap(), 91, &device)?;
+        assert_eq!(report.exact, 5);
+        assert_eq!(report.resized, 0);
+        assert_eq!(report.initialized, 5);
+        assert_eq!(target_optimizer.cumulative_updates(), 1);
+        std::fs::remove_file(path)?;
+        Ok(())
     }
 
     #[test]
@@ -8921,8 +9508,10 @@ mod tests {
         ));
         first.save(path.to_str().unwrap(), 77, &device)?;
         let mut restored = PersistentAdamW::new(&varmap, 1e-3)?;
-        let count = restored.load(path.to_str().unwrap(), 77, &device)?;
-        assert_eq!(count, 1);
+        let report = restored.load(path.to_str().unwrap(), 77, &device)?;
+        assert_eq!(report.exact, 1);
+        assert_eq!(report.resized, 0);
+        assert_eq!(report.initialized, 0);
         assert_eq!(restored.cumulative_updates(), 1);
         assert!(restored.load(path.to_str().unwrap(), 78, &device).is_err());
         std::fs::remove_file(path)?;

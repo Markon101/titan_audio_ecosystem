@@ -3,8 +3,9 @@
 TITAN is an adaptive, deterministic neural-cellular-automata audio ecosystem
 for sustained CPU training and rendering in Termux. v8 is a phone-first model:
 it keeps corpus and telemetry memory bounded, reduces the expensive spatial CA
-rule, and spends most of its approximately 14.9 million parameters in a
-channel-aware decoder that runs at 32 control frames per audio chunk.
+rule, and in its default 12x512 configuration has approximately 14.9 million
+parameters, with most capacity in a channel-aware decoder that runs at 32
+control frames per audio chunk.
 
 v8 writes independent artifacts and never overwrites v7 model or world state:
 
@@ -28,6 +29,12 @@ RUSTFLAGS="-C target-cpu=native" cargo build --release
 Training WAVs live in `OLD_WAVS` under the selected base directory. Use
 `./target/release/titan --help` for all checkpoint, reset, thread, learning-rate,
 run-tag, BPTT, and core-update options.
+
+Every invocation gives only its finalized audio WAVs a random 12-hex-character
+suffix, for example `rust_ecosystem_out_a13f09c2de77.wav` and
+`titan_prime_60s_a13f09c2de77.wav`. Both files share the same hash so they remain
+associated. Model, optimizer, world, telemetry, and metadata names stay stable
+for automatic checkpoint continuation.
 
 To migrate compatible recurrent/control tensors from v7 while deliberately
 resetting the incompatible audible path:
@@ -54,9 +61,58 @@ random-number generation.
 
 Global micro-channel means and a 64-dimensional episodic attention readout feed
 a 512-unit GRU. Its output passes through an RMS-normalized, Swish residual
-MorphicStack with up to 12 blocks. The audible decoder also reads the fields
-directly: 64 micro tokens from an 8x8 grid and 16 macro tokens from a 4x4 grid
-are projected and attended by recurrent memory.
+MorphicStack with 12 blocks of width 512 by default. The audible decoder also
+reads the fields directly: 64 micro tokens from an 8x8 grid and 16 macro tokens
+from a 4x4 grid are projected and attended by recurrent memory.
+
+## Runtime MorphicStack variants
+
+The physical MorphicStack is selected when the process starts without changing
+its 512-dimensional external interface:
+
+```bash
+./target/release/titan \
+  --base-dir /sdcard/Download \
+  --morph-layers 16 \
+  --morph-width 768 \
+  --max-morph-depth 16
+```
+
+`--morph-layers N` constructs 1--64 blocks. `--morph-width N` selects an
+internal width from 64 through 4096 in multiples of 64. `--morph-depth N`
+explicitly overrides the active depth restored from the world, while
+`--max-morph-depth N` remains the adaptive-growth ceiling. Active depth and
+physical capacity are separate: dormant blocks occupy checkpoint and optimizer
+memory but do not execute in the forward pass.
+
+Resizing preserves block indices. Growing a checkpoint from 12 to 16 blocks
+copies blocks 0--11 and their AdamW moments exactly, then appends blocks 12--15
+with zero optimizer moments. A new block's output projection is zero-initialized
+so activating it cannot immediately change the parent model's output. Widening
+copies the old hidden units and zeroes only the new output columns, which is
+also function-preserving at migration time.
+
+Use `--import-model` with a distinct `--run-tag` to retain the complete parent
+checkpoint set while creating an isolated variant:
+
+```bash
+./target/release/titan \
+  --base-dir /sdcard/Download \
+  --import-model /sdcard/Download/titan_model_v8.safetensors \
+  --run-tag m16w768 \
+  --morph-layers 16 \
+  --morph-width 768
+```
+
+This writes `titan_model_v8_m16w768.safetensors` together with matching tagged
+optimizer, world, morph-state, and telemetry artifacts. `--model PATH` remains
+available when only the model path needs to be selected explicitly.
+
+Shrinking retains the block prefix and the overlapping hidden units. Removing
+only inactive tail blocks is output-preserving. Truncating active blocks or
+hidden units is necessarily a lossy compression, so the runtime reports the
+truncated depth and retaining the parent checkpoint is recommended. Morph-only
+resizes keep the CA, recurrent, DSP, and ecological world state compatible.
 
 The resulting context is decoded into 32 temporal control frames per 4,096
 samples. Six low-rate residual blocks produce independent time-varying controls
@@ -101,7 +157,9 @@ multi-lag recurrence, level, chunk seams, and correlation-aware stereo
 geometry. Target phase is not supplied to the renderer.
 
 Telemetry semantics and their scientific limitations are documented in
-[`METRICS.md`](METRICS.md). Verify a build with:
+[`METRICS.md`](METRICS.md). The implemented equations, evidence status, and
+attractor-test criteria are documented in [`math.md`](math.md). Verify a build
+with:
 
 ```bash
 cargo test

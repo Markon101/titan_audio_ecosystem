@@ -6,8 +6,9 @@ artistic interpretation. The distinction matters when comparing experiments.
 ## Files and schema
 
 Telemetry schema v7 writes five complementary artifacts per run. With
-`--run-tag NAME`, every filename receives that tag instead of overwriting the
-untagged run:
+`--run-tag NAME`, telemetry and checkpoint filenames receive that tag instead
+of overwriting the untagged run. Finalized audio filenames always add their
+shared random hash after any run tag:
 
 - `uncertainty_trace_rust.csv` is the sampled scalar trace. `raw_movement` is
   the mean absolute micro-field delta printed as `Move:` in the console.
@@ -25,16 +26,19 @@ untagged run:
   invocation, reset mode, seed, thread count, requested BPTT and bounded tape,
   field dimensions, start/end state, output paths, and trace semantics.
   It also records the corpus manifest summary and optimizer resume/update
-  counts. v8 additionally records micro/macro dimensions, parameter count,
-  core-update cadence, decoder control rate, and phase timings.
+  counts. Resize runs include exact/resized/initialized/dropped model-tensor and
+  optimizer-moment counts. v8 additionally records micro/macro dimensions,
+  parameter count, core-update cadence, decoder control rate, phase timings,
+  and the random hash shared by that run's finalized audio filenames.
 
 The large topology matrix is written incrementally. Scalar and topology-index
 records are streamed to bounded temporary JSONL spools and converted to the
 stable CSV schemas during finalization; they are no longer retained as an
 ever-growing in-memory JSON collection.
 
-The CSV trace is intentionally overwritten per process. Use the metadata
-`run_id` when archiving or joining artifacts from multiple runs.
+An untagged CSV trace is intentionally overwritten by the next untagged
+process. Use `--run-tag` when retaining telemetry from multiple runs and use
+the metadata `run_id` when joining their rows.
 
 ## Measurements and estimators
 
@@ -104,7 +108,8 @@ The CSV trace is intentionally overwritten per process. Use the metadata
   moments. Horizons above 8 accumulate bounded, detached tape segments.
 - `optimizer_updates` is the persisted cumulative AdamW step count;
   `optimizer_updates_run` is the current process count and `optimizer_resumed`
-  states whether matching moments were restored.
+  states whether compatible moments were restored. `optimizer_migration` in
+  run metadata separates exact, resized, and newly initialized moment pairs.
 - `core_update_every_tapes` in run metadata is the two-timescale optimization
   cadence. Decoder weights receive every optimizer horizon; CA, GRU, episodic,
   and MorphicStack gradients are retained only on the scheduled full tapes.
@@ -121,6 +126,9 @@ The CSV trace is intentionally overwritten per process. Use the metadata
 - `morph_frozen` and `morph_max_depth` state the run's structural policy.
   Growth additionally requires a strict development split and a completed
   plateau window; validation metrics never participate in that decision.
+  Run metadata additionally records the physically constructed `morph_layers`
+  and internal `morph_width`; these determine parameter and optimizer size but
+  do not change the MorphicStack's 512-dimensional external interface.
 - `field_entropy` is the channel-archetype entropy in bits for the current
   micro field. It is not the entropy of the rendered waveform.
 - `crit_gain` is fixed at 1.0 in v8. `sigma` remains useful evidence, but no

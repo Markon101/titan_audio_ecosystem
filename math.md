@@ -91,12 +91,14 @@ During learning, the weights change:
 \]
 
 The learning process is consequently non-autonomous unless
-\((\theta,m,v,k)\) is included in the state. v8 continues to persist Adam moments and
-the cumulative update count, accepting them only when their global-step stamp
-matches the world. A missing/mismatched optimizer still changes the full
-learning dynamical system because it restarts behind a 32-update warmup. Claims
-about an attractor should therefore be made in one of two clearly separated
-regimes:
+\((\theta,m,v,k)\) is included in the state. v8 persists Adam moments and the
+cumulative update count, accepting a checkpoint only when its global-step stamp
+matches the world. During a MorphicStack resize, exact moment tensors are
+retained, widened moment tensors retain their overlapping coordinates, and new
+blocks start with zero moments. A missing or non-morphically incompatible
+optimizer still changes the full learning dynamical system because it restarts
+behind a 32-update warmup. Claims about an attractor should therefore be made
+in one of two clearly separated regimes:
 
 1. **Frozen organism:** fixed \(\theta\), no optimizer steps; appropriate for attractor and criticality analysis.
 2. **Adaptive organism:** changing \(\theta\); appropriate for studying tracking, drift, and a possible pullback or slowly moving statistical attractor.
@@ -198,7 +200,11 @@ These equations are not a classical finite-state cellular automaton.  They are a
    \|h_t\|_\infty\le1.
    \]
 
-4. Each morphic residual is `tanh` bounded.  Active depth is at most 12 and the added residual gains have finite sum.  Hence the refined hidden vector is bounded even though it need not remain in \([-1,1]\).
+4. For fixed finite weights, RMS normalization, affine maps, and Swish map a
+   bounded finite input to a bounded finite output. A run constructs a finite
+   1--64 block MorphicStack and activates no more than that configured capacity.
+   Induction over those residual blocks therefore keeps the refined hidden
+   vector bounded even though it need not remain in \([-1,1]\).
 
 5. Energy is clamped to \([0.18,0.96]\); temperature and controller features are clamped to compact intervals; phases are reduced modulo \(2\pi\); motif and episodic buffers have finite capacity.
 
@@ -1166,9 +1172,10 @@ A learned projection reshapes \([h_t,c_t]\) into 32 frames of width 224. Six
 RMS-normalized Swish residual MLP blocks transform those frames before a
 76-coordinate head emits 12 global controls and independent left/right
 amplitude controls for 32 spatial partials. Fixed linear interpolation maps the
-32 control frames onto 4,096 audio samples. This puts approximately 14.9
-million trainable parameters primarily in low-rate temporal modeling rather
-than waveform-rate processing.
+32 control frames onto 4,096 audio samples. The default 12-block, width-512
+MorphicStack configuration has approximately 14.9 million trainable parameters,
+placing substantial capacity in low-rate temporal modeling rather than
+waveform-rate processing.
 
 The differentiable renderer combines phase-continuous carrier, FM, auxiliary,
 and 32-partial oscillators with independent channel openness, mid/side drive,
@@ -1194,6 +1201,37 @@ corpus resident: the manifest remains an index, and a bounded 16-chunk decode
 buffer amortizes file open, seek, and resampling work. Large telemetry is
 spooled incrementally and full consistent checkpoints move to a 1,024-chunk
 cadence, preserving bounded RAM and storage traffic on the S25 Ultra.
+
+### 14.1 Runtime MorphicStack capacity
+
+The MorphicStack keeps a fixed external dimension of 512 while selecting its
+physical block count $B \in [1,64]$ and internal width $q \in [64,4096]$ when
+the process starts. For block $i$, schematically,
+
+\[
+u_{i+1}=u_i+g_i\,\operatorname{Swish}\!\left(
+W_{2,i}\operatorname{Swish}(W_{1,i}\operatorname{RMS}(u_i)+b_{1,i})+b_{2,i}
+\right),
+\]
+
+where $W_{1,i} \in \mathbb R^{q\times512}$ and
+$W_{2,i} \in \mathbb R^{512\times q}$. The active depth is persisted
+separately from $B$, so physically present tail blocks may remain dormant.
+
+Checkpoint growth is append-preserving: existing block indices, tensors, and
+Adam moments retain their identities, while new blocks receive deterministic
+incoming weights, zero output projections, and zero moments. Thus increasing
+$B$ leaves the represented function unchanged at the old active depth; even
+immediately activating one appended block initially adds an exact zero
+residual. Increasing $q$ copies the old hidden coordinates and zeroes the new
+columns of $W_2$, which likewise preserves the parent function at migration.
+
+Shrinking keeps the block prefix and overlapping hidden coordinates. Removing
+only inactive tail blocks preserves the current function. Removing active
+blocks or hidden coordinates is generally lossy because a narrower nonlinear
+residual network need not represent the same map. Morph-only resizing remains
+world-compatible because the CA fields, GRU memory, decoder interface, and DSP
+state dimensions do not change.
 
 ## 15. Research references
 
