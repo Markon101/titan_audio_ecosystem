@@ -35,6 +35,21 @@ nontrivial v8 regime is **instrumentation with frozen weights**: estimate
 common-noise Lyapunov exponents, damage spreading, correlation lengths,
 recurrence, attractor dimension, and basin structure without optimizer drift.
 
+v8.1 keeps v8 tensor and world compatibility while tightening one assumption
+falsified by the real continuation: a smooth bounded `tanh` pan can still have
+an effectively vanishing gradient when its raw coordinate is large. The
+residual now uses `z/sqrt(1+z^2)` with a +/-0.10 limit and a smooth
+penalty on the bounded audible coordinate. This directly limits channel
+imbalance and restores a polynomial-tail gradient without allowing an old raw
+coordinate to dominate the training loss. The width head now uses the same
+kind of map over 0.05--0.50 because the real continuation found its sigmoid
+pinned at 0.05 while upstream side excitation was active, and isolated replay
+showed that controls above 0.50 could force anti-correlation. A parameter-free
+RMS normalization before both scalar heads makes their update scale independent
+of deep residual-state magnitude. None of these changes by itself creates or
+proves independent stereo; correlation remains the falsifier. Telemetry schema
+v9 therefore records raw and mapped coordinates.
+
 This document uses the following evidence labels:
 
 - **Theorem:** follows from the implemented equations under explicitly stated assumptions.
@@ -872,7 +887,9 @@ g_{aux}=0.02+0.43\sigma(W_{aux}h_t),
 
 \[
 g_{scan}=0.05+0.75\sigma(W_sh_t),\qquad
-g_{width}=0.05+1.15\sigma(W_wh_t).
+g_{width}=0.275+0.225s(W_w\widehat h_t),
+\qquad s(z)=\frac{z}{\sqrt{1+z^2}},\qquad
+\widehat h_t=\frac{h_t}{\sqrt{\operatorname{mean}(h_t^2)+10^{-5}}}.
 \]
 
 **Proposition 3 — the soft frequency rail has no dead half-space.** For finite
@@ -891,10 +908,14 @@ rail retains a nonzero learning direction. This specifically removes the
 zero-Jacobian absorbing region created by a hard `clamp`. \(\square\)
 
 **Proposition 4 — renderer controls are bounded.** Sigmoid outputs lie in
-\((0,1)\), hence \(g_c\in(0.05,1.20)\),
+\((0,1)\), while \(s(z)\in(-1,1)\). Hence \(g_c\in(0.05,1.20)\),
 \(g_{aux}\in(0.02,0.45)\), \(g_{scan}\in(0.05,0.80)\), and
-\(g_{width}\in(0.05,1.20)\). The learned width is multiplied by the bounded
-controller/host factor in \([0.5,1.25]\), so total side gain remains bounded.
+\(g_{width}\in(0.05,0.50)\). The learned width is multiplied by the bounded
+controller/host factor in \([0.5,1.25]\), so total side gain stays in
+\((0.025,0.625)\). Moreover,
+\(s'(z)=(1+z^2)^{-3/2}>0\) for every finite \(z\), so a checkpoint at either
+width rail retains a polynomial-tail recovery direction rather than an
+exponentially small sigmoid direction.
 Modal damping is in \((0,1]\), the regional
 amplitudes are normalized before damping, active depth and field values are
 bounded, and final samples pass through `tanh`. Therefore adding learned gain

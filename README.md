@@ -1,4 +1,4 @@
-# TITAN Audio Ecosystem v8
+# TITAN Audio Ecosystem v8.1
 
 TITAN is an adaptive, deterministic neural-cellular-automata audio ecosystem
 for sustained CPU training and rendering in Termux. v8 is a phone-first model:
@@ -22,7 +22,7 @@ architecture, so v8 deliberately reuses it.
 ## Build and run
 
 ```bash
-RUSTFLAGS="-C target-cpu=native" cargo build --release
+RUSTFLAGS="-C target-cpu=native" cargo build --release --locked
 ./target/release/titan --base-dir /sdcard/Download --duration 240 --seed 42 --fresh-model
 ```
 
@@ -129,8 +129,18 @@ interpolation expands those controls to sample rate. Phase-continuous carrier,
 FM, auxiliary and modal oscillators remain the primary sound source.
 
 Separate left and right eight-basis KAN-inspired sinusoidal wavefolders remain
-active. A bounded global pan is only a residual after independently decoded
-left/right and mid/side structure.
+active. Global pan is a tightly bounded +/-0.10 residual after independently
+decoded left/right and mid/side structure. Its softsign-style map retains a
+useful gradient for saturated older checkpoints, and a bounded centering loss
+prevents this residual from becoming a permanent unequal-gain-mono shortcut
+without consuming the full gradient budget. The learned side-width control
+uses the same polynomial-tail map over 0.05--0.50. This keeps existing tensor
+shapes checkpoint-compatible while preventing a saturated head from erasing
+all independently decoded side structure or forcing anti-correlation. Both
+scalar heads receive a parameter-free RMS-normalized hidden state so their
+step size cannot scale with deep residual-state magnitude. The first resume
+after this control change resets only the pan/width heads' Adam moments; their
+learned weights and all other optimizer state remain intact.
 
 ## Online training and memory behavior
 
@@ -144,6 +154,26 @@ tape remains capped at eight chunks. `--core-update-every N` performs full
 CA/GRU/Morphic backward on one of every N tapes and trains the decoder on the
 intervening tapes. The default is 4. Use `1` for full end-to-end BPTT on every
 tape when maximum adaptation matters more than speed.
+
+For the current decoder-focused S25 Ultra continuation, retain the existing
+`v8-real-01` checkpoints and use:
+
+```bash
+./target/release/titan \
+  --base-dir /sdcard/Download \
+  --duration 2500 \
+  --threads 7 \
+  --bptt 16 \
+  --core-update-every 16 \
+  --run-tag v8-real-01 \
+  --max-morph-depth 16 \
+  --morph-layers 16 \
+  --motif-capacity 256
+```
+
+This cadence favors the younger audible decoder. Use `--core-update-every 8`
+when a more even decoder/core update balance matters more than throughput. Do
+not add `--import-model` or `--fresh-decoder` when continuing this checkpoint.
 
 The phase profiler reports model forward, target I/O, loss/metrics, backward,
 optimizer, output I/O and checkpoint time per completed chunk. These values are
@@ -163,12 +193,20 @@ with relative band energy, chroma/pitch salience, onset envelopes, modulation,
 multi-lag recurrence, level, chunk seams, and correlation-aware stereo
 geometry. Target phase is not supplied to the renderer.
 
+Generated manifests reserve family-disjoint development and validation sets
+when the corpus is large enough. User manifests without validation families
+remain runnable, but their fallback probe is explicitly marked non-strict in
+run metadata and must not be treated as held-out evidence.
+
 Telemetry semantics and their scientific limitations are documented in
 [`METRICS.md`](METRICS.md). The implemented equations, evidence status, and
 attractor-test criteria are documented in [`math.md`](math.md). Verify a build
 with:
 
 ```bash
-cargo test
-cargo clippy --all-targets -- -D warnings
+cargo test --locked
+cargo clippy --locked --all-targets -- -D warnings
 ```
+
+`--locked` makes Cargo use the dependency graph already recorded in
+`Cargo.lock` and fail rather than silently resolving different versions.

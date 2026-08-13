@@ -1,5 +1,8 @@
 #![recursion_limit = "512"]
 
+mod artifacts;
+mod stereo;
+
 // =====================================================================
 // TITAN AUDIO ECOSYSTEM — RUST EDITION v8 ("MULTIRATE RESONANT ECOLOGY")
 // =====================================================================
@@ -28,6 +31,9 @@
 //    the new dynamical state starts fresh.
 
 use anyhow::Result;
+use artifacts::{
+    artifact_path, hashed_audio_path, model_companion_path, unique_audio_hash, validate_run_tag,
+};
 use candle_core::{backprop::GradStore, DType, Device, Result as CResult, Tensor, Var, D};
 use candle_nn::{Conv2dConfig, Linear, Module, ParamsAdamW, RmsNorm, VarBuilder as VBV, VarMap};
 use rand::{Rng, SeedableRng};
@@ -42,6 +48,12 @@ use std::sync::{
     Arc,
 };
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+use stereo::{
+    correlation_aware_width, pan_center_loss, regional_pan_position as regional_position,
+    side_gain, soft_global_pan, soft_width_control, PAN_CENTER_LOSS_WEIGHT,
+};
+#[cfg(test)]
+use stereo::{GLOBAL_PAN_LIMIT, WIDTH_CONTROL_MAX, WIDTH_CONTROL_MIN};
 
 type RuntimeRng = ChaCha8Rng;
 
@@ -129,7 +141,8 @@ const PLAN_EVERY: usize = 8;
 const WORLD_VERSION: u32 = 8;
 const WORLD_MAGIC: [u8; 8] = *b"TITANW8\0";
 const WORLD_SAVE_EVERY: usize = 1024;
-const TRACE_SCHEMA_VERSION: u32 = 7;
+const TRACE_SCHEMA_VERSION: u32 = 9;
+const OPTIMIZER_RENDERER_CONTROL_VERSION: i64 = 1;
 const TRACE_EVERY: usize = 10;
 const BUILD_COMMIT: &str = env!("TITAN_GIT_COMMIT");
 const BUILD_DIRTY: &str = env!("TITAN_GIT_DIRTY");
@@ -220,7 +233,6 @@ const MAX_STEREO_SIDE_GAIN: f32 = 1.25;
 // The regional field is already the primary stereo map. Global pan is only a
 // residual coordinate, kept smooth and modest so it cannot replace spatial
 // structure with a fixed interchannel level difference.
-const GLOBAL_PAN_LIMIT: f64 = 0.25;
 const STEREO_SIDE_LOSS_WEIGHT: f64 = 0.25;
 const STEREO_CORRELATION_LOSS_WEIGHT: f64 = 0.85;
 const STEREO_LEVEL_LOSS_WEIGHT: f64 = 0.45;
@@ -372,6 +384,11 @@ const UNCERTAINTY_TRACE_HEADERS: &[&str] = &[
     "carrier_freq_r",
     "carrier_beat_hz",
     "decoder_pan",
+    "decoder_pan_raw",
+    "pan_center_loss",
+    "decoder_side_control",
+    "decoder_width_control",
+    "decoder_width_raw",
     "mimic_coarse",
     "mimic_fine",
     "band_loss",
@@ -1526,6 +1543,10 @@ fn is_decoder_tensor(name: &str) -> bool {
     .any(|needle| name.contains(needle))
 }
 
+fn is_migrated_renderer_control_tensor(name: &str) -> bool {
+    name.contains("spatial_panner") || name.contains("stereo_width_head")
+}
+
 fn deterministic_reinit_where<F>(
     varmap: &VarMap,
     seed: u64,
@@ -1598,6 +1619,7 @@ struct OptimizerLoadReport {
     exact: usize,
     resized: usize,
     initialized: usize,
+    renderer_control_resets: usize,
 }
 
 impl PersistentAdamW {
@@ -1680,6 +1702,10 @@ impl PersistentAdamW {
             "optimizer.global_step".to_string(),
             Tensor::new(global_step as i64, device)?,
         );
+        tensors.insert(
+            "optimizer.renderer_control_version".to_string(),
+            Tensor::new(OPTIMIZER_RENDERER_CONTROL_VERSION, device)?,
+        );
         for state in &self.vars {
             tensors.insert(
                 format!("optimizer.m.{}", state.name),
@@ -1718,6 +1744,11 @@ impl PersistentAdamW {
             .get("optimizer.step_t")
             .ok_or_else(|| anyhow::anyhow!("optimizer checkpoint has no update count"))?
             .to_scalar::<i64>()? as u64;
+        let saved_renderer_control_version = tensors
+            .get("optimizer.renderer_control_version")
+            .map(|tensor| tensor.to_scalar::<i64>())
+            .transpose()?
+            .unwrap_or(0);
         let mut report = OptimizerLoadReport::default();
         for state in &self.vars {
             let first_name = format!("optimizer.m.{}", state.name);
@@ -1744,6 +1775,23 @@ impl PersistentAdamW {
                 report.resized += 1;
             } else {
                 anyhow::bail!("optimizer moment shape mismatch for {}", state.name);
+            }
+        }
+        if saved_renderer_control_version < OPTIMIZER_RENDERER_CONTROL_VERSION {
+            for state in &self.vars {
+                if is_migrated_renderer_control_tensor(&state.name) {
+                    state.first_moment.set(&Tensor::zeros(
+                        state.var.shape(),
+                        state.var.dtype(),
+                        device,
+                    )?)?;
+                    state.second_moment.set(&Tensor::zeros(
+                        state.var.shape(),
+                        state.var.dtype(),
+                        device,
+                    )?)?;
+                    report.renderer_control_resets += 1;
+                }
             }
         }
         self.step_t = saved_step;
@@ -1911,15 +1959,37 @@ fn load_or_create_corpus_manifest(wav_dir: &str, path: &str) -> Result<CorpusMan
         // carved from the former training split and are used only for structural
         // decisions, never for gradients.
         if manifest.generated_by.starts_with("titan ") {
-            let held_out: std::collections::HashSet<String> = manifest
+            let mut held_out: std::collections::HashSet<String> = manifest
                 .entries
                 .iter()
                 .filter(|entry| entry.role == CorpusRole::Validation)
                 .map(|entry| entry.family.clone())
                 .collect();
             let mut changed = false;
+            if held_out.is_empty() {
+                let mut train_families: Vec<(u64, String)> = manifest
+                    .entries
+                    .iter()
+                    .filter(|entry| entry.role == CorpusRole::Train)
+                    .map(|entry| (stable_name_hash(&entry.family), entry.family.clone()))
+                    .collect();
+                train_families.sort();
+                train_families.dedup_by(|a, b| a.1 == b.1);
+                if train_families.len() >= 8 {
+                    let validation_count = VALIDATION_PROBES.min((train_families.len() / 5).max(1));
+                    held_out.extend(
+                        train_families
+                            .into_iter()
+                            .take(validation_count)
+                            .map(|(_, family)| family),
+                    );
+                }
+            }
             for entry in &mut manifest.entries {
-                if entry.role == CorpusRole::Train && held_out.contains(&entry.family) {
+                if held_out.contains(&entry.family)
+                    && entry.role != CorpusRole::Validation
+                    && entry.role != CorpusRole::Exclude
+                {
                     entry.role = CorpusRole::Validation;
                     changed = true;
                 }
@@ -2025,6 +2095,7 @@ struct TargetAudioLoader {
     development_held_out_files: usize,
     held_out_files: usize,
     development_is_strict: bool,
+    validation_is_strict: bool,
     manifest_path: String,
     active: Option<TargetCursor>,
     pending: Vec<TargetCursor>,
@@ -2049,6 +2120,7 @@ impl TargetAudioLoader {
         let mut files = Vec::new();
         let mut roles = Vec::new();
         let mut families = Vec::new();
+        let mut quarantined_unlisted = 0usize;
         let mut paths: Vec<std::path::PathBuf> = std::fs::read_dir(path)?
             .filter_map(|e| e.ok().map(|e| e.path()))
             .collect();
@@ -2061,10 +2133,7 @@ impl TargetAudioLoader {
                 if p.extension()
                     .is_some_and(|ext| ext.eq_ignore_ascii_case("wav"))
                 {
-                    println!(
-                        "--> Quarantining unlisted corpus file {:?}; add it to {} to train on it.",
-                        p, manifest_path
-                    );
+                    quarantined_unlisted += 1;
                 }
                 continue;
             };
@@ -2086,6 +2155,12 @@ impl TargetAudioLoader {
                     Err(e) => println!("--> Skipping {:?}: {}", p, e),
                 }
             }
+        }
+        if quarantined_unlisted > 0 {
+            println!(
+                "--> Quarantined {} unlisted WAV files; add entries to {} to train on them.",
+                quarantined_unlisted, manifest_path
+            );
         }
         if files.is_empty() {
             anyhow::bail!("No usable training audio found in {}", path);
@@ -2136,6 +2211,7 @@ impl TargetAudioLoader {
             .values()
             .filter_map(|group| group.first().copied())
             .collect();
+        let validation_is_strict = !validation_files.is_empty();
         if validation_files.is_empty() {
             validation_files.extend(grouped.values().filter_map(|v| v.first().copied()).take(1));
             held_out_files = 0;
@@ -2147,7 +2223,7 @@ impl TargetAudioLoader {
             .map(|&idx| files[idx].output_frames)
             .sum();
         println!(
-            "--> Corpus: {} training files in {} balanced families ({:.2} h), {} development files / {} fixed probes, {} untouched test files / {} fixed probes; coherent {:.1} s episodes.",
+            "--> Corpus: {} training files in {} balanced families ({:.2} h), {} development files / {} fixed probes, {} validation files / {} fixed probes ({}); coherent {:.1} s episodes.",
             train_groups.iter().map(Vec::len).sum::<usize>(),
             train_groups.len(),
             total_output_frames as f64 / SAMPLE_RATE as f64 / 3600.0,
@@ -2155,6 +2231,11 @@ impl TargetAudioLoader {
             development_files.len(),
             held_out_files,
             validation_files.len(),
+            if validation_is_strict {
+                "strict family holdout"
+            } else {
+                "training fallback; not held-out evidence"
+            },
             TARGET_EPISODE_CHUNKS as f64 * CHUNK_SIZE as f64 / SAMPLE_RATE as f64,
         );
         Ok(Self {
@@ -2165,6 +2246,7 @@ impl TargetAudioLoader {
             development_held_out_files,
             held_out_files,
             development_is_strict,
+            validation_is_strict,
             manifest_path: manifest_path.to_string(),
             active: None,
             pending: Vec::with_capacity(TARGET_K),
@@ -2401,6 +2483,7 @@ impl TargetAudioLoader {
             "development_is_strict": self.development_is_strict,
             "validation_files": self.held_out_files,
             "validation_family_probes": self.validation_files.len(),
+            "validation_is_strict": self.validation_is_strict,
             "selection": "uniform_family_then_uniform_variant",
             "prefetch_chunks": TARGET_PREFETCH_CHUNKS,
         })
@@ -2666,23 +2749,11 @@ fn morph_wave(phase: &Tensor, morph: &Tensor) -> CResult<Tensor> {
 }
 
 fn stereo_side_gain(last_pan: f32, width_mult: f32) -> f32 {
-    ((1.0 + last_pan.abs() * 0.8) * width_mult.clamp(0.5, 1.6)).clamp(0.5, MAX_STEREO_SIDE_GAIN)
-}
-
-fn soft_global_pan(raw: &Tensor) -> CResult<Tensor> {
-    // p = p_max tanh(z) has dp/dz > 0 for every finite z. The previous
-    // clip(tanh(z), -0.5, 0.5) had an exactly zero gradient once saturated.
-    raw.tanh()?.affine(GLOBAL_PAN_LIMIT, 0.0)
+    side_gain(last_pan, width_mult, MAX_STEREO_SIDE_GAIN)
 }
 
 fn regional_pan_position(partial: usize) -> f32 {
-    let column = partial % REGION_COLS;
-    column as f32 / (REGION_COLS - 1) as f32 * 2.0 - 1.0
-}
-
-fn correlation_aware_width(side_energy_width: f32, stereo_corr: f32) -> f32 {
-    let incoherence = ((1.0 - stereo_corr.clamp(-1.0, 1.0)) * 0.5).sqrt();
-    (side_energy_width * incoherence).clamp(0.0, 1.0)
+    regional_position(partial, REGION_COLS)
 }
 
 fn smooth_lower_bound(value: &Tensor, floor: f64, width: f64) -> CResult<Tensor> {
@@ -4448,7 +4519,11 @@ struct ForwardOut {
     cur_freq_r: Tensor,
     mod_freq_l: Tensor,
     mod_freq_r: Tensor,
-    pan: Tensor,         // (1,) — feeds the last_pan host mirror
+    pan: Tensor,     // (1,) — feeds the last_pan host mirror
+    pan_raw: Tensor, // (1,) — diagnoses residual-head saturation
+    side_control: Tensor,
+    width_control: Tensor,
+    width_raw: Tensor,
     pair_sums: Tensor,   // (2,) — theta for the NEXT step (1-step lag, no sync)
     aux_freqs_l: Tensor, // (3,) phase-continuous auxiliary oscillators
     aux_freqs_r: Tensor,
@@ -4607,13 +4682,11 @@ impl ComplexAudioEcosystem {
                 vb.pp("oscillator_gain_head_0"),
             )?)
             .add(Sigmoid);
-        let stereo_width_head = candle_nn::seq()
-            .add(candle_nn::linear(
-                MEMORY_DIM,
-                1,
-                vb.pp("stereo_width_head_0"),
-            )?)
-            .add(Sigmoid);
+        let stereo_width_head = candle_nn::seq().add(candle_nn::linear(
+            MEMORY_DIM,
+            1,
+            vb.pp("stereo_width_head_0"),
+        )?);
         let wavefolder_l = KANLayer::new(KAN_BASIS_FUNCTIONS, vb.pp("wavefolder_l"))?;
         let wavefolder_r = KANLayer::new(KAN_BASIS_FUNCTIONS, vb.pp("wavefolder_r"))?;
         let base_freq_l = vb.get_with_hints(
@@ -5218,17 +5291,30 @@ impl ComplexAudioEcosystem {
             .sub(&audio_r)?
             .affine(0.5, 0.0)?
             .mul(&temporal_controls.narrow(0, 5, 1)?.affine(0.55, 1.0)?)?;
-        let pan_raw = self.spatial_panner.forward(&refined_hidden)?.reshape(())?;
+        // These two scalar heads sit after a deep residual stack. Normalize
+        // their shared input without adding parameters so a single Adam step
+        // cannot turn a large hidden-state norm into a rail-to-rail jump.
+        let renderer_control_hidden = refined_hidden.broadcast_div(
+            &refined_hidden
+                .sqr()?
+                .mean_keepdim(D::Minus1)?
+                .affine(1.0, 1e-5)?
+                .sqrt()?,
+        )?;
+        let pan_raw = self
+            .spatial_panner
+            .forward(&renderer_control_hidden)?
+            .reshape(())?;
         let pan_t = soft_global_pan(&pan_raw)?;
         // Haas width from LAST step's pan (host mirror, updated by the batched
         // readback) — removes the one remaining per-step to_scalar sync. Width
         // is a slow spatial parameter; the 85 ms lag is inaudible.
         let width_val = stereo_side_gain(self.last_pan, control.width_mult);
-        let learned_width = self
+        let width_raw = self
             .stereo_width_head
-            .forward(&refined_hidden)?
-            .reshape(())?
-            .affine(1.15, 0.05)?;
+            .forward(&renderer_control_hidden)?
+            .reshape(())?;
+        let learned_width = soft_width_control(&width_raw)?;
         let side_wide = side
             .affine(width_val as f64, 0.0)?
             .broadcast_mul(&learned_width)?;
@@ -5271,6 +5357,14 @@ impl ComplexAudioEcosystem {
             mod_freq_l: mod_f_l.reshape((1,))?,
             mod_freq_r: mod_f_r.reshape((1,))?,
             pan: pan_t.reshape((1,))?,
+            pan_raw: pan_raw.reshape((1,))?,
+            side_control: temporal_controls
+                .narrow(0, 7, 1)?
+                .abs()?
+                .mean_all()?
+                .reshape((1,))?,
+            width_control: learned_width.reshape((1,))?,
+            width_raw: width_raw.reshape((1,))?,
             pair_sums,
             aux_freqs_l,
             aux_freqs_r,
@@ -5499,59 +5593,6 @@ fn ensure_parent_dir(path: &str) -> Result<()> {
         if !parent.as_os_str().is_empty() {
             std::fs::create_dir_all(parent)?;
         }
-    }
-    Ok(())
-}
-
-fn artifact_path(base: &str, stem: &str, extension: &str, tag: Option<&str>) -> String {
-    match tag {
-        Some(tag) => format!("{}/{}_{}.{}", base, stem, tag, extension),
-        None => format!("{}/{}.{}", base, stem, extension),
-    }
-}
-
-fn model_companion_path(model_path: &str, companion_stem: &str, extension: &str) -> Option<String> {
-    let path = std::path::Path::new(model_path);
-    let model_stem = path.file_stem()?.to_str()?;
-    let suffix = model_stem.strip_prefix("titan_model")?;
-    let filename = format!("{}{}.{}", companion_stem, suffix, extension);
-    Some(path.parent()?.join(filename).to_string_lossy().into_owned())
-}
-
-fn hashed_audio_path(base: &str, stem: &str, tag: Option<&str>, audio_hash: &str) -> String {
-    let unique_tag = match tag {
-        Some(tag) => format!("{}_{}", tag, audio_hash),
-        None => audio_hash.to_string(),
-    };
-    artifact_path(base, stem, "wav", Some(&unique_tag))
-}
-
-fn unique_audio_hash(base: &str) -> Result<String> {
-    let mut rng = rand::thread_rng();
-    for _ in 0..1024 {
-        let candidate = format!("{:012x}", rng.gen::<u64>() & 0xffff_ffff_ffff);
-        let suffix = format!("_{}.wav", candidate);
-        let collision = std::fs::read_dir(base)?.any(|entry| {
-            entry
-                .ok()
-                .and_then(|entry| entry.file_name().into_string().ok())
-                .is_some_and(|name| name.ends_with(&suffix))
-        });
-        if !collision {
-            return Ok(candidate);
-        }
-    }
-    anyhow::bail!("could not allocate a unique random audio filename hash")
-}
-
-fn validate_run_tag(tag: &str) -> Result<()> {
-    if tag.is_empty()
-        || tag.len() > 48
-        || !tag
-            .chars()
-            .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
-    {
-        anyhow::bail!("run tag must be 1..48 ASCII letters, digits, '-' or '_'");
     }
     Ok(())
 }
@@ -6342,10 +6383,11 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 optimizer_load_report = report;
                 optimizer_resumed = true;
                 println!(
-                    "--> Resumed AdamW: {} exact, {} resized, {} new moment pairs; {} cumulative updates.",
+                    "--> Resumed AdamW: {} exact, {} resized, {} new moment pairs, {} renderer-control moment resets; {} cumulative updates.",
                     report.exact,
                     report.resized,
                     report.initialized,
+                    report.renderer_control_resets,
                     optimizer.cumulative_updates()
                 );
             }
@@ -6661,6 +6703,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
             mod_freq_l,
             mod_freq_r,
             pan,
+            pan_raw,
+            side_control,
+            width_control,
+            width_raw,
             pair_sums,
             aux_freqs_l,
             aux_freqs_r,
@@ -6816,6 +6862,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
             &output_stereo_level_ratio.sub(&target_stereo_level_ratio)?,
             0.05,
         )?;
+        let pan_center_loss = pan_center_loss(&pan.reshape(())?)?;
         // A side/mid ratio alone admits the panned-mono shortcut L=a*x,
         // R=b*x. Correlation remains +1 in that family, so jointly matching
         // correlation and channel balance makes that degeneracy observable.
@@ -6843,7 +6890,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
             .add(&recurrence_loss.affine(0.25, 0.0)?)?
             .add(&modulation_loss.affine(0.20, 0.0)?)?
             .add(&low_band_loss.affine(0.50, 0.0)?)?
-            .add(&stereo_balance_loss)?;
+            .add(&stereo_balance_loss)?
+            .add(&pan_center_loss.affine(PAN_CENTER_LOSS_WEIGHT, 0.0)?)?;
 
         if feature_history.len() >= FEATURE_HISTORY_CHUNKS {
             feature_history.pop_front();
@@ -7002,6 +7050,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 &mod_freq_l,
                 &mod_freq_r,
                 &pan,
+                &pan_raw,
                 &pair_sums,
                 &aux_freqs_l,
                 &aux_freqs_r,
@@ -7049,6 +7098,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 &validation_best.reshape((1,))?,
                 &validation_mean.reshape((1,))?,
                 &validation_chroma.reshape((1,))?,
+                &pan_center_loss.reshape((1,))?,
+                &side_control,
+                &width_control,
+                &width_raw,
             ],
             0,
         )?
@@ -7071,9 +7124,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
         let (f_l, f_r, mf_l, mf_r) = (metrics[14], metrics[15], metrics[16], metrics[17]);
         let decoder_pan_val = metrics[18];
         model.last_pan = decoder_pan_val;
+        let decoder_pan_raw_val = metrics[19];
         theta_prev2 = theta_prev;
-        theta_prev = metrics[20].atan2(metrics[19] + 1e-6);
-        let oscillator_start = 21;
+        theta_prev = metrics[21].atan2(metrics[20] + 1e-6);
+        let oscillator_start = 22;
         for j in 0..3 {
             model.aux_phase_l[j] = (model.aux_phase_l[j]
                 + TWO_PI * metrics[oscillator_start + j] * chunk_dt)
@@ -7141,6 +7195,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
         let validation_best_val = metrics[tail_start + 28];
         let validation_mean_val = metrics[tail_start + 29];
         let validation_chroma_val = metrics[tail_start + 30];
+        let pan_center_loss_val = metrics[tail_start + 31];
+        let decoder_side_control_val = metrics[tail_start + 32];
+        let decoder_width_control_val = metrics[tail_start + 33];
+        let decoder_width_raw_val = metrics[tail_start + 34];
         development_plateau =
             development_plateau_tracker.update(development_mean_val, development_chroma_val);
         if let (Some(actual), Some(_)) = (&last_observation, &pending_predictor_input) {
@@ -7787,6 +7845,11 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 "carrier_freq_l": f_l, "carrier_freq_r": f_r,
                 "carrier_beat_hz": (f_l - f_r).abs(),
                 "decoder_pan": decoder_pan_val,
+                "decoder_pan_raw": decoder_pan_raw_val,
+                "pan_center_loss": pan_center_loss_val,
+                "decoder_side_control": decoder_side_control_val,
+                "decoder_width_control": decoder_width_control_val,
+                "decoder_width_raw": decoder_width_raw_val,
                 "mimic_coarse": mimic_drift, "mimic_fine": mimic_fine_val,
                 "band_loss": band_loss_val, "chroma_loss": chroma_loss_val,
                 "onset_loss": onset_loss_val, "recurrence_loss": recurrence_loss_val,
@@ -8373,6 +8436,11 @@ Usage: titan [BASE_DIR] [options]\n\n\
             t["carrier_freq_r"].to_string(),
             t["carrier_beat_hz"].to_string(),
             t["decoder_pan"].to_string(),
+            t["decoder_pan_raw"].to_string(),
+            t["pan_center_loss"].to_string(),
+            t["decoder_side_control"].to_string(),
+            t["decoder_width_control"].to_string(),
+            t["decoder_width_raw"].to_string(),
             t["mimic_coarse"].to_string(),
             t["mimic_fine"].to_string(),
             t["band_loss"].to_string(),
@@ -8841,6 +8909,43 @@ mod tests {
         assert!(values[2] < values[3]);
         assert!(values[3] < values[4]);
         assert_eq!(values[2], 0.0);
+
+        let saturated = Var::new(100.0f32, &Device::Cpu)?;
+        let mapped = soft_global_pan(saturated.as_tensor())?;
+        let gradients = mapped.backward()?;
+        let gradient = gradients
+            .get(saturated.as_tensor())
+            .ok_or_else(|| anyhow::anyhow!("missing global-pan gradient"))?
+            .to_scalar::<f32>()?;
+        assert!(gradient.is_finite() && gradient > 0.0);
+
+        let centered = pan_center_loss(&soft_global_pan(&Tensor::new(0.0f32, &Device::Cpu)?)?)?
+            .to_scalar::<f32>()?;
+        let displaced = pan_center_loss(&soft_global_pan(&Tensor::new(4.0f32, &Device::Cpu)?)?)?
+            .to_scalar::<f32>()?;
+        assert!(centered.abs() < 1e-7);
+        assert!(displaced > centered);
+        Ok(())
+    }
+
+    #[test]
+    fn stereo_width_control_has_bounded_recoverable_rails() -> Result<()> {
+        let raw = Tensor::new(&[-100.0f32, -1.0, 0.0, 1.0, 100.0], &Device::Cpu)?;
+        let values = soft_width_control(&raw)?.to_vec1::<f32>()?;
+        assert!(values
+            .iter()
+            .all(|v| *v >= WIDTH_CONTROL_MIN as f32 && *v <= WIDTH_CONTROL_MAX as f32));
+        assert!(values.windows(2).all(|pair| pair[0] < pair[1]));
+        assert!((values[2] - 0.275).abs() < 1e-6);
+
+        let saturated = Var::new(-100.0f32, &Device::Cpu)?;
+        let mapped = soft_width_control(saturated.as_tensor())?;
+        let gradients = mapped.backward()?;
+        let gradient = gradients
+            .get(saturated.as_tensor())
+            .ok_or_else(|| anyhow::anyhow!("missing stereo-width gradient"))?
+            .to_scalar::<f32>()?;
+        assert!(gradient.is_finite() && gradient > 0.0);
         Ok(())
     }
 
@@ -9600,6 +9705,50 @@ mod tests {
     }
 
     #[test]
+    fn generated_manifest_repairs_a_missing_validation_split() -> Result<()> {
+        let dir = std::env::temp_dir().join(format!(
+            "titan_manifest_validation_{}_{}",
+            std::process::id(),
+            unix_time_ms()
+        ));
+        std::fs::create_dir(&dir)?;
+        let path = dir.join("manifest.json");
+        let entries = (0..12)
+            .map(|i| CorpusEntry {
+                file: format!("train_{i}.wav"),
+                role: CorpusRole::Train,
+                family: format!("family_{i}"),
+                provenance: "user_corpus".to_string(),
+            })
+            .collect();
+        let manifest = CorpusManifest {
+            schema_version: 2,
+            generated_by: "titan 8.0.0".to_string(),
+            entries,
+        };
+        std::fs::write(&path, serde_json::to_vec_pretty(&manifest)?)?;
+        let repaired =
+            load_or_create_corpus_manifest(dir.to_str().unwrap(), path.to_str().unwrap())?;
+        let validation_families: std::collections::HashSet<_> = repaired
+            .entries
+            .iter()
+            .filter(|entry| entry.role == CorpusRole::Validation)
+            .map(|entry| entry.family.as_str())
+            .collect();
+        let development_families: std::collections::HashSet<_> = repaired
+            .entries
+            .iter()
+            .filter(|entry| entry.role == CorpusRole::Development)
+            .map(|entry| entry.family.as_str())
+            .collect();
+        assert!(!validation_families.is_empty());
+        assert!(validation_families.is_disjoint(&development_families));
+        std::fs::remove_file(path)?;
+        std::fs::remove_dir(dir)?;
+        Ok(())
+    }
+
+    #[test]
     fn persistent_adam_round_trips_update_count_and_moments() -> Result<()> {
         let device = Device::Cpu;
         let varmap = VarMap::new();
@@ -9621,8 +9770,57 @@ mod tests {
         assert_eq!(report.exact, 1);
         assert_eq!(report.resized, 0);
         assert_eq!(report.initialized, 0);
+        assert_eq!(report.renderer_control_resets, 0);
         assert_eq!(restored.cumulative_updates(), 1);
         assert!(restored.load(path.to_str().unwrap(), 78, &device).is_err());
+        std::fs::remove_file(path)?;
+        Ok(())
+    }
+
+    #[test]
+    fn legacy_optimizer_resets_changed_renderer_control_moments_once() -> Result<()> {
+        let device = Device::Cpu;
+        let varmap = VarMap::new();
+        let vb = VBV::from_varmap(&varmap, DType::F32, &device)
+            .pp("model")
+            .pp("stereo_width_head_0");
+        let weight = vb.get_with_hints((2,), "weight", candle_nn::Init::Const(1.0))?;
+        let grads = weight.sqr()?.sum_all()?.backward()?;
+        let mut source = PersistentAdamW::new(&varmap, 1e-3)?;
+        source.step(&grads)?;
+        assert!(
+            source.vars[0]
+                .first_moment
+                .as_tensor()
+                .abs()?
+                .sum_all()?
+                .to_scalar::<f32>()?
+                > 0.0
+        );
+
+        let path = std::env::temp_dir().join(format!(
+            "titan_optimizer_legacy_control_{}_{}.safetensors",
+            std::process::id(),
+            unix_time_ms()
+        ));
+        source.save(path.to_str().unwrap(), 91, &device)?;
+        let mut tensors = candle_core::safetensors::load(&path, &device)?;
+        tensors.remove("optimizer.renderer_control_version");
+        std::fs::remove_file(&path)?;
+        candle_core::safetensors::save(&tensors, &path)?;
+
+        let mut restored = PersistentAdamW::new(&varmap, 1e-3)?;
+        let report = restored.load(path.to_str().unwrap(), 91, &device)?;
+        assert_eq!(report.renderer_control_resets, 1);
+        assert_eq!(
+            restored.vars[0]
+                .first_moment
+                .as_tensor()
+                .abs()?
+                .sum_all()?
+                .to_scalar::<f32>()?,
+            0.0
+        );
         std::fs::remove_file(path)?;
         Ok(())
     }
@@ -9664,6 +9862,7 @@ mod tests {
         assert!(trace.contains("development_mean_spectral"));
         assert!(trace.contains("development_plateau_ready"));
         assert!(trace.contains("validation_mean_spectral"));
+        assert!(trace.contains("decoder_width_raw"));
         assert!(!trace.contains("movement"));
         for required in [
             "run_id",

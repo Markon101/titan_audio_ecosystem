@@ -5,7 +5,7 @@ artistic interpretation. The distinction matters when comparing experiments.
 
 ## Files and schema
 
-Telemetry schema v7 writes five complementary artifacts per run. With
+Telemetry schema v9 writes five complementary artifacts per run. With
 `--run-tag NAME`, telemetry and checkpoint filenames receive that tag instead
 of overwriting the untagged run. Finalized audio filenames always add their
 shared random hash after any run tag:
@@ -68,17 +68,24 @@ the metadata `run_id` when joining their rows.
   combines all three relations without mixing target audio into the renderer.
   `stereo_side_geometry_loss`, `stereo_correlation_loss`, and
   `stereo_level_loss` expose its unweighted components. `decoder_pan` is the
-  bounded global residual after the 4x8 field-to-stereo map; persistent values
-  near its +/-0.25 limit indicate saturation but no longer create a zero-
-  gradient hard-clamp region.
+  bounded global residual after the 4x8 field-to-stereo map. v8.1 limits it to
+  +/-0.10. `decoder_pan_raw` exposes saturation before that map, while
+  `pan_center_loss` measures squared energy in the bounded audible residual.
+  It deliberately does not grow with an arbitrarily large raw coordinate.
+  `decoder_side_control`, `decoder_width_control`, and `decoder_width_raw`
+  distinguish collapsed side excitation, an active width rail, and saturation
+  in the underlying width head. A version marker makes the first v8.1 resume
+  reset only the changed pan/width controls' incompatible Adam moments.
 - `development_best_spectral`, `development_mean_spectral`, and
   `development_mean_chroma` use fixed, gradient-excluded development families.
   `development_score`, `development_plateau_ready`, and
   `development_relative_improvement` make the morphic-growth gate auditable.
 - `validation_best_spectral`, `validation_mean_spectral`, and
-  `validation_mean_chroma` score every emitted chunk against a separate fixed
-  test split. They are observational and never select a training target or an
-  architecture transition.
+  `validation_mean_chroma` score every emitted chunk against fixed probes.
+  `validation_is_strict` in run metadata must be true before these are called
+  held-out results. A training-family fallback remains available for tiny or
+  manually incomplete corpora, but is only a within-run diagnostic. Validation
+  metrics never select a training target or an architecture transition.
 - `target_file`, `target_frame`, and `target_chunks_left` identify the coherent
   source episode in force at each sample. This makes temporal-supervision bugs
   and corpus bias auditable.
