@@ -4,7 +4,7 @@
 
 Titan is presently a **bounded adaptive stochastic neural cellular automaton** with a recursive audio/control loop.  The implementation has several ingredients that plausibly support long-lived complex transients and metastable regimes:
 
-- a local nonlinear 2-D toroidal rule;
+- a local nonlinear folded-manifold rule with a non-orientable spatial seam;
 - asynchronous cell updates;
 - coupled micro and macro fields;
 - recurrent memory;
@@ -50,6 +50,13 @@ of deep residual-state magnitude. None of these changes by itself creates or
 proves independent stereo; correlation remains the falsifier. Telemetry schema
 v9 therefore records raw and mapped coordinates.
 
+v9 is a third intentional world-generation break. It retains the fixed
+64-state storage budget but interprets it as up to four cyclic depth sheets of
+16 hidden features. Morphic depth activates sheets and a second, dilated
+spatial ring. Spatial convolution uses a Klein-bottle seam rather than a flat
+torus. Matching v8 learned tensors can seed v9, but the changed neighborhood
+rule invalidates the old world trajectory and optimizer moments.
+
 This document uses the following evidence labels:
 
 - **Theorem:** follows from the implemented equations under explicitly stated assumptions.
@@ -74,8 +81,10 @@ z_t = (x_t,y_t,h_t,e_t,c_t,q_t,\varphi_t,d_t,r_t),
 
 where:
 
-- \(x_t\in\mathbb{R}^{64\times64\times64}\) is the micro field;
-- \(y_t\in\mathbb{R}^{64\times32\times32}\) is the macro field;
+- \(x_t\in\mathbb{R}^{d_t\times16\times64\times64}\), embedded in fixed
+  64-channel storage, is the micro manifold;
+- \(y_t\in\mathbb{R}^{d_t\times16\times32\times32}\), with the same embedding,
+  is the macro manifold;
 - \(h_t\in\mathbb{R}^{512}\) is GRU memory;
 - \(e_t\) is metabolic energy;
 - \(c_t\) is the compact adaptive-controller state;
@@ -122,25 +131,48 @@ Mixing these regimes makes an attractor claim ambiguous.
 
 ## 2. Implemented neural-CA equations
 
-Ignoring batching notation, each v8 neural CA has a depthwise-separable
-residual local rule
+Let \(m\) be active MorphicStack depth. v9 derives active manifold depth and
+far-ring strength as
 
 \[
-P_\theta(x)=K_{dw}*_{dw}x,
-\qquad
-R_\theta(x)=W_c*_{1\times1}
-    \operatorname{ReLU}(W_e*_{1\times1}P_\theta(x)),
+d(m)=\min\!\left(4,1+\left\lfloor\frac{m-1}{3}\right\rfloor\right),\qquad
+g(m)=0.35\min\!\left(1,\frac{m-1}{3}\right).
 \]
 
-where \(*_{dw}\) is a per-channel circular 3x3 convolution on the torus and
-the two pointwise transforms provide learned cross-channel mixing. A fixed
+The projector \(\Pi_d\) retains the first \(16d\) channels and makes the
+remaining fixed-storage channels exactly zero. Within the active channels,
+\(L_d\) is the nearest-neighbor depth Laplacian on a cyclic depth axis; it is
+zero for \(d=1\). Ignoring batching notation, the perceived state is
+
+\[
+P_{\theta,m}(x)=K^{(1)}_{dw}*_{K} \Pi_d x
+ +g(m)K^{(2)}_{dw}*_{K,\delta=2}\Pi_d x
+ +0.18L_d\Pi_d x,
+\]
+
+where both learned 3x3 kernels are depthwise, the second has dilation two, and
+the subscript \(K\) denotes Klein-bottle boundary conditions. With spatial
+indices \((i,j)\), the implemented quotient is
+
+\[
+x[i+H,j]=x[i,j],\qquad x[i,j+W]=x[H-1-i,j].
+\]
+
+The residual rule is
+
+\[
+R_{\theta,m}(x)=\Pi_d W_c*_{1\times1}
+ \operatorname{ReLU}(W_e*_{1\times1}P_{\theta,m}(x)).
+\]
+
+The pointwise transforms mix hidden features across active sheets. A fixed
 anisotropy field \(A\), optional macro modulation \(u\), local restoring bias
 \(b(x)\), and deterministically scheduled asynchronous mask \(M_{s(t)}\) from
 the eight-mask bank produce an update of the form
 
 \[
 \widetilde x_{t+1}
-=x_t+\alpha M_{s(t)}\odot\left[A\odot u_t\odot R_\theta(x_t)+b(x_t)\right],
+=\Pi_d x_t+\alpha M_{s(t)}\odot\left[A\odot u_t\odot R_{\theta,m}(x_t)+b(x_t)\right],
 \qquad \alpha=0.1.
 \]
 
@@ -822,7 +854,8 @@ degenerate stereo.
 Past generated and target features are detached, so memory is bounded and the
 gradient is causal through the current state. This does not claim 64-chunk
 backpropagation: it supplies a long-horizon statistical teaching signal while
-the exact recurrent graph remains capped at eight chunks.
+the exact recurrent graph remains capped at 8 chunks; longer requested
+horizons average gradients from detached bounded segments.
 
 **Lemma 1 — normalized log projectors have finite input gradients.** Let
 \(A\) be any finite DFT projection matrix and
@@ -1223,7 +1256,7 @@ gradients once every \(N\) tapes (`--core-update-every`, default \(N=4\)). The
 macro CA itself is eligible to advance every four chunks. These schedules do not make the
 corpus resident: the manifest remains an index, and a bounded 16-chunk decode
 buffer amortizes file open, seek, and resampling work. Large telemetry is
-spooled incrementally and full consistent checkpoints move to a 1,024-chunk
+spooled incrementally and full consistent v9 checkpoints use a 2,048-chunk
 cadence, preserving bounded RAM and storage traffic on the S25 Ultra.
 
 ### 14.1 Runtime MorphicStack capacity
@@ -1268,7 +1301,30 @@ same FIFO eviction order used when a full motif memory admits a new candidate.
 Because motif observations and controls have fixed dimensions, changing
 \(K\) requires no tensor migration or checkpoint-schema revision.
 
-## 15. Research references
+## 15. Morph-linked manifold capacity
+
+MorphicStack depth is now also a geometry control. At L01 only one 16-feature
+sheet is active. The far spatial ring then fades in smoothly, and additional
+sheets activate at L04, L07, and L10. This creates two related but distinct
+forms of capacity growth:
+
+- every morph event adds one learned residual block to recurrent computation;
+- selected morph thresholds expose another spatial depth sheet, up to four.
+
+The fixed 64-channel allocation prevents a growth event from reallocating the
+large micro and macro fields. Pruning below a sheet threshold projects that
+sheet to zero. Growth later exposes zero field state in that sheet, but learned
+pointwise and depth coupling can seed it from active sheets. Consequently,
+pruning an active sheet is intentionally lossy, while adding a dormant sheet is
+state-preserving at the instant of activation and becomes expressive through
+subsequent CA evolution.
+
+This construction is a folded 3D manifold, not a claim that TITAN runs a dense
+Euclidean 3D lattice. For \(d>1\), the logical topology is a Klein-bottle
+spatial surface crossed with a cyclic depth coordinate. Its purpose is to add
+topological and neighborhood diversity under a fixed mobile-memory budget.
+
+## 16. Research references
 
 - Chris G. Langton, “Computation at the edge of chaos: Phase transitions and emergent computation,” *Physica D* 42 (1990), 12–37. [DOI](https://doi.org/10.1016/0167-2789(90)90064-V)
 - Joschka Boedecker, Oliver Obst, Joseph T. Lizier, N. Michael Mayer, and Minoru Asada, “Information processing in echo state networks at the edge of chaos,” *Theory in Biosciences* 131 (2012), 205–213. [DOI](https://doi.org/10.1007/s12064-011-0146-8)

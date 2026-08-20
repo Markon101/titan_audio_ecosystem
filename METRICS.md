@@ -5,7 +5,7 @@ artistic interpretation. The distinction matters when comparing experiments.
 
 ## Files and schema
 
-Telemetry schema v9 writes five complementary artifacts per run. With
+Telemetry schema v10 writes five complementary artifacts per run. With
 `--run-tag NAME`, telemetry and checkpoint filenames receive that tag instead
 of overwriting the untagged run. Finalized audio filenames always add their
 shared random hash after any run tag:
@@ -15,19 +15,21 @@ shared random hash after any run tag:
   `uncertainty_movement` is a different bounded feature derived from movement
   trend and model surprise. The old ambiguous `movement` heading is removed.
 - `ca_topology_rust.csv` is a headerless matrix of 1,024 macro-field values
-  per sampled row. v8's macro CA is 32x32; this is intentionally incompatible
+  per sampled row. v9's macro CA is 32x32; this is intentionally incompatible
   with the 4,096-column v7 topology matrix.
 - `ca_topology_index_rust.csv` maps every topology row to `run_id`, sample
-  index, global and local step, depth, radiation amplitude, field entropy, and
-  any morph event observed since the prior sample.
+  index, global and local step, morph and manifold depths, active spatial-ring
+  count, far-ring gain, radiation amplitude, field entropy, and any morph event
+  observed since the prior sample.
 - `morph_events_rust.csv` records neurogenesis and pruning at their exact
-  global and local steps, including the resulting depth and radiation value.
-- `titan_run_metadata_v8.json` records the build commit, dirty/release flags,
+  global and local steps, including before/after manifold and ring state.
+- `titan_run_metadata_v9.json` records the build commit, dirty/release flags,
   invocation, reset mode, seed, thread count, requested BPTT and bounded tape,
   field dimensions, start/end state, output paths, and trace semantics.
   It also records the corpus manifest summary and optimizer resume/update
   counts. Resize runs include exact/resized/initialized/dropped model-tensor and
-  optimizer-moment counts. v8 additionally records micro/macro dimensions,
+  optimizer-moment counts. v9 additionally records micro/macro dimensions,
+  folded topology, active/max manifold depth and neighborhood-ring state,
   parameter count, core-update cadence, decoder control rate, phase timings,
   and the random hash shared by that run's finalized audio filenames.
 
@@ -136,13 +138,17 @@ the metadata `run_id` when joining their rows.
   Run metadata additionally records the physically constructed `morph_layers`
   and internal `morph_width`; these determine parameter and optimizer size but
   do not change the MorphicStack's 512-dimensional external interface.
+- `manifold_depth` is the number of active 16-feature CA sheets derived from
+  morph depth. `active_spatial_rings` is one at L01 and two once the dilated
+  far ring has nonzero gain. `far_ring_gain` exposes its gradual fade-in. These
+  are architecture controls, not estimators of intrinsic physical dimension.
 - `motif_capacity` in run metadata is the selected host-memory limit (1--4096,
   default 64). `motifs_active` is the retained entry count at finalization.
   Resume-time growth retains every motif; shrinking retains the newest entries
   and discards the oldest first.
 - `field_entropy` is the channel-archetype entropy in bits for the current
   micro field. It is not the entropy of the rendered waveform.
-- `crit_gain` is fixed at 1.0 in v8. `sigma` remains useful evidence, but no
+- `crit_gain` is fixed at 1.0 in v9. `sigma` remains useful evidence, but no
   learning-rate singularity is applied until calibration establishes a real
   critical surface rather than merely naming one.
 

@@ -1,23 +1,24 @@
-# TITAN Audio Ecosystem v8.1
+# TITAN Audio Ecosystem v9
 
 TITAN is an adaptive, deterministic neural-cellular-automata audio ecosystem
-for sustained CPU training and rendering in Termux. v8 is a phone-first model:
-it keeps corpus and telemetry memory bounded, reduces the expensive spatial CA
-rule, and in its default 12x512 configuration has approximately 14.9 million
-parameters, with most capacity in a channel-aware decoder that runs at 32
-control frames per audio chunk.
+for sustained CPU training and rendering in Termux. v9 turns its fixed-size CA
+storage into a dynamically expanding folded manifold: morphic growth activates
+up to four cyclic depth sheets, each with 16 hidden features, while learned
+near and far neighborhood rings operate across a non-orientable Klein-bottle
+seam. The physical tensors remain phone-sized; logical dimensionality grows
+with the organism.
 
-v8 writes independent artifacts and never overwrites v7 model or world state:
+v9 writes independent artifacts and never overwrites v7/v8 state:
 
-- `titan_model_v8.safetensors`
-- `titan_optimizer_v8.safetensors`
-- `titan_world_v8.bin`
-- `titan_morph_state_v8.json`
-- `titan_run_metadata_v8.json`
+- `titan_model_v9.safetensors`
+- `titan_optimizer_v9.safetensors`
+- `titan_world_v9.bin`
+- `titan_morph_state_v9.json`
+- `titan_run_metadata_v9.json`
 
 The corpus classification remains in `titan_corpus_manifest_v7.json`. Its
 train/development/validation family semantics are data policy rather than model
-architecture, so v8 deliberately reuses it.
+architecture, so v9 deliberately reuses it.
 
 ## Build and run
 
@@ -36,28 +37,45 @@ suffix, for example `rust_ecosystem_out_a13f09c2de77.wav` and
 associated. Model, optimizer, world, telemetry, and metadata names stay stable
 for automatic checkpoint continuation.
 
-To migrate compatible recurrent/control tensors from v7 while deliberately
-resetting the incompatible audible path:
+To seed v9 from the latest v8 model while retaining the source artifacts:
 
 ```bash
 ./target/release/titan \
   --base-dir /sdcard/Download \
-  --import-model /sdcard/Download/titan_model_v7.safetensors \
-  --fresh-decoder
+  --import-model /sdcard/Download/titan_model_v8_v8-real-01.safetensors \
+  --run-tag v9-manifold-01 \
+  --morph-layers 24 \
+  --max-morph-depth 24 \
+  --motif-capacity 512
 ```
+
+The near-ring, recurrent, morphic, and decoder tensors with matching shapes are
+retained. The new far-ring tensors are initialized deterministically. Because
+the spatial rule and world topology changed, v8 world state and Adam moments
+are intentionally not resumed. Use `--import-model` only for this first v9 run;
+continue normally afterward.
 
 ## Architecture
 
-The organism has two 64-channel toroidal neural cellular automata:
+The organism has two 64-state neural cellular automata:
 
 - a 64x64 micro field updated every chunk;
 - a 32x32 macro field eligible to evolve on a four-chunk clock.
 
-Each CA uses a depthwise 3x3 spatial perception kernel followed by learned
-64-to-128 and 128-to-64 pointwise channel mixing. This reduces the dominant
-spatial multiply count by roughly 4.8x relative to v7's dense 3x3 rule.
-Precomputed deterministic cell-clock masks remove per-chunk mask allocation and
-random-number generation.
+The state axis is interpreted as four dormant-or-active depth sheets with 16
+hidden features per sheet. At MorphicStack depths L01, L04, L07, and L10 the
+logical manifold has one, two, three, and four active sheets respectively.
+Active sheets have cyclic nearest-depth coupling; inactive sheets are projected
+to zero. This makes the field a folded 3D `Klein bottle x S1` manifold once
+more than one sheet is active without allocating a dense 64x64x64 spatial
+volume.
+
+Each CA has independently learned depthwise 3x3 near and dilation-2 far rings,
+followed by learned 64-to-128 and 128-to-64 pointwise feature mixing. The far
+ring fades in over L01--L04 rather than appearing abruptly. Horizontal wrap
+reverses the vertical coordinate, producing the Klein-bottle seam; vertical
+wrap remains periodic. Precomputed deterministic cell-clock masks keep the
+existing asynchronous update schedule allocation-free.
 
 Global micro-channel means and a 64-dimensional episodic attention readout feed
 a 512-unit GRU. Its output passes through an RMS-normalized, Swish residual
@@ -105,13 +123,13 @@ checkpoint set while creating an isolated variant:
 ```bash
 ./target/release/titan \
   --base-dir /sdcard/Download \
-  --import-model /sdcard/Download/titan_model_v8.safetensors \
+  --import-model /sdcard/Download/titan_model_v9.safetensors \
   --run-tag m16w768 \
   --morph-layers 16 \
   --morph-width 768
 ```
 
-This writes `titan_model_v8_m16w768.safetensors` together with matching tagged
+This writes `titan_model_v9_m16w768.safetensors` together with matching tagged
 optimizer, world, morph-state, and telemetry artifacts. `--model PATH` remains
 available when only the model path needs to be selected explicitly.
 
@@ -149,14 +167,35 @@ episode is seek-decoded in blocks of at most 16 chunks (about 0.5 MiB of stereo
 FP32 audio), amortizing file-open and resampling work while preserving constant
 memory. Generated Titan audio remains quarantined from the training corpus.
 
-`--bptt` controls the optimizer's gradient-averaging horizon; the differentiable
-tape remains capped at eight chunks. `--core-update-every N` performs full
+Refresh the manifest after adding WAVs without changing established
+train/development/validation assignments:
+
+```bash
+./target/release/titan \
+  --base-dir /sdcard/Download \
+  --refresh-corpus-manifest \
+  --manifest-only
+```
+
+New variants inherit the safest existing role for their family; new families
+default to training, and recognizable Titan outputs are added as `exclude`.
+Missing files remain recorded by default so temporarily moved corpus material
+does not erase data policy. Add `--prune-missing` to remove those stale entries.
+
+For a deliberate from-scratch reclassification, use
+`--rebuild-corpus-manifest --manifest-only`. Rebuild writes the previous
+manifest to a timestamped `.bak.*` file before atomically replacing it. A plain
+`--manifest-only` creates or repairs the selected manifest and exits. All these
+operations respect `--corpus-manifest PATH`; omit `--manifest-only` only when
+the same invocation should continue into training.
+
+`--bptt` controls the optimizer's gradient-averaging horizon; the folded CA's
+differentiable tape remains capped at 8 chunks on mobile. `--core-update-every N` performs full
 CA/GRU/Morphic backward on one of every N tapes and trains the decoder on the
 intervening tapes. The default is 4. Use `1` for full end-to-end BPTT on every
 tape when maximum adaptation matters more than speed.
 
-For the current decoder-focused S25 Ultra continuation, retain the existing
-`v8-real-01` checkpoints and use:
+After the one-time v8 import above has produced a v9 checkpoint, continue with:
 
 ```bash
 ./target/release/titan \
@@ -165,15 +204,18 @@ For the current decoder-focused S25 Ultra continuation, retain the existing
   --threads 7 \
   --bptt 16 \
   --core-update-every 16 \
-  --run-tag v8-real-01 \
-  --max-morph-depth 16 \
-  --morph-layers 16 \
-  --motif-capacity 256
+  --run-tag v9-manifold-01 \
+  --max-morph-depth 24 \
+  --morph-layers 24 \
+  --motif-capacity 512
 ```
 
 This cadence favors the younger audible decoder. Use `--core-update-every 8`
 when a more even decoder/core update balance matters more than throughput. Do
-not add `--import-model` or `--fresh-decoder` when continuing this checkpoint.
+not add `--import-model` or `--fresh-decoder` when continuing the v9 checkpoint.
+Keep the same `--run-tag` as the import run: changing or omitting it selects a
+different checkpoint namespace and starts a new world when that namespace has
+no v9 checkpoint.
 
 The phase profiler reports model forward, target I/O, loss/metrics, backward,
 optimizer, output I/O and checkpoint time per completed chunk. These values are
@@ -183,7 +225,7 @@ compared after thermal soak rather than from cold-start speed.
 Large topology and scalar trace records are streamed during the run and
 converted to their stable CSV formats at finalization. Audio is streamed to a
 temporary FP32 file and normalized in a second pass. Full, mutually consistent
-model/optimizer/world checkpoints are written every 1,024 chunks and on clean
+model/optimizer/world checkpoints are written every 2,048 chunks and on clean
 shutdown, limiting storage traffic from the larger model.
 
 ## Supervision and verification
@@ -200,7 +242,9 @@ run metadata and must not be treated as held-out evidence.
 
 Telemetry semantics and their scientific limitations are documented in
 [`METRICS.md`](METRICS.md). The implemented equations, evidence status, and
-attractor-test criteria are documented in [`math.md`](math.md). Verify a build
+attractor-test criteria are documented in [`math.md`](math.md). Decoder-side
+research candidates that were deliberately not implemented in v9 are recorded
+in [`DECODER_RESEARCH.md`](DECODER_RESEARCH.md). Verify a build
 with:
 
 ```bash

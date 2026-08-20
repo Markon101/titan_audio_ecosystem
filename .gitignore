@@ -23,3 +23,6 @@ suno_priming_prompt*.txt
 
 # Isolated release-validation workspaces
 .titan-validation*/
+
+# Local corpus utilities
+/convert_flac_to_old_wavs.sh

@@ -4,16 +4,17 @@ mod artifacts;
 mod stereo;
 
 // =====================================================================
-// TITAN AUDIO ECOSYSTEM — RUST EDITION v8 ("MULTIRATE RESONANT ECOLOGY")
+// TITAN AUDIO ECOSYSTEM — RUST EDITION v9 ("MORPHOGENIC MANIFOLD")
 // =====================================================================
 // BUILD (Termux / Snapdragon 8 Elite):
 //   RUSTFLAGS="-C target-cpu=native" cargo build --release
 //
-// DESIGN RECORD (v8):
+// DESIGN RECORD (v9):
 //
-// 1. A 64-channel 64x64 micro CA is coupled to a slower 32x32 macro CA.
-//    Depthwise spatial perception and pointwise channel mixing preserve the
-//    toroidal ecology while making sustained phone training tractable.
+// 1. A 64-state 64x64 micro CA is coupled to a slower 32x32 macro CA. The
+//    state is folded into four dynamically activated depth sheets with 16
+//    hidden features each. Learned near/far spatial rings operate on a Klein
+//    bottle seam while local depth coupling closes the active sheets into S1.
 // 2. Target WAVs are seek-decoded into coherent ~22 s episodes. Multi-scale
 //    full-band spectral, envelope, level, and seam losses provide causal
 //    musical evidence without requiring arbitrary waveform-phase matching.
@@ -26,7 +27,7 @@ mod stereo;
 // 5. Movement and novelty are bounded homeostats. Source grounding has a
 //    non-zero floor. The movement-persistence statistic is telemetry, not a
 //    claimed Lyapunov exponent or a learning-rate singularity.
-// 6. v8 model/world filenames and schemas are independent. Earlier worlds are
+// 6. v9 model/world filenames and schemas are independent. Earlier worlds are
 //    intentionally rejected; compatible learned tensors may be imported while
 //    the new dynamical state starts fresh.
 
@@ -79,9 +80,9 @@ const SAMPLE_RATE: u32 = 48000;
 const DURATION_SECONDS: f32 = 240.0;
 const CHUNK_SIZE: usize = 4096;
 
-// 2D field: 64 channels on a 64x64 torus = 262,144 scalar cells.  This is
-// deliberately larger than v3's 96x512 ring: the S25 Ultra can sustain the
-// added spatial vocabulary, while --threads and --bptt remain available as
+// Folded field: fixed 64-state storage on a 64x64 Klein surface = 262,144
+// scalars, interpreted as up to four cyclic depth sheets. This is deliberately
+// larger than v3's 96x512 ring while --threads and --bptt remain available as
 // thermal/RAM controls for other devices.
 const GRID_H: usize = 64;
 const GRID_W: usize = 64;
@@ -90,15 +91,21 @@ const MACRO_W: usize = 32;
 const MACRO_UPDATE_EVERY: u64 = 4;
 const CA_CHANNELS: usize = 64;
 const CA_HIDDEN: usize = 128; // conv hidden channels
-const CA_UPDATE_PROB: f32 = 0.71; // deterministic asynchronous cell clock
+const CA_UPDATE_PROB: f32 = 0.7185; // deterministic asynchronous cell clock
+const CA_MANIFOLD_MAX_DEPTH: usize = 4;
+const CA_FEATURE_CHANNELS: usize = CA_CHANNELS / CA_MANIFOLD_MAX_DEPTH;
+const CA_MANIFOLD_LAYERS_PER_SHEET: usize = 3;
+const CA_FAR_RING_DILATION: usize = 2;
+const CA_FAR_RING_MAX_GAIN: f64 = 0.35;
+const CA_DEPTH_LAPLACIAN_GAIN: f64 = 0.18;
 
 const MEMORY_DIM: usize = 512;
-const BPTT_WINDOW: usize = 8;
+const BPTT_WINDOW: usize = 16;
 const CORE_UPDATE_EVERY: usize = 4;
-// The recurrent CA graph is large enough that retaining 64 differentiable
-// chunks can exhaust mobile memory before backward starts. Longer requested
-// horizons still reduce gradient variance, but are accumulated from bounded
-// tape segments so memory grows with this cap rather than with --bptt.
+// The folded near/far CA graph is substantially larger than the v8 graph.
+// Retain at most eight differentiable chunks on mobile; longer requested
+// horizons still average detached segment gradients, so --bptt 16/32/64 does
+// not multiply the live graph. This cap is a memory limit, not a horizon limit.
 const MAX_AUTOGRAD_TAPE_CHUNKS: usize = 8;
 const SPEC_BINS: usize = 96;
 // Eight smooth basis functions are enough for a learned waveshaper at 48 kHz.
@@ -117,7 +124,7 @@ const REGION_COUNT: usize = REGION_ROWS * REGION_COLS;
 const REGION_H: usize = GRID_H / REGION_ROWS;
 const REGION_W: usize = GRID_W / REGION_COLS;
 
-// Channel-aware, low-rate audio decoder. Most v8 parameters execute only on
+// Channel-aware, low-rate audio decoder. Most parameters execute only on
 // 32 control frames per 4,096-sample chunk, rather than at waveform rate.
 const DECODER_MICRO_ROWS: usize = 8;
 const DECODER_MICRO_COLS: usize = 8;
@@ -138,10 +145,10 @@ const CELL_CLOCK_MASKS: usize = 8;
 const OBS_DIM: usize = 12;
 const ACTION_COUNT: usize = 10;
 const PLAN_EVERY: usize = 8;
-const WORLD_VERSION: u32 = 8;
-const WORLD_MAGIC: [u8; 8] = *b"TITANW8\0";
-const WORLD_SAVE_EVERY: usize = 1024;
-const TRACE_SCHEMA_VERSION: u32 = 9;
+const WORLD_VERSION: u32 = 9;
+const WORLD_MAGIC: [u8; 8] = *b"TITANW9\0";
+const WORLD_SAVE_EVERY: usize = 2048;
+const TRACE_SCHEMA_VERSION: u32 = 10;
 const OPTIMIZER_RENDERER_CONTROL_VERSION: i64 = 1;
 const TRACE_EVERY: usize = 10;
 const BUILD_COMMIT: &str = env!("TITAN_GIT_COMMIT");
@@ -161,7 +168,7 @@ const EPI_SNAP_EVERY: usize = 64;
 const EPI_DIM: usize = 64; // attention readout width
 
 // Novelty pressure (anti-self-similarity)
-const NOVELTY_SLOTS: usize = 24;
+const NOVELTY_SLOTS: usize = 48;
 const NOVELTY_EVERY: usize = 4;
 const NOVELTY_MARGIN: f64 = 0.35;
 const NOVELTY_W: f64 = 0.25;
@@ -208,7 +215,7 @@ const SHEAR_AMP_MIN: f32 = 0.015; // structured macro shear at T=0 (anti-weld fl
 const SHEAR_AMP_MAX: f32 = 0.42; // at T=1
 const MICRO_KICK_MAX: f32 = 0.035; // small ergodic perturbation; structure must be learned
 const LR_HEAT_MAX: f64 = 1.5; // lr multiplier reaches 1+this at T=1
-const LR_CURIOSITY_MAX: f64 = 0.35;
+const LR_CURIOSITY_MAX: f64 = 0.37;
 const ARB_TAU_MAX: f32 = 2.0; // arbiter softmax temp reaches 1+this at T=1
 const SHEAR_OCTAVES: usize = 7;
 const SHEAR_PHASE_VEL: f32 = 0.314;
@@ -217,11 +224,15 @@ const SHEAR_PHASE_VEL: f32 = 0.314;
 const SYNERGY_TARGET: f32 = 0.51;
 const SYNERGY_BAND_W: f32 = 0.50;
 
-const BASE_FREQ_L: f32 = 48.0;
-const BASE_FREQ_R: f32 = 69.0;
+const BASE_FREQ_L: f32 = 45.0;
+const BASE_FREQ_R: f32 = 61.0;
 const FREQ_GLIDE_SPEED: f32 = 0.07131;
 const BASE_LR: f64 = 1.5e-3;
-const RESONANT_AUTONOMY: f32 = 0.31;
+// Keep a strong source-derived floor without letting the adaptive source term
+// dominate every ecological objective. v8's 0.31 under-grounded the renderer;
+// the experimental v9 value 0.05 over-corrected. This middle value keeps most
+// of v9's adaptive source emphasis while retaining generative autonomy.
+const RESONANT_AUTONOMY: f32 = 0.15;
 const GRAD_NORM_MAX: f32 = 5.0; // global-norm ceiling applied directly to gradients before AdamW
 const RADIATION_REFERENCE_WINDOW: f32 = BPTT_WINDOW as f32;
 const LOCAL_RAIL_START: f32 = 0.70;
@@ -233,8 +244,11 @@ const MAX_STEREO_SIDE_GAIN: f32 = 1.25;
 // The regional field is already the primary stereo map. Global pan is only a
 // residual coordinate, kept smooth and modest so it cannot replace spatial
 // structure with a fixed interchannel level difference.
-const STEREO_SIDE_LOSS_WEIGHT: f64 = 0.25;
-const STEREO_CORRELATION_LOSS_WEIGHT: f64 = 0.85;
+// The completed v9 run was slightly narrower and more correlated than its
+// targets. Modestly emphasize target-relative side and correlation geometry;
+// do not raise the learned-width rail, which can create anti-correlation.
+const STEREO_SIDE_LOSS_WEIGHT: f64 = 0.30;
+const STEREO_CORRELATION_LOSS_WEIGHT: f64 = 0.95;
 const STEREO_LEVEL_LOSS_WEIGHT: f64 = 0.45;
 const TWO_PI: f32 = 2.0 * std::f32::consts::PI;
 
@@ -347,6 +361,9 @@ const UNCERTAINTY_TRACE_HEADERS: &[&str] = &[
     "structured_complexity",
     "novelty_dmin",
     "morph_depth",
+    "manifold_depth",
+    "active_spatial_rings",
+    "far_ring_gain",
     "morph_frozen",
     "morph_max_depth",
     "rad_amp",
@@ -437,6 +454,9 @@ const TOPOLOGY_INDEX_HEADERS: &[&str] = &[
     "step",
     "run_step",
     "morph_depth",
+    "manifold_depth",
+    "active_spatial_rings",
+    "far_ring_gain",
     "rad_amp",
     "field_entropy",
     "morph_event",
@@ -450,6 +470,11 @@ const MORPH_EVENT_HEADERS: &[&str] = &[
     "run_step",
     "event",
     "morph_depth",
+    "manifold_depth_before",
+    "manifold_depth",
+    "active_spatial_rings_before",
+    "active_spatial_rings",
+    "far_ring_gain",
     "rad_amp",
 ];
 
@@ -950,7 +975,11 @@ struct DevelopmentPlateauTracker {
 impl DevelopmentPlateauTracker {
     fn new() -> Self {
         Self {
-            scores: VecDeque::with_capacity(DEVELOPMENT_PLATEAU_WINDOW),
+            // Keep the configuration usable when an experiment deliberately
+            // asks for more evidence than the comparison window alone holds.
+            scores: VecDeque::with_capacity(
+                DEVELOPMENT_PLATEAU_WINDOW.max(DEVELOPMENT_PLATEAU_MIN_SAMPLES),
+            ),
         }
     }
 
@@ -958,7 +987,7 @@ impl DevelopmentPlateauTracker {
         let score = spectral + DEVELOPMENT_SCORE_CHROMA_WEIGHT * chroma;
         if score.is_finite() {
             self.scores.push_back(score);
-            if self.scores.len() > DEVELOPMENT_PLATEAU_WINDOW {
+            if self.scores.len() > DEVELOPMENT_PLATEAU_WINDOW.max(DEVELOPMENT_PLATEAU_MIN_SAMPLES) {
                 self.scores.pop_front();
             }
         }
@@ -1800,7 +1829,7 @@ impl PersistentAdamW {
 }
 
 // --- AUDIO TARGET LOADER ---
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 enum CorpusRole {
     Train,
@@ -1822,6 +1851,17 @@ struct CorpusManifest {
     schema_version: u32,
     generated_by: String,
     entries: Vec<CorpusEntry>,
+}
+
+#[derive(Debug, Default, PartialEq, Eq)]
+struct ManifestRefreshReport {
+    added: usize,
+    added_train: usize,
+    added_development: usize,
+    added_validation: usize,
+    added_exclude: usize,
+    missing_retained: usize,
+    missing_pruned: usize,
 }
 
 fn stable_name_hash(name: &str) -> u64 {
@@ -1866,18 +1906,7 @@ fn corpus_family(name: &str) -> String {
 }
 
 fn auto_corpus_manifest(wav_dir: &str) -> Result<CorpusManifest> {
-    let mut names: Vec<String> = std::fs::read_dir(wav_dir)?
-        .filter_map(|entry| entry.ok())
-        .filter_map(|entry| {
-            let path = entry.path();
-            (path
-                .extension()
-                .is_some_and(|ext| ext.eq_ignore_ascii_case("wav")))
-            .then(|| path.file_name()?.to_str().map(str::to_owned))
-            .flatten()
-        })
-        .collect();
-    names.sort();
+    let names = corpus_wav_names(wav_dir)?;
     let eligible: Vec<&String> = names
         .iter()
         .filter(|name| !is_generated_audio_name(name))
@@ -1941,6 +1970,138 @@ fn auto_corpus_manifest(wav_dir: &str) -> Result<CorpusManifest> {
         generated_by: format!("titan {}", env!("CARGO_PKG_VERSION")),
         entries,
     })
+}
+
+fn write_corpus_manifest(path: &str, manifest: &CorpusManifest) -> Result<()> {
+    ensure_parent_dir(path)?;
+    let tmp = format!("{}.tmp", path);
+    std::fs::write(&tmp, serde_json::to_vec_pretty(manifest)?)?;
+    std::fs::rename(&tmp, path)?;
+    Ok(())
+}
+
+fn corpus_wav_names(wav_dir: &str) -> Result<Vec<String>> {
+    let mut names: Vec<String> = std::fs::read_dir(wav_dir)?
+        .filter_map(|entry| entry.ok())
+        .filter_map(|entry| {
+            let path = entry.path();
+            (path
+                .extension()
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("wav")))
+            .then(|| path.file_name()?.to_str().map(str::to_owned))
+            .flatten()
+        })
+        .collect();
+    names.sort();
+    Ok(names)
+}
+
+fn inherited_family_role(
+    family_roles: &BTreeMap<String, Vec<CorpusRole>>,
+    family: &str,
+) -> CorpusRole {
+    let Some(roles) = family_roles.get(family) else {
+        return CorpusRole::Train;
+    };
+    // A held-out role wins over train for a mixed legacy family so refresh can
+    // never leak a validation or development family into gradient training.
+    // Explicit family exclusion wins over train but not over held-out evidence.
+    [
+        CorpusRole::Validation,
+        CorpusRole::Development,
+        CorpusRole::Exclude,
+        CorpusRole::Train,
+    ]
+    .into_iter()
+    .find(|candidate| roles.contains(candidate))
+    .unwrap_or(CorpusRole::Train)
+}
+
+fn refresh_corpus_manifest(
+    wav_dir: &str,
+    path: &str,
+    prune_missing: bool,
+) -> Result<ManifestRefreshReport> {
+    let mut manifest = load_or_create_corpus_manifest(wav_dir, path)?;
+    let names = corpus_wav_names(wav_dir)?;
+    let present: std::collections::HashSet<&str> = names.iter().map(String::as_str).collect();
+    let mut report = ManifestRefreshReport::default();
+
+    if prune_missing {
+        let before = manifest.entries.len();
+        manifest
+            .entries
+            .retain(|entry| present.contains(entry.file.as_str()));
+        report.missing_pruned = before - manifest.entries.len();
+    } else {
+        report.missing_retained = manifest
+            .entries
+            .iter()
+            .filter(|entry| !present.contains(entry.file.as_str()))
+            .count();
+    }
+
+    let mut listed: std::collections::HashSet<String> = manifest
+        .entries
+        .iter()
+        .map(|entry| entry.file.clone())
+        .collect();
+    let mut family_roles: BTreeMap<String, Vec<CorpusRole>> = BTreeMap::new();
+    for entry in &manifest.entries {
+        family_roles
+            .entry(entry.family.clone())
+            .or_default()
+            .push(entry.role);
+    }
+
+    for file in names {
+        if !listed.insert(file.clone()) {
+            continue;
+        }
+        let generated = is_generated_audio_name(&file);
+        let family = corpus_family(&file);
+        let role = if generated {
+            CorpusRole::Exclude
+        } else {
+            inherited_family_role(&family_roles, &family)
+        };
+        match role {
+            CorpusRole::Train => report.added_train += 1,
+            CorpusRole::Development => report.added_development += 1,
+            CorpusRole::Validation => report.added_validation += 1,
+            CorpusRole::Exclude => report.added_exclude += 1,
+        }
+        family_roles.entry(family.clone()).or_default().push(role);
+        manifest.entries.push(CorpusEntry {
+            file,
+            role,
+            family,
+            provenance: if generated {
+                "titan_generated_quarantine".to_string()
+            } else {
+                "user_corpus".to_string()
+            },
+        });
+        report.added += 1;
+    }
+
+    if report.added > 0 || report.missing_pruned > 0 {
+        write_corpus_manifest(path, &manifest)?;
+    }
+    Ok(report)
+}
+
+fn rebuild_corpus_manifest(wav_dir: &str, path: &str) -> Result<(CorpusManifest, Option<String>)> {
+    let manifest = auto_corpus_manifest(wav_dir)?;
+    let backup = if std::path::Path::new(path).exists() {
+        let backup = format!("{}.bak.{}", path, unix_time_ms());
+        std::fs::copy(path, &backup)?;
+        Some(backup)
+    } else {
+        None
+    };
+    write_corpus_manifest(path, &manifest)?;
+    Ok((manifest, backup))
 }
 
 fn load_or_create_corpus_manifest(wav_dir: &str, path: &str) -> Result<CorpusManifest> {
@@ -2046,19 +2207,14 @@ fn load_or_create_corpus_manifest(wav_dir: &str, path: &str) -> Result<CorpusMan
                 changed = true;
             }
             if changed {
-                let tmp = format!("{}.tmp", path);
-                std::fs::write(&tmp, serde_json::to_vec_pretty(&manifest)?)?;
-                std::fs::rename(&tmp, path)?;
+                write_corpus_manifest(path, &manifest)?;
                 println!("--> Repaired development/test splits at corpus-family boundaries.");
             }
         }
         return Ok(manifest);
     }
     let manifest = auto_corpus_manifest(wav_dir)?;
-    ensure_parent_dir(path)?;
-    let tmp = format!("{}.tmp", path);
-    std::fs::write(&tmp, serde_json::to_vec_pretty(&manifest)?)?;
-    std::fs::rename(&tmp, path)?;
+    write_corpus_manifest(path, &manifest)?;
     println!("--> Created explicit corpus manifest at {}", path);
     Ok(manifest)
 }
@@ -2145,7 +2301,7 @@ impl TargetAudioLoader {
                 match Self::index_wav(&p) {
                     Ok(file) if file.output_frames >= CHUNK_SIZE => {
                         files.push(file);
-                        roles.push(entry.role.clone());
+                        roles.push(entry.role);
                         families.push(entry.family.clone());
                     }
                     Ok(file) => println!(
@@ -2699,42 +2855,54 @@ fn damp_global_mean(x: &Tensor) -> CResult<Tensor> {
 
 type TensorTransform = Box<dyn Fn(&Tensor) -> CResult<Tensor>>;
 
-// Circular (torus) 2D convolution: wrap-pad both spatial dims, then conv with
-// padding 0. The torus removes boundary artifacts that would otherwise pin
-// patterns to the edges.
-fn conv2d_torus_grouped(
+// Klein-bottle convolution: vertical wrap is periodic; horizontal wrap
+// reverses the vertical coordinate. This removes planar edges while giving the
+// organism a non-orientable seam rather than the old flat torus. Dilation 1
+// and 2 provide independently learned near and far neighborhood rings.
+fn klein_pad2d(x: &Tensor, pad: usize) -> CResult<Tensor> {
+    if pad == 0 {
+        return Ok(x.clone());
+    }
+    let h = x.dim(D::Minus2)?;
+    let w = x.dim(D::Minus1)?;
+    if pad > h || pad > w {
+        candle_core::bail!("Klein padding {} exceeds field {}x{}", pad, h, w);
+    }
+    let left = x
+        .narrow(D::Minus1, w - pad, pad)?
+        .contiguous()?
+        .flip(&[2])?;
+    let right = x.narrow(D::Minus1, 0, pad)?.contiguous()?.flip(&[2])?;
+    let horizontal = Tensor::cat(&[&left, x, &right], D::Minus1)?;
+    let top = horizontal.narrow(D::Minus2, h - pad, pad)?;
+    let bottom = horizontal.narrow(D::Minus2, 0, pad)?;
+    Tensor::cat(&[&top, &horizontal, &bottom], D::Minus2)
+}
+
+fn conv2d_klein_grouped(
     in_c: usize,
     out_c: usize,
     k: usize,
+    dilation: usize,
     groups: usize,
     vb: VBV,
 ) -> Result<TensorTransform> {
-    let pad = k / 2;
+    let pad = dilation * (k / 2);
     let config = Conv2dConfig {
         padding: 0,
         stride: 1,
+        dilation,
         groups,
         ..Default::default()
     };
     let conv = candle_nn::conv2d(in_c, out_c, k, config, vb)?;
     Ok(Box::new(move |x: &Tensor| {
-        if pad == 0 {
-            return conv.forward(x);
-        }
-        let h = x.dim(D::Minus2)?;
-        let top = x.narrow(D::Minus2, h - pad, pad)?;
-        let bot = x.narrow(D::Minus2, 0, pad)?;
-        let xv = Tensor::cat(&[&top, x, &bot], D::Minus2)?;
-        let w = xv.dim(D::Minus1)?;
-        let left = xv.narrow(D::Minus1, w - pad, pad)?;
-        let right = xv.narrow(D::Minus1, 0, pad)?;
-        let xh = Tensor::cat(&[&left, &xv, &right], D::Minus1)?;
-        conv.forward(&xh)
+        conv.forward(&klein_pad2d(x, pad)?)
     }))
 }
 
-fn conv2d_torus(in_c: usize, out_c: usize, k: usize, vb: VBV) -> Result<TensorTransform> {
-    conv2d_torus_grouped(in_c, out_c, k, 1, vb)
+fn conv2d_pointwise(in_c: usize, out_c: usize, vb: VBV) -> Result<TensorTransform> {
+    conv2d_klein_grouped(in_c, out_c, 1, 1, 1, vb)
 }
 
 fn morph_wave(phase: &Tensor, morph: &Tensor) -> CResult<Tensor> {
@@ -4211,7 +4379,7 @@ impl GRUCell {
     }
 }
 
-// --- 2D NEURAL CA on a torus ---
+// --- DYNAMIC FOLDED-MANIFOLD NEURAL CA ---
 struct CellClockBank {
     masks: Vec<Tensor>,
     schedule_salt: u64,
@@ -4262,21 +4430,102 @@ impl CellClockBank {
     }
 }
 
-struct NeuralCA2D {
-    perception: TensorTransform,
+fn manifold_depth_for_morph_depth(morph_depth: usize) -> usize {
+    (1 + morph_depth.saturating_sub(1) / CA_MANIFOLD_LAYERS_PER_SHEET).min(CA_MANIFOLD_MAX_DEPTH)
+}
+
+fn far_ring_gain_for_morph_depth(morph_depth: usize) -> f64 {
+    (morph_depth.saturating_sub(1) as f64 / CA_MANIFOLD_LAYERS_PER_SHEET as f64).clamp(0.0, 1.0)
+        * CA_FAR_RING_MAX_GAIN
+}
+
+fn project_manifold_state(x: &Tensor, manifold_depth: usize) -> CResult<Tensor> {
+    let (batch, channels, height, width) = x.dims4()?;
+    if channels != CA_CHANNELS {
+        candle_core::bail!(
+            "folded manifold expects {} channels, got {}",
+            CA_CHANNELS,
+            channels
+        );
+    }
+    let active_channels = manifold_depth.clamp(1, CA_MANIFOLD_MAX_DEPTH) * CA_FEATURE_CHANNELS;
+    if active_channels == channels {
+        return Ok(x.clone());
+    }
+    let active = x.narrow(1, 0, active_channels)?;
+    let dormant = Tensor::zeros(
+        (batch, channels - active_channels, height, width),
+        x.dtype(),
+        x.device(),
+    )?;
+    Tensor::cat(&[&active, &dormant], 1)
+}
+
+fn folded_depth_delta(x: &Tensor, manifold_depth: usize) -> CResult<Tensor> {
+    let (batch, channels, height, width) = x.dims4()?;
+    let manifold_depth = manifold_depth.clamp(1, CA_MANIFOLD_MAX_DEPTH);
+    if channels != CA_CHANNELS || manifold_depth == 1 {
+        return Tensor::zeros(x.shape(), x.dtype(), x.device());
+    }
+    let active_channels = manifold_depth * CA_FEATURE_CHANNELS;
+    let active = x.narrow(1, 0, active_channels)?.reshape((
+        batch,
+        manifold_depth,
+        CA_FEATURE_CHANNELS,
+        height,
+        width,
+    ))?;
+    let neighbor_mean = active
+        .roll(1, 1)?
+        .add(&active.roll(-1, 1)?)?
+        .affine(0.5, 0.0)?;
+    let active_delta =
+        neighbor_mean
+            .sub(&active)?
+            .reshape((batch, active_channels, height, width))?;
+    if active_channels == channels {
+        return Ok(active_delta);
+    }
+    let dormant = Tensor::zeros(
+        (batch, channels - active_channels, height, width),
+        x.dtype(),
+        x.device(),
+    )?;
+    Tensor::cat(&[&active_delta, &dormant], 1)
+}
+
+struct NeuralCAFolded3D {
+    near_perception: TensorTransform,
+    far_perception: TensorTransform,
     expand: TensorTransform,
     contract: TensorTransform,
     anisotropic_mask: Tensor,
 }
-impl NeuralCA2D {
+impl NeuralCAFolded3D {
     fn new(channels: usize, hidden: usize, height: usize, width: usize, vb: VBV) -> Result<Self> {
-        // MobileNet-style depthwise perception removes the dense 3x3
-        // channel-mixing cost. Two 1x1 transforms retain learned cross-channel
-        // interaction at each cell.
-        let perception =
-            conv2d_torus_grouped(channels, channels, 3, channels, vb.pp("perception"))?;
-        let expand = conv2d_torus(channels, hidden, 1, vb.pp("expand"))?;
-        let contract = conv2d_torus(hidden, channels, 1, vb.pp("contract"))?;
+        if channels != CA_MANIFOLD_MAX_DEPTH * CA_FEATURE_CHANNELS {
+            anyhow::bail!(
+                "CA channels {} must equal manifold depth {} * feature channels {}",
+                channels,
+                CA_MANIFOLD_MAX_DEPTH,
+                CA_FEATURE_CHANNELS
+            );
+        }
+        // The old perception tensor name is retained so v8 weights can seed
+        // the near ring. The far ring is new and activates gradually with
+        // morphic depth; both remain depthwise for phone-scale training.
+        let near_perception =
+            conv2d_klein_grouped(channels, channels, 3, 1, channels, vb.pp("perception"))?;
+        let far_perception = conv2d_klein_grouped(
+            channels,
+            channels,
+            3,
+            CA_FAR_RING_DILATION,
+            channels,
+            vb.pp("far_perception"),
+        )?;
+        let expand = conv2d_pointwise(channels, hidden, vb.pp("expand"))?;
+        let contract = conv2d_pointwise(hidden, channels, vb.pp("contract"))?;
         // Fixed anisotropy: a gentle per-channel 2D interference pattern so the
         // learned rule is not forced to break symmetry from pure noise.
         let mut pattern = vec![0.0f32; channels * height * width];
@@ -4297,7 +4546,8 @@ impl NeuralCA2D {
         let anisotropic_mask =
             Tensor::from_vec(pattern, (1, channels, height, width), vb.device())?;
         Ok(Self {
-            perception,
+            near_perception,
+            far_perception,
             expand,
             contract,
             anisotropic_mask,
@@ -4311,8 +4561,14 @@ impl NeuralCA2D {
         ext_mod: Option<&Tensor>,
         field_bias: Option<&Tensor>,
         keep: &Tensor,
+        manifold_depth: usize,
+        far_ring_gain: f64,
     ) -> CResult<Tensor> {
-        let perceived = (self.perception)(x)?;
+        let x = project_manifold_state(x, manifold_depth)?;
+        let near = (self.near_perception)(&x)?;
+        let far = (self.far_perception)(&x)?.affine(far_ring_gain, 0.0)?;
+        let depth = folded_depth_delta(&x, manifold_depth)?.affine(CA_DEPTH_LAPLACIAN_GAIN, 0.0)?;
+        let perceived = near.add(&far)?.add(&depth)?;
         let h = (self.expand)(&perceived)?.relu()?;
         let mut out = (self.contract)(&h)?;
         out = out.broadcast_mul(&self.anisotropic_mask)?;
@@ -4322,6 +4578,7 @@ impl NeuralCA2D {
         if let Some(f) = field_bias {
             out = out.add(f)?;
         }
+        let out = project_manifold_state(&out, manifold_depth)?;
         x.add(&out.mul(keep)?.affine(0.1, 0.0)?)
     }
 }
@@ -4534,8 +4791,8 @@ struct ForwardOut {
 }
 
 struct ComplexAudioEcosystem {
-    micro_ca: NeuralCA2D,
-    macro_ca: NeuralCA2D,
+    micro_ca: NeuralCAFolded3D,
+    macro_ca: NeuralCAFolded3D,
     micro_clocks: CellClockBank,
     macro_clocks: CellClockBank,
     gru_memory: GRUCell,
@@ -4608,9 +4865,10 @@ impl AsymptoticContractionLayer {
 
 impl ComplexAudioEcosystem {
     fn new(vb: VBV, dev: &Device, morph: MorphArchitecture) -> Result<Self> {
-        let micro_ca = NeuralCA2D::new(CA_CHANNELS, CA_HIDDEN, GRID_H, GRID_W, vb.pp("micro_ca"))?;
+        let micro_ca =
+            NeuralCAFolded3D::new(CA_CHANNELS, CA_HIDDEN, GRID_H, GRID_W, vb.pp("micro_ca"))?;
         let macro_ca =
-            NeuralCA2D::new(CA_CHANNELS, CA_HIDDEN, MACRO_H, MACRO_W, vb.pp("macro_ca"))?;
+            NeuralCAFolded3D::new(CA_CHANNELS, CA_HIDDEN, MACRO_H, MACRO_W, vb.pp("macro_ca"))?;
         let micro_clocks = CellClockBank::new(CA_CHANNELS, GRID_H, GRID_W, 0xC10C_0001, dev)?;
         let macro_clocks = CellClockBank::new(CA_CHANNELS, MACRO_H, MACRO_W, 0xC10C_0002, dev)?;
         let gru_memory = GRUCell::new(CA_CHANNELS + EPI_DIM, MEMORY_DIM, vb.pp("gru_memory"))?;
@@ -4814,6 +5072,18 @@ impl ComplexAudioEcosystem {
     fn morph_capacity(&self) -> usize {
         self.morphic.capacity()
     }
+    fn manifold_depth(&self) -> usize {
+        manifold_depth_for_morph_depth(self.depth())
+    }
+    fn active_spatial_rings(&self) -> usize {
+        usize::from(far_ring_gain_for_morph_depth(self.depth()) > 0.0) + 1
+    }
+    fn far_ring_gain(&self) -> f64 {
+        far_ring_gain_for_morph_depth(self.depth())
+    }
+    fn project_manifold(&self, state: &Tensor) -> CResult<Tensor> {
+        project_manifold_state(state, self.manifold_depth())
+    }
     fn set_depth(&mut self, d: usize) {
         self.morphic.set_depth(d);
     }
@@ -4849,6 +5119,8 @@ impl ComplexAudioEcosystem {
     ) -> Result<ForwardOut> {
         let dev = micro.device();
         let [pc_l, pc_r, pm_l, pm_r] = phases;
+        let manifold_depth = self.manifold_depth();
+        let far_ring_gain = self.far_ring_gain();
 
         let mut next_macro = macro_t.clone();
         if force {
@@ -4862,6 +5134,8 @@ impl ComplexAudioEcosystem {
                     None,
                     Some(&field),
                     self.macro_clocks.get(absolute_step),
+                    manifold_depth,
+                    far_ring_gain,
                 )?
                 .tanh()?
                 .affine(0.95, 0.0)?;
@@ -4879,6 +5153,8 @@ impl ComplexAudioEcosystem {
             Some(&macro_mod),
             Some(&micro_field),
             self.micro_clocks.get(absolute_step),
+            manifold_depth,
+            far_ring_gain,
         )?;
         let next_micro = micro
             .broadcast_mul(&inv_metab)?
@@ -5627,7 +5903,7 @@ fn load_world(path: &str) -> Result<WorldCheckpoint> {
     let magic = &bytes[..8];
     if magic != WORLD_MAGIC.as_slice() {
         anyhow::bail!(
-            "world checkpoint is not a TITAN v8 world; use --fresh-world or a v8 --state"
+            "world checkpoint is not a TITAN v9 world; use --fresh-world or a v9 --state"
         );
     }
     let payload_len = u64::from_le_bytes(bytes[8..16].try_into().unwrap()) as usize;
@@ -5773,6 +6049,10 @@ fn main() -> Result<()> {
     let mut model_override: Option<String> = None;
     let mut import_model_override: Option<String> = None;
     let mut corpus_manifest_override: Option<String> = None;
+    let mut refresh_corpus_manifest_requested = false;
+    let mut rebuild_corpus_manifest_requested = false;
+    let mut prune_missing_manifest_entries = false;
+    let mut manifest_only = false;
     let mut run_tag: Option<String> = None;
     let mut seed: u64 = 42;
     let mut arg_idx = 1;
@@ -5866,6 +6146,22 @@ fn main() -> Result<()> {
                     anyhow::bail!("Missing value for --corpus-manifest");
                 }
             }
+            "--refresh-corpus-manifest" => {
+                refresh_corpus_manifest_requested = true;
+                arg_idx += 1;
+            }
+            "--rebuild-corpus-manifest" => {
+                rebuild_corpus_manifest_requested = true;
+                arg_idx += 1;
+            }
+            "--prune-missing-manifest-entries" | "--prune-missing" => {
+                prune_missing_manifest_entries = true;
+                arg_idx += 1;
+            }
+            "--manifest-only" => {
+                manifest_only = true;
+                arg_idx += 1;
+            }
             "--run-tag" => {
                 if arg_idx + 1 < args.len() {
                     validate_run_tag(&args[arg_idx + 1])?;
@@ -5935,19 +6231,23 @@ fn main() -> Result<()> {
             }
             "--help" | "-h" => {
                 println!(
-                    "TITAN v8 Multirate Resonant Ecology\n\n\
+                    "TITAN v9 Morphogenic Manifold\n\n\
 Usage: titan [BASE_DIR] [options]\n\n\
   -b, --base-dir DIR   Output/training root (default /sdcard/Download)\n\
   -d, --duration SEC   Render duration (default 240)\n\
   -t, --threads N      Rayon/Candle CPU threads (default min(device cores, 6))\n\
-  -w, --bptt N         Gradient horizon 1..64; tape is memory-capped at 8 (default 8)\n\
+  -w, --bptt N         Gradient horizon 1..64; tape is memory-capped at 8 (default 16)\n\
       --core-update-every N  Full CA/GRU backward every N tapes (default 4)\n\
   -l, --lr VALUE       Base AdamW learning rate\n\
   -s, --seed N         Seed for a fresh deterministic organism\n\
       --state PATH     World-checkpoint path\n\
-      --model PATH     v8 model output/resume path\n\
+      --model PATH     v9 model output/resume path\n\
       --import-model P Import compatible experimental tensors without overwriting source\n\
       --corpus-manifest PATH  Explicit train/development/validation/exclude manifest\n\
+      --refresh-corpus-manifest  Add new WAVs while preserving existing family roles\n\
+      --rebuild-corpus-manifest  Replace the manifest from current WAVs (creates backup)\n\
+      --prune-missing  Remove manifest entries whose WAV files are absent (refresh only)\n\
+      --manifest-only  Create, repair, refresh, or rebuild the manifest, then exit\n\
       --run-tag NAME   Isolate output, telemetry, model, and world artifacts\n\
       --freeze-morph   Hold the checkpoint's current morphic depth for this run\n\
       --morph-layers N Physically construct N append-preserving morph blocks (default 12)\n\
@@ -5972,6 +6272,58 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 }
             }
         }
+    }
+    if refresh_corpus_manifest_requested && rebuild_corpus_manifest_requested {
+        anyhow::bail!(
+            "--refresh-corpus-manifest and --rebuild-corpus-manifest are mutually exclusive"
+        );
+    }
+    if prune_missing_manifest_entries && !refresh_corpus_manifest_requested {
+        anyhow::bail!("--prune-missing requires --refresh-corpus-manifest");
+    }
+    std::fs::create_dir_all(&base_dir)?;
+    let wav_dir = format!("{}/OLD_WAVS", base_dir);
+    let corpus_manifest_path = corpus_manifest_override
+        .unwrap_or_else(|| format!("{}/titan_corpus_manifest_v7.json", base_dir));
+    if rebuild_corpus_manifest_requested {
+        let (manifest, backup) = rebuild_corpus_manifest(&wav_dir, &corpus_manifest_path)?;
+        println!(
+            "--> Rebuilt corpus manifest at {} from {} WAV files.",
+            corpus_manifest_path,
+            manifest.entries.len()
+        );
+        if let Some(backup) = backup {
+            println!("--> Previous manifest backed up at {}", backup);
+        }
+    } else if refresh_corpus_manifest_requested {
+        let report = refresh_corpus_manifest(
+            &wav_dir,
+            &corpus_manifest_path,
+            prune_missing_manifest_entries,
+        )?;
+        println!(
+            "--> Refreshed corpus manifest at {}: added {} ({} train, {} development, {} validation, {} exclude), retained {} missing entries, pruned {}.",
+            corpus_manifest_path,
+            report.added,
+            report.added_train,
+            report.added_development,
+            report.added_validation,
+            report.added_exclude,
+            report.missing_retained,
+            report.missing_pruned,
+        );
+    }
+    if manifest_only {
+        if !refresh_corpus_manifest_requested && !rebuild_corpus_manifest_requested {
+            let manifest = load_or_create_corpus_manifest(&wav_dir, &corpus_manifest_path)?;
+            println!(
+                "--> Corpus manifest ready at {} with {} entries.",
+                corpus_manifest_path,
+                manifest.entries.len()
+            );
+        }
+        println!("--> Manifest-only operation complete; training was not started.");
+        return Ok(());
     }
     let available_threads = std::thread::available_parallelism()
         .map(|n| n.get())
@@ -6044,8 +6396,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
             keep_running.store(false, AtomicOrdering::SeqCst);
         })?;
     }
-    std::fs::create_dir_all(&base_dir)?;
-    println!("=== TITAN AUDIO ECOSYSTEM: RUST EDITION v8 (MULTIRATE RESONANT ECOLOGY) ===");
+    println!("=== TITAN AUDIO ECOSYSTEM: RUST EDITION v9 (MORPHOGENIC MANIFOLD) ===");
     println!("Seed: {} | Threads: {} | Gradient horizon: {} | Autograd tape: {} | Core cadence: 1/{} tapes | Field: {}ch micro {}x{} macro {}x{} | LR: {:.2e} | Duration: {}s", seed, n_threads, bptt_window, tape_chunks, core_update_every, CA_CHANNELS, GRID_H, GRID_W, MACRO_H, MACRO_W, target_lr, sim_duration);
     if bptt_window > tape_chunks {
         println!("--> Memory-safe TBPTT: accumulating {}-chunk tape segments across a {}-chunk optimizer horizon.", tape_chunks, bptt_window);
@@ -6056,13 +6407,12 @@ Usage: titan [BASE_DIR] [options]\n\n\
             );
         }
     }
-    println!("NOTE: CA/RNG/renderer and matching AdamW moments resume from v8 checkpoints. A missing or mismatched optimizer uses a 32-update LR warmup. Fresh reproducibility also requires the same --threads value.");
+    println!("NOTE: CA/RNG/renderer and matching AdamW moments resume from v9 checkpoints. A missing or mismatched optimizer uses a 32-update LR warmup. Fresh reproducibility also requires the same --threads value.");
 
-    let wav_dir = format!("{}/OLD_WAVS", base_dir);
     let model_path = model_override.unwrap_or_else(|| {
         artifact_path(
             &base_dir,
-            "titan_model_v8",
+            "titan_model_v9",
             "safetensors",
             run_tag.as_deref(),
         )
@@ -6075,16 +6425,16 @@ Usage: titan [BASE_DIR] [options]\n\n\
     };
     let state_was_overridden = state_override.is_some();
     let world_path = state_override
-        .unwrap_or_else(|| artifact_path(&base_dir, "titan_world_v8", "bin", run_tag.as_deref()));
+        .unwrap_or_else(|| artifact_path(&base_dir, "titan_world_v9", "bin", run_tag.as_deref()));
     let morph_path = artifact_path(
         &base_dir,
-        "titan_morph_state_v8",
+        "titan_morph_state_v9",
         "json",
         run_tag.as_deref(),
     );
     let optimizer_path = artifact_path(
         &base_dir,
-        "titan_optimizer_v8",
+        "titan_optimizer_v9",
         "safetensors",
         run_tag.as_deref(),
     );
@@ -6109,8 +6459,6 @@ Usage: titan [BASE_DIR] [options]\n\n\
     ensure_parent_dir(&model_path)?;
     ensure_parent_dir(&world_path)?;
     ensure_parent_dir(&optimizer_path)?;
-    let corpus_manifest_path = corpus_manifest_override
-        .unwrap_or_else(|| format!("{}/titan_corpus_manifest_v7.json", base_dir));
     let mut target_loader = TargetAudioLoader::new_with_manifest(&wav_dir, &corpus_manifest_path)?;
     let development_is_strict = target_loader.development_is_strict;
     if !development_is_strict {
@@ -6146,7 +6494,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
         model_parameters as f64 * 4.0 / (1024.0 * 1024.0),
     );
 
-    // Initialize the full v8 parameter set deterministically first, then load
+    // Initialize the full v9 parameter set deterministically first, then load
     // every compatible tensor from an older or current checkpoint on top.
     // This permits older tensor migration without discarding the learned CA just
     // because the new self-model head has different dimensions.
@@ -6209,7 +6557,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
         fresh_world = true;
     }
     if !loaded_any && !fresh_model && std::path::Path::new(&load_model_path).exists() {
-        println!("--> No compatible tensors were found; this run starts as a fresh v8 model.");
+        println!("--> No compatible tensors were found; this run starts as a fresh v9 model.");
     }
     if importing_model && loaded_any {
         println!(
@@ -6369,6 +6717,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
             model.depth()
         );
     }
+    micro_tape = model.project_manifold(&micro_tape)?;
+    macro_tape = model.project_manifold(&macro_tape)?;
     let mut optimizer_resumed = false;
     let mut optimizer_load_report = OptimizerLoadReport::default();
     if loaded_world
@@ -6398,10 +6748,14 @@ Usage: titan [BASE_DIR] [options]\n\n\
         }
     }
     println!(
-        "--> Morphic stack: L{:02} active / {} blocks × {} width · rad_amp {:.3} · world {}",
+        "--> Morphic stack: L{:02} active / {} blocks × {} width · manifold {}x{} features with {} spatial ring{} · rad_amp {:.3} · world {}",
         model.depth(),
         model.morph_capacity(),
         morph_width,
+        model.manifold_depth(),
+        CA_FEATURE_CHANNELS,
+        model.active_spatial_rings(),
+        if model.active_spatial_rings() == 1 { "" } else { "s" },
         rad_amp,
         if loaded_world { "resumed" } else { "new" }
     );
@@ -6748,7 +7102,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
             .log_mag(&targets.reshape((TARGET_K * 2, CHUNK_SIZE))?)?
             .detach(); // (K*2, bins)
         let best_k = if TARGET_K == 1 {
-            // The v8 manifest sampler intentionally uses one independently
+            // The manifest sampler intentionally uses one independently
             // selected family. Avoid building and synchronizing a vacuous
             // nearest-candidate graph.
             0
@@ -7210,8 +7564,18 @@ Usage: titan [BASE_DIR] [options]\n\n\
         // NaN bio-reset rides the same readback — no dedicated check sync.
         if !movement.is_finite() || !micro_abs.is_finite() {
             println!("! BIO-RESET: Tape corruption detected (NaN). Re-seeding primordial soup.");
-            micro_tape = randn_t(&mut rng, &[1, CA_CHANNELS, GRID_H, GRID_W], 1.0, &device)?;
-            macro_tape = randn_t(&mut rng, &[1, CA_CHANNELS, MACRO_H, MACRO_W], 1.0, &device)?;
+            micro_tape = model.project_manifold(&randn_t(
+                &mut rng,
+                &[1, CA_CHANNELS, GRID_H, GRID_W],
+                1.0,
+                &device,
+            )?)?;
+            macro_tape = model.project_manifold(&randn_t(
+                &mut rng,
+                &[1, CA_CHANNELS, MACRO_H, MACRO_W],
+                1.0,
+                &device,
+            )?)?;
             hidden_mem = Tensor::zeros((1, MEMORY_DIM), DType::F32, &device)?;
             tape_loss = None;
             steps_in_tape = 0;
@@ -7290,6 +7654,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
         // difficulty and to sustained ecological collapse; structural events
         // are cooldown-gated so a hot episode cannot cascade through layers.
         let mut morph_event: Option<&'static str> = None;
+        let manifold_depth_before = model.manifold_depth();
+        let spatial_rings_before = model.active_spatial_rings();
         if step < MORPH_WARMUP {
             warmup_sum += mimic_drift_n;
         } else {
@@ -7349,9 +7715,13 @@ Usage: titan [BASE_DIR] [options]\n\n\
         }
         if let Some(ev) = morph_event {
             println!(
-                "  ◄ {} ►  Depth L{:02} | Rad {:.2}",
+                "  ◄ {} ►  Depth L{:02} | Manifold {}→{} sheets | Rings {}→{} | Rad {:.2}",
                 ev,
                 model.depth(),
+                manifold_depth_before,
+                model.manifold_depth(),
+                spatial_rings_before,
+                model.active_spatial_rings(),
                 rad_amp
             );
             morph_events.push(serde_json::json!({
@@ -7359,6 +7729,11 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 "run_step": step,
                 "event": ev,
                 "morph_depth": model.depth(),
+                "manifold_depth_before": manifold_depth_before,
+                "manifold_depth": model.manifold_depth(),
+                "active_spatial_rings_before": spatial_rings_before,
+                "active_spatial_rings": model.active_spatial_rings(),
+                "far_ring_gain": model.far_ring_gain(),
                 "rad_amp": rad_amp,
             }));
             pending_morph_event = Some((absolute_step, ev));
@@ -7778,6 +8153,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 "step": absolute_step,
                 "run_step": step,
                 "morph_depth": model.depth(),
+                "manifold_depth": model.manifold_depth(),
+                "active_spatial_rings": model.active_spatial_rings(),
+                "far_ring_gain": model.far_ring_gain(),
                 "rad_amp": rad_amp,
                 "field_entropy": field_entropy,
                 "morph_event": trace_morph_event,
@@ -7812,6 +8190,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 "structured_complexity": s_sig["structured_complexity"].as_f64().unwrap_or(0.0),
                 "novelty_dmin": novelty_dmin_val,
                 "morph_depth": model.depth(),
+                "manifold_depth": model.manifold_depth(),
+                "active_spatial_rings": model.active_spatial_rings(),
+                "far_ring_gain": model.far_ring_gain(),
                 "morph_frozen": morph_policy.frozen,
                 "morph_max_depth": morph_policy.max_depth,
                 "rad_amp": rad_amp,
@@ -8322,6 +8703,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
             t["step"].to_string(),
             t["run_step"].to_string(),
             t["morph_depth"].to_string(),
+            t["manifold_depth"].to_string(),
+            t["active_spatial_rings"].to_string(),
+            t["far_ring_gain"].to_string(),
             t["rad_amp"].to_string(),
             t["field_entropy"].to_string(),
             t["morph_event"].as_str().unwrap_or("").to_string(),
@@ -8340,6 +8724,11 @@ Usage: titan [BASE_DIR] [options]\n\n\
             event["run_step"].to_string(),
             event["event"].as_str().unwrap_or("").to_string(),
             event["morph_depth"].to_string(),
+            event["manifold_depth_before"].to_string(),
+            event["manifold_depth"].to_string(),
+            event["active_spatial_rings_before"].to_string(),
+            event["active_spatial_rings"].to_string(),
+            event["far_ring_gain"].to_string(),
             event["rad_amp"].to_string(),
         ])?;
     }
@@ -8399,6 +8788,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
             t["structured_complexity"].to_string(),
             t["novelty_dmin"].to_string(),
             t["morph_depth"].to_string(),
+            t["manifold_depth"].to_string(),
+            t["active_spatial_rings"].to_string(),
+            t["far_ring_gain"].to_string(),
             t["morph_frozen"].to_string(),
             t["morph_max_depth"].to_string(),
             t["rad_amp"].to_string(),
@@ -8548,6 +8940,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
         &morph_path,
         serde_json::json!({
             "active_depth": model.depth(),
+            "manifold_depth": model.manifold_depth(),
+            "active_spatial_rings": model.active_spatial_rings(),
+            "far_ring_gain": model.far_ring_gain(),
             "morph_layers": model.morph_capacity(),
             "morph_width": morph_width,
             "rad_amp": rad_amp
@@ -8558,7 +8953,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let run_finished_unix_ms = unix_time_ms();
     let run_metadata_path = artifact_path(
         &base_dir,
-        "titan_run_metadata_v8",
+        "titan_run_metadata_v9",
         "json",
         run_tag.as_deref(),
     );
@@ -8609,6 +9004,13 @@ Usage: titan [BASE_DIR] [options]\n\n\
         "corpus": corpus_summary,
         "field": {
             "channels": CA_CHANNELS,
+            "manifold_max_depth": CA_MANIFOLD_MAX_DEPTH,
+            "feature_channels_per_sheet": CA_FEATURE_CHANNELS,
+            "active_manifold_depth": model.manifold_depth(),
+            "active_spatial_rings": model.active_spatial_rings(),
+            "far_ring_dilation": CA_FAR_RING_DILATION,
+            "far_ring_gain": model.far_ring_gain(),
+            "topology": "klein_bottle_x_cyclic_depth",
             "micro_height": GRID_H,
             "micro_width": GRID_W,
             "micro_cells": CA_CHANNELS * GRID_H * GRID_W,
@@ -8636,6 +9038,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
             "steps_per_second": overall_sps,
             "start_morph_depth": start_depth,
             "end_morph_depth": model.depth(),
+            "start_manifold_depth": manifold_depth_for_morph_depth(start_depth),
+            "end_manifold_depth": model.manifold_depth(),
+            "start_spatial_rings": usize::from(far_ring_gain_for_morph_depth(start_depth) > 0.0) + 1,
+            "end_spatial_rings": model.active_spatial_rings(),
             "start_rad_amp": start_rad_amp,
             "end_rad_amp": rad_amp,
             "morph_event_count": morph_events.len(),
@@ -8785,7 +9191,79 @@ mod tests {
     }
 
     #[test]
-    fn v8_model_stays_near_the_fifteen_million_parameter_budget() -> Result<()> {
+    fn klein_padding_twists_only_the_horizontal_seam() -> Result<()> {
+        let device = Device::Cpu;
+        let x = Tensor::from_vec(
+            (0..12).map(|value| value as f32).collect::<Vec<_>>(),
+            (1, 1, 3, 4),
+            &device,
+        )?;
+        let padded = klein_pad2d(&x, 1)?.reshape((5, 6))?.to_vec2::<f32>()?;
+        assert_eq!(
+            padded,
+            vec![
+                vec![3.0, 8.0, 9.0, 10.0, 11.0, 0.0],
+                vec![11.0, 0.0, 1.0, 2.0, 3.0, 8.0],
+                vec![7.0, 4.0, 5.0, 6.0, 7.0, 4.0],
+                vec![3.0, 8.0, 9.0, 10.0, 11.0, 0.0],
+                vec![11.0, 0.0, 1.0, 2.0, 3.0, 8.0],
+            ]
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn morphic_depth_expands_manifold_sheets_and_far_ring() {
+        assert_eq!(manifold_depth_for_morph_depth(1), 1);
+        assert_eq!(manifold_depth_for_morph_depth(3), 1);
+        assert_eq!(manifold_depth_for_morph_depth(4), 2);
+        assert_eq!(manifold_depth_for_morph_depth(7), 3);
+        assert_eq!(manifold_depth_for_morph_depth(10), 4);
+        assert_eq!(manifold_depth_for_morph_depth(128), 4);
+        assert_eq!(far_ring_gain_for_morph_depth(1), 0.0);
+        assert!(far_ring_gain_for_morph_depth(2) > 0.0);
+        assert_eq!(far_ring_gain_for_morph_depth(4), CA_FAR_RING_MAX_GAIN);
+        assert_eq!(far_ring_gain_for_morph_depth(128), CA_FAR_RING_MAX_GAIN);
+    }
+
+    #[test]
+    fn manifold_projection_dormants_inactive_feature_sheets() -> Result<()> {
+        let device = Device::Cpu;
+        let x = Tensor::ones((1, CA_CHANNELS, 1, 1), DType::F32, &device)?;
+        let projected = project_manifold_state(&x, 2)?
+            .flatten_all()?
+            .to_vec1::<f32>()?;
+        assert!(projected[..2 * CA_FEATURE_CHANNELS]
+            .iter()
+            .all(|value| *value == 1.0));
+        assert!(projected[2 * CA_FEATURE_CHANNELS..]
+            .iter()
+            .all(|value| *value == 0.0));
+        Ok(())
+    }
+
+    #[test]
+    fn folded_depth_delta_is_cyclic_and_keeps_dormant_sheets_zero() -> Result<()> {
+        let device = Device::Cpu;
+        let mut values = vec![0.0f32; CA_CHANNELS];
+        values[..CA_FEATURE_CHANNELS].fill(1.0);
+        values[CA_FEATURE_CHANNELS..2 * CA_FEATURE_CHANNELS].fill(3.0);
+        let x = Tensor::from_vec(values, (1, CA_CHANNELS, 1, 1), &device)?;
+        let delta = folded_depth_delta(&x, 2)?.flatten_all()?.to_vec1::<f32>()?;
+        assert!(delta[..CA_FEATURE_CHANNELS]
+            .iter()
+            .all(|value| (*value - 2.0).abs() < 1e-6));
+        assert!(delta[CA_FEATURE_CHANNELS..2 * CA_FEATURE_CHANNELS]
+            .iter()
+            .all(|value| (*value + 2.0).abs() < 1e-6));
+        assert!(delta[2 * CA_FEATURE_CHANNELS..]
+            .iter()
+            .all(|value| value.abs() < 1e-6));
+        Ok(())
+    }
+
+    #[test]
+    fn v9_model_stays_near_the_fifteen_million_parameter_budget() -> Result<()> {
         let device = Device::Cpu;
         let varmap = VarMap::new();
         let vb = VBV::from_varmap(&varmap, DType::F32, &device);
@@ -8795,16 +9273,16 @@ mod tests {
         let _monitor = MonitorHead::new(vb.pp("monitor_head"))?;
         let _episodic = EpisodicMemory::new(vb.pp("episodic"))?;
         let parameters = parameter_count(&varmap);
-        println!("v8 parameter count: {parameters}");
+        println!("v9 parameter count: {parameters}");
         assert!(
             (14_000_000..=16_000_000).contains(&parameters),
-            "v8 parameter budget drifted to {parameters}"
+            "v9 parameter budget drifted to {parameters}"
         );
         Ok(())
     }
 
     #[test]
-    fn v8_multirate_decoder_supports_end_to_end_backward() -> Result<()> {
+    fn v9_multirate_decoder_supports_end_to_end_backward() -> Result<()> {
         let device = Device::Cpu;
         let varmap = VarMap::new();
         let vb = VBV::from_varmap(&varmap, DType::F32, &device);
@@ -8847,7 +9325,8 @@ mod tests {
     #[test]
     fn long_gradient_horizons_use_a_bounded_autograd_tape() {
         assert_eq!(autograd_tape_chunks(1), 1);
-        assert_eq!(autograd_tape_chunks(BPTT_WINDOW), BPTT_WINDOW);
+        assert_eq!(MAX_AUTOGRAD_TAPE_CHUNKS, 8);
+        assert_eq!(autograd_tape_chunks(BPTT_WINDOW), MAX_AUTOGRAD_TAPE_CHUNKS);
         assert_eq!(autograd_tape_chunks(16), MAX_AUTOGRAD_TAPE_CHUNKS);
         assert_eq!(autograd_tape_chunks(64), MAX_AUTOGRAD_TAPE_CHUNKS);
     }
@@ -9132,9 +9611,10 @@ mod tests {
 
     #[test]
     fn development_tracker_distinguishes_improvement_from_plateau() {
+        let samples = DEVELOPMENT_PLATEAU_WINDOW.max(DEVELOPMENT_PLATEAU_MIN_SAMPLES);
         let mut improving = DevelopmentPlateauTracker::new();
         let mut status = DevelopmentPlateauStatus::default();
-        for i in 0..DEVELOPMENT_PLATEAU_WINDOW {
+        for i in 0..samples {
             status = improving.update(1.0 - i as f32 * 0.0015, 0.8 - i as f32 * 0.0005);
         }
         assert!(status.ready);
@@ -9142,7 +9622,7 @@ mod tests {
         assert!(status.relative_improvement > DEVELOPMENT_PLATEAU_REL_EPS);
 
         let mut flat = DevelopmentPlateauTracker::new();
-        for _ in 0..DEVELOPMENT_PLATEAU_WINDOW {
+        for _ in 0..samples {
             status = flat.update(0.7, 0.8);
         }
         assert!(status.ready);
@@ -9612,6 +10092,147 @@ mod tests {
     }
 
     #[test]
+    fn manifest_refresh_preserves_roles_adds_new_wavs_and_optionally_prunes() -> Result<()> {
+        let dir = std::env::temp_dir().join(format!(
+            "titan_manifest_refresh_{}_{}",
+            std::process::id(),
+            unix_time_ms()
+        ));
+        std::fs::create_dir(&dir)?;
+        for name in [
+            "Song.wav",
+            "Song mastered.wav",
+            "New Voice.wav",
+            "titan_prime_refresh.wav",
+        ] {
+            std::fs::File::create(dir.join(name))?;
+        }
+        let path = dir.join("manifest.json");
+        let manifest = CorpusManifest {
+            schema_version: 2,
+            generated_by: "user curated".to_string(),
+            entries: vec![
+                CorpusEntry {
+                    file: "Song.wav".to_string(),
+                    role: CorpusRole::Validation,
+                    family: corpus_family("Song.wav"),
+                    provenance: "user_corpus".to_string(),
+                },
+                CorpusEntry {
+                    file: "Missing.wav".to_string(),
+                    role: CorpusRole::Train,
+                    family: corpus_family("Missing.wav"),
+                    provenance: "user_corpus".to_string(),
+                },
+            ],
+        };
+        write_corpus_manifest(path.to_str().unwrap(), &manifest)?;
+
+        let report = refresh_corpus_manifest(dir.to_str().unwrap(), path.to_str().unwrap(), false)?;
+        assert_eq!(
+            report,
+            ManifestRefreshReport {
+                added: 3,
+                added_train: 1,
+                added_validation: 1,
+                added_exclude: 1,
+                missing_retained: 1,
+                ..ManifestRefreshReport::default()
+            }
+        );
+        let refreshed: CorpusManifest = serde_json::from_slice(&std::fs::read(&path)?)?;
+        assert_eq!(refreshed.generated_by, "user curated");
+        assert_eq!(refreshed.entries.len(), 5);
+        assert_eq!(
+            refreshed
+                .entries
+                .iter()
+                .find(|entry| entry.file == "Song mastered.wav")
+                .map(|entry| entry.role),
+            Some(CorpusRole::Validation)
+        );
+        assert_eq!(
+            refreshed
+                .entries
+                .iter()
+                .find(|entry| entry.file == "titan_prime_refresh.wav")
+                .map(|entry| entry.role),
+            Some(CorpusRole::Exclude)
+        );
+
+        let prune_report =
+            refresh_corpus_manifest(dir.to_str().unwrap(), path.to_str().unwrap(), true)?;
+        assert_eq!(prune_report.missing_pruned, 1);
+        assert_eq!(prune_report.added, 0);
+        let pruned: CorpusManifest = serde_json::from_slice(&std::fs::read(&path)?)?;
+        assert!(!pruned
+            .entries
+            .iter()
+            .any(|entry| entry.file == "Missing.wav"));
+
+        for name in [
+            "Song.wav",
+            "Song mastered.wav",
+            "New Voice.wav",
+            "titan_prime_refresh.wav",
+        ] {
+            std::fs::remove_file(dir.join(name))?;
+        }
+        std::fs::remove_file(path)?;
+        std::fs::remove_dir(dir)?;
+        Ok(())
+    }
+
+    #[test]
+    fn manifest_rebuild_backs_up_the_previous_policy() -> Result<()> {
+        let dir = std::env::temp_dir().join(format!(
+            "titan_manifest_rebuild_{}_{}",
+            std::process::id(),
+            unix_time_ms()
+        ));
+        std::fs::create_dir(&dir)?;
+        std::fs::File::create(dir.join("Fresh Song.wav"))?;
+        std::fs::File::create(dir.join("rust_ecosystem_out_rebuild.wav"))?;
+        let path = dir.join("manifest.json");
+        let previous = CorpusManifest {
+            schema_version: 2,
+            generated_by: "user curated".to_string(),
+            entries: vec![],
+        };
+        write_corpus_manifest(path.to_str().unwrap(), &previous)?;
+
+        let (rebuilt, backup) =
+            rebuild_corpus_manifest(dir.to_str().unwrap(), path.to_str().unwrap())?;
+        let backup = backup.expect("existing manifest should be backed up");
+        assert_eq!(rebuilt.entries.len(), 2);
+        assert_eq!(
+            rebuilt
+                .entries
+                .iter()
+                .find(|entry| entry.file == "Fresh Song.wav")
+                .map(|entry| entry.role),
+            Some(CorpusRole::Train)
+        );
+        assert_eq!(
+            rebuilt
+                .entries
+                .iter()
+                .find(|entry| entry.file == "rust_ecosystem_out_rebuild.wav")
+                .map(|entry| entry.role),
+            Some(CorpusRole::Exclude)
+        );
+        let backed_up: CorpusManifest = serde_json::from_slice(&std::fs::read(&backup)?)?;
+        assert_eq!(backed_up.generated_by, "user curated");
+
+        std::fs::remove_file(dir.join("Fresh Song.wav"))?;
+        std::fs::remove_file(dir.join("rust_ecosystem_out_rebuild.wav"))?;
+        std::fs::remove_file(path)?;
+        std::fs::remove_file(backup)?;
+        std::fs::remove_dir(dir)?;
+        Ok(())
+    }
+
+    #[test]
     fn generated_manifest_repairs_validation_at_family_boundary() -> Result<()> {
         let dir = std::env::temp_dir().join(format!(
             "titan_manifest_family_{}_{}",
@@ -9863,6 +10484,9 @@ mod tests {
         assert!(trace.contains("development_plateau_ready"));
         assert!(trace.contains("validation_mean_spectral"));
         assert!(trace.contains("decoder_width_raw"));
+        assert!(trace.contains("manifold_depth"));
+        assert!(trace.contains("active_spatial_rings"));
+        assert!(trace.contains("far_ring_gain"));
         assert!(!trace.contains("movement"));
         for required in [
             "run_id",
@@ -9881,5 +10505,7 @@ mod tests {
         assert!(MORPH_EVENT_HEADERS.contains(&"step"));
         assert!(MORPH_EVENT_HEADERS.contains(&"event"));
         assert!(MORPH_EVENT_HEADERS.contains(&"morph_depth"));
+        assert!(MORPH_EVENT_HEADERS.contains(&"manifold_depth"));
+        assert!(MORPH_EVENT_HEADERS.contains(&"active_spatial_rings"));
     }
 }
