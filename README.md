@@ -254,3 +254,64 @@ cargo clippy --locked --all-targets -- -D warnings
 
 `--locked` makes Cargo use the dependency graph already recorded in
 `Cargo.lock` and fail rather than silently resolving different versions.
+
+## Frozen scientific instrumentation
+
+Phase 1 adds a sidecar-only scientific harness around Audio v9. It does not
+change model tensors, forward equations, training, optimizer behavior, target
+scheduling, synthesis, controllers, checkpoint schemas, or the normal runtime
+RNG sequence. The normal path reaches no analysis runner; `--analysis-only`
+dispatches before directory creation, corpus-manifest repair, optimizer
+construction, training writers, or canonical checkpoint saves.
+
+Analysis requires existing v9 model/world files for stateful experiments. It
+infers the physical MorphicStack layout from checkpoint tensors, rejects
+inexact migration, freezes learned weights, constructs no optimizer, performs
+no backward pass, and checks canonical hashes and modification times before
+and after the invocation. Reports and artifacts live under a dedicated
+`titan_audio_analysis_v1/<analysis-id>` sidecar by default.
+
+```bash
+./target/release/titan \
+  --base-dir /sdcard/Download \
+  --analysis-only \
+  --model-stats \
+  --frozen-rollout 64,256 \
+  --analysis-stride 16 \
+  --analysis-seed 424242 \
+  --analysis-tag microscope-01
+```
+
+Analyses can be combined in one invocation:
+
+- `--model-stats` reports exact tensors, subsystem counts, defensible
+  active/reserved MorphicStack parameters, persistent-state sizes, and memory
+  estimates.
+- `--frozen-rollout LIST` runs a fixed-morphology, frozen-weight cloned world
+  to multiple horizons.
+- `--dynamics-ablation N` plus repeatable `--ablation NAME` runs typed neural,
+  host-controller, memory, feedback, and forcing interventions. Unsafe hooks
+  that would alter the protected production forward path are rejected.
+- `--perturbation-analysis N`, repeatable `--perturbation NAME`, and
+  `--perturbation-scales LIST` measure latent distance and audio/phenotype
+  distance separately under deterministic common exogenous forcing.
+- `--benchmark` creates deterministic procedural references outside
+  `OLD_WAVS` and the corpus manifest. Its core result is descriptor proximity,
+  not held-out reconstruction or semantic transfer.
+- `--trained-init-control` compares trained/saved, trained/fresh, and
+  active-depth-matched initialized/fresh conditions with zero optimizer steps.
+- `--separability-analysis` writes transparent state/audio distance matrices.
+- `--render-attribution` exports the complete raw-renderer and post-DSP paths.
+  No component is called an additive stem unless it passes sum-to-full.
+
+Use `--analysis-help` for the complete surface, including output, stride,
+terminal, and mobile-expensive controls. All analysis flags require
+`--analysis-only`; training mutation flags are rejected in that mode.
+
+Audio v9 has no target/reference argument in `model.forward`. Corpus audio is
+sampled after the current forward and affects training losses and later host
+error feedback. Accordingly, reports declare `direct_reference_input: false`.
+Synthetic coverage is not Image-style reconstruction, and target switching is
+not claimed as direct conditioning. The exact behavior contract, validation
+gates, supported interventions, and deferred architecture work are recorded in
+[`docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md`](docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md).

@@ -155,3 +155,47 @@ the metadata `run_id` when joining their rows.
 Claims about improved sound should be supported by repeated seeded runs,
 ablation comparisons, objective audio measurements, and blinded listening—not
 by these internal metrics alone.
+
+## Analysis report schema v1
+
+Frozen instrumentation writes `titan_audio_analysis` schema v1 sidecars. The
+top level records analysis/build/checkpoint identity, corpus provenance,
+configuration, conditions, developmental/rollout age, model statistics,
+rollouts, ablations, perturbations, benchmarks, trained/init controls,
+separability, attribution, warnings, artifacts, interpretation constraints,
+and the canonical pre/post non-mutation result.
+
+Every analysis report states:
+
+- `weights_frozen: true`, `backward_passes: 0`,
+  `optimizer_constructed: false`, and `optimizer_steps: 0`;
+- whether direct reference input exists (it does not in Audio v9);
+- the target-error-feedback, morphology, controller, and forcing semantics;
+- checkpoint/world step, physical and active morphology, analysis seed, and
+  independent RNG policy; and
+- validity and a reason for measurements that are mathematically undefined.
+
+State distance and phenotype/audio distance are separate domains.
+`latent_recovery_ratio(t)` is distance to the paired unperturbed baseline at
+time `t`, divided by the non-negligible initial distance. Time-to-half is valid
+only if the ratio remains at or below 0.5 for two sampled observations. Small
+audio distance with persistent state distance is `phenotype robustness`, not
+state recovery or self-healing.
+
+Approximate recurrence uses a compact normalized state signature and a minimum
+temporal separation. It is reported as an `approximate_cycle_candidate` with a
+validity flag, not proof of a limit cycle or attractor. Separability clusters
+are operational phenotype regimes, not concepts. Benchmark distance is signal
+descriptor proximity, not semantic understanding.
+
+Paired analysis conditions use deterministic exogenous force-macro, radiation,
+and kick streams keyed by checkpoint RNG identity, absolute step, and stream
+tag. Controller and target sampling have separate matched analysis streams.
+These streams never advance the saved normal-runtime RNG. Perturbation
+directions use `--analysis-seed`, independently of all of them.
+
+The harness exports fixed-column CSV traces, structured JSON, 48 kHz stereo
+WAVs, fixed-scale spectrograms, and fixed-range micro/macro state atlases.
+Artifact-index entries include media type, condition, offsets, processing
+status, byte size, and SHA-256. JSON never uses NaN or infinity as a numeric
+value.

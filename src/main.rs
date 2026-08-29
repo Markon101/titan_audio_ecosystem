@@ -1,6 +1,9 @@
 #![recursion_limit = "512"]
 
+mod analysis;
 mod artifacts;
+mod diagnostics;
+mod provenance;
 mod stereo;
 
 // =====================================================================
@@ -6027,6 +6030,9 @@ fn capture_world(
 // --- MAIN RUNTIME LOGIC ---
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().collect();
+    if args.iter().any(|arg| analysis::is_analysis_flag(arg)) {
+        return analysis::run_from_args(&args);
+    }
     let mut base_dir = "/sdcard/Download".to_string();
     let mut n_threads = std::thread::available_parallelism()
         .map(|n| n.get())
@@ -6258,6 +6264,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
       --fresh-world    Reset CA/DSP/memory while retaining compatible weights\n\
       --fresh-decoder  Retain CA/memory weights; reset only audible decoder tensors\n\
   -f, --fresh-model    Reset both learned weights and the world\n\
+\nScientific instrumentation (read-only; see --analysis-only --analysis-help):\n\
+      --analysis-only  Load frozen v9 checkpoints and write sidecar reports only\n\
 \nCtrl-C finishes the active chunk, finalizes audio, and saves the organism.\n"
                 );
                 return Ok(());
