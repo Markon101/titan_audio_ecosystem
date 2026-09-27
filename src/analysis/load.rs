@@ -43,6 +43,8 @@ pub(crate) struct CorpusFileProvenance {
     pub declared_provenance: String,
     pub present: bool,
     pub scheduler_index: Option<usize>,
+    pub production_name_role_candidate: bool,
+    pub candidate_order_index: Option<usize>,
     pub byte_size: Option<u64>,
     pub sha256: Option<String>,
     pub sample_rate: Option<u32>,
@@ -63,6 +65,9 @@ pub(crate) struct CorpusProvenance {
     pub entries_in_manifest_order: Vec<CorpusFileProvenance>,
     pub scheduler_order: Vec<String>,
     pub role_counts: BTreeMap<String, usize>,
+    pub name_role_candidate_order: Vec<String>,
+    pub name_role_candidate_role_counts: BTreeMap<String, usize>,
+    pub quarantine_role_conflicts: Vec<String>,
     pub ordered_families: BTreeMap<String, Vec<String>>,
     pub unlisted_wavs: Vec<String>,
     pub missing_entries: Vec<String>,
@@ -307,6 +312,14 @@ fn inspect_optimizer(
     })
 }
 
+fn production_name_role_candidate(entry: &super::super::CorpusEntry) -> bool {
+    entry.role != super::super::CorpusRole::Exclude
+        && Path::new(&entry.file)
+            .extension()
+            .is_some_and(|extension| extension.eq_ignore_ascii_case("wav"))
+        && !super::super::is_generated_audio_name(&entry.file)
+}
+
 fn inspect_corpus(paths: &ResolvedPaths, fast_hash_mode: bool) -> Result<CorpusProvenance> {
     let manifest_identity = super::super::provenance::identify_file(&paths.corpus_manifest)?;
     if !paths.corpus_manifest.is_file() {
@@ -317,6 +330,9 @@ fn inspect_corpus(paths: &ResolvedPaths, fast_hash_mode: bool) -> Result<CorpusP
             entries_in_manifest_order: Vec::new(),
             scheduler_order: Vec::new(),
             role_counts: BTreeMap::new(),
+            name_role_candidate_order: Vec::new(),
+            name_role_candidate_role_counts: BTreeMap::new(),
+            quarantine_role_conflicts: Vec::new(),
             ordered_families: BTreeMap::new(),
             unlisted_wavs: Vec::new(),
             missing_entries: Vec::new(),
@@ -364,6 +380,22 @@ fn inspect_corpus(paths: &ResolvedPaths, fast_hash_mode: bool) -> Result<CorpusP
         .enumerate()
         .map(|(index, name)| (name.as_str(), index))
         .collect();
+    let name_role_candidate_order: Vec<String> = disk_paths
+        .iter()
+        .filter(|path| path.is_file())
+        .filter_map(|path| path.file_name().and_then(|name| name.to_str()))
+        .filter(|name| {
+            listed
+                .get(name)
+                .is_some_and(|index| production_name_role_candidate(&manifest.entries[*index]))
+        })
+        .map(str::to_string)
+        .collect();
+    let candidate_indices: HashMap<&str, usize> = name_role_candidate_order
+        .iter()
+        .enumerate()
+        .map(|(index, name)| (name.as_str(), index))
+        .collect();
     let unlisted_wavs = disk_paths
         .iter()
         .filter_map(|path| path.file_name().and_then(|name| name.to_str()))
@@ -372,6 +404,8 @@ fn inspect_corpus(paths: &ResolvedPaths, fast_hash_mode: bool) -> Result<CorpusP
         .collect::<Vec<_>>();
     let mut records = Vec::with_capacity(manifest.entries.len());
     let mut role_counts = BTreeMap::new();
+    let mut name_role_candidate_role_counts = BTreeMap::new();
+    let mut quarantine_role_conflicts = Vec::new();
     let mut ordered_families: BTreeMap<String, Vec<String>> = BTreeMap::new();
     let mut missing_entries = Vec::new();
     let mut aggregate = Vec::new();
@@ -381,6 +415,17 @@ fn inspect_corpus(paths: &ResolvedPaths, fast_hash_mode: bool) -> Result<CorpusP
         let present = path.is_file();
         let role = format!("{:?}", entry.role).to_ascii_lowercase();
         *role_counts.entry(role.clone()).or_insert(0) += 1;
+        let production_name_role_candidate = present && production_name_role_candidate(entry);
+        if production_name_role_candidate {
+            *name_role_candidate_role_counts
+                .entry(role.clone())
+                .or_insert(0) += 1;
+        }
+        if entry.provenance == "titan_generated_quarantine"
+            && entry.role != super::super::CorpusRole::Exclude
+        {
+            quarantine_role_conflicts.push(entry.file.clone());
+        }
         ordered_families
             .entry(format!("{}:{}", role, entry.family))
             .or_default()
@@ -425,6 +470,8 @@ fn inspect_corpus(paths: &ResolvedPaths, fast_hash_mode: bool) -> Result<CorpusP
             declared_provenance: entry.provenance.clone(),
             present,
             scheduler_index: scheduler_indices.get(entry.file.as_str()).copied(),
+            production_name_role_candidate,
+            candidate_order_index: candidate_indices.get(entry.file.as_str()).copied(),
             byte_size: metadata.as_ref().map(std::fs::Metadata::len),
             sha256: hash,
             sample_rate: spec.map(|value| value.sample_rate),
@@ -448,10 +495,13 @@ fn inspect_corpus(paths: &ResolvedPaths, fast_hash_mode: bool) -> Result<CorpusP
         entries_in_manifest_order: records,
         scheduler_order,
         role_counts,
+        name_role_candidate_order,
+        name_role_candidate_role_counts,
+        quarantine_role_conflicts,
         ordered_families,
         unlisted_wavs,
         missing_entries,
-        scheduler_semantics: "filesystem_paths_sorted_then_uniform_family_then_uniform_variant_with_coherent_episodes".to_string(),
+        scheduler_semantics: "scheduler_order lists present manifest WAVs, including excluded files; name_role_candidate_order applies production name/role filtering before WAV indexing; usable candidates are grouped by family, then sampled uniformly by family and variant in coherent episodes".to_string(),
         coherent_episode_chunks: super::super::TARGET_EPISODE_CHUNKS,
         aggregate_identity_sha256: super::super::provenance::sha256_bytes(&aggregate),
         fast_hash_mode,
@@ -515,5 +565,75 @@ mod tests {
         let paths = resolve_paths(&request);
         assert_eq!(paths.world.file_name().unwrap(), "titan_world_v9.bin");
         assert!(!request.base_dir.exists());
+    }
+
+    #[test]
+    fn corpus_report_separates_declared_roles_from_loader_candidates() -> Result<()> {
+        let nonce = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)?
+            .as_nanos();
+        let base_dir = std::env::temp_dir().join(format!(
+            "titan_audio_corpus_report_{}_{}",
+            std::process::id(),
+            nonce
+        ));
+        let wav_dir = base_dir.join("OLD_WAVS");
+        std::fs::create_dir_all(&wav_dir)?;
+        let spec = hound::WavSpec {
+            channels: 2,
+            sample_rate: super::super::super::SAMPLE_RATE,
+            bits_per_sample: 16,
+            sample_format: hound::SampleFormat::Int,
+        };
+        for name in ["ordinary.wav", "rust_ecosystem_out_example.wav"] {
+            let mut writer = hound::WavWriter::create(wav_dir.join(name), spec)?;
+            for _ in 0..(super::super::super::CHUNK_SIZE * 2) {
+                writer.write_sample(0i16)?;
+            }
+            writer.finalize()?;
+        }
+        let manifest = super::super::super::CorpusManifest {
+            schema_version: 2,
+            generated_by: "test".to_string(),
+            entries: vec![
+                super::super::super::CorpusEntry {
+                    file: "ordinary.wav".to_string(),
+                    role: super::super::super::CorpusRole::Train,
+                    family: "ordinary".to_string(),
+                    provenance: "user_corpus".to_string(),
+                },
+                super::super::super::CorpusEntry {
+                    file: "rust_ecosystem_out_example.wav".to_string(),
+                    role: super::super::super::CorpusRole::Validation,
+                    family: "generated".to_string(),
+                    provenance: "titan_generated_quarantine".to_string(),
+                },
+            ],
+        };
+        std::fs::write(
+            base_dir.join("titan_corpus_manifest_v7.json"),
+            serde_json::to_vec(&manifest)?,
+        )?;
+        let paths = resolve_paths(&AnalysisRequest {
+            base_dir: base_dir.clone(),
+            ..AnalysisRequest::default()
+        });
+        let report = inspect_corpus(&paths, true)?;
+        assert_eq!(report.role_counts.get("validation"), Some(&1));
+        assert_eq!(report.scheduler_order.len(), 2);
+        assert_eq!(report.name_role_candidate_order, vec!["ordinary.wav"]);
+        assert_eq!(
+            report.name_role_candidate_role_counts.get("train"),
+            Some(&1)
+        );
+        assert!(!report
+            .name_role_candidate_role_counts
+            .contains_key("validation"));
+        assert_eq!(
+            report.quarantine_role_conflicts,
+            vec!["rust_ecosystem_out_example.wav"]
+        );
+        std::fs::remove_dir_all(base_dir)?;
+        Ok(())
     }
 }

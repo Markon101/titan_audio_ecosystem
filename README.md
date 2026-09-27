@@ -315,3 +315,89 @@ Synthetic coverage is not Image-style reconstruction, and target switching is
 not claimed as direct conditioning. The exact behavior contract, validation
 gates, supported interventions, and deferred architecture work are recorded in
 [`docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md`](docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md).
+
+## Offline prime packages
+
+`scripts/prime_package.py` reads an existing 48 kHz stereo PCM16 full WAV and
+creates a new local sidecar with opening, middle, ending, and seeded clip
+windows, basic PCM checks, SHA-256 identities, a neutral prompt, and blank
+listening notes. Optional legacy prime/prompt inputs are copied as controls.
+It does not train, rank clips for musical quality, change checkpoints, or
+contact Suno or another service. The output directory must not already exist.
+
+For the inspected historical v9 run:
+
+```bash
+python scripts/prime_package.py \
+  --source-wav /sdcard/Download/rust_ecosystem_out_2f228ddfd2e8.wav \
+  --output-dir /sdcard/Download/titan_prime_packages/v9-baseline-01 \
+  --metadata-json /sdcard/Download/titan_run_metadata_v9.json \
+  --corpus-manifest /sdcard/Download/titan_corpus_manifest_v7.json \
+  --corpus-wav-dir /sdcard/Download/OLD_WAVS \
+  --legacy-prime /sdcard/Download/titan_prime_60s_2f228ddfd2e8.wav \
+  --legacy-prompt /sdcard/Download/suno_priming_prompt.txt
+```
+
+Inspect `receipt.json` and fill `listening_notes.csv` before selecting an
+upload. The command treats the metadata as a historical claim and verifies
+that its reported full WAV matches the supplied source bytes. See the
+[`output-first plan`](docs/OUTPUT_FIRST_PRIMING_UPDATE_PLAN.md) for the later
+blinded comparison protocol.
+
+## Audio output investigation
+
+The [2026-09-26 output report](analysis/audio_center_harshness_20260926/OFFLINE_RESULTS.md)
+compares the latest long-run prime with wider intervals from the same WAV.
+The user's first blind preference favored the original prime for impact, with
+the −3 dB EQ a close, slightly softer second. A matched −1.5 dB midpoint and
+both originals are available in
+`/sdcard/Download/titan_audio_prime_choices_2026-09-26/` for direct listening.
+The user later chose B as the softest and nicest audibly; that folder contains
+`titan_prime_selected_B_soft.wav` and a provenance note for manual use.
+Its [correction note](analysis/audio_center_harshness_20260926/diagnostics/CORRECTION.md)
+identifies a later trace that was incorrectly paired with the long WAV.
+The model and existing `/sdcard/Download` WAVs were not altered by these
+offline experiments.
+
+Use [the blinded panel instructions](analysis/audio_center_harshness_20260926/blind_eq_panel_global/LISTEN.txt)
+to compare fixed raw/EQ pairs at one common stereo RMS, then read `key.json`
+in that directory only after rating. Copies of the six WAVs and instructions
+are in `/sdcard/Download/titan_audio_blind_eq_2026-09-26/`; its answer key
+remains in this repo. The [WAV-only panel archive](analysis/audio_center_harshness_20260926/blind_eq_panel_global/BLIND_EQ_GLOBAL_LISTENING.zip)
+omits that key for easier listening. `scripts/audio_diffusion_probe.py` creates a separate copied-WAV
+panel for bounded waveform heat filtering and existing-side gain. This
+waveform operation is a low-pass test; it does not run a latent or generative
+diffusion model. `scripts/audio_mastering_deemphasis.py` makes local 3.5 kHz
+EQ copies with attempted RMS matching and a recorded peak guard. These are
+listening candidates, not established improvements.
+
+Two training/output experiments are available as explicit tagged options:
+`--spectral-deemphasis` changes the 2–6 kHz training loss weighting, and
+`--prime-width-score` changes the final prime-window score. With neither flag,
+the legacy objective and selector remain in use. An experimental first run
+requires a new `--run-tag` plus exactly one of `--import-model` or
+`--fresh-model`; subsequent runs must repeat the same experimental flags and
+use that tag without an import/reset flag. The saved run metadata records the
+profile. Frozen scientific analysis continues to use legacy target-feedback
+distance. The output experiments have not established that either training
+option improves sound.
+
+## Frozen synthesis and transfer status
+
+The [2026-09-27 frozen assessment](analysis/audio_emergent_synthesis_20260926/RESULTS.md)
+reports a learned-weight effect, a causal micro-NCA audio effect, and a
+locally fixed saved-world GRU state under cloned analysis. It does not claim
+emergent composition or measured Suno transfer. The source-to-output mapping
+needed to test transfer has not been retained for prior Suno generations.
+
+The [manual downstream protocol](analysis/audio_emergent_synthesis_20260926/DOWNSTREAM_PROTOCOL.md)
+and validated B/O/S timing inputs are available under
+`/sdcard/Download/titan_audio_transfer_controls_2026-09-27/`. Keep the model,
+mode, prompt, upload length, and settings fixed across any manual comparison,
+and save every generated output with its input and settings. O/S are
+experimental controls; listen for edit-seam artifacts before relying on them.
+
+The [research workflow crosscheck](analysis/research_crosscheck_20260927/REVIEW.md)
+documents the inspected Hermes/Titan Text methods and a completion gate for
+external reviewers. Audio's local research-team wrapper transmits selected
+context files and rejects truncated, empty, or wrong-model responses.

@@ -99,6 +99,10 @@ pub(crate) struct StepRecord {
     pub micro_rms: f32,
     pub macro_rms: f32,
     pub recurrent_rms: f32,
+    /// Proposed GRU state change before a clone-only hold intervention.
+    pub recurrent_proposed_delta_rms: Option<f32>,
+    /// State change actually committed after the intervention.
+    pub recurrent_committed_delta_rms: Option<f32>,
     pub micro_near_bound_fraction: f32,
     pub macro_near_bound_fraction: f32,
     pub synergy: f32,
@@ -236,6 +240,13 @@ pub(crate) fn step(
         world.energy,
         &control,
     )?;
+    let proposed_recurrent_delta = output
+        .next_hidden
+        .sub(&old_hidden)?
+        .sqr()?
+        .mean_all()?
+        .sqrt()?
+        .to_scalar::<f32>()?;
     let raw_stereo = output.stereo.tanh()?;
     let raw = raw_stereo.to_vec2::<f32>()?;
     let raw_left = raw[0].clone();
@@ -337,6 +348,8 @@ pub(crate) fn step(
             .reshape((2, super::super::CHUNK_SIZE))?;
         let output_spectrum = world.target_projector.log_mag(&raw_stereo)?;
         let target_spectrum = world.target_projector.log_mag(&target)?.detach();
+        // Frozen analysis keeps the historical unweighted feedback scale.
+        // The experimental training loss has no analysis-only profile flag.
         Some(
             super::super::robust_distance(&output_spectrum.sub(&target_spectrum)?, 0.03)?
                 .to_scalar::<f32>()?,
@@ -447,6 +460,13 @@ pub(crate) fn step(
     } else {
         output.next_hidden.detach()
     };
+    let committed_recurrent_delta = world
+        .hidden
+        .sub(&old_hidden)?
+        .sqr()?
+        .mean_all()?
+        .sqrt()?
+        .to_scalar::<f32>()?;
     let radiation_window_probability = (super::super::RADIATE_PROB
         + curiosity * 0.04
         + (control.kick_mult - 1.0).max(0.0) * 0.03
@@ -577,6 +597,12 @@ pub(crate) fn step(
         micro_rms,
         macro_rms,
         recurrent_rms,
+        recurrent_proposed_delta_rms: proposed_recurrent_delta
+            .is_finite()
+            .then_some(proposed_recurrent_delta),
+        recurrent_committed_delta_rms: committed_recurrent_delta
+            .is_finite()
+            .then_some(committed_recurrent_delta),
         micro_near_bound_fraction: micro_near,
         macro_near_bound_fraction: macro_near,
         synergy,

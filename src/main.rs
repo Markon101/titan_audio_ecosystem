@@ -732,6 +732,9 @@ impl AudioObservation {
         (0.28 * entropy + 0.22 * flatness_shape + 0.20 * flux + 0.20 * pi + 0.10 * critical)
             .clamp(0.0, 1.0)
     }
+    fn width(&self) -> f32 {
+        self.values[6]
+    }
     fn reward_against(
         &self,
         prev: Option<&Self>,
@@ -2944,17 +2947,18 @@ fn smooth_bounded_frequency(value: &Tensor, floor: f64, ceiling: f64) -> CResult
 }
 
 // --- SPECTRAL PROJECTOR ---
-struct SpectralProjector {
+pub(crate) struct SpectralProjector {
     window: Tensor, // pre-unsqueezed (1, n)
     cos_m: Tensor,
     sin_m: Tensor,
     dft_scale: f64,
+    deemphasis_weights: Option<Tensor>, // present only for the opt-in loss
 }
 impl SpectralProjector {
-    fn new(device: &Device) -> CResult<Self> {
+    pub(crate) fn new(device: &Device) -> CResult<Self> {
         Self::new_with(CHUNK_SIZE, SPEC_BINS, device)
     }
-    fn new_with(n: usize, bins: usize, device: &Device) -> CResult<Self> {
+    pub(crate) fn new_with(n: usize, bins: usize, device: &Device) -> CResult<Self> {
         let mut win = Vec::with_capacity(n);
         for i in 0..n {
             win.push(0.5 - 0.5 * (TWO_PI * i as f32 / (n as f32 - 1.0)).cos());
@@ -2982,9 +2986,51 @@ impl SpectralProjector {
             cos_m: Tensor::from_vec(cos_v, (n, bins), device)?,
             sin_m: Tensor::from_vec(sin_v, (n, bins), device)?,
             dft_scale: 2.0 / n as f64,
+            deemphasis_weights: None,
         })
     }
-    fn log_mag(&self, x: &Tensor) -> CResult<Tensor> {
+    fn with_deemphasis(mut self) -> CResult<Self> {
+        let bins = self.cos_m.dims()[1];
+        let mut weights_v = vec![1.0f32; bins];
+        // Experimental 2-6 kHz spectral-error de-emphasis. Weight creation is
+        // deliberately outside the legacy projector constructor.
+        let f_lo = 20.0f32;
+        let f_hi = 20000.0f32;
+        let center_freq = 3500.0f32;
+        let sigma = 0.55f32;
+        let attenuation = 0.20f32;
+        for (k, weight) in weights_v.iter_mut().enumerate() {
+            let frac = k as f32 / (bins as f32 - 1.0);
+            let freq = f_lo * (f_hi / f_lo).powf(frac);
+            let log_ratio = (freq / center_freq).ln();
+            let bell = (-0.5 * (log_ratio / sigma).powi(2)).exp();
+            *weight = 1.0 - attenuation * bell;
+        }
+        let mean_w = weights_v.iter().sum::<f32>() / bins as f32;
+        for weight in &mut weights_v {
+            *weight /= mean_w;
+        }
+        self.deemphasis_weights =
+            Some(Tensor::from_vec(weights_v, (1, bins), self.cos_m.device())?);
+        Ok(self)
+    }
+    #[cfg(test)]
+    fn weights(&self) -> &Tensor {
+        self.deemphasis_weights.as_ref().expect("enabled in test")
+    }
+    pub(crate) fn spectral_loss(
+        &self,
+        pred: &Tensor,
+        target: &Tensor,
+        epsilon: f64,
+    ) -> CResult<Tensor> {
+        let delta = pred.sub(target)?;
+        match &self.deemphasis_weights {
+            Some(weights) => weighted_robust_distance(&delta, weights, epsilon),
+            None => robust_distance(&delta, epsilon),
+        }
+    }
+    pub(crate) fn log_mag(&self, x: &Tensor) -> CResult<Tensor> {
         let xw = x.broadcast_mul(&self.window)?;
         // Normalize before the log. The old absolute epsilon became
         // effectively microscopic for long windows, making spectral nulls
@@ -3307,12 +3353,27 @@ fn normalize_spectral_shape(spectrum: &Tensor) -> CResult<Tensor> {
 // Smooth L1/Charbonnier distance. Unlike a squared log-spectral residual its
 // derivative is bounded, so a fresh renderer far from the corpus cannot make
 // every optimizer step hit the global clip ceiling and erase relative scale.
-fn robust_distance(delta: &Tensor, epsilon: f64) -> CResult<Tensor> {
+pub(crate) fn robust_distance(delta: &Tensor, epsilon: f64) -> CResult<Tensor> {
     delta
         .sqr()?
         .affine(1.0, epsilon * epsilon)?
         .sqrt()?
         .affine(1.0, -epsilon)?
+        .mean_all()
+}
+
+// Smooth L1/Charbonnier distance with per-bin frequency weighting.
+pub(crate) fn weighted_robust_distance(
+    delta: &Tensor,
+    weights: &Tensor,
+    epsilon: f64,
+) -> CResult<Tensor> {
+    delta
+        .sqr()?
+        .affine(1.0, epsilon * epsilon)?
+        .sqrt()?
+        .affine(1.0, -epsilon)?
+        .broadcast_mul(weights)?
         .mean_all()
 }
 
@@ -6028,6 +6089,135 @@ fn capture_world(
 }
 
 // --- MAIN RUNTIME LOGIC ---
+#[derive(Clone, Copy, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
+struct ExperimentProfile {
+    spectral_deemphasis: bool,
+    prime_width_score: bool,
+}
+
+impl ExperimentProfile {
+    fn enabled(self) -> bool {
+        self.spectral_deemphasis || self.prime_width_score
+    }
+}
+
+fn prime_chunk_score(
+    field_entropy: f32,
+    activity_health: f32,
+    structured_complexity: f32,
+    stagnation: f32,
+    width: f32,
+    stereo_corr: f32,
+    width_enabled: bool,
+) -> f32 {
+    let legacy = field_entropy * (0.25 + 0.50 * activity_health) + structured_complexity * 0.75
+        - stagnation * 0.25;
+    if width_enabled && stereo_corr > 0.0 {
+        legacy + width * stereo_corr.clamp(0.0, 1.0) * 0.40
+    } else {
+        legacy
+    }
+}
+
+fn best_prime_window(scores: &[f32], win: usize) -> (usize, f32) {
+    if scores.is_empty() {
+        return (0, 0.0);
+    }
+    let win = win.max(1).min(scores.len());
+    let mut run: f32 = scores.iter().take(win).sum();
+    let mut best_start = 0usize;
+    let mut best_sum = run;
+    if scores.len() > win {
+        for start in 1..=(scores.len() - win) {
+            run += scores[start + win - 1] - scores[start - 1];
+            if run > best_sum {
+                best_sum = run;
+                best_start = start;
+            }
+        }
+    }
+    (best_start, best_sum)
+}
+
+fn validate_experiment_run(
+    base_dir: &str,
+    tag: Option<&str>,
+    model_override: Option<&str>,
+    state_override: Option<&str>,
+    import_model: Option<&str>,
+    fresh_model: bool,
+    profile: ExperimentProfile,
+) -> Result<String> {
+    let metadata_path = artifact_path(base_dir, "titan_run_metadata_v9", "json", tag);
+    if profile.enabled() {
+        if tag.is_none() {
+            anyhow::bail!("experimental flags require an isolated --run-tag");
+        }
+        if model_override.is_some() || state_override.is_some() {
+            anyhow::bail!(
+                "experimental runs use tagged model and world paths; omit --model and --state"
+            );
+        }
+    }
+    if std::path::Path::new(&metadata_path).exists() && tag.is_some() {
+        let metadata: serde_json::Value = serde_json::from_slice(&std::fs::read(&metadata_path)?)?;
+        let saved_profile = match metadata.pointer("/invocation/experiments") {
+            Some(value) => serde_json::from_value::<ExperimentProfile>(value.clone())?,
+            None => ExperimentProfile::default(),
+        };
+        if saved_profile != profile {
+            anyhow::bail!(
+                "tagged continuation profile mismatch: saved {:?}, requested {:?}",
+                saved_profile,
+                profile
+            );
+        }
+        if profile.enabled() && (import_model.is_some() || fresh_model) {
+            anyhow::bail!("experimental continuation must load its tagged model; omit --import-model and --fresh-model");
+        }
+        if profile.enabled() {
+            for (stem, extension) in [
+                ("titan_model_v9", "safetensors"),
+                ("titan_world_v9", "bin"),
+                ("titan_optimizer_v9", "safetensors"),
+            ] {
+                let path = artifact_path(base_dir, stem, extension, tag);
+                if !std::path::Path::new(&path).is_file() {
+                    anyhow::bail!("experimental continuation is missing tagged checkpoint: {path}");
+                }
+            }
+        }
+    } else if profile.enabled() {
+        let tag = tag.expect("checked above");
+        let mut occupied = false;
+        if std::path::Path::new(base_dir).exists() {
+            for entry in std::fs::read_dir(base_dir)? {
+                let name = entry?.file_name().to_string_lossy().into_owned();
+                if name.contains(&format!("_{tag}.")) || name.contains(&format!("_{tag}_")) {
+                    occupied = true;
+                    break;
+                }
+            }
+        }
+        if occupied {
+            anyhow::bail!(
+                "experimental --run-tag {tag} already has artifacts but no matching run metadata"
+            );
+        }
+        if fresh_model == import_model.is_some() {
+            anyhow::bail!(
+                "first experimental run requires exactly one of --import-model or --fresh-model"
+            );
+        }
+        if let Some(source) = import_model {
+            if !std::path::Path::new(source).is_file() {
+                anyhow::bail!("experimental import model does not exist: {source}");
+            }
+        }
+    }
+    Ok(metadata_path)
+}
+
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().collect();
     if args.iter().any(|arg| analysis::is_analysis_flag(arg)) {
@@ -6060,6 +6250,7 @@ fn main() -> Result<()> {
     let mut prune_missing_manifest_entries = false;
     let mut manifest_only = false;
     let mut run_tag: Option<String> = None;
+    let mut experiments = ExperimentProfile::default();
     let mut seed: u64 = 42;
     let mut arg_idx = 1;
     while arg_idx < args.len() {
@@ -6177,6 +6368,14 @@ fn main() -> Result<()> {
                     anyhow::bail!("Missing value for --run-tag");
                 }
             }
+            "--spectral-deemphasis" => {
+                experiments.spectral_deemphasis = true;
+                arg_idx += 1;
+            }
+            "--prime-width-score" => {
+                experiments.prime_width_score = true;
+                arg_idx += 1;
+            }
             "--freeze-morph" => {
                 freeze_morph = true;
                 arg_idx += 1;
@@ -6255,6 +6454,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
       --prune-missing  Remove manifest entries whose WAV files are absent (refresh only)\n\
       --manifest-only  Create, repair, refresh, or rebuild the manifest, then exit\n\
       --run-tag NAME   Isolate output, telemetry, model, and world artifacts\n\
+      --spectral-deemphasis  Experimental 2-6 kHz spectral loss weighting\n\
+      --prime-width-score   Experimental width-aware prime selection\n\
       --freeze-morph   Hold the checkpoint's current morphic depth for this run\n\
       --morph-layers N Physically construct N append-preserving morph blocks (default 12)\n\
       --morph-width N  Internal morph-block width, 64..4096 (default 512)\n\
@@ -6266,6 +6467,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
   -f, --fresh-model    Reset both learned weights and the world\n\
 \nScientific instrumentation (read-only; see --analysis-only --analysis-help):\n\
       --analysis-only  Load frozen v9 checkpoints and write sidecar reports only\n\
+      Frozen analysis target feedback uses the legacy unweighted distance.\n\
 \nCtrl-C finishes the active chunk, finalizes audio, and saves the organism.\n"
                 );
                 return Ok(());
@@ -6289,6 +6491,27 @@ Usage: titan [BASE_DIR] [options]\n\n\
     if prune_missing_manifest_entries && !refresh_corpus_manifest_requested {
         anyhow::bail!("--prune-missing requires --refresh-corpus-manifest");
     }
+    if experiments.enabled() && manifest_only {
+        anyhow::bail!("experimental flags require a training/render run, not --manifest-only");
+    }
+    let run_metadata_path = if manifest_only {
+        artifact_path(
+            &base_dir,
+            "titan_run_metadata_v9",
+            "json",
+            run_tag.as_deref(),
+        )
+    } else {
+        validate_experiment_run(
+            &base_dir,
+            run_tag.as_deref(),
+            model_override.as_deref(),
+            state_override.as_deref(),
+            import_model_override.as_deref(),
+            fresh_model,
+            experiments,
+        )?
+    };
     std::fs::create_dir_all(&base_dir)?;
     let wav_dir = format!("{}/OLD_WAVS", base_dir);
     let corpus_manifest_path = corpus_manifest_override
@@ -6486,6 +6709,19 @@ Usage: titan [BASE_DIR] [options]\n\n\
         SpectralProjector::new_with(1024, 48, &device).map_err(anyhow::Error::msg)?;
     let spec_proj_long = SpectralProjector::new_with(CHUNK_SIZE * tape_chunks, 128, &device)
         .map_err(anyhow::Error::msg)?;
+    let (spec_proj, spec_proj_fine, spec_proj_long) = if experiments.spectral_deemphasis {
+        (
+            spec_proj.with_deemphasis().map_err(anyhow::Error::msg)?,
+            spec_proj_fine
+                .with_deemphasis()
+                .map_err(anyhow::Error::msg)?,
+            spec_proj_long
+                .with_deemphasis()
+                .map_err(anyhow::Error::msg)?,
+        )
+    } else {
+        (spec_proj, spec_proj_fine, spec_proj_long)
+    };
     let chroma_proj = ChromaProjector::new(&device).map_err(anyhow::Error::msg)?;
     let modulation_proj = ModulationProjector::new(&device).map_err(anyhow::Error::msg)?;
     let development_targets = target_loader.development_chunks(&device)?;
@@ -7141,7 +7377,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
         let tgt_spec = tgt_specs.narrow(0, best_k * 2, 2)?;
 
         let out_spec = Tensor::cat(&[&out_spec_l, &out_spec_r], 0)?; // (2, bins), grad-carrying
-        let mimic_coarse = robust_distance(&out_spec.sub(&tgt_spec)?, 0.03)?;
+        let mimic_coarse = spec_proj.spectral_loss(&out_spec, &tgt_spec, 0.03)?;
         let out_bands = log_band_energy(&out_spec)?;
         let target_bands = log_band_energy(&tgt_spec)?.detach();
         let band_loss = robust_distance(&out_bands.sub(&target_bands)?, 0.05)?;
@@ -7156,7 +7392,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
         let tgt_fine = spec_proj_fine
             .log_mag(&target_chunk.reshape((8, 1024))?)?
             .detach();
-        let mimic_fine = robust_distance(&out_fine.sub(&tgt_fine)?, 0.03)?;
+        let mimic_fine = spec_proj_fine.spectral_loss(&out_fine, &tgt_fine, 0.03)?;
         // Frame energy is phase-invariant but time-aligned. It gives the GRU
         // an honest gradient for pulse, accents, rests, and phrase dynamics
         // that a single chunk-wide spectrum cannot represent.
@@ -7810,10 +8046,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
             let target_long = Tensor::cat(&target_refs, 1)?.detach();
             let out_long_spec = spec_proj_long.log_mag(&out_long)?;
             let target_long_spec = spec_proj_long.log_mag(&target_long)?.detach();
-            Some(robust_distance(
-                &out_long_spec.sub(&target_long_spec)?,
-                0.03,
-            )?)
+            Some(spec_proj_long.spectral_loss(&out_long_spec, &target_long_spec, 0.03)?)
         } else {
             None
         };
@@ -8138,11 +8371,16 @@ Usage: titan [BASE_DIR] [options]\n\n\
         }
         raw_audio_writer.write_all(&raw_chunk_bytes)?;
         phase_profiler.output_io += output_started.elapsed();
-        chunk_scores.push(
-            field_entropy * (0.25 + 0.50 * adaptive_dynamics.activity_health)
-                + structured_complexity * 0.75
-                - adaptive_dynamics.stagnation * 0.25,
-        );
+        let stereo_corr = s_sig["stereo_corr"].as_f64().unwrap_or(0.0) as f32;
+        chunk_scores.push(prime_chunk_score(
+            field_entropy,
+            adaptive_dynamics.activity_health,
+            structured_complexity,
+            adaptive_dynamics.stagnation,
+            post.observation.width(),
+            stereo_corr,
+            experiments.prime_width_score,
+        ));
         completed_chunks += 1;
         evolved_chunks = step + 1;
 
@@ -8460,23 +8698,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let win = ((SAMPLE_RATE as f32 * prime_secs / CHUNK_SIZE as f32) as usize)
         .max(1)
         .min(chunk_scores.len().max(1));
-    let (best_start, best_sum) = if !chunk_scores.is_empty() {
-        let mut run: f32 = chunk_scores.iter().take(win).sum();
-        let mut best_start = 0usize;
-        let mut best_sum = run;
-        if chunk_scores.len() > win {
-            for start in 1..=(chunk_scores.len() - win) {
-                run += chunk_scores[start + win - 1] - chunk_scores[start - 1];
-                if run > best_sum {
-                    best_sum = run;
-                    best_start = start;
-                }
-            }
-        }
-        (best_start, best_sum)
-    } else {
-        (0usize, 0.0f32)
-    };
+    let (best_start, best_sum) = best_prime_window(&chunk_scores, win);
     let prime_start_frame = best_start * CHUNK_SIZE;
     let prime_end_frame = ((best_start + win) * CHUNK_SIZE).min(total_frames);
     let fade = 2048usize.min(prime_end_frame.saturating_sub(prime_start_frame) / 4);
@@ -8959,12 +9181,6 @@ Usage: titan [BASE_DIR] [options]\n\n\
     );
     let metadata = std::fs::metadata(&model_path)?;
     let run_finished_unix_ms = unix_time_ms();
-    let run_metadata_path = artifact_path(
-        &base_dir,
-        "titan_run_metadata_v9",
-        "json",
-        run_tag.as_deref(),
-    );
     let run_metadata_tmp = format!("{}.tmp", run_metadata_path);
     let run_metadata = serde_json::json!({
         "trace_schema_version": TRACE_SCHEMA_VERSION,
@@ -9002,6 +9218,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
             "max_morph_depth": morph_policy.max_depth,
             "motif_capacity": motif_capacity,
             "run_tag": run_tag,
+            "experiments": experiments,
             "load_paths": {
                 "model": load_model_path,
                 "world": load_world_path,
@@ -9156,6 +9373,74 @@ mod tests {
             ),
             "/tmp/titan/titan_prime_60s_study_a1b2c3d4e5f6.wav"
         );
+    }
+
+    #[test]
+    fn experimental_profile_requires_isolated_start_and_matching_continuation() -> Result<()> {
+        let root = std::env::temp_dir().join(format!(
+            "titan_experiment_gate_{}_{}",
+            std::process::id(),
+            unix_time_ms()
+        ));
+        std::fs::create_dir_all(&root)?;
+        let base = root.to_str().unwrap();
+        let source = root.join("parent.safetensors");
+        std::fs::write(&source, b"fixture")?;
+        let source = source.to_str().unwrap();
+        let profile = ExperimentProfile {
+            spectral_deemphasis: true,
+            prime_width_score: false,
+        };
+        assert!(
+            validate_experiment_run(base, None, None, None, Some(source), false, profile).is_err()
+        );
+        assert!(
+            validate_experiment_run(base, Some("fork"), None, None, None, false, profile).is_err()
+        );
+        let metadata =
+            validate_experiment_run(base, Some("fork"), None, None, Some(source), false, profile)?;
+        std::fs::write(
+            &metadata,
+            serde_json::to_vec(&serde_json::json!({"invocation": {"experiments": profile}}))?,
+        )?;
+        assert!(
+            validate_experiment_run(base, Some("fork"), None, None, None, false, profile).is_err()
+        );
+        for (stem, extension) in [
+            ("titan_model_v9", "safetensors"),
+            ("titan_world_v9", "bin"),
+            ("titan_optimizer_v9", "safetensors"),
+        ] {
+            std::fs::write(
+                artifact_path(base, stem, extension, Some("fork")),
+                b"fixture",
+            )?;
+        }
+        assert!(
+            validate_experiment_run(base, Some("fork"), None, None, None, false, profile).is_ok()
+        );
+        assert!(validate_experiment_run(
+            base,
+            Some("fork"),
+            None,
+            None,
+            None,
+            false,
+            ExperimentProfile::default()
+        )
+        .is_err());
+        assert!(validate_experiment_run(
+            base,
+            Some("fork"),
+            None,
+            None,
+            Some(source),
+            false,
+            profile
+        )
+        .is_err());
+        std::fs::remove_dir_all(root)?;
+        Ok(())
     }
 
     #[test]
@@ -10001,6 +10286,49 @@ mod tests {
     }
 
     #[test]
+    fn prime_width_scoring_rejects_antiphase_and_preserves_legacy_window() {
+        let left: Vec<f32> = (0..CHUNK_SIZE)
+            .map(|i| (TWO_PI * 220.0 * i as f32 / SAMPLE_RATE as f32).sin())
+            .collect();
+        let centered = left.clone();
+        let antiphase: Vec<f32> = left.iter().map(|x| -*x).collect();
+        let wide: Vec<f32> = left
+            .iter()
+            .enumerate()
+            .map(|(i, x)| 0.5 * x + 0.5 * (TWO_PI * 311.0 * i as f32 / SAMPLE_RATE as f32).sin())
+            .collect();
+        let score = |right: &[f32], enabled| {
+            let post = SpectralEntropyMonitor::new(20).analyze(&left, right, 0.05, 0.1, 1.5, 1.0);
+            prime_chunk_score(
+                0.65,
+                0.8,
+                0.5,
+                0.05,
+                post.observation.width(),
+                post.json["stereo_corr"].as_f64().unwrap() as f32,
+                enabled,
+            )
+        };
+        let legacy_scores = [
+            score(&centered, false),
+            score(&antiphase, false),
+            score(&wide, false),
+        ];
+        assert_eq!(legacy_scores[0], legacy_scores[1]);
+        assert_eq!(legacy_scores[0], legacy_scores[2]);
+        assert_eq!(best_prime_window(&legacy_scores, 1).0, 0);
+
+        let experimental_scores = [
+            score(&centered, true),
+            score(&antiphase, true),
+            score(&wide, true),
+        ];
+        assert_eq!(experimental_scores[0], experimental_scores[1]);
+        assert!(experimental_scores[2] > experimental_scores[0]);
+        assert_eq!(best_prime_window(&experimental_scores, 1).0, 2);
+    }
+
+    #[test]
     fn criticality_estimator_rejects_flat_activity() {
         let mut estimator = CriticalityEstimator::default();
         for _ in 0..128 {
@@ -10515,5 +10843,113 @@ mod tests {
         assert!(MORPH_EVENT_HEADERS.contains(&"morph_depth"));
         assert!(MORPH_EVENT_HEADERS.contains(&"manifold_depth"));
         assert!(MORPH_EVENT_HEADERS.contains(&"active_spatial_rings"));
+    }
+
+    #[test]
+    fn spectral_projector_weights_mean_and_deemphasis_profile() -> Result<()> {
+        let device = Device::Cpu;
+        let spec_proj = SpectralProjector::new(&device)
+            .map_err(anyhow::Error::msg)?
+            .with_deemphasis()?;
+        let weights = spec_proj.weights();
+        assert_eq!(weights.dims(), &[1, SPEC_BINS]);
+
+        // Verify mean is normalized to 1.0 (loss scaling invariant)
+        let mean_val = weights.mean_all()?.to_scalar::<f32>()?;
+        assert!(
+            (mean_val - 1.0).abs() < 1e-5,
+            "spectral weights mean must be 1.0, got {mean_val}"
+        );
+
+        let weights_vec = weights.to_vec2::<f32>()?[0].clone();
+        let min_weight = weights_vec.iter().cloned().fold(f32::INFINITY, f32::min);
+        let min_idx = weights_vec.iter().position(|&w| w == min_weight).unwrap();
+
+        // 20% attenuation normalized by ~0.96 mean yields ~0.833 at center
+        assert!(
+            (0.78..=0.86).contains(&min_weight),
+            "min weight should reflect ~15-22% attenuation, got {min_weight}"
+        );
+
+        // Center frequency is ~3500 Hz; for SPEC_BINS=96 (20 Hz to 20 kHz log-spaced),
+        // 3500 Hz corresponds to bin index 71 (fraction ~0.748).
+        assert!(
+            (65..=75).contains(&min_idx),
+            "min weight should be centered around ~3.5 kHz (bin ~71), got bin {min_idx}"
+        );
+
+        // Outside bins (e.g. 20 Hz at bin 0 and 20 kHz at bin 95) should be > 1.0 to balance the mean
+        assert!(weights_vec[0] > 1.01 && weights_vec[0] < 1.08);
+        assert!(weights_vec[SPEC_BINS - 1] > 1.01 && weights_vec[SPEC_BINS - 1] < 1.08);
+
+        Ok(())
+    }
+
+    #[test]
+    fn spectral_loss_scaling_differentiation_and_deemphasis() -> Result<()> {
+        let device = Device::Cpu;
+        let spec_proj = SpectralProjector::new(&device)
+            .map_err(anyhow::Error::msg)?
+            .with_deemphasis()?;
+
+        let target = Tensor::zeros((1, SPEC_BINS), DType::F32, &device)?;
+
+        // Perturbation in 2-6 kHz (bins 68..73, centered around 3.5 kHz)
+        let mut err_mid_vec = vec![0.0f32; SPEC_BINS];
+        for value in &mut err_mid_vec[68..73] {
+            *value = 0.5;
+        }
+        let pred_mid = Tensor::from_vec(err_mid_vec, (1, SPEC_BINS), &device)?;
+
+        // Equal-magnitude perturbation in low frequency (< 300 Hz, bins 5..10)
+        let mut err_low_vec = vec![0.0f32; SPEC_BINS];
+        for value in &mut err_low_vec[5..10] {
+            *value = 0.5;
+        }
+        let pred_low = Tensor::from_vec(err_low_vec, (1, SPEC_BINS), &device)?;
+
+        let loss_mid = spec_proj
+            .spectral_loss(&pred_mid, &target, 0.03)?
+            .to_scalar::<f32>()?;
+        let loss_low = spec_proj
+            .spectral_loss(&pred_low, &target, 0.03)?
+            .to_scalar::<f32>()?;
+
+        assert!(loss_mid > 0.0 && loss_low > 0.0);
+        // Mid-frequency error must incur less loss due to 2-6 kHz de-emphasis
+        assert!(
+            loss_mid < loss_low * 0.85,
+            "loss_mid ({loss_mid}) must be < 85% of loss_low ({loss_low})"
+        );
+
+        // Verify autograd backward pass compatibility
+        let varmap = VarMap::new();
+        let vb = VBV::from_varmap(&varmap, DType::F32, &device);
+        let param = vb.get((1, SPEC_BINS), "test_spec")?;
+        let test_loss = spec_proj.spectral_loss(&param, &target, 0.03)?;
+        let grads = test_loss.backward()?;
+        assert!(
+            grads.get(&param).is_some(),
+            "spectral_loss must produce gradients"
+        );
+        let grad_vec = grads.get(&param).unwrap().to_vec2::<f32>()?[0].clone();
+        assert!(grad_vec.iter().all(|g| g.is_finite()));
+
+        Ok(())
+    }
+
+    #[test]
+    fn spectral_loss_defaults_to_legacy_distance() -> Result<()> {
+        let device = Device::Cpu;
+        let projector = SpectralProjector::new(&device).map_err(anyhow::Error::msg)?;
+        assert!(projector.deemphasis_weights.is_none());
+        let target = Tensor::zeros((2, SPEC_BINS), DType::F32, &device)?;
+        let pred = Tensor::ones((2, SPEC_BINS), DType::F32, &device)?;
+        let actual = projector
+            .spectral_loss(&pred, &target, 0.03)?
+            .to_scalar::<f32>()?;
+        let legacy = robust_distance(&pred.sub(&target)?, 0.03)?.to_scalar::<f32>()?;
+        assert_eq!(actual, legacy);
+        Ok(())
     }
 }

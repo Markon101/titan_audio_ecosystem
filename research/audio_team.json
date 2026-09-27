@@ -1,0 +1,28 @@
+{
+  "model": "deepseek/deepseek-v4.1-flash",
+  "max_tokens": 16384,
+  "max_request_bytes": 393216,
+  "workers": 3,
+  "core": "research/audio_context.md",
+  "evidence": [
+    "analysis/audio_center_harshness_20260926/deepseek_packet.md",
+    "analysis/audio_center_harshness_20260926/diagnostics/CORRECTION.md",
+    "analysis/audio_center_harshness_20260926/multi_arm_sidecar_package/PROVENANCE_CORRECTION.md",
+    "docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:46-144",
+    "src/main.rs:70-160",
+    "src/main.rs:235-260",
+    "src/main.rs:2945-3050",
+    "src/main.rs:4225-4315",
+    "src/main.rs:5107-5255",
+    "src/main.rs:5290-5648",
+    "src/main.rs:7020-7270",
+    "src/main.rs:7780-7995",
+    "src/main.rs:8048-8150",
+    "src/main.rs:8170-8390",
+    "src/main.rs:8448-8542",
+    "src/main.rs:8665-8698",
+    "src/stereo.rs:1-51",
+    "src/main.rs:6090-6520",
+    "METRICS.md:45-158"
+  ]
+}

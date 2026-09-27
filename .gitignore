@@ -2,6 +2,7 @@
 target/
 bin/
 *.wav
+*.zip
 *.csv
 *.csv.tmp
 *.jsonl.tmp
@@ -20,6 +21,8 @@ suno_priming_prompt*.txt
 
 # OS files
 .DS_Store
+__pycache__/
+*.pyc
 
 # Isolated release-validation workspaces
 .titan-validation*/

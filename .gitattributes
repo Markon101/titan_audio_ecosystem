@@ -1,0 +1,4 @@
+# Preserve byte-exact research requests; copied source excerpts contain spaces.
+analysis/audio_center_harshness_20260926/team_v2/context_packet.md -whitespace
+analysis/audio_center_harshness_20260926/team_v2/synthesis_context.md -whitespace
+analysis/audio_center_harshness_20260926/team_v4_preflight/context_packet.md -whitespace

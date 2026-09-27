@@ -175,6 +175,12 @@ Every analysis report states:
   independent RNG policy; and
 - validity and a reason for measurements that are mathematically undefined.
 
+Analysis JSON step records include `recurrent_proposed_delta_rms`, the GRU
+update before a clone-only hold, and `recurrent_committed_delta_rms`, the
+update after that intervention. These fields distinguish a zero learned
+update from a hold that merely fails to affect audible output. They are
+observational and do not alter the normal runtime or the v1 trace CSV columns.
+
 State distance and phenotype/audio distance are separate domains.
 `latent_recovery_ratio(t)` is distance to the paired unperturbed baseline at
 time `t`, divided by the non-negligible initial distance. Time-to-half is valid
@@ -193,6 +199,15 @@ and kick streams keyed by checkpoint RNG identity, absolute step, and stream
 tag. Controller and target sampling have separate matched analysis streams.
 These streams never advance the saved normal-runtime RNG. Perturbation
 directions use `--analysis-seed`, independently of all of them.
+
+Corpus provenance retains `role_counts` and `scheduler_order` for compatibility:
+these describe declared manifest roles and listed WAVs in sorted disk order.
+`name_role_candidate_role_counts` and `name_role_candidate_order` apply the
+production loader's role and generated-filename exclusion before WAV format
+and length checks. `quarantine_role_conflicts` names entries marked as TITAN
+generated while assigned a non-exclude role. These additive fields report the
+disagreement without editing the manifest or claiming that every candidate
+passed production WAV indexing.
 
 The harness exports fixed-column CSV traces, structured JSON, 48 kHz stereo
 WAVs, fixed-scale spectrograms, and fixed-range micro/macro state atlases.
