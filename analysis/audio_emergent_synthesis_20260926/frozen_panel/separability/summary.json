@@ -1,0 +1,247 @@
+{
+  "conditions": [
+    "trained_saved_world",
+    "trained_fresh_world",
+    "init_depth_matched_fresh_world",
+    "init_native_depth_fresh_world"
+  ],
+  "pairwise": [
+    {
+      "left": "trained_saved_world",
+      "right": "trained_fresh_world",
+      "state_distance": {
+        "micro_relative_l2": 1.2575203,
+        "macro_relative_l2": 1.1267723,
+        "recurrent_relative_l2": 0.9409286,
+        "combined_relative_l2": 1.2428917,
+        "valid": true,
+        "reason": null
+      },
+      "audio_distance": {
+        "waveform_l2": 1.4493601,
+        "waveform_correlation": -0.052567795,
+        "multiresolution_log_spectral": 1.0107805,
+        "temporal_envelope": 0.1929792,
+        "rms_delta": 0.00014293939,
+        "centroid_delta_hz": 492.1079,
+        "stereo_correlation_delta": 0.13087425,
+        "valid_waveform_alignment": true,
+        "invalid_reason": null
+      }
+    },
+    {
+      "left": "trained_saved_world",
+      "right": "init_depth_matched_fresh_world",
+      "state_distance": {
+        "micro_relative_l2": 1.4387765,
+        "macro_relative_l2": 1.3380946,
+        "recurrent_relative_l2": 156.39067,
+        "combined_relative_l2": 1.4276578,
+        "valid": true,
+        "reason": null
+      },
+      "audio_distance": {
+        "waveform_l2": 5.526469,
+        "waveform_correlation": -0.038727745,
+        "multiresolution_log_spectral": 4.5352077,
+        "temporal_envelope": 4.764542,
+        "rms_delta": 0.054493796,
+        "centroid_delta_hz": 6350.812,
+        "stereo_correlation_delta": 0.41182703,
+        "valid_waveform_alignment": true,
+        "invalid_reason": null
+      }
+    },
+    {
+      "left": "trained_saved_world",
+      "right": "init_native_depth_fresh_world",
+      "state_distance": {
+        "micro_relative_l2": 1.5419446,
+        "macro_relative_l2": 1.5284848,
+        "recurrent_relative_l2": 182.25,
+        "combined_relative_l2": 1.5412068,
+        "valid": true,
+        "reason": null
+      },
+      "audio_distance": {
+        "waveform_l2": 6.9676085,
+        "waveform_correlation": -0.04139,
+        "multiresolution_log_spectral": 4.720717,
+        "temporal_envelope": 6.1221204,
+        "rms_delta": 0.05712975,
+        "centroid_delta_hz": 6148.078,
+        "stereo_correlation_delta": 0.16670376,
+        "valid_waveform_alignment": true,
+        "invalid_reason": null
+      }
+    },
+    {
+      "left": "trained_fresh_world",
+      "right": "init_depth_matched_fresh_world",
+      "state_distance": {
+        "micro_relative_l2": 0.7181418,
+        "macro_relative_l2": 0.66820014,
+        "recurrent_relative_l2": 177.28737,
+        "combined_relative_l2": 0.7139033,
+        "valid": true,
+        "reason": null
+      },
+      "audio_distance": {
+        "waveform_l2": 5.4480467,
+        "waveform_correlation": 0.052578732,
+        "multiresolution_log_spectral": 4.5070653,
+        "temporal_envelope": 4.79033,
+        "rms_delta": 0.054636735,
+        "centroid_delta_hz": 6842.92,
+        "stereo_correlation_delta": 0.54270124,
+        "valid_waveform_alignment": true,
+        "invalid_reason": null
+      }
+    },
+    {
+      "left": "trained_fresh_world",
+      "right": "init_native_depth_fresh_world",
+      "state_distance": {
+        "micro_relative_l2": 1.2514771,
+        "macro_relative_l2": 1.0240899,
+        "recurrent_relative_l2": 206.61807,
+        "combined_relative_l2": 1.2295973,
+        "valid": true,
+        "reason": null
+      },
+      "audio_distance": {
+        "waveform_l2": 6.964179,
+        "waveform_correlation": -0.02315778,
+        "multiresolution_log_spectral": 4.6941805,
+        "temporal_envelope": 6.1385856,
+        "rms_delta": 0.057272688,
+        "centroid_delta_hz": 6640.1865,
+        "stereo_correlation_delta": 0.297578,
+        "valid_waveform_alignment": true,
+        "invalid_reason": null
+      }
+    },
+    {
+      "left": "init_depth_matched_fresh_world",
+      "right": "init_native_depth_fresh_world",
+      "state_distance": {
+        "micro_relative_l2": 1.1629267,
+        "macro_relative_l2": 0.92536336,
+        "recurrent_relative_l2": 1.068131,
+        "combined_relative_l2": 1.1390877,
+        "valid": true,
+        "reason": null
+      },
+      "audio_distance": {
+        "waveform_l2": 1.9553715,
+        "waveform_correlation": -0.47547805,
+        "multiresolution_log_spectral": 0.8678446,
+        "temporal_envelope": 0.9621799,
+        "rms_delta": 0.0026359512,
+        "centroid_delta_hz": 202.73364,
+        "stereo_correlation_delta": 0.24512327,
+        "valid_waveform_alignment": true,
+        "invalid_reason": null
+      }
+    }
+  ],
+  "within_condition_drift": [
+    {
+      "condition": "trained_saved_world",
+      "state_drift": {
+        "micro_relative_l2": 0.30552688,
+        "macro_relative_l2": 0.76902455,
+        "recurrent_relative_l2": 0.0,
+        "combined_relative_l2": 0.37924504,
+        "valid": true,
+        "reason": null
+      },
+      "audio_drift": {
+        "waveform_l2": 1.2461612,
+        "waveform_correlation": 0.2347217,
+        "multiresolution_log_spectral": 0.8749499,
+        "temporal_envelope": 0.1577417,
+        "rms_delta": 0.0009533763,
+        "centroid_delta_hz": 4.2460938,
+        "stereo_correlation_delta": 0.060108006,
+        "valid_waveform_alignment": true,
+        "invalid_reason": null
+      }
+    },
+    {
+      "condition": "trained_fresh_world",
+      "state_drift": {
+        "micro_relative_l2": 0.71815133,
+        "macro_relative_l2": 1.1924356,
+        "recurrent_relative_l2": 23.670046,
+        "combined_relative_l2": 0.7887306,
+        "valid": true,
+        "reason": null
+      },
+      "audio_drift": {
+        "waveform_l2": 1.4271806,
+        "waveform_correlation": -0.012516877,
+        "multiresolution_log_spectral": 1.0833308,
+        "temporal_envelope": 0.41654488,
+        "rms_delta": 0.00038799644,
+        "centroid_delta_hz": 513.1074,
+        "stereo_correlation_delta": 0.21799758,
+        "valid_waveform_alignment": true,
+        "invalid_reason": null
+      }
+    },
+    {
+      "condition": "init_depth_matched_fresh_world",
+      "state_drift": {
+        "micro_relative_l2": 0.36255297,
+        "macro_relative_l2": 1.251973,
+        "recurrent_relative_l2": 1.044907,
+        "combined_relative_l2": 0.54517984,
+        "valid": true,
+        "reason": null
+      },
+      "audio_drift": {
+        "waveform_l2": 2.430598,
+        "waveform_correlation": -0.34048358,
+        "multiresolution_log_spectral": 1.0938085,
+        "temporal_envelope": 1.5019238,
+        "rms_delta": 0.0058746934,
+        "centroid_delta_hz": 395.1488,
+        "stereo_correlation_delta": 0.014882565,
+        "valid_waveform_alignment": true,
+        "invalid_reason": null
+      }
+    },
+    {
+      "condition": "init_native_depth_fresh_world",
+      "state_drift": {
+        "micro_relative_l2": 0.57486874,
+        "macro_relative_l2": 0.82255304,
+        "recurrent_relative_l2": 2.083494,
+        "combined_relative_l2": 0.62226504,
+        "valid": true,
+        "reason": null
+      },
+      "audio_drift": {
+        "waveform_l2": 1.788279,
+        "waveform_correlation": 0.20533192,
+        "multiresolution_log_spectral": 1.1565399,
+        "temporal_envelope": 1.3973546,
+        "rms_delta": 0.0040266262,
+        "centroid_delta_hz": 292.75,
+        "stereo_correlation_delta": 0.10885078,
+        "valid_waveform_alignment": true,
+        "invalid_reason": null
+      }
+    }
+  ],
+  "mean_between_state_distance": 1.2157241,
+  "mean_within_state_drift": 0.58385515,
+  "between_within_ratio": 2.0822358,
+  "operational_classification": "differentiated_or_drifting_trajectories",
+  "interpretation_constraints": [
+    "descriptor clusters are operational regimes, not concepts",
+    "finite trajectories cannot distinguish separate basins from slow mixing",
+    "waveform metrics are interpreted only for sample-aligned common-origin conditions"
+  ]
+}

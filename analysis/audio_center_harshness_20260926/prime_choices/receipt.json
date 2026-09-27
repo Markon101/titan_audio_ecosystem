@@ -1,0 +1,44 @@
+{
+  "items": [
+    {
+      "description": "original, unfiltered",
+      "file": "E_original_strong.wav",
+      "frames": 2879488,
+      "lr_correlation": 0.9908126430619542,
+      "output_sha256": "4f8e6a604f5a3f37ec39818f71af6955a0488d4d937491cf1e051162c05ee48d",
+      "sample_peak_dbfs": -2.745039290276013,
+      "source_path": "/storage/emulated/0/Download/titan_prime_60s_v9-long-01_9bcf582d4b13.wav",
+      "source_sha256": "4f8e6a604f5a3f37ec39818f71af6955a0488d4d937491cf1e051162c05ee48d",
+      "stereo_rms": 0.23158775071806703
+    },
+    {
+      "description": "3.5 kHz bell EQ, -3 dB",
+      "file": "B_eq_minus3_softer.wav",
+      "frames": 2879488,
+      "lr_correlation": 0.9907053405415037,
+      "output_sha256": "f8be8ddba43d6a4bdf9b1991d4466c4421c1fba5fbdb27192289e7419f341f01",
+      "sample_peak_dbfs": -2.1008781578272138,
+      "source_path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/audio_center_harshness_20260926/eq_level_matched/latest_eq.wav",
+      "source_sha256": "f8be8ddba43d6a4bdf9b1991d4466c4421c1fba5fbdb27192289e7419f341f01",
+      "stereo_rms": 0.23158774792473116
+    },
+    {
+      "description": "3.5 kHz bell EQ, -1.5 dB",
+      "file": "M_eq_minus1p5_untested.wav",
+      "frames": 2879488,
+      "lr_correlation": 0.9907547205711436,
+      "output_sha256": "727ce43932f8fe9e18d75d930f9ae9c78052ab842845ff3e1259b06701f512ac",
+      "sample_peak_dbfs": -2.426622145302961,
+      "source_path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/audio_center_harshness_20260926/eq_level_matched/latest_eq_mild_1p5.wav",
+      "source_sha256": "727ce43932f8fe9e18d75d930f9ae9c78052ab842845ff3e1259b06701f512ac",
+      "stereo_rms": 0.23158775370363452
+    }
+  ],
+  "quality_claim": "listener comparison pending for M; no downstream result",
+  "schema": "titan_audio_prime_choices_v1",
+  "source_interval_seconds": [
+    354.816,
+    414.805
+  ],
+  "user_feedback": "E strongest; B very close second and perhaps slightly softer to listen to"
+}

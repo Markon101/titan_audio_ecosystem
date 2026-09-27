@@ -1,0 +1,371 @@
+{
+  "answer": "{\n  \"context_receipt\": {\n    \"project\": \"titan_audio_ecosystem\",\n    \"direct_reference_input\": false,\n    \"prompt_is_post_render_output\": true,\n    \"waveform_filter_tests_latent_diffusion\": false,\n    \"canonical_mutation_allowed\": false\n  },\n  \"conclusions\": [\n    {\n      \"id\": \"C1\",\n      \"claim\": \"The supplied spectral table is a MID-channel-only, fraction-normalized estimator and cannot by itself support claims about absolute band energy, bass recovery, or stereo width.\",\n      \"support\": \"The packet states spectral fractions estimate mean mid-channel Hann-window FFT power normalized over 20-20,000 Hz (deepseek_packet.md:19-22). The context contract warns that fraction changes can reflect denominator or stereo changes and instructs measuring absolute and total L+R band power before claiming bass recovery (audio_context.md:54-57).\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"C2\",\n      \"claim\": \"The three tagged WAVs are a sequential continuation lineage, not independent seeds or matched arms; cross-prime comparisons are confounded by online learning, target mix, and carried state.\",\n      \"support\": \"audio_context.md:28-29 states the three latest WAVs form one sequential continuation lineage, not independent seeds or matched arms. audio_context.md:37-39 notes target mix and online learning confound comparisons between elapsed portions of a run. deepseek_packet.md:12-15 gives the step/update counts showing monotone progression.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"C3\",\n      \"claim\": \"The 60-second prime is selected by an internal score (field entropy, activity health, structured complexity, stagnation) with no listener rating or stereo/harshness ranking, so it can amplify a within-run outlier.\",\n      \"support\": \"audio_context.md:51-53 and deepseek_packet.md:33-35. The scoring formula is visible in src/main.rs:8141-8145 and the sliding-window selection in src/main.rs:8459-8481.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"C4\",\n      \"claim\": \"The latest prime is drawn from a center-heavy interval of a non-uniform 600-second render; the full render is not uniformly centered.\",\n      \"support\": \"deepseek_packet.md:31-34 reports non-overlapping 60-second intervals with L/R correlation 0.740-0.992 and minutes 5-6 at 0.990-0.992 with side/mid about -23 dB.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"C5\",\n      \"claim\": \"The listener report of harshness and center bias is a single uncontrolled observation; no blinded listening has been performed, so no perceptual improvement or perceptual cause is established.\",\n      \"support\": \"audio_context.md:58-60 states neither PI nor agents have performed controlled blinded listening yet and no perceptual improvement is established. deepseek_packet.md:7-8 instructs treating metrics as diagnostics and requiring listening for audible quality.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"C6\",\n      \"claim\": \"Offline waveform filtering tests signal processing only; it is not a proxy for latent-field diffusion, and latent field entropy cannot be recovered from a WAV.\",\n      \"support\": \"audio_context.md:64-67. deepseek_packet.md:48-51 distinguishes signal-domain smoothing, latent-field diffusion, and a learned spectral/diffusion decoder.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"C7\",\n      \"claim\": \"The prompt file is written after rendering and prime extraction and cannot have caused the run; it may only influence a later external system outside this experiment.\",\n      \"support\": \"audio_context.md:19-21. The write occurs at src/main.rs:8695-8697, after the mastering/prime block at src/main.rs:8448-8542.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"C8\",\n      \"claim\": \"The forward pass has no text prompt, target audio, prime, or external reference argument; target sampling occurs after forward.\",\n      \"support\": \"audio_context.md:13-18. src/main.rs:7041-7054 calls model.forward before src/main.rs:7107 samples targets. docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:101 states the same ordering.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"C9\",\n      \"claim\": \"AdamW moments are persisted and resumed under strict compatibility conditions; the real reproducibility limitation is checkpoint-set transactionality, not absence of moment persistence.\",\n      \"support\": \"docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:112-124. audio_context.md:28-29 confirms persisted moments.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"C10\",\n      \"claim\": \"The low-band loss term supervises only the first log band and is not the same as the 20-200 Hz measurement used in the survey table.\",\n      \"support\": \"audio_context.md:40-43. METRICS.md:64-65 describes output_low_band_ratio as the first supervised 20 Hz log band. src/main.rs:7202-7210 shows first_band_energy_ratio usage.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"C11\",\n      \"claim\": \"Pan-center loss penalizes the bounded audible residual pan and does not directly reward correlation equal to one.\",\n      \"support\": \"audio_context.md:44-47. src/stereo.rs:21-26 implements pan_center_loss as squared bounded pan. src/main.rs:7227 applies it to the bounded pan tensor.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"C12\",\n      \"claim\": \"Increasing side gain cannot synthesize missing side information; the side path derives from L-R before a delayed scaled side stage.\",\n      \"support\": \"audio_context.md:44-47. src/main.rs:5569-5603 shows side derived from audio_l minus audio_r, scaled by width and delayed Haas history.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"C13\",\n      \"claim\": \"A sample peak below 0 dBFS does not exclude nonlinear saturation or perceptual harshness, because loss-visible tanh, later gain/saturation/DC blocking, and whole-file peak normalization are in the path.\",\n      \"support\": \"audio_context.md:48-50. src/main.rs:8059-8076 applies tanh and a stateful DC blocker; src/main.rs:8451 normalizes to -1 dBFS.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"C14\",\n      \"claim\": \"The trace's ultrasonic_ratio is a pre-master aliasing/foldback guardrail, not a harshness score.\",\n      \"support\": \"deepseek_packet.md:40-41. METRICS.md:94-95 states the same.\",\n      \"confidence\": \"high\"\n    },\n    {\n      \"id\": \"C15\",\n      \"claim\": \"The latest training trace shows the model narrower and more correlated than its targets, with global pan at its +0.10 limit and decoder width control at 0.120.\",\n      \"support\": \"deepseek_packet.md:37-40. The pan limit is defined in src/stereo.rs:3 and applied in src/stereo.rs:13-19.\",\n      \"confidence\": \"medium\",\n      \"note\": \"Trace values are reported by the packet; the underlying trace file was not supplied for independent recomputation.\"\n    }\n  ],\n  \"evidence\": [\n    {\n      \"path\": \"analysis/audio_center_harshness_20260926/team_v2/context_packet.md\",\n      \"lines\": \"1-83\",\n      \"role\": \"Shared contract; receipt fields, causal order, prime selection, metric caveats, inference limits.\"\n    },\n    {\n      \"path\": \"analysis/audio_center_harshness_20260926/deepseek_packet.md\",\n      \"lines\": \"1-52\",\n      \"role\": \"Measurement table, run identity, trace summary, boundaries.\"\n    },\n    {\n      \"path\": \"docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md\",\n      \"lines\": \"46-144\",\n      \"role\": \"Architecture inventory, target semantics, optimizer persistence and transactionality.\"\n    },\n    {\n      \"path\": \"src/main.rs\",\n      \"lines\": \"70-160\",\n      \"role\": \"Constants: sample rate, chunk size, macro cadence, tape cap, decoder controls.\"\n    },\n    {\n      \"path\": \"src/main.rs\",\n      \"lines\": \"235-260\",\n      \"role\": \"Stereo loss weights and side-gain ceiling.\"\n    },\n    {\n      \"path\": \"src/main.rs\",\n      \"lines\": \"5107-5255\",\n      \"role\": \"Forward signature and oscillator/pitch path; confirms no reference argument.\"\n    },\n    {\n      \"path\": \"src/main.rs\",\n      \"lines\": \"5290-5648\",\n      \"role\": \"Renderer: scan partials, excitation, wavefolders, mid/side, pan, width, Haas delay.\"\n    },\n    {\n      \"path\": \"src/main.rs\",\n      \"lines\": \"7020-7270\",\n      \"role\": \"Forward-before-target ordering, min-of-K target selection, loss terms.\"\n    },\n    {\n      \"path\": \"src/main.rs\",\n      \"lines\": \"7780-7995\",\n      \"role\": \"Loss aggregation, tape accumulation, gradient clipping, optimizer step.\"\n    },\n    {\n      \"path\": \"src/main.rs\",\n      \"lines\": \"8048-8150\",\n      \"role\": \"Post path: tanh, DC blocker, raw peak, chunk score formula.\"\n    },\n    {\n      \"path\": \"src/main.rs\",\n      \"lines\": \"8448-8542\",\n      \"role\": \"Streamed mastering, prime window selection, fade, WAV writing.\"\n    },\n    {\n      \"path\": \"src/main.rs\",\n      \"lines\": \"8665-8698\",\n      \"role\": \"Prompt construction and write after rendering.\"\n    },\n    {\n      \"path\": \"src/stereo.rs\",\n      \"lines\": \"1-51\",\n      \"role\": \"Pan limit, width bounds, soft pan/width, pan-center loss, correlation-aware width.\"\n    },\n    {\n      \"path\": \"METRICS.md\",\n      \"lines\": \"45-158\",\n      \"role\": \"Estimator definitions and explicit non-claims.\"\n    }\n  ],\n  \"uncertainties\": [\n    {\n      \"id\": \"U1\",\n      \"item\": \"The supplied table reports only mid-channel fractions; absolute L+R band power, total energy, and per-band side energy are not provided.\",\n      \"impact\": \"Bass-recovery and harshness claims cannot be evaluated from the table alone.\"\n    },\n    {\n      \"id\": \"U2\",\n      \"item\": \"No perceptual ratings, no blinded listening, and no independent training replicas are available.\",\n      \"impact\": \"Audible quality and causal attribution to training remain unestablished.\"\n    },\n    {\n      \"id\": \"U3\",\n      \"item\": \"Pre-side-scale renderer taps and frequency-specific loss gradients are missing.\",\n      \"impact\": \"Cannot separate whether center bias originates in the learned renderer, the side stage, the pan head, or the target distribution.\"\n    },\n    {\n      \"id\": \"U4\",\n      \"item\": \"Detailed target mix attribution is missing.\",\n      \"impact\": \"Cannot rule out that the target corpus itself is center-heavy or bright, which would confound any harshness attribution.\"\n    },\n    {\n      \"id\": \"U5\",\n      \"item\": \"The trace values in deepseek_packet.md:37-41 were not independently recomputed from the trace file in this review.\",\n      \"impact\": \"Trace-derived conclusions are medium confidence.\"\n    },\n    {\n      \"id\": \"U6\",\n      \"item\": \"The 600-second render's interval statistics are reported but the underlying WAV was not supplied for recomputation.\",\n      \"impact\": \"Non-uniformity of the render is accepted as reported, not verified.\"\n    },\n    {\n      \"id\": \"U7\",\n      \"item\": \"Whether the two quarantine-provenance manifest entries entered gradients is unknown from manifest roles alone.\",\n      \"impact\": \"Corpus contamination cannot be confirmed or excluded from the supplied evidence.\"\n    },\n    {\n      \"id\": \"U8\",\n      \"item\": \"Downstream priming outcomes are missing.\",\n      \"impact\": \"Any effect of the prompt on an external system is outside this experiment and unmeasured.\"\n    }\n  ],\n  \"proposed_experiments\": [\n    {\n      \"id\": \"E1\",\n      \"name\": \"Absolute and stereo-resolved band power re-measurement\",\n      \"purpose\": \"Replace fraction-only mid-channel estimates with defensible units.\",\n      \"design\": \"On the existing prime WAVs and on non-overlapping 60-second intervals of the full render, compute per-band absolute power in dBFS for L, R, mid, and side over fixed bands (for example 20-200 Hz, 200-2000 Hz, 2-6 kHz, 6-20 kHz). Report total L+R power and side/mid ratio per band. Use identical windowing and normalization across files.\",\n      \"controls\": \"Same window count, window length, and band edges for every file; report the estimator explicitly.\",\n      \"expected_discriminator\": \"If bass fraction fell because total energy rose rather than because low-band power fell, absolute low-band power will be flat or higher.\",\n      \"limits\": \"Signal-domain measurement only; does not establish perceptual harshness.\"\n    },\n    {\n      \"id\": \"E2\",\n      \"name\": \"Prime-selection sensitivity audit\",\n      \"purpose\": \"Quantify how much the reported center bias is an artifact of prime selection.\",\n      \"design\": \"Recompute the chunk-score sliding window over the full render and report the distribution of candidate 60-second windows by L/R correlation and side/mid. Compare the selected window against the median and against the widest window.\",\n      \"controls\": \"Use the same score formula as src/main.rs:8141-8145 without modification.\",\n      \"expected_discriminator\": \"If the selected prime is an extreme outlier, its correlation and side/mid will sit far from the window distribution median.\",\n      \"limits\": \"Does not change the renderer or checkpoint.\"\n    },\n    {\n      \"id\": \"E3\",\n      \"name\": \"Frozen first-chunk invariance negative control\",\n      \"purpose\": \"Confirm the forward pass has no reference input.\",\n      \"design\": \"Clone identical pre-forward state and run forward with two different target chunks presented to the loader. Compare the emitted current-chunk audio byte-for-byte.\",\n      \"controls\": \"Identical model, world, optimizer, RNG seed, and pre-forward state.\",\n      \"expected_discriminator\": \"Identical current-chunk audio supports the no-reference-input claim; any difference would contradict it.\",\n      \"limits\": \"Tests the current chunk only; later host feedback may still differ.\"\n    },\n    {\n      \"id\": \"E4\",\n      \"name\": \"Sidecar renderer-tap capture\",\n      \"purpose\": \"Localize center bias to a stage.\",\n      \"design\": \"On a copied WAV and a sidecar receipt, capture pre-side-scale, post-side-scale, pre-pan, and post-pan signals for the same interval. Report side/mid and correlation at each tap.\",\n      \"controls\": \"No change to canonical checkpoints, corpus, or existing WAVs; outputs are copies with receipts.\",\n      \"expected_discriminator\": \"If side/mid is already low before the side stage, the collapse originates upstream; if it drops only after the side stage or pan, the stage is implicated.\",\n      \"limits\": \"Requires renderer instrumentation that may not currently exist; treat as a proposal, not a completed measurement.\"\n    },\n    {\n      \"id\": \"E5\",\n      \"name\": \"Level-matched paired-interval comparison\",\n      \"purpose\": \"Make any A/B comparison defensible.\",\n      \"design\": \"Select paired intervals of equal length from the untagged parent and the latest tagged continuation, match integrated loudness, and record the applied gain in a sidecar receipt. Report absolute band power and stereo geometry for each pair.\",\n      \"controls\": \"Record level-matching gains; do not alter canonical files.\",\n      \"expected_discriminator\": \"If differences persist after level matching, they are not explained by gain alone.\",\n      \"limits\": \"Still not a perceptual test.\"\n    },\n    {\n      \"id\": \"E6\",\n      \"name\": \"Blinded listening protocol\",\n      \"purpose\": \"Establish or refute the perceptual claim.\",\n      \"design\": \"Present level-matched, order-randomized, labeled-hidden excerpts to multiple listeners with a fixed rating instrument covering harshness and center bias. Report inter-rater agreement.\",\n      \"controls\": \"Randomized order, hidden labels, level matching, documented exclusion rules.\",\n      \"expected_discriminator\": \"Consistent ratings above chance support the perceptual claim; chance-level ratings do not.\",\n      \"limits\": \"Requires listeners and a protocol not currently available.\"\n    },\n    {\n      \"id\": \"E7\",\n      \"name\": \"Target-mix attribution audit\",\n      \"purpose\": \"Determine whether center bias or brightness is inherited from targets.\",\n      \"design\": \"Compute the same stereo geometry and band-power statistics on the target episodes actually sampled during the run, using the recorded target_file and target_frame fields.\",\n      \"controls\": \"Use the recorded target identity, not a re-sampled corpus.\",\n      \"expected_discriminator\": \"If targets are themselves center-heavy or bright, the model's geometry may be a faithful match rather than a defect.\",\n      \"limits\": \"Depends on trace fields being complete.\"\n    }\n  ],\n  \"defensible_units_and_limits\": {\n    \"units\": [\n      \"Band power in dBFS per channel and per mid/side, with explicit band edges and window parameters.\",\n      \"L/R Pearson correlation over a stated interval.\",\n      \"Side/mid as 10*log10(mean(side^2)/mean(mid^2)) with side=(L-R)/2 and mid=(L+R)/2, as defined in deepseek_packet.md:18-19.\",\n      \"L/R balance as 10*log10(E_L/E_R).\",\n      \"Integrated loudness for level matching, with the applied gain recorded.\"\n    ],\n    \"limits\": [\n      \"Fraction-only mid-channel spectra cannot support absolute-energy or stereo claims.\",\n      \"Internal metrics (sigma, phi, pi_proxy, empowerment, novelty_dmin, field_entropy, ultrasonic_ratio) are proxies or guardrails, not perceptual or causal measures (METRICS.md:45-95, 149-153).\",\n      \"Correlation and side/mid describe stereo geometry, not musical usefulness (audio_context.md:57).\",\n      \"Offline waveform filtering is not a proxy for latent-field diffusion (audio_context.md:64-67).\",\n      \"A zero-output identity branch proves bypass behavior only (audio_context.md:66-67).\",\n      \"Sample peak below 0 dBFS does not exclude saturation or harshness (audio_context.md:48-50).\",\n      \"Single-run, single-prime observations cannot establish a training-caused effect.\"\n    ]\n  },\n  \"conflicts\": [\n    {\n      \"claim_a\": \"The provisional request caveat suggested AdamW state may not be persisted.\",\n      \"claim_b\": \"Current Audio v9 persists AdamW moments and resumes them under strict compatibility conditions.\",\n      \"why_they_differ\": \"The caveat predates or misreads the current implementation; the source-audit correction in docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:112-124 documents PersistentAdamW::save and restore conditions.\",\n      \"discriminating_experiment\": \"Inspect titan_optimizer_v9.safetensors and the run metadata optimizer_resumed and optimizer_migration fields after a controlled restart; confirm moments and cumulative update count match the pre-restart values.\"\n    },\n    {\n      \"claim_a\": \"The latest continuation sounds harsh and centered (listener report).\",\n      \"claim_b\": \"The latest prime is drawn from a center-heavy interval, and the full render is not uniformly centered.\",\n      \"why_they_differ\": \"The listener may have heard the prime or a center-heavy portion; the report and the prime selection are not independent of each other.\",\n      \"discriminating_experiment\": \"Blinded, level-matched listening across multiple non-overlapping intervals of the full render, including the widest and the most center-heavy windows, with hidden labels.\"\n    }\n  ],\n  \"recommendation\": \"Treat the current evidence as diagnostic only. Before any training fork, complete E1, E2, E3, and E5 on copies with sidecar receipts, keeping canonical checkpoints, corpus, and existing WAVs byte-for-byte intact. Do not equate signal-domain smoothing with quality, and do not treat waveform filtering as a latent-diffusion proxy. Any perceptual claim requires E6.\",\n  \"speculation_label\": \"Items marked as hypotheses or as proposals in proposed_experiments are untested. Trace-derived values in C15 are accepted as reported and were not independently recomputed.\"\n}",
+  "answer_json": {
+    "conclusions": [
+      {
+        "claim": "The supplied spectral table is a MID-channel-only, fraction-normalized estimator and cannot by itself support claims about absolute band energy, bass recovery, or stereo width.",
+        "confidence": "high",
+        "id": "C1",
+        "support": "The packet states spectral fractions estimate mean mid-channel Hann-window FFT power normalized over 20-20,000 Hz (deepseek_packet.md:19-22). The context contract warns that fraction changes can reflect denominator or stereo changes and instructs measuring absolute and total L+R band power before claiming bass recovery (audio_context.md:54-57)."
+      },
+      {
+        "claim": "The three tagged WAVs are a sequential continuation lineage, not independent seeds or matched arms; cross-prime comparisons are confounded by online learning, target mix, and carried state.",
+        "confidence": "high",
+        "id": "C2",
+        "support": "audio_context.md:28-29 states the three latest WAVs form one sequential continuation lineage, not independent seeds or matched arms. audio_context.md:37-39 notes target mix and online learning confound comparisons between elapsed portions of a run. deepseek_packet.md:12-15 gives the step/update counts showing monotone progression."
+      },
+      {
+        "claim": "The 60-second prime is selected by an internal score (field entropy, activity health, structured complexity, stagnation) with no listener rating or stereo/harshness ranking, so it can amplify a within-run outlier.",
+        "confidence": "high",
+        "id": "C3",
+        "support": "audio_context.md:51-53 and deepseek_packet.md:33-35. The scoring formula is visible in src/main.rs:8141-8145 and the sliding-window selection in src/main.rs:8459-8481."
+      },
+      {
+        "claim": "The latest prime is drawn from a center-heavy interval of a non-uniform 600-second render; the full render is not uniformly centered.",
+        "confidence": "high",
+        "id": "C4",
+        "support": "deepseek_packet.md:31-34 reports non-overlapping 60-second intervals with L/R correlation 0.740-0.992 and minutes 5-6 at 0.990-0.992 with side/mid about -23 dB."
+      },
+      {
+        "claim": "The listener report of harshness and center bias is a single uncontrolled observation; no blinded listening has been performed, so no perceptual improvement or perceptual cause is established.",
+        "confidence": "high",
+        "id": "C5",
+        "support": "audio_context.md:58-60 states neither PI nor agents have performed controlled blinded listening yet and no perceptual improvement is established. deepseek_packet.md:7-8 instructs treating metrics as diagnostics and requiring listening for audible quality."
+      },
+      {
+        "claim": "Offline waveform filtering tests signal processing only; it is not a proxy for latent-field diffusion, and latent field entropy cannot be recovered from a WAV.",
+        "confidence": "high",
+        "id": "C6",
+        "support": "audio_context.md:64-67. deepseek_packet.md:48-51 distinguishes signal-domain smoothing, latent-field diffusion, and a learned spectral/diffusion decoder."
+      },
+      {
+        "claim": "The prompt file is written after rendering and prime extraction and cannot have caused the run; it may only influence a later external system outside this experiment.",
+        "confidence": "high",
+        "id": "C7",
+        "support": "audio_context.md:19-21. The write occurs at src/main.rs:8695-8697, after the mastering/prime block at src/main.rs:8448-8542."
+      },
+      {
+        "claim": "The forward pass has no text prompt, target audio, prime, or external reference argument; target sampling occurs after forward.",
+        "confidence": "high",
+        "id": "C8",
+        "support": "audio_context.md:13-18. src/main.rs:7041-7054 calls model.forward before src/main.rs:7107 samples targets. docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:101 states the same ordering."
+      },
+      {
+        "claim": "AdamW moments are persisted and resumed under strict compatibility conditions; the real reproducibility limitation is checkpoint-set transactionality, not absence of moment persistence.",
+        "confidence": "high",
+        "id": "C9",
+        "support": "docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:112-124. audio_context.md:28-29 confirms persisted moments."
+      },
+      {
+        "claim": "The low-band loss term supervises only the first log band and is not the same as the 20-200 Hz measurement used in the survey table.",
+        "confidence": "high",
+        "id": "C10",
+        "support": "audio_context.md:40-43. METRICS.md:64-65 describes output_low_band_ratio as the first supervised 20 Hz log band. src/main.rs:7202-7210 shows first_band_energy_ratio usage."
+      },
+      {
+        "claim": "Pan-center loss penalizes the bounded audible residual pan and does not directly reward correlation equal to one.",
+        "confidence": "high",
+        "id": "C11",
+        "support": "audio_context.md:44-47. src/stereo.rs:21-26 implements pan_center_loss as squared bounded pan. src/main.rs:7227 applies it to the bounded pan tensor."
+      },
+      {
+        "claim": "Increasing side gain cannot synthesize missing side information; the side path derives from L-R before a delayed scaled side stage.",
+        "confidence": "high",
+        "id": "C12",
+        "support": "audio_context.md:44-47. src/main.rs:5569-5603 shows side derived from audio_l minus audio_r, scaled by width and delayed Haas history."
+      },
+      {
+        "claim": "A sample peak below 0 dBFS does not exclude nonlinear saturation or perceptual harshness, because loss-visible tanh, later gain/saturation/DC blocking, and whole-file peak normalization are in the path.",
+        "confidence": "high",
+        "id": "C13",
+        "support": "audio_context.md:48-50. src/main.rs:8059-8076 applies tanh and a stateful DC blocker; src/main.rs:8451 normalizes to -1 dBFS."
+      },
+      {
+        "claim": "The trace's ultrasonic_ratio is a pre-master aliasing/foldback guardrail, not a harshness score.",
+        "confidence": "high",
+        "id": "C14",
+        "support": "deepseek_packet.md:40-41. METRICS.md:94-95 states the same."
+      },
+      {
+        "claim": "The latest training trace shows the model narrower and more correlated than its targets, with global pan at its +0.10 limit and decoder width control at 0.120.",
+        "confidence": "medium",
+        "id": "C15",
+        "note": "Trace values are reported by the packet; the underlying trace file was not supplied for independent recomputation.",
+        "support": "deepseek_packet.md:37-40. The pan limit is defined in src/stereo.rs:3 and applied in src/stereo.rs:13-19."
+      }
+    ],
+    "conflicts": [
+      {
+        "claim_a": "The provisional request caveat suggested AdamW state may not be persisted.",
+        "claim_b": "Current Audio v9 persists AdamW moments and resumes them under strict compatibility conditions.",
+        "discriminating_experiment": "Inspect titan_optimizer_v9.safetensors and the run metadata optimizer_resumed and optimizer_migration fields after a controlled restart; confirm moments and cumulative update count match the pre-restart values.",
+        "why_they_differ": "The caveat predates or misreads the current implementation; the source-audit correction in docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:112-124 documents PersistentAdamW::save and restore conditions."
+      },
+      {
+        "claim_a": "The latest continuation sounds harsh and centered (listener report).",
+        "claim_b": "The latest prime is drawn from a center-heavy interval, and the full render is not uniformly centered.",
+        "discriminating_experiment": "Blinded, level-matched listening across multiple non-overlapping intervals of the full render, including the widest and the most center-heavy windows, with hidden labels.",
+        "why_they_differ": "The listener may have heard the prime or a center-heavy portion; the report and the prime selection are not independent of each other."
+      }
+    ],
+    "context_receipt": {
+      "canonical_mutation_allowed": false,
+      "direct_reference_input": false,
+      "project": "titan_audio_ecosystem",
+      "prompt_is_post_render_output": true,
+      "waveform_filter_tests_latent_diffusion": false
+    },
+    "defensible_units_and_limits": {
+      "limits": [
+        "Fraction-only mid-channel spectra cannot support absolute-energy or stereo claims.",
+        "Internal metrics (sigma, phi, pi_proxy, empowerment, novelty_dmin, field_entropy, ultrasonic_ratio) are proxies or guardrails, not perceptual or causal measures (METRICS.md:45-95, 149-153).",
+        "Correlation and side/mid describe stereo geometry, not musical usefulness (audio_context.md:57).",
+        "Offline waveform filtering is not a proxy for latent-field diffusion (audio_context.md:64-67).",
+        "A zero-output identity branch proves bypass behavior only (audio_context.md:66-67).",
+        "Sample peak below 0 dBFS does not exclude saturation or harshness (audio_context.md:48-50).",
+        "Single-run, single-prime observations cannot establish a training-caused effect."
+      ],
+      "units": [
+        "Band power in dBFS per channel and per mid/side, with explicit band edges and window parameters.",
+        "L/R Pearson correlation over a stated interval.",
+        "Side/mid as 10*log10(mean(side^2)/mean(mid^2)) with side=(L-R)/2 and mid=(L+R)/2, as defined in deepseek_packet.md:18-19.",
+        "L/R balance as 10*log10(E_L/E_R).",
+        "Integrated loudness for level matching, with the applied gain recorded."
+      ]
+    },
+    "evidence": [
+      {
+        "lines": "1-83",
+        "path": "analysis/audio_center_harshness_20260926/team_v2/context_packet.md",
+        "role": "Shared contract; receipt fields, causal order, prime selection, metric caveats, inference limits."
+      },
+      {
+        "lines": "1-52",
+        "path": "analysis/audio_center_harshness_20260926/deepseek_packet.md",
+        "role": "Measurement table, run identity, trace summary, boundaries."
+      },
+      {
+        "lines": "46-144",
+        "path": "docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md",
+        "role": "Architecture inventory, target semantics, optimizer persistence and transactionality."
+      },
+      {
+        "lines": "70-160",
+        "path": "src/main.rs",
+        "role": "Constants: sample rate, chunk size, macro cadence, tape cap, decoder controls."
+      },
+      {
+        "lines": "235-260",
+        "path": "src/main.rs",
+        "role": "Stereo loss weights and side-gain ceiling."
+      },
+      {
+        "lines": "5107-5255",
+        "path": "src/main.rs",
+        "role": "Forward signature and oscillator/pitch path; confirms no reference argument."
+      },
+      {
+        "lines": "5290-5648",
+        "path": "src/main.rs",
+        "role": "Renderer: scan partials, excitation, wavefolders, mid/side, pan, width, Haas delay."
+      },
+      {
+        "lines": "7020-7270",
+        "path": "src/main.rs",
+        "role": "Forward-before-target ordering, min-of-K target selection, loss terms."
+      },
+      {
+        "lines": "7780-7995",
+        "path": "src/main.rs",
+        "role": "Loss aggregation, tape accumulation, gradient clipping, optimizer step."
+      },
+      {
+        "lines": "8048-8150",
+        "path": "src/main.rs",
+        "role": "Post path: tanh, DC blocker, raw peak, chunk score formula."
+      },
+      {
+        "lines": "8448-8542",
+        "path": "src/main.rs",
+        "role": "Streamed mastering, prime window selection, fade, WAV writing."
+      },
+      {
+        "lines": "8665-8698",
+        "path": "src/main.rs",
+        "role": "Prompt construction and write after rendering."
+      },
+      {
+        "lines": "1-51",
+        "path": "src/stereo.rs",
+        "role": "Pan limit, width bounds, soft pan/width, pan-center loss, correlation-aware width."
+      },
+      {
+        "lines": "45-158",
+        "path": "METRICS.md",
+        "role": "Estimator definitions and explicit non-claims."
+      }
+    ],
+    "proposed_experiments": [
+      {
+        "controls": "Same window count, window length, and band edges for every file; report the estimator explicitly.",
+        "design": "On the existing prime WAVs and on non-overlapping 60-second intervals of the full render, compute per-band absolute power in dBFS for L, R, mid, and side over fixed bands (for example 20-200 Hz, 200-2000 Hz, 2-6 kHz, 6-20 kHz). Report total L+R power and side/mid ratio per band. Use identical windowing and normalization across files.",
+        "expected_discriminator": "If bass fraction fell because total energy rose rather than because low-band power fell, absolute low-band power will be flat or higher.",
+        "id": "E1",
+        "limits": "Signal-domain measurement only; does not establish perceptual harshness.",
+        "name": "Absolute and stereo-resolved band power re-measurement",
+        "purpose": "Replace fraction-only mid-channel estimates with defensible units."
+      },
+      {
+        "controls": "Use the same score formula as src/main.rs:8141-8145 without modification.",
+        "design": "Recompute the chunk-score sliding window over the full render and report the distribution of candidate 60-second windows by L/R correlation and side/mid. Compare the selected window against the median and against the widest window.",
+        "expected_discriminator": "If the selected prime is an extreme outlier, its correlation and side/mid will sit far from the window distribution median.",
+        "id": "E2",
+        "limits": "Does not change the renderer or checkpoint.",
+        "name": "Prime-selection sensitivity audit",
+        "purpose": "Quantify how much the reported center bias is an artifact of prime selection."
+      },
+      {
+        "controls": "Identical model, world, optimizer, RNG seed, and pre-forward state.",
+        "design": "Clone identical pre-forward state and run forward with two different target chunks presented to the loader. Compare the emitted current-chunk audio byte-for-byte.",
+        "expected_discriminator": "Identical current-chunk audio supports the no-reference-input claim; any difference would contradict it.",
+        "id": "E3",
+        "limits": "Tests the current chunk only; later host feedback may still differ.",
+        "name": "Frozen first-chunk invariance negative control",
+        "purpose": "Confirm the forward pass has no reference input."
+      },
+      {
+        "controls": "No change to canonical checkpoints, corpus, or existing WAVs; outputs are copies with receipts.",
+        "design": "On a copied WAV and a sidecar receipt, capture pre-side-scale, post-side-scale, pre-pan, and post-pan signals for the same interval. Report side/mid and correlation at each tap.",
+        "expected_discriminator": "If side/mid is already low before the side stage, the collapse originates upstream; if it drops only after the side stage or pan, the stage is implicated.",
+        "id": "E4",
+        "limits": "Requires renderer instrumentation that may not currently exist; treat as a proposal, not a completed measurement.",
+        "name": "Sidecar renderer-tap capture",
+        "purpose": "Localize center bias to a stage."
+      },
+      {
+        "controls": "Record level-matching gains; do not alter canonical files.",
+        "design": "Select paired intervals of equal length from the untagged parent and the latest tagged continuation, match integrated loudness, and record the applied gain in a sidecar receipt. Report absolute band power and stereo geometry for each pair.",
+        "expected_discriminator": "If differences persist after level matching, they are not explained by gain alone.",
+        "id": "E5",
+        "limits": "Still not a perceptual test.",
+        "name": "Level-matched paired-interval comparison",
+        "purpose": "Make any A/B comparison defensible."
+      },
+      {
+        "controls": "Randomized order, hidden labels, level matching, documented exclusion rules.",
+        "design": "Present level-matched, order-randomized, labeled-hidden excerpts to multiple listeners with a fixed rating instrument covering harshness and center bias. Report inter-rater agreement.",
+        "expected_discriminator": "Consistent ratings above chance support the perceptual claim; chance-level ratings do not.",
+        "id": "E6",
+        "limits": "Requires listeners and a protocol not currently available.",
+        "name": "Blinded listening protocol",
+        "purpose": "Establish or refute the perceptual claim."
+      },
+      {
+        "controls": "Use the recorded target identity, not a re-sampled corpus.",
+        "design": "Compute the same stereo geometry and band-power statistics on the target episodes actually sampled during the run, using the recorded target_file and target_frame fields.",
+        "expected_discriminator": "If targets are themselves center-heavy or bright, the model's geometry may be a faithful match rather than a defect.",
+        "id": "E7",
+        "limits": "Depends on trace fields being complete.",
+        "name": "Target-mix attribution audit",
+        "purpose": "Determine whether center bias or brightness is inherited from targets."
+      }
+    ],
+    "recommendation": "Treat the current evidence as diagnostic only. Before any training fork, complete E1, E2, E3, and E5 on copies with sidecar receipts, keeping canonical checkpoints, corpus, and existing WAVs byte-for-byte intact. Do not equate signal-domain smoothing with quality, and do not treat waveform filtering as a latent-diffusion proxy. Any perceptual claim requires E6.",
+    "speculation_label": "Items marked as hypotheses or as proposals in proposed_experiments are untested. Trace-derived values in C15 are accepted as reported and were not independently recomputed.",
+    "uncertainties": [
+      {
+        "id": "U1",
+        "impact": "Bass-recovery and harshness claims cannot be evaluated from the table alone.",
+        "item": "The supplied table reports only mid-channel fractions; absolute L+R band power, total energy, and per-band side energy are not provided."
+      },
+      {
+        "id": "U2",
+        "impact": "Audible quality and causal attribution to training remain unestablished.",
+        "item": "No perceptual ratings, no blinded listening, and no independent training replicas are available."
+      },
+      {
+        "id": "U3",
+        "impact": "Cannot separate whether center bias originates in the learned renderer, the side stage, the pan head, or the target distribution.",
+        "item": "Pre-side-scale renderer taps and frequency-specific loss gradients are missing."
+      },
+      {
+        "id": "U4",
+        "impact": "Cannot rule out that the target corpus itself is center-heavy or bright, which would confound any harshness attribution.",
+        "item": "Detailed target mix attribution is missing."
+      },
+      {
+        "id": "U5",
+        "impact": "Trace-derived conclusions are medium confidence.",
+        "item": "The trace values in deepseek_packet.md:37-41 were not independently recomputed from the trace file in this review."
+      },
+      {
+        "id": "U6",
+        "impact": "Non-uniformity of the render is accepted as reported, not verified.",
+        "item": "The 600-second render's interval statistics are reported but the underlying WAV was not supplied for recomputation."
+      },
+      {
+        "id": "U7",
+        "impact": "Corpus contamination cannot be confirmed or excluded from the supplied evidence.",
+        "item": "Whether the two quarantine-provenance manifest entries entered gradients is unknown from manifest roles alone."
+      },
+      {
+        "id": "U8",
+        "impact": "Any effect of the prompt on an external system is outside this experiment and unmeasured.",
+        "item": "Downstream priming outcomes are missing."
+      }
+    ]
+  },
+  "approximate_input_tokens": 27046,
+  "attempts": 1,
+  "context": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "created_at_utc": "2026-09-26T07:28:41.319341+00:00",
+  "elapsed_seconds": 19.976,
+  "endpoint": "https://openrouter.ai/api/v1",
+  "files": [
+    {
+      "bytes": 102384,
+      "selection": "analysis/audio_center_harshness_20260926/team_v2/context_packet.md",
+      "sha256": "1093a68a5f48929d046cb7195f2138ceb5f707f939eff59d6b9e438b26192fd4"
+    }
+  ],
+  "finish_reason": "stop",
+  "id": "gen-1790407721-s1H76gUdhrvXPRSsHpHs",
+  "max_tokens": 16384,
+  "purpose": "Audit the measurement design, mid-only spectra, sequential-run dependence, prime selection, level matching, and listening inference. Define defensible units and limits. Return a JSON object with conclusions, evidence, uncertainties, proposed_experiments, and a context_receipt object reconstructing these facts from the source: project (string), direct_reference_input (boolean), prompt_is_post_render_output (boolean), waveform_filter_tests_latent_diffusion (boolean), canonical_mutation_allowed (boolean). The receipt is mandatory. Cite original source paths and line numbers.",
+  "request": {
+    "bytes": 108181,
+    "sha256": "6165bb00f0004515fb8611f9de2908fc65fa5f569c642b8d40af5ca1200dbdde"
+  },
+  "requested_model": "deepseek/deepseek-v4.1-flash",
+  "returned_model": "deepseek/deepseek-v4.1-flash",
+  "role": "researcher",
+  "schema_version": 1,
+  "status": "ok",
+  "temperature": 0.1,
+  "token_estimate_method": "serialized UTF-8 bytes / 4; not model tokenization",
+  "usage": {
+    "completion_tokens": 4645,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0153288,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.005574,
+      "upstream_inference_cost": 0.0153288,
+      "upstream_inference_prompt_cost": 0.0097548
+    },
+    "prompt_tokens": 32516,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 37161
+  }
+}

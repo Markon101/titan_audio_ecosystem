@@ -1,0 +1,103 @@
+{
+  "answer": "{\"conclusions\": [\"The harshness/center-bias report is plausibly a selection artifact as much as a synthesis artifact: the 60-second prime is chosen by a scalar score that contains no stereo-width or harshness term, so a center-heavy, bright interval can be selected even if the full 600-second render is not uniformly centered (context_packet.md:31-35; main.rs:8141-8145, 8463-8479).\", \"The renderer's stereo path is structurally biased toward high L/R correlation: side is derived from L-R, then scaled by a bounded learned width (0.05..0.50) and a bounded side gain, and the mid/side recombination plus bounded pan cannot synthesize side information that the pre-mid/side signal lacks (main.rs:5565-5603; stereo.rs:5-11, 28-41).\", \"The pan head is at its +0.10 rail in the latest trace (deepseek_packet.md:39), and pan_center_loss penalizes only the bounded residual pan (stereo.rs:21-26), so the loss does not directly reward correlation=1; the observed correlation is more consistent with a collapsed side path than with pan alone.\", \"The training objective explicitly rewards matching target side/mid, correlation, and level (main.rs:7211-7234), but the learned width control is capped at 0.50 (stereo.rs:6, 28-41) and the side gain is capped (stereo.rs:9-11), so the optimizer cannot close a large target-side gap by widening alone; it can instead reduce correlation by other means or accept the gap.\", \"The prompt file is written after rendering and prime extraction (main.rs:8682-8697), so its descriptive words ('focused center image', 'bright glassy upper spectrum') cannot have caused the current run's audio; they are post-hoc descriptions (context_packet.md:19-21).\", \"The waveform-filter / diffusion framing is a category error for this codebase: forward has no target-audio argument (context_packet.md:13-15; AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:101), and offline waveform filtering is not a proxy for latent-field diffusion (context_packet.md:64-67).\", \"Several loss terms are computed on detached targets and on tanh'd audio (main.rs:7103-7111, 7144-7176), which is correct for target detachment but means the 'harshness' seen post-master is only partially represented in the differentiable objective; the post path adds tanh saturation, a DC blocker, and whole-file peak normalization (main.rs:8059-8076, 8451-8514).\", \"The prime selection score (field_entropy * activity_health + structured_complexity * 0.75 - stagnation * 0.25) is a within-run argmax over a sliding window (main.rs:8141-8145, 8463-8479); it can amplify a within-run outlier and has no listener rating or stereo/harshness ranking (context_packet.md:51-53).\", \"The latest lineage is a sequential continuation, not independent seeds or matched arms (context_packet.md:28-29), so comparisons between the untagged parent and tagged continuations confound optimizer state, world state, and target mix.\"], \"evidence\": [\"Prime selection: main.rs:8141-8145 defines chunk_scores; main.rs:8463-8479 selects best_start by max sliding-window sum; main.rs:8480-8482 maps to frames and applies a 2048-sample fade. No stereo or harshness term appears.\", \"Stereo path: main.rs:5565-5572 computes mid and side from audio_l/audio_r with learned scalars; main.rs:5591-5603 applies width_val and learned_width to side, then a 16-sample Haas delay, then recombines. stereo.rs:5-11 bounds width and side gain; stereo.rs:28-41 bounds learned width to 0.05..0.50.\", \"Pan: stereo.rs:3 sets GLOBAL_PAN_LIMIT=0.10; stereo.rs:13-19 soft_global_pan; stereo.rs:21-26 pan_center_loss penalizes pan.sqr() only. deepseek_packet.md:39 reports global pan 0.0999 at its +0.10 limit.\", \"Losses: main.rs:7103-7111 tanh and target detach; main.rs:7144-7176 mimic/band/chroma/envelope; main.rs:7185-7226 recurrence, modulation, low-band, stereo geometry; main.rs:7227-7234 stereo_balance_loss weights (0.30 side, 0.95 correlation, 0.45 level); main.rs:7245-7256 mimic_loss assembly.\", \"Post path: main.rs:8059-8076 tanh(0.92*x) and stateful DC blocker; main.rs:8451-8454 peak normalization to 0.891; main.rs:8508-8531 PCM16 write and prime fade.\", \"Prompt timing: main.rs:8682-8697 formats and writes suno_priming_prompt after rendering; context_packet.md:19-21 states it is written after rendering and prime extraction.\", \"Forward inputs: context_packet.md:13-15 and AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:101 state forward has no target-audio argument; target sampling occurs after forward (main.rs:7041-7054 then 7107).\", \"Lineage: context_packet.md:28-29 states the three latest WAVs form one sequential continuation lineage, not independent seeds or matched arms.\", \"Metrics caveat: METRICS.md:64-76 and context_packet.md:54-57 warn that spectral fractions can reflect denominator or stereo changes and that correlation/side-mid describe stereo, not musical usefulness.\"], \"uncertainties\": [\"Whether the audible harshness is dominated by the renderer's high-band content (scan partials, wavefolder, FM) or by the post-master tanh/DC/peak-normalization chain is not separable from the supplied evidence; the trace's ultrasonic_ratio is a pre-master guardrail, not a harshness score (deepseek_packet.md:40-41; METRICS.md:94-95).\", \"The exact contribution of the target mix to the latest continuation's correlation is unknown; target mix and online learning confound comparisons between elapsed portions of a run (context_packet.md:37-39).\", \"Whether the 60-second prime's center-heavy interval is representative of the full 600-second render is only partially addressed: deepseek_packet.md:31-33 reports non-overlapping 60-second intervals with correlation 0.740-0.992, but the full per-interval table is not in the supplied evidence.\", \"The learned width control's actual value in the latest run is reported as 0.120 (deepseek_packet.md:39), well below the 0.50 ceiling, so the cap is not the binding constraint; why the optimizer did not push width higher is not established by the supplied lines.\", \"Whether the side path's 16-sample Haas delay (main.rs:5600-5601) contributes to perceived harshness or center bias is not measured in the supplied evidence.\", \"No blinded listening has been performed (context_packet.md:58-60), so perceptual improvement or degradation is not established.\"], \"proposed_experiments\": [\"Paired-interval prime audit (no training, no renderer change): for the existing latest WAV, compute per-60-second-interval L/R correlation, side/mid dB, and 2-6 kHz / 6-20 kHz fractions; compare the selected prime interval against the full-file distribution. This tests whether the report is a selection artifact. Cite main.rs:8463-8479 for the selection rule.\", \"Frozen side-path probe (no weight change): render a short segment with the existing checkpoint, then offline apply a controlled side-gain multiplier to the pre-master signal and re-master with the same tanh/DC/peak chain (main.rs:8059-8076, 8451-8514). Measure correlation and side/mid. This tests whether the center bias is recoverable by side gain alone or requires new side information.\", \"Loss-gradient attribution (frozen, single chunk): instrument the stereo_balance_loss components (main.rs:7219-7234) on a fixed chunk and report per-component gradient norms to the width head, pan head, and side excitation controls. This tests which term is actually driving the observed correlation.\", \"Target-mix control: hold the model and world state fixed, vary only the target episode selection (main.rs:7107-7140) across a small set of frozen chunks, and measure output correlation and band fractions. This tests whether the center bias tracks the target mix.\", \"Prime-selection counterfactual: recompute the prime window using an alternative score that includes a stereo-width term, and compare the selected interval to the current one. This tests whether the current score systematically prefers center-heavy intervals.\", \"Post-path ablation (offline, copied WAVs only): apply the tanh/DC/peak chain with and without the tanh stage to the same pre-master signal and measure 2-6 kHz / 6-20 kHz fractions. This tests whether the post path contributes to the reported harshness. Do not modify canonical files (context_packet.md:68-70).\"], \"context_receipt\": {\"project\": \"titan_audio_ecosystem\", \"direct_reference_input\": false, \"prompt_is_post_render_output\": true, \"waveform_filter_tests_latent_diffusion\": false, \"canonical_mutation_allowed\": false}}",
+  "answer_json": {
+    "conclusions": [
+      "The harshness/center-bias report is plausibly a selection artifact as much as a synthesis artifact: the 60-second prime is chosen by a scalar score that contains no stereo-width or harshness term, so a center-heavy, bright interval can be selected even if the full 600-second render is not uniformly centered (context_packet.md:31-35; main.rs:8141-8145, 8463-8479).",
+      "The renderer's stereo path is structurally biased toward high L/R correlation: side is derived from L-R, then scaled by a bounded learned width (0.05..0.50) and a bounded side gain, and the mid/side recombination plus bounded pan cannot synthesize side information that the pre-mid/side signal lacks (main.rs:5565-5603; stereo.rs:5-11, 28-41).",
+      "The pan head is at its +0.10 rail in the latest trace (deepseek_packet.md:39), and pan_center_loss penalizes only the bounded residual pan (stereo.rs:21-26), so the loss does not directly reward correlation=1; the observed correlation is more consistent with a collapsed side path than with pan alone.",
+      "The training objective explicitly rewards matching target side/mid, correlation, and level (main.rs:7211-7234), but the learned width control is capped at 0.50 (stereo.rs:6, 28-41) and the side gain is capped (stereo.rs:9-11), so the optimizer cannot close a large target-side gap by widening alone; it can instead reduce correlation by other means or accept the gap.",
+      "The prompt file is written after rendering and prime extraction (main.rs:8682-8697), so its descriptive words ('focused center image', 'bright glassy upper spectrum') cannot have caused the current run's audio; they are post-hoc descriptions (context_packet.md:19-21).",
+      "The waveform-filter / diffusion framing is a category error for this codebase: forward has no target-audio argument (context_packet.md:13-15; AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:101), and offline waveform filtering is not a proxy for latent-field diffusion (context_packet.md:64-67).",
+      "Several loss terms are computed on detached targets and on tanh'd audio (main.rs:7103-7111, 7144-7176), which is correct for target detachment but means the 'harshness' seen post-master is only partially represented in the differentiable objective; the post path adds tanh saturation, a DC blocker, and whole-file peak normalization (main.rs:8059-8076, 8451-8514).",
+      "The prime selection score (field_entropy * activity_health + structured_complexity * 0.75 - stagnation * 0.25) is a within-run argmax over a sliding window (main.rs:8141-8145, 8463-8479); it can amplify a within-run outlier and has no listener rating or stereo/harshness ranking (context_packet.md:51-53).",
+      "The latest lineage is a sequential continuation, not independent seeds or matched arms (context_packet.md:28-29), so comparisons between the untagged parent and tagged continuations confound optimizer state, world state, and target mix."
+    ],
+    "context_receipt": {
+      "canonical_mutation_allowed": false,
+      "direct_reference_input": false,
+      "project": "titan_audio_ecosystem",
+      "prompt_is_post_render_output": true,
+      "waveform_filter_tests_latent_diffusion": false
+    },
+    "evidence": [
+      "Prime selection: main.rs:8141-8145 defines chunk_scores; main.rs:8463-8479 selects best_start by max sliding-window sum; main.rs:8480-8482 maps to frames and applies a 2048-sample fade. No stereo or harshness term appears.",
+      "Stereo path: main.rs:5565-5572 computes mid and side from audio_l/audio_r with learned scalars; main.rs:5591-5603 applies width_val and learned_width to side, then a 16-sample Haas delay, then recombines. stereo.rs:5-11 bounds width and side gain; stereo.rs:28-41 bounds learned width to 0.05..0.50.",
+      "Pan: stereo.rs:3 sets GLOBAL_PAN_LIMIT=0.10; stereo.rs:13-19 soft_global_pan; stereo.rs:21-26 pan_center_loss penalizes pan.sqr() only. deepseek_packet.md:39 reports global pan 0.0999 at its +0.10 limit.",
+      "Losses: main.rs:7103-7111 tanh and target detach; main.rs:7144-7176 mimic/band/chroma/envelope; main.rs:7185-7226 recurrence, modulation, low-band, stereo geometry; main.rs:7227-7234 stereo_balance_loss weights (0.30 side, 0.95 correlation, 0.45 level); main.rs:7245-7256 mimic_loss assembly.",
+      "Post path: main.rs:8059-8076 tanh(0.92*x) and stateful DC blocker; main.rs:8451-8454 peak normalization to 0.891; main.rs:8508-8531 PCM16 write and prime fade.",
+      "Prompt timing: main.rs:8682-8697 formats and writes suno_priming_prompt after rendering; context_packet.md:19-21 states it is written after rendering and prime extraction.",
+      "Forward inputs: context_packet.md:13-15 and AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:101 state forward has no target-audio argument; target sampling occurs after forward (main.rs:7041-7054 then 7107).",
+      "Lineage: context_packet.md:28-29 states the three latest WAVs form one sequential continuation lineage, not independent seeds or matched arms.",
+      "Metrics caveat: METRICS.md:64-76 and context_packet.md:54-57 warn that spectral fractions can reflect denominator or stereo changes and that correlation/side-mid describe stereo, not musical usefulness."
+    ],
+    "proposed_experiments": [
+      "Paired-interval prime audit (no training, no renderer change): for the existing latest WAV, compute per-60-second-interval L/R correlation, side/mid dB, and 2-6 kHz / 6-20 kHz fractions; compare the selected prime interval against the full-file distribution. This tests whether the report is a selection artifact. Cite main.rs:8463-8479 for the selection rule.",
+      "Frozen side-path probe (no weight change): render a short segment with the existing checkpoint, then offline apply a controlled side-gain multiplier to the pre-master signal and re-master with the same tanh/DC/peak chain (main.rs:8059-8076, 8451-8514). Measure correlation and side/mid. This tests whether the center bias is recoverable by side gain alone or requires new side information.",
+      "Loss-gradient attribution (frozen, single chunk): instrument the stereo_balance_loss components (main.rs:7219-7234) on a fixed chunk and report per-component gradient norms to the width head, pan head, and side excitation controls. This tests which term is actually driving the observed correlation.",
+      "Target-mix control: hold the model and world state fixed, vary only the target episode selection (main.rs:7107-7140) across a small set of frozen chunks, and measure output correlation and band fractions. This tests whether the center bias tracks the target mix.",
+      "Prime-selection counterfactual: recompute the prime window using an alternative score that includes a stereo-width term, and compare the selected interval to the current one. This tests whether the current score systematically prefers center-heavy intervals.",
+      "Post-path ablation (offline, copied WAVs only): apply the tanh/DC/peak chain with and without the tanh stage to the same pre-master signal and measure 2-6 kHz / 6-20 kHz fractions. This tests whether the post path contributes to the reported harshness. Do not modify canonical files (context_packet.md:68-70)."
+    ],
+    "uncertainties": [
+      "Whether the audible harshness is dominated by the renderer's high-band content (scan partials, wavefolder, FM) or by the post-master tanh/DC/peak-normalization chain is not separable from the supplied evidence; the trace's ultrasonic_ratio is a pre-master guardrail, not a harshness score (deepseek_packet.md:40-41; METRICS.md:94-95).",
+      "The exact contribution of the target mix to the latest continuation's correlation is unknown; target mix and online learning confound comparisons between elapsed portions of a run (context_packet.md:37-39).",
+      "Whether the 60-second prime's center-heavy interval is representative of the full 600-second render is only partially addressed: deepseek_packet.md:31-33 reports non-overlapping 60-second intervals with correlation 0.740-0.992, but the full per-interval table is not in the supplied evidence.",
+      "The learned width control's actual value in the latest run is reported as 0.120 (deepseek_packet.md:39), well below the 0.50 ceiling, so the cap is not the binding constraint; why the optimizer did not push width higher is not established by the supplied lines.",
+      "Whether the side path's 16-sample Haas delay (main.rs:5600-5601) contributes to perceived harshness or center bias is not measured in the supplied evidence.",
+      "No blinded listening has been performed (context_packet.md:58-60), so perceptual improvement or degradation is not established."
+    ]
+  },
+  "approximate_input_tokens": 27050,
+  "attempts": 1,
+  "context": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "created_at_utc": "2026-09-26T07:28:07.478727+00:00",
+  "elapsed_seconds": 33.664,
+  "endpoint": "https://openrouter.ai/api/v1",
+  "files": [
+    {
+      "bytes": 102384,
+      "selection": "analysis/audio_center_harshness_20260926/team_v2/context_packet.md",
+      "sha256": "1093a68a5f48929d046cb7195f2138ceb5f707f939eff59d6b9e438b26192fd4"
+    }
+  ],
+  "finish_reason": "stop",
+  "id": "gen-1790407687-kFwX8nZyVejZ3abRgES7",
+  "max_tokens": 16384,
+  "purpose": "Audit source-level causes and confounds in renderer, losses, controls, postprocessing, and prime selection. Cite actual lines and prioritize minimal interventions. Return a JSON object with conclusions, evidence, uncertainties, proposed_experiments, and a context_receipt object reconstructing these facts from the source: project (string), direct_reference_input (boolean), prompt_is_post_render_output (boolean), waveform_filter_tests_latent_diffusion (boolean), canonical_mutation_allowed (boolean). The receipt is mandatory. Cite original source paths and line numbers.",
+  "request": {
+    "bytes": 108200,
+    "sha256": "5953e8dc1686b9ba46b11e03ffd269e2a6ae4892f673217d1ca007a662ef3316"
+  },
+  "requested_model": "deepseek/deepseek-v4.1-flash",
+  "returned_model": "deepseek/deepseek-v4.1-flash",
+  "role": "code-reviewer",
+  "schema_version": 1,
+  "status": "ok",
+  "temperature": 0.1,
+  "token_estimate_method": "serialized UTF-8 bytes / 4; not model tokenization",
+  "usage": {
+    "completion_tokens": 2104,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00543718,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00088368,
+      "upstream_inference_cost": 0.00543718,
+      "upstream_inference_prompt_cost": 0.0045535
+    },
+    "prompt_tokens": 32525,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 34629
+  }
+}

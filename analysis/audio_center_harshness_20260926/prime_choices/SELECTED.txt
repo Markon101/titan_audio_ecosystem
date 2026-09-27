@@ -1,0 +1,15 @@
+Selected TITAN audio prime — listener preference, 2026-09-26
+
+File: titan_prime_selected_B_soft.wav
+
+This is a byte-for-byte copy of B_eq_minus3_softer.wav: the original
+354.816–414.805-second prime with a local 3.5 kHz, Q=1.0, -3 dB bell EQ.
+Its stereo RMS was matched to the original before export. The user first
+preferred the original E for impact, then described B as a very close second,
+slightly softer, and finally chose B as the softest and nicest audibly.
+
+This is a chosen local audio derivative for manual listening or reference
+upload. It does not change TITAN's checkpoint, renderer, training, or normal
+prime output. No downstream music-model result has been measured for it.
+The matching source-run metadata for the 600-second WAV was not retained;
+see the repo's diagnostic provenance correction.

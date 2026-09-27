@@ -1,0 +1,102 @@
+[
+  {
+    "relative_path": "provenance.json",
+    "media_type": "application/json",
+    "sha256": "09106fdf755634a9602a7bbadba743f1f64a8ad5ec8ef36a4d4bdb760bbad78d",
+    "bytes": 541136,
+    "condition": null,
+    "start_offset": null,
+    "end_offset": null,
+    "processing": "read-only identity report"
+  },
+  {
+    "relative_path": "ablations/gru_hold/summary.json",
+    "media_type": "application/json",
+    "sha256": "10a92c4335c15d2cf03a412b74d19c8e35072e89ed6a62c95cf8dfb48cc39b5a",
+    "bytes": 47217,
+    "condition": "gru_hold",
+    "start_offset": 0,
+    "end_offset": 16,
+    "processing": "frozen rollout summary"
+  },
+  {
+    "relative_path": "ablations/gru_hold/trace.csv",
+    "media_type": "text/csv",
+    "sha256": "0c5f74086b7ace3df3429ca5baf05f605e6080b9cb6d21924ea7f3675fb43b07",
+    "bytes": 7769,
+    "condition": "gru_hold",
+    "start_offset": 0,
+    "end_offset": 16,
+    "processing": "stride-sampled operational metrics"
+  },
+  {
+    "relative_path": "ablations/gru_hold/micro_atlas_000016.png",
+    "media_type": "image/png",
+    "sha256": "6b12f1ba7e245b8d153c6c63214530db20897ea209fd3717fbc17e9d8c11aca8",
+    "bytes": 787072,
+    "condition": "gru_hold",
+    "start_offset": 16,
+    "end_offset": 16,
+    "processing": "fixed [-1,1] micro-state atlas"
+  },
+  {
+    "relative_path": "ablations/gru_hold/macro_atlas_000016.png",
+    "media_type": "image/png",
+    "sha256": "24bff66ea64b43e4933c3cf90dfaf6fe9387fe7309ee7a500be2361f1da17854",
+    "bytes": 196947,
+    "condition": "gru_hold",
+    "start_offset": 16,
+    "end_offset": 16,
+    "processing": "fixed [-1,1] macro-state atlas"
+  },
+  {
+    "relative_path": "ablations/summary.json",
+    "media_type": "application/json",
+    "sha256": "f90fcaee5bcdae5a9a289efd09b7853d76683654a93af6f466cb27f3cb25e853",
+    "bytes": 14829,
+    "condition": null,
+    "start_offset": 0,
+    "end_offset": 16,
+    "processing": "typed cloned-state causal comparisons"
+  },
+  {
+    "relative_path": "ablations/full/summary.json",
+    "media_type": "application/json",
+    "sha256": "af9fbff3e643dff12d1606082c07f3d29ec1c04a3bfdeb8b7700a4135c69bc76",
+    "bytes": 47204,
+    "condition": "ablation_full",
+    "start_offset": 0,
+    "end_offset": 16,
+    "processing": "frozen rollout summary"
+  },
+  {
+    "relative_path": "ablations/full/trace.csv",
+    "media_type": "text/csv",
+    "sha256": "0c5f74086b7ace3df3429ca5baf05f605e6080b9cb6d21924ea7f3675fb43b07",
+    "bytes": 7769,
+    "condition": "ablation_full",
+    "start_offset": 0,
+    "end_offset": 16,
+    "processing": "stride-sampled operational metrics"
+  },
+  {
+    "relative_path": "ablations/full/micro_atlas_000016.png",
+    "media_type": "image/png",
+    "sha256": "6b12f1ba7e245b8d153c6c63214530db20897ea209fd3717fbc17e9d8c11aca8",
+    "bytes": 787072,
+    "condition": "ablation_full",
+    "start_offset": 16,
+    "end_offset": 16,
+    "processing": "fixed [-1,1] micro-state atlas"
+  },
+  {
+    "relative_path": "ablations/full/macro_atlas_000016.png",
+    "media_type": "image/png",
+    "sha256": "24bff66ea64b43e4933c3cf90dfaf6fe9387fe7309ee7a500be2361f1da17854",
+    "bytes": 196947,
+    "condition": "ablation_full",
+    "start_offset": 16,
+    "end_offset": 16,
+    "processing": "fixed [-1,1] macro-state atlas"
+  }
+]

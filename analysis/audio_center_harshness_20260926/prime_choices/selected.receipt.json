@@ -1,0 +1,22 @@
+{
+  "schema": "titan_audio_selected_prime_v1",
+  "selection_date": "2026-09-26",
+  "selection_basis": "One user's listening preference: B is the softest and nicest audibly",
+  "selected_file": "titan_prime_selected_B_soft.wav",
+  "selected_sha256": "f8be8ddba43d6a4bdf9b1991d4466c4421c1fba5fbdb27192289e7419f341f01",
+  "selected_bytes": 11517996,
+  "copied_from": "B_eq_minus3_softer.wav",
+  "unprocessed_prime_sha256": "4f8e6a604f5a3f37ec39818f71af6955a0488d4d937491cf1e051162c05ee48d",
+  "source_interval_seconds": [354.816, 414.805],
+  "processing": {
+    "kind": "local_parametric_bell_eq",
+    "center_hz": 3500.0,
+    "q": 1.0,
+    "gain_db": -3.0,
+    "stereo_rms_matched": true,
+    "peak_guard_gain": 1.0,
+    "script_sha256": "4614ea5c51f92838c9ccbdde80b6626d81eaa5a9dcce405a367e32513f751ea9"
+  },
+  "evidence_receipt": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/audio_center_harshness_20260926/eq_level_matched/latest_eq.receipt.json",
+  "interpretation_limit": "One listener's subjective selection; no trained-model or downstream benefit claim"
+}

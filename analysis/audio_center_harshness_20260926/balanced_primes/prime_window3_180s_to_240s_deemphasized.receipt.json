@@ -1,0 +1,57 @@
+{
+  "input_wav": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/audio_center_harshness_20260926/balanced_primes/prime_window3_180s_to_240s_raw.wav",
+  "input_sha256": "c28947e3c7e51e4da2a39cd8243733b73b1c1cd9c5f24bc8ec00367e511cefb6",
+  "output_wav": "analysis/audio_center_harshness_20260926/balanced_primes/prime_window3_180s_to_240s_deemphasized.wav",
+  "output_sha256": "2091cfcd75c0b28a939b290992bae89d8f4ba6d799eb68105326dbe3feae2fa9",
+  "filter_parameters": {
+    "type": "parametric_peaking_bell",
+    "center_frequency_hz": 3500.0,
+    "q_factor": 1.0,
+    "gain_db": -3.0,
+    "target_peak_dbfs": -1.0,
+    "post_gain_applied": 1.0
+  },
+  "before_metrics": {
+    "rms": 0.21993100137037608,
+    "peak": 0.8900146484375,
+    "peak_dbfs": -1.0120569079282231,
+    "crest_db": 12.14221405964259,
+    "lr_correlation": 0.7399197853887209,
+    "side_over_mid_db": -7.78986241820907,
+    "bands": {
+      "20-200Hz": 0.02546179783146453,
+      "200-2000Hz": 0.4368518254301331,
+      "2000-6000Hz": 0.4613941398666656,
+      "6000-12000Hz": 0.03444418541086054,
+      "12000-20000Hz": 0.024209167196213147,
+      "20000-24000Hz": 0.01721464283627907
+    }
+  },
+  "after_metrics": {
+    "rms": 0.19704213032294504,
+    "peak": 0.816162109375,
+    "peak_dbfs": -1.7644714275041162,
+    "crest_db": 12.344346687785388,
+    "lr_correlation": 0.7353860504942308,
+    "side_over_mid_db": -7.762634817128689,
+    "bands": {
+      "20-200Hz": 0.03170032913072226,
+      "200-2000Hz": 0.5367609461593982,
+      "2000-6000Hz": 0.3419524473809544,
+      "6000-12000Hz": 0.03797039518099399,
+      "12000-20000Hz": 0.029659447843393045,
+      "20000-24000Hz": 0.02142794730785617
+    }
+  },
+  "impact_summary": {
+    "band_2k_6k_before": 0.4613941398666656,
+    "band_2k_6k_after": 0.3419524473809544,
+    "band_2k_6k_delta_percent": -11.944169248571118,
+    "peak_dbfs_before": -1.0120569079282231,
+    "peak_dbfs_after": -1.7644714275041162,
+    "correlation_before": 0.7399197853887209,
+    "correlation_after": 0.7353860504942308,
+    "side_over_mid_db_before": -7.78986241820907,
+    "side_over_mid_db_after": -7.762634817128689
+  }
+}

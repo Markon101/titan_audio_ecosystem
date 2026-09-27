@@ -1,0 +1,1 @@
+experiment_id,block,attempt_order,arm,input_file,input_sha256,downstream_model,mode,prompt_text,upload_start_s,upload_end_s,settings_json,seed_if_available,generated_at_utc,output_file,output_sha256,retained,discard_reason,blind_label,listener_id,quality_rating,texture_rating,timing_rating,notes

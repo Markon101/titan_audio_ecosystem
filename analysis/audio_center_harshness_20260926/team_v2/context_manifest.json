@@ -1,0 +1,117 @@
+{
+  "config": {
+    "core": "research/audio_context.md",
+    "evidence": [
+      "analysis/audio_center_harshness_20260926/deepseek_packet.md",
+      "docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:46-144",
+      "src/main.rs:70-160",
+      "src/main.rs:235-260",
+      "src/main.rs:4225-4315",
+      "src/main.rs:5107-5255",
+      "src/main.rs:5290-5648",
+      "src/main.rs:7020-7270",
+      "src/main.rs:7780-7995",
+      "src/main.rs:8048-8150",
+      "src/main.rs:8448-8542",
+      "src/main.rs:8665-8698",
+      "src/stereo.rs:1-51",
+      "METRICS.md:45-158"
+    ],
+    "max_request_bytes": 262144,
+    "max_tokens": 16384,
+    "model": "deepseek/deepseek-v4.1-flash",
+    "workers": 3
+  },
+  "packet_bytes": 102384,
+  "packet_sha256": "1093a68a5f48929d046cb7195f2138ceb5f707f939eff59d6b9e438b26192fd4",
+  "roles": [
+    "independent-investigator",
+    "falsification-arbiter",
+    "experiment-designer",
+    "dynamics-agent",
+    "rust-audit-agent",
+    "statistical-agent",
+    "ideation-agent",
+    "skeptical-agent"
+  ],
+  "schema_version": 1,
+  "selections": [
+    {
+      "bytes": 5990,
+      "selection": "research/audio_context.md",
+      "sha256": "d311772b95faed9be7ea91e20000080e8151f99f188909ed00bdf8ff2a2d0183"
+    },
+    {
+      "bytes": 3206,
+      "selection": "analysis/audio_center_harshness_20260926/deepseek_packet.md",
+      "sha256": "bb0cf2c1123513ce152aff78fe74d5ab03823bb60986804fe4a73cbc7206972a"
+    },
+    {
+      "bytes": 8861,
+      "selection": "docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:46-144",
+      "sha256": "667dc3f0858009c2a3e5044344f5f760854372e007dda1492ce7615f838cda14"
+    },
+    {
+      "bytes": 3902,
+      "selection": "src/main.rs:70-160",
+      "sha256": "e64f5fc3d1664f860c66e275f9662c4f78a1506c1a2f8d666df62a40d8af4453"
+    },
+    {
+      "bytes": 1421,
+      "selection": "src/main.rs:235-260",
+      "sha256": "4368c9fd28c73f7194b88f8918f9e5498bcb86328b04a2b7cf28f1625d3f1f15"
+    },
+    {
+      "bytes": 3164,
+      "selection": "src/main.rs:4225-4315",
+      "sha256": "a0bf7531594e80c972691c104ae596219650e5e153a6209866b4aae23f3584ab"
+    },
+    {
+      "bytes": 6710,
+      "selection": "src/main.rs:5107-5255",
+      "sha256": "75b0075357ad8791e10102b888002961c294206fe12675c6e30da739050ce5c0"
+    },
+    {
+      "bytes": 15371,
+      "selection": "src/main.rs:5290-5648",
+      "sha256": "f0cce3a0268988f71bc8d76dfe4de0ae88aefaf63c4fbc653c9d535233dd0221"
+    },
+    {
+      "bytes": 11062,
+      "selection": "src/main.rs:7020-7270",
+      "sha256": "979f392857dce0252b76b7ed4232a9c622c085dc4fd58eefc1559aecbe05eb6d"
+    },
+    {
+      "bytes": 11438,
+      "selection": "src/main.rs:7780-7995",
+      "sha256": "74638905037a6e90dcec5f0a5a466ee5f521e703fe68f05a5c4b3dbf31013980"
+    },
+    {
+      "bytes": 4060,
+      "selection": "src/main.rs:8048-8150",
+      "sha256": "c12c789d7278477b8b85621728f3c66aae2efa1ba027e0519cd21b23d64abe85"
+    },
+    {
+      "bytes": 3850,
+      "selection": "src/main.rs:8448-8542",
+      "sha256": "79ae91e8c6399b91f60f198a4b20ffaa106beb662ac7f054c77736626c2dfa34"
+    },
+    {
+      "bytes": 1931,
+      "selection": "src/main.rs:8665-8698",
+      "sha256": "45531e115cf92af234df7cabe8e8cd446e4489a173251afa689b37d5fa32a7fe"
+    },
+    {
+      "bytes": 2143,
+      "selection": "src/stereo.rs:1-51",
+      "sha256": "25fc62745b54f6c5fab7effa27bc4c4bc8a503f6f489cb20bc95d4998fbf2485"
+    },
+    {
+      "bytes": 7535,
+      "selection": "METRICS.md:45-158",
+      "sha256": "2de340d138553c34cba16d19dae52bb8d331a6c9a4a0f2d3c9abbf73d588ac1d"
+    }
+  ],
+  "source_commit": "6b9f680f1241bfc50957b182f2afc5d746fc782f",
+  "synthesis_role": "synthesis-challenger"
+}

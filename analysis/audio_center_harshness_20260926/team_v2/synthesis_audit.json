@@ -1,0 +1,15 @@
+{
+  "eligible_for_synthesis": true,
+  "included_roles": [
+    "independent-investigator",
+    "falsification-arbiter",
+    "experiment-designer",
+    "dynamics-agent",
+    "rust-audit-agent",
+    "statistical-agent",
+    "ideation-agent",
+    "skeptical-agent"
+  ],
+  "reasons": [],
+  "scope": "completion and factual receipt checks only; scientific claims require independent verification"
+}

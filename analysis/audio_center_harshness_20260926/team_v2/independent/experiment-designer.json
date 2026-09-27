@@ -1,0 +1,197 @@
+{
+  "answer": "{\n  \"conclusions\": [\n    \"The smallest reproducible comparison that can separate 'harshness' from 'center bias' is an offline, frozen-checkpoint waveform intervention on the existing 60-second prime WAV, not a training fork. The evidence packet already contains a center-heavy prime (L/R corr 0.991, side/mid -23.31 dB) and a 2-6 kHz fraction of 47.3%, so both reported symptoms are present in the same artifact and can be manipulated independently.\",\n    \"Two mechanisms are separable by construction: (a) harshness is plausibly tied to the 2-6 kHz / 6-20 kHz energy and to post-render nonlinearity (tanh at 0.92 drive, wavefolder, peak normalization), while (b) center bias is tied to side/mid ratio and correlation. A mid/side gain change moves (b) without touching (a); a band-limited gain or a soft saturator moves (a) without touching (b).\",\n    \"Level matching is mandatory and must be done on the same loudness basis (integrated LUFS or RMS over the identical interval) before any A/B, because the prime is peak-normalized to -1 dBFS and any gain change will otherwise be heard as a loudness difference.\",\n    \"Transient handling must be explicit: the renderer has a Haas-style delayed side path (16-sample history) and a stateful DC blocker, so any offline filter that is not phase-matched to the original will alter transient arrival and can be mistaken for width or harshness change.\",\n    \"The strongest single discriminating experiment is a 2x2 factorial on the prime: {mid/side gain: unchanged vs side-boosted to target -6 dB side/mid} x {high-band: unchanged vs 2-6 kHz shelved down 3 dB}, all level-matched, with a null control (identity copy) and a mono-collapse control. This yields four conditions plus two controls in one listening session.\"\n  ],\n  \"evidence\": [\n    \"context_packet.md lines 7-9: decision is to diagnose harshness and center bias in v9-long-01 and choose a reversible experiment before changing learned behavior.\",\n    \"context_packet.md lines 13-14 and 46-47: side derives from L-R before a delayed scaled side stage; learned width bounded 0.05..0.50; global pan +/-0.10; increasing side gain cannot synthesize missing side information.\",\n    \"context_packet.md lines 48-50: loss-visible tanh, later gain/saturation/DC blocker, whole-file peak normalization; a sample peak below 0 dBFS does not exclude nonlinear saturation or perceptual harshness.\",\n    \"context_packet.md lines 51-53: prime selection uses field entropy, activity health, complexity, stagnation; no listener rating or direct stereo/harshness ranking; selection can amplify a within-run outlier.\",\n    \"context_packet.md lines 64-67: offline waveform filtering tests signal processing, not latent-field diffusion; latent field entropy cannot be recovered from a WAV.\",\n    \"deepseek_packet.md lines 24-29: latest prime L/R corr 0.991, side/mid -23.31 dB, 2-6 kHz 47.3%, 6-20 kHz 6.2%; untagged parent 0.603 / -6.01 dB / 33.6% / 3.0%.\",\n    \"deepseek_packet.md lines 31-35: latest full 600 s is not uniformly centered; minutes 5-6 have corr 0.990-0.992 and side/mid about -23 dB; the 60 s prime is from a very center-heavy interval.\",\n    \"deepseek_packet.md lines 37-43: training trace median output corr 0.963 vs target 0.862; median truthful width 0.027; decoder width control 0.120; width raw -0.946; global pan 0.0999 at its +0.10 limit; decoder side control 1.0; ultrasonic_ratio median 0.0965 is a pre-master guardrail, not a harshness score.\",\n    \"src/main.rs 8059-8076: per-sample tanh at 0.92 drive then stateful DC blocker; raw_peak tracked after DC blocker.\",\n    \"src/main.rs 8451-8455: whole-file peak normalization to 0.891 (-1 dBFS).\",\n    \"src/main.rs 5591-5603: width_val from last_pan and control.width_mult; side_wide = side * width_val * learned_width; 16-sample Haas delay on side.\",\n    \"src/stereo.rs 3-11, 28-41: GLOBAL_PAN_LIMIT 0.10; WIDTH_CONTROL_MIN 0.05, MAX 0.50; side_gain clamps width_mult to 0.5..1.6 and result to 0.5..maximum.\",\n    \"src/main.rs 5529-5536: per-channel learned wavefolder applied after fold_drive scaling.\",\n    \"src/main.rs 7103: audio_for_loss = stereo_chunk.tanh() \u2014 the loss sees a tanh'd signal, so harshness in the mastered WAV is not fully represented in the training objective.\",\n    \"METRICS.md 129-134: side_energy_width can be high for panned mono; width multiplies by interchannel incoherence; stereo_corr is post-DC pre-master normalized correlation.\",\n    \"METRICS.md 155-157: claims about improved sound require repeated seeded runs, ablation comparisons, objective measurements, and blinded listening.\"\n  ],\n  \"uncertainties\": [\n    \"No perceptual ratings exist yet (context_packet.md line 58-60); the listener report is a single unblinded observation.\",\n    \"The prime is a selected 60 s window from a non-uniform 600 s render; any conclusion from the prime may not generalize to the full file or to other runs.\",\n    \"The 2-6 kHz fraction is a mid-channel FFT power fraction; it can change because of denominator or stereo changes, not only because of absolute high-band energy (context_packet.md lines 54-56). Absolute L+R band power must be measured before attributing harshness to the high band.\",\n    \"Whether the perceived harshness is dominated by the tanh/wavefolder nonlinearity, by the 2-6 kHz balance, or by transient density is not established by the supplied metrics.\",\n    \"Whether the perceived center bias is dominated by side/mid collapse, by correlation near 1, or by the prime selection is not established.\",\n    \"The Haas 16-sample delay and DC blocker make offline mid/side edits non-commutative with the original chain; a naive side boost may not reproduce what a renderer-side width change would sound like.\",\n    \"No independent training replicas or matched arms exist (context_packet.md lines 28-29); this experiment cannot attribute the symptoms to training dynamics.\",\n    \"Compute budget is unspecified; the proposal below assumes a single workstation and a single listening session.\"\n  ],\n  \"proposed_experiments\": [\n    {\n      \"name\": \"E1: 2x2 offline factorial on the existing prime, level-matched, blinded\",\n      \"purpose\": \"Separate harshness (high-band) from center bias (side/mid) with the smallest number of conditions that still yields a discriminating result.\",\n      \"inputs\": [\n        \"Existing 60 s prime WAV for v9-long-01 (read-only; copy to a scratch directory).\",\n        \"Existing 60 s prime WAV for the untagged parent as a reference anchor (read-only copy).\"\n      ],\n      \"conditions\": [\n        \"C0 null: byte-identical copy of the prime (control for file handling and for listener bias).\",\n        \"C1 mono-collapse: L=R=(L+R)/2, level-matched (control for 'center bias' perception; should sound maximally centered).\",\n        \"C2 side-boost only: mid/side matrix, raise side by +17 dB to bring side/mid from -23.31 dB to about -6 dB (matching the untagged parent), level-matched.\",\n        \"C3 high-shelf only: 2-6 kHz shelving filter, -3 dB, Q=0.7, linear-phase or minimum-phase with matched group delay, level-matched.\",\n        \"C4 both: C2 and C3 applied together, level-matched.\"\n      ],\n      \"controls\": [\n        \"C0 identity copy verifies the pipeline is transparent.\",\n        \"C1 mono-collapse verifies the listener can detect a known center extreme.\",\n        \"A second null: prime passed through the same mid/side matrix with side gain = 1.0 and the same shelf with 0 dB, to control for filter coloration.\"\n      ],\n      \"level_matching\": \"Measure integrated LUFS (ITU-R BS.1770) over the full 60 s for each condition; apply a single static gain to each condition so all conditions match the C0 LUFS within +/-0.1 LU. Record the applied gain in a sidecar receipt. Do not use peak normalization for matching.\",\n      \"transient_handling\": \"Use linear-phase FIR for the shelf so group delay is constant and can be compensated by a fixed integer-sample shift applied identically to all conditions. For the mid/side matrix, use the same 16-sample side delay as the renderer (src/main.rs 5600-5603) so the side path is phase-aligned with the original. Document the exact delay in the receipt.\",\n      \"measurements_per_condition\": [\n        \"L/R Pearson correlation (centered).\",\n        \"side/mid in dB using the packet's definition (deepseek_packet.md lines 18-19).\",\n        \"L/R balance in dB.\",\n        \"Absolute L+R band power in 20-200 Hz, 200-2000 Hz, 2-6 kHz, 6-20 kHz (not fractions).\",\n        \"Fractional band power for comparability with the packet.\",\n        \"Crest factor and 95th-percentile short-term RMS to characterize transient density.\",\n        \"Integrated LUFS and true peak.\"\n      ],\n      \"listening_protocol\": [\n        \"Blinded, randomized order, at least 5 listeners if available; otherwise the same listener across 3 sessions on different days.\",\n        \"Each trial: A/B between two conditions, forced choice on (i) which is harsher, (ii) which is wider, (iii) preference.\",\n        \"Anchor trials: C0 vs C1 and C0 vs C0 to estimate false-positive rate.\",\n        \"Report per-condition mean and 95% CI for each question.\"\n      ],\n      \"decision_criteria\": [\n        \"If C3 (high-shelf only) is judged harsher than C0 by a majority and C2 is not, harshness is dominated by the 2-6 kHz band, not by side/mid.\",\n        \"If C2 (side-boost only) is judged wider than C0 by a majority and C3 is not, center bias is dominated by side/mid collapse, not by high-band content.\",\n        \"If C4 is judged both less harsh and wider than C0, the two mechanisms are separable and additive in this artifact.\",\n        \"If C2 is judged harsher than C0, side-boost is introducing its own harshness (e.g., Haas comb or decorrelated high band) and the renderer-side width change is not a safe fix.\",\n        \"If C0 vs C0 is not at chance, the protocol is invalid and must be repeated.\"\n      ],\n      \"compute_bound\": \"Offline only. No training, no renderer invocation, no checkpoint mutation. Estimated cost: minutes of CPU for filtering plus one listening session.\",\n      \"reversibility\": \"All outputs are copies in a scratch directory with sidecar receipts; canonical WAVs and checkpoints untouched.\"\n    },\n    {\n      \"name\": \"E2: Absolute-band-power audit of the full 600 s render\",\n      \"purpose\": \"Test whether the prime's 2-6 kHz fraction reflects absolute high-band energy or a denominator shift, and whether the center bias is uniform or localized.\",\n      \"inputs\": [\n        \"Existing full 600 s WAV for v9-long-01 (read-only).\"\n      ],\n      \"method\": \"Compute non-overlapping 60 s windows; for each, report absolute L+R band power in 20-200 Hz, 200-2000 Hz, 2-6 kHz, 6-20 kHz, plus correlation, side/mid, balance, and integrated LUFS. Compare the prime window to the rest.\",\n      \"decision_criteria\": [\n        \"If the prime window's absolute 2-6 kHz power is not higher than the median window, the 'harsh' prime is a selection artifact and the fix is in prime selection, not in the renderer.\",\n        \"If the prime window's side/mid is an outlier relative to the median, the same conclusion applies to center bias.\",\n        \"If both are outliers, the smallest reversible fix is a prime-selection change (add a width/harshness guard to the selection score), not a renderer change.\"\n      ],\n      \"compute_bound\": \"Offline FFT over 600 s; minutes of CPU.\",\n      \"reversibility\": \"Read-only; no files modified.\"\n    },\n    {\n      \"name\": \"E3 (only if E1 and E2 point to the renderer): frozen-checkpoint sidecar render with width control clamped\",\n      \"purpose\": \"Test whether the center bias is caused by the learned width head sitting near its low rail (width raw -0.946, width control 0.120) rather than by missing side information.\",\n      \"inputs\": [\n        \"Frozen checkpoint set for v9-long-01 (read-only).\",\n        \"A sidecar renderer invocation that overrides control.width_mult to a fixed value (e.g., 1.0 and 1.6) without changing weights.\"\n      ],\n      \"method\": \"Render a short bounded tape (e.g., 8 chunks) with the same seed and world state, once at width_mult=1.0 and once at width_mult=1.6. Compare side/mid and correlation. This is an intervention render, not a stem (docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md lines 96-97).\",\n      \"decision_criteria\": [\n        \"If side/mid rises materially with width_mult and correlation falls, the width head is the binding constraint and a renderer-side control change is the smallest fix.\",\n        \"If side/mid does not rise, the side signal itself is collapsed upstream (decoder side control 1.0 but side content absent) and the fix must be in the decoder or loss, not in the width control.\"\n      ],\n      \"compute_bound\": \"One short render per condition; bounded by the existing 8-chunk autograd tape cap (src/main.rs 112).\",\n      \"reversibility\": \"Sidecar outputs only; canonical checkpoint and WAVs untouched.\"\n    }\n  ],\n  \"context_receipt\": {\n    \"project\": \"titan_audio_ecosystem\",\n    \"direct_reference_input\": false,\n    \"prompt_is_post_render_output\": true,\n    \"waveform_filter_tests_latent_diffusion\": false,\n    \"canonical_mutation_allowed\": false\n  },\n  \"summary\": \"Propose a bounded, offline, level-matched 2x2 factorial on the existing v9-long-01 prime (side-boost x high-shelf) with null and mono-collapse controls, blinded listening, and absolute-band-power audit of the full 600 s render. This separates harshness from center bias with the fewest conditions and no training fork. A frozen-checkpoint sidecar render is proposed only as a follow-up if the offline results point to the renderer.\",\n  \"hypotheses\": [\n    \"H1 (harshness = high-band balance): the 2-6 kHz fraction of 47.3% in the prime reflects elevated absolute high-band energy, and a -3 dB shelf there reduces perceived harshness.\",\n    \"H2 (harshness = nonlinearity): the tanh at 0.92 drive and the learned wavefolder generate intermodulation in 2-6 kHz; a shelf will not fully remove it, and a lower drive would be needed.\",\n    \"H3 (center bias = side collapse): side/mid -23.31 dB and corr 0.991 reflect a collapsed side signal, and a side boost restores perceived width.\",\n    \"H4 (center bias = prime selection): the prime is a center-heavy outlier from a non-uniform render, and the fix is in prime selection, not in the renderer.\",\n    \"H5 (interaction): side-boost introduces its own harshness via the Haas comb or decorrelated high band, so the two symptoms are not independent.\"\n  ],\n  \"missing_evidence\": [\n    \"Perceptual ratings from any listener, blinded or not.\",\n    \"Absolute L+R band power for the prime and for the full 600 s render.\",\n    \"Pre-side-scale renderer taps to attribute side collapse to the decoder vs the width control.\",\n    \"Frequency-specific loss gradients to attribute the 2-6 kHz balance to a specific objective term.\",\n    \"Detailed target mix attribution for the latest run.\",\n    \"Independent training replicas or matched arms.\",\n    \"Downstream priming outcomes (out of scope here).\"\n  ],\n  \"discriminating_experiment\": \"E1: 2x2 offline factorial (side-boost x high-shelf) on the existing prime, level-matched to integrated LUFS, with identity and mono-collapse controls, blinded A/B with forced choice on harshness, width, and preference. Decision rule: harshness tracks the shelf, width tracks the side boost, and any interaction (side boost increasing harshness) is itself the finding. E2 (absolute-band-power audit of the full 600 s) is run in parallel to test whether the prime is a selection outlier.\",\n  \"recommendation\": \"Run E1 and E2 first. Do not fork training, do not modify the renderer, and do not change prime selection until E1 and E2 report. If E1 shows the shelf reduces harshness and the side boost restores width without introducing harshness, the smallest reversible fix is a renderer-side control change (width_mult and a high-band tilt), validated by E3. If E2 shows the prime is an outlier, the smallest fix is a prime-selection guard, which is cheaper and more reversible than any renderer change.\"\n}",
+  "answer_json": {
+    "conclusions": [
+      "The smallest reproducible comparison that can separate 'harshness' from 'center bias' is an offline, frozen-checkpoint waveform intervention on the existing 60-second prime WAV, not a training fork. The evidence packet already contains a center-heavy prime (L/R corr 0.991, side/mid -23.31 dB) and a 2-6 kHz fraction of 47.3%, so both reported symptoms are present in the same artifact and can be manipulated independently.",
+      "Two mechanisms are separable by construction: (a) harshness is plausibly tied to the 2-6 kHz / 6-20 kHz energy and to post-render nonlinearity (tanh at 0.92 drive, wavefolder, peak normalization), while (b) center bias is tied to side/mid ratio and correlation. A mid/side gain change moves (b) without touching (a); a band-limited gain or a soft saturator moves (a) without touching (b).",
+      "Level matching is mandatory and must be done on the same loudness basis (integrated LUFS or RMS over the identical interval) before any A/B, because the prime is peak-normalized to -1 dBFS and any gain change will otherwise be heard as a loudness difference.",
+      "Transient handling must be explicit: the renderer has a Haas-style delayed side path (16-sample history) and a stateful DC blocker, so any offline filter that is not phase-matched to the original will alter transient arrival and can be mistaken for width or harshness change.",
+      "The strongest single discriminating experiment is a 2x2 factorial on the prime: {mid/side gain: unchanged vs side-boosted to target -6 dB side/mid} x {high-band: unchanged vs 2-6 kHz shelved down 3 dB}, all level-matched, with a null control (identity copy) and a mono-collapse control. This yields four conditions plus two controls in one listening session."
+    ],
+    "context_receipt": {
+      "canonical_mutation_allowed": false,
+      "direct_reference_input": false,
+      "project": "titan_audio_ecosystem",
+      "prompt_is_post_render_output": true,
+      "waveform_filter_tests_latent_diffusion": false
+    },
+    "discriminating_experiment": "E1: 2x2 offline factorial (side-boost x high-shelf) on the existing prime, level-matched to integrated LUFS, with identity and mono-collapse controls, blinded A/B with forced choice on harshness, width, and preference. Decision rule: harshness tracks the shelf, width tracks the side boost, and any interaction (side boost increasing harshness) is itself the finding. E2 (absolute-band-power audit of the full 600 s) is run in parallel to test whether the prime is a selection outlier.",
+    "evidence": [
+      "context_packet.md lines 7-9: decision is to diagnose harshness and center bias in v9-long-01 and choose a reversible experiment before changing learned behavior.",
+      "context_packet.md lines 13-14 and 46-47: side derives from L-R before a delayed scaled side stage; learned width bounded 0.05..0.50; global pan +/-0.10; increasing side gain cannot synthesize missing side information.",
+      "context_packet.md lines 48-50: loss-visible tanh, later gain/saturation/DC blocker, whole-file peak normalization; a sample peak below 0 dBFS does not exclude nonlinear saturation or perceptual harshness.",
+      "context_packet.md lines 51-53: prime selection uses field entropy, activity health, complexity, stagnation; no listener rating or direct stereo/harshness ranking; selection can amplify a within-run outlier.",
+      "context_packet.md lines 64-67: offline waveform filtering tests signal processing, not latent-field diffusion; latent field entropy cannot be recovered from a WAV.",
+      "deepseek_packet.md lines 24-29: latest prime L/R corr 0.991, side/mid -23.31 dB, 2-6 kHz 47.3%, 6-20 kHz 6.2%; untagged parent 0.603 / -6.01 dB / 33.6% / 3.0%.",
+      "deepseek_packet.md lines 31-35: latest full 600 s is not uniformly centered; minutes 5-6 have corr 0.990-0.992 and side/mid about -23 dB; the 60 s prime is from a very center-heavy interval.",
+      "deepseek_packet.md lines 37-43: training trace median output corr 0.963 vs target 0.862; median truthful width 0.027; decoder width control 0.120; width raw -0.946; global pan 0.0999 at its +0.10 limit; decoder side control 1.0; ultrasonic_ratio median 0.0965 is a pre-master guardrail, not a harshness score.",
+      "src/main.rs 8059-8076: per-sample tanh at 0.92 drive then stateful DC blocker; raw_peak tracked after DC blocker.",
+      "src/main.rs 8451-8455: whole-file peak normalization to 0.891 (-1 dBFS).",
+      "src/main.rs 5591-5603: width_val from last_pan and control.width_mult; side_wide = side * width_val * learned_width; 16-sample Haas delay on side.",
+      "src/stereo.rs 3-11, 28-41: GLOBAL_PAN_LIMIT 0.10; WIDTH_CONTROL_MIN 0.05, MAX 0.50; side_gain clamps width_mult to 0.5..1.6 and result to 0.5..maximum.",
+      "src/main.rs 5529-5536: per-channel learned wavefolder applied after fold_drive scaling.",
+      "src/main.rs 7103: audio_for_loss = stereo_chunk.tanh() \u2014 the loss sees a tanh'd signal, so harshness in the mastered WAV is not fully represented in the training objective.",
+      "METRICS.md 129-134: side_energy_width can be high for panned mono; width multiplies by interchannel incoherence; stereo_corr is post-DC pre-master normalized correlation.",
+      "METRICS.md 155-157: claims about improved sound require repeated seeded runs, ablation comparisons, objective measurements, and blinded listening."
+    ],
+    "hypotheses": [
+      "H1 (harshness = high-band balance): the 2-6 kHz fraction of 47.3% in the prime reflects elevated absolute high-band energy, and a -3 dB shelf there reduces perceived harshness.",
+      "H2 (harshness = nonlinearity): the tanh at 0.92 drive and the learned wavefolder generate intermodulation in 2-6 kHz; a shelf will not fully remove it, and a lower drive would be needed.",
+      "H3 (center bias = side collapse): side/mid -23.31 dB and corr 0.991 reflect a collapsed side signal, and a side boost restores perceived width.",
+      "H4 (center bias = prime selection): the prime is a center-heavy outlier from a non-uniform render, and the fix is in prime selection, not in the renderer.",
+      "H5 (interaction): side-boost introduces its own harshness via the Haas comb or decorrelated high band, so the two symptoms are not independent."
+    ],
+    "missing_evidence": [
+      "Perceptual ratings from any listener, blinded or not.",
+      "Absolute L+R band power for the prime and for the full 600 s render.",
+      "Pre-side-scale renderer taps to attribute side collapse to the decoder vs the width control.",
+      "Frequency-specific loss gradients to attribute the 2-6 kHz balance to a specific objective term.",
+      "Detailed target mix attribution for the latest run.",
+      "Independent training replicas or matched arms.",
+      "Downstream priming outcomes (out of scope here)."
+    ],
+    "proposed_experiments": [
+      {
+        "compute_bound": "Offline only. No training, no renderer invocation, no checkpoint mutation. Estimated cost: minutes of CPU for filtering plus one listening session.",
+        "conditions": [
+          "C0 null: byte-identical copy of the prime (control for file handling and for listener bias).",
+          "C1 mono-collapse: L=R=(L+R)/2, level-matched (control for 'center bias' perception; should sound maximally centered).",
+          "C2 side-boost only: mid/side matrix, raise side by +17 dB to bring side/mid from -23.31 dB to about -6 dB (matching the untagged parent), level-matched.",
+          "C3 high-shelf only: 2-6 kHz shelving filter, -3 dB, Q=0.7, linear-phase or minimum-phase with matched group delay, level-matched.",
+          "C4 both: C2 and C3 applied together, level-matched."
+        ],
+        "controls": [
+          "C0 identity copy verifies the pipeline is transparent.",
+          "C1 mono-collapse verifies the listener can detect a known center extreme.",
+          "A second null: prime passed through the same mid/side matrix with side gain = 1.0 and the same shelf with 0 dB, to control for filter coloration."
+        ],
+        "decision_criteria": [
+          "If C3 (high-shelf only) is judged harsher than C0 by a majority and C2 is not, harshness is dominated by the 2-6 kHz band, not by side/mid.",
+          "If C2 (side-boost only) is judged wider than C0 by a majority and C3 is not, center bias is dominated by side/mid collapse, not by high-band content.",
+          "If C4 is judged both less harsh and wider than C0, the two mechanisms are separable and additive in this artifact.",
+          "If C2 is judged harsher than C0, side-boost is introducing its own harshness (e.g., Haas comb or decorrelated high band) and the renderer-side width change is not a safe fix.",
+          "If C0 vs C0 is not at chance, the protocol is invalid and must be repeated."
+        ],
+        "inputs": [
+          "Existing 60 s prime WAV for v9-long-01 (read-only; copy to a scratch directory).",
+          "Existing 60 s prime WAV for the untagged parent as a reference anchor (read-only copy)."
+        ],
+        "level_matching": "Measure integrated LUFS (ITU-R BS.1770) over the full 60 s for each condition; apply a single static gain to each condition so all conditions match the C0 LUFS within +/-0.1 LU. Record the applied gain in a sidecar receipt. Do not use peak normalization for matching.",
+        "listening_protocol": [
+          "Blinded, randomized order, at least 5 listeners if available; otherwise the same listener across 3 sessions on different days.",
+          "Each trial: A/B between two conditions, forced choice on (i) which is harsher, (ii) which is wider, (iii) preference.",
+          "Anchor trials: C0 vs C1 and C0 vs C0 to estimate false-positive rate.",
+          "Report per-condition mean and 95% CI for each question."
+        ],
+        "measurements_per_condition": [
+          "L/R Pearson correlation (centered).",
+          "side/mid in dB using the packet's definition (deepseek_packet.md lines 18-19).",
+          "L/R balance in dB.",
+          "Absolute L+R band power in 20-200 Hz, 200-2000 Hz, 2-6 kHz, 6-20 kHz (not fractions).",
+          "Fractional band power for comparability with the packet.",
+          "Crest factor and 95th-percentile short-term RMS to characterize transient density.",
+          "Integrated LUFS and true peak."
+        ],
+        "name": "E1: 2x2 offline factorial on the existing prime, level-matched, blinded",
+        "purpose": "Separate harshness (high-band) from center bias (side/mid) with the smallest number of conditions that still yields a discriminating result.",
+        "reversibility": "All outputs are copies in a scratch directory with sidecar receipts; canonical WAVs and checkpoints untouched.",
+        "transient_handling": "Use linear-phase FIR for the shelf so group delay is constant and can be compensated by a fixed integer-sample shift applied identically to all conditions. For the mid/side matrix, use the same 16-sample side delay as the renderer (src/main.rs 5600-5603) so the side path is phase-aligned with the original. Document the exact delay in the receipt."
+      },
+      {
+        "compute_bound": "Offline FFT over 600 s; minutes of CPU.",
+        "decision_criteria": [
+          "If the prime window's absolute 2-6 kHz power is not higher than the median window, the 'harsh' prime is a selection artifact and the fix is in prime selection, not in the renderer.",
+          "If the prime window's side/mid is an outlier relative to the median, the same conclusion applies to center bias.",
+          "If both are outliers, the smallest reversible fix is a prime-selection change (add a width/harshness guard to the selection score), not a renderer change."
+        ],
+        "inputs": [
+          "Existing full 600 s WAV for v9-long-01 (read-only)."
+        ],
+        "method": "Compute non-overlapping 60 s windows; for each, report absolute L+R band power in 20-200 Hz, 200-2000 Hz, 2-6 kHz, 6-20 kHz, plus correlation, side/mid, balance, and integrated LUFS. Compare the prime window to the rest.",
+        "name": "E2: Absolute-band-power audit of the full 600 s render",
+        "purpose": "Test whether the prime's 2-6 kHz fraction reflects absolute high-band energy or a denominator shift, and whether the center bias is uniform or localized.",
+        "reversibility": "Read-only; no files modified."
+      },
+      {
+        "compute_bound": "One short render per condition; bounded by the existing 8-chunk autograd tape cap (src/main.rs 112).",
+        "decision_criteria": [
+          "If side/mid rises materially with width_mult and correlation falls, the width head is the binding constraint and a renderer-side control change is the smallest fix.",
+          "If side/mid does not rise, the side signal itself is collapsed upstream (decoder side control 1.0 but side content absent) and the fix must be in the decoder or loss, not in the width control."
+        ],
+        "inputs": [
+          "Frozen checkpoint set for v9-long-01 (read-only).",
+          "A sidecar renderer invocation that overrides control.width_mult to a fixed value (e.g., 1.0 and 1.6) without changing weights."
+        ],
+        "method": "Render a short bounded tape (e.g., 8 chunks) with the same seed and world state, once at width_mult=1.0 and once at width_mult=1.6. Compare side/mid and correlation. This is an intervention render, not a stem (docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md lines 96-97).",
+        "name": "E3 (only if E1 and E2 point to the renderer): frozen-checkpoint sidecar render with width control clamped",
+        "purpose": "Test whether the center bias is caused by the learned width head sitting near its low rail (width raw -0.946, width control 0.120) rather than by missing side information.",
+        "reversibility": "Sidecar outputs only; canonical checkpoint and WAVs untouched."
+      }
+    ],
+    "recommendation": "Run E1 and E2 first. Do not fork training, do not modify the renderer, and do not change prime selection until E1 and E2 report. If E1 shows the shelf reduces harshness and the side boost restores width without introducing harshness, the smallest reversible fix is a renderer-side control change (width_mult and a high-band tilt), validated by E3. If E2 shows the prime is an outlier, the smallest fix is a prime-selection guard, which is cheaper and more reversible than any renderer change.",
+    "summary": "Propose a bounded, offline, level-matched 2x2 factorial on the existing v9-long-01 prime (side-boost x high-shelf) with null and mono-collapse controls, blinded listening, and absolute-band-power audit of the full 600 s render. This separates harshness from center bias with the fewest conditions and no training fork. A frozen-checkpoint sidecar render is proposed only as a follow-up if the offline results point to the renderer.",
+    "uncertainties": [
+      "No perceptual ratings exist yet (context_packet.md line 58-60); the listener report is a single unblinded observation.",
+      "The prime is a selected 60 s window from a non-uniform 600 s render; any conclusion from the prime may not generalize to the full file or to other runs.",
+      "The 2-6 kHz fraction is a mid-channel FFT power fraction; it can change because of denominator or stereo changes, not only because of absolute high-band energy (context_packet.md lines 54-56). Absolute L+R band power must be measured before attributing harshness to the high band.",
+      "Whether the perceived harshness is dominated by the tanh/wavefolder nonlinearity, by the 2-6 kHz balance, or by transient density is not established by the supplied metrics.",
+      "Whether the perceived center bias is dominated by side/mid collapse, by correlation near 1, or by the prime selection is not established.",
+      "The Haas 16-sample delay and DC blocker make offline mid/side edits non-commutative with the original chain; a naive side boost may not reproduce what a renderer-side width change would sound like.",
+      "No independent training replicas or matched arms exist (context_packet.md lines 28-29); this experiment cannot attribute the symptoms to training dynamics.",
+      "Compute budget is unspecified; the proposal below assumes a single workstation and a single listening session."
+    ]
+  },
+  "approximate_input_tokens": 26944,
+  "attempts": 1,
+  "context": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "created_at_utc": "2026-09-26T07:25:02.104427+00:00",
+  "elapsed_seconds": 21.746,
+  "endpoint": "https://openrouter.ai/api/v1",
+  "files": [
+    {
+      "bytes": 102384,
+      "selection": "analysis/audio_center_harshness_20260926/team_v2/context_packet.md",
+      "sha256": "1093a68a5f48929d046cb7195f2138ceb5f707f939eff59d6b9e438b26192fd4"
+    }
+  ],
+  "finish_reason": "stop",
+  "id": "gen-1790407502-RRhuI70ENcuYvcHZETnH",
+  "max_tokens": 16384,
+  "purpose": "Design the smallest reproducible audio comparison for harshness and width with waveform controls, level matching, transients, and listening. Bound compute.",
+  "request": {
+    "bytes": 107775,
+    "sha256": "9714bda89a941056de56dfa57c610efe72d96d749beeb5177931f290f11568c1"
+  },
+  "requested_model": "deepseek/deepseek-v4.1-flash",
+  "returned_model": "deepseek/deepseek-v4.1-flash",
+  "role": "experiment-designer",
+  "schema_version": 1,
+  "status": "ok",
+  "temperature": 0.1,
+  "token_estimate_method": "serialized UTF-8 bytes / 4; not model tokenization",
+  "usage": {
+    "completion_tokens": 3990,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0145152,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.004788,
+      "upstream_inference_cost": 0.0145152,
+      "upstream_inference_prompt_cost": 0.0097272
+    },
+    "prompt_tokens": 32424,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 36414
+  }
+}

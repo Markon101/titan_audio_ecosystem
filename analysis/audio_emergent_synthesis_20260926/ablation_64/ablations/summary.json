@@ -1,0 +1,633 @@
+{
+  "baseline": "ablation_full",
+  "horizon_chunks": 64,
+  "forcing_protocol": "force-macro, radiation, and kick directions are deterministic functions of checkpoint RNG identity, absolute step, and stream tag",
+  "controller_protocol": "closed_loop_with_separate_matched_controller_rng",
+  "conditions": [
+    {
+      "name": "target_independent_feedback_ablation",
+      "subsystem_class": "target_error_feedback",
+      "exact_disabled_behavior": "do not sample or apply corpus target-error feedback; direct forward remains target-independent",
+      "comparison": {
+        "baseline": "ablation_full",
+        "condition": "target_independent_feedback_ablation",
+        "initial_state_equal": true,
+        "interpretation_constraint": "closed-loop compensation may mask or amplify a direct subsystem effect",
+        "points": [
+          {
+            "absolute_step": 81483,
+            "audio_distance": {
+              "centroid_delta_hz": null,
+              "invalid_reason": "waveforms are not sample-aligned",
+              "multiresolution_log_spectral": null,
+              "rms_delta": 0.0,
+              "stereo_correlation_delta": null,
+              "temporal_envelope": null,
+              "valid_waveform_alignment": false,
+              "waveform_correlation": null,
+              "waveform_l2": null
+            },
+            "offset": 0,
+            "state_distance": {
+              "combined_relative_l2": 0.0,
+              "macro_relative_l2": 0.0,
+              "micro_relative_l2": 0.0,
+              "reason": null,
+              "recurrent_relative_l2": 0.0,
+              "valid": true
+            }
+          },
+          {
+            "absolute_step": 81484,
+            "audio_distance": {
+              "centroid_delta_hz": 0.0,
+              "invalid_reason": null,
+              "multiresolution_log_spectral": 0.0,
+              "rms_delta": 0.0,
+              "stereo_correlation_delta": 0.0,
+              "temporal_envelope": 0.0,
+              "valid_waveform_alignment": true,
+              "waveform_correlation": 1.0,
+              "waveform_l2": 0.0
+            },
+            "offset": 1,
+            "state_distance": {
+              "combined_relative_l2": 0.0,
+              "macro_relative_l2": 0.0,
+              "micro_relative_l2": 0.0,
+              "reason": null,
+              "recurrent_relative_l2": 0.0,
+              "valid": true
+            }
+          },
+          {
+            "absolute_step": 81499,
+            "audio_distance": {
+              "centroid_delta_hz": 0.0,
+              "invalid_reason": null,
+              "multiresolution_log_spectral": 0.0,
+              "rms_delta": 0.0,
+              "stereo_correlation_delta": 0.0,
+              "temporal_envelope": 0.0,
+              "valid_waveform_alignment": true,
+              "waveform_correlation": 1.0,
+              "waveform_l2": 0.0
+            },
+            "offset": 16,
+            "state_distance": {
+              "combined_relative_l2": 0.0,
+              "macro_relative_l2": 0.0,
+              "micro_relative_l2": 0.0,
+              "reason": null,
+              "recurrent_relative_l2": 0.0,
+              "valid": true
+            }
+          },
+          {
+            "absolute_step": 81515,
+            "audio_distance": {
+              "centroid_delta_hz": 0.0,
+              "invalid_reason": null,
+              "multiresolution_log_spectral": 0.0,
+              "rms_delta": 0.0,
+              "stereo_correlation_delta": 0.0,
+              "temporal_envelope": 0.0,
+              "valid_waveform_alignment": true,
+              "waveform_correlation": 1.0,
+              "waveform_l2": 0.0
+            },
+            "offset": 32,
+            "state_distance": {
+              "combined_relative_l2": 0.0,
+              "macro_relative_l2": 0.0,
+              "micro_relative_l2": 0.0,
+              "reason": null,
+              "recurrent_relative_l2": 0.0,
+              "valid": true
+            }
+          },
+          {
+            "absolute_step": 81531,
+            "audio_distance": {
+              "centroid_delta_hz": 0.0,
+              "invalid_reason": null,
+              "multiresolution_log_spectral": 0.0,
+              "rms_delta": 0.0,
+              "stereo_correlation_delta": 0.0,
+              "temporal_envelope": 0.0,
+              "valid_waveform_alignment": true,
+              "waveform_correlation": 1.0,
+              "waveform_l2": 0.0
+            },
+            "offset": 48,
+            "state_distance": {
+              "combined_relative_l2": 0.0,
+              "macro_relative_l2": 0.0,
+              "micro_relative_l2": 0.0,
+              "reason": null,
+              "recurrent_relative_l2": 0.0,
+              "valid": true
+            }
+          },
+          {
+            "absolute_step": 81547,
+            "audio_distance": {
+              "centroid_delta_hz": 0.0,
+              "invalid_reason": null,
+              "multiresolution_log_spectral": 0.0,
+              "rms_delta": 0.0,
+              "stereo_correlation_delta": 0.0,
+              "temporal_envelope": 0.0,
+              "valid_waveform_alignment": true,
+              "waveform_correlation": 1.0,
+              "waveform_l2": 0.0
+            },
+            "offset": 64,
+            "state_distance": {
+              "combined_relative_l2": 0.0,
+              "macro_relative_l2": 0.0,
+              "micro_relative_l2": 0.0,
+              "reason": null,
+              "recurrent_relative_l2": 0.0,
+              "valid": true
+            }
+          }
+        ],
+        "subsystem_class": "target_error_feedback"
+      }
+    },
+    {
+      "name": "gru_hold",
+      "subsystem_class": "learned_neural_state_transition",
+      "exact_disabled_behavior": "retain the prior 512-value recurrent state instead of committing the GRU next state",
+      "comparison": {
+        "baseline": "ablation_full",
+        "condition": "gru_hold",
+        "initial_state_equal": true,
+        "interpretation_constraint": "closed-loop compensation may mask or amplify a direct subsystem effect",
+        "points": [
+          {
+            "absolute_step": 81483,
+            "audio_distance": {
+              "centroid_delta_hz": null,
+              "invalid_reason": "waveforms are not sample-aligned",
+              "multiresolution_log_spectral": null,
+              "rms_delta": 0.0,
+              "stereo_correlation_delta": null,
+              "temporal_envelope": null,
+              "valid_waveform_alignment": false,
+              "waveform_correlation": null,
+              "waveform_l2": null
+            },
+            "offset": 0,
+            "state_distance": {
+              "combined_relative_l2": 0.0,
+              "macro_relative_l2": 0.0,
+              "micro_relative_l2": 0.0,
+              "reason": null,
+              "recurrent_relative_l2": 0.0,
+              "valid": true
+            }
+          },
+          {
+            "absolute_step": 81484,
+            "audio_distance": {
+              "centroid_delta_hz": 0.0,
+              "invalid_reason": null,
+              "multiresolution_log_spectral": 0.0,
+              "rms_delta": 0.0,
+              "stereo_correlation_delta": 0.0,
+              "temporal_envelope": 0.0,
+              "valid_waveform_alignment": true,
+              "waveform_correlation": 1.0,
+              "waveform_l2": 0.0
+            },
+            "offset": 1,
+            "state_distance": {
+              "combined_relative_l2": 0.0,
+              "macro_relative_l2": 0.0,
+              "micro_relative_l2": 0.0,
+              "reason": null,
+              "recurrent_relative_l2": 0.0,
+              "valid": true
+            }
+          },
+          {
+            "absolute_step": 81499,
+            "audio_distance": {
+              "centroid_delta_hz": 0.0,
+              "invalid_reason": null,
+              "multiresolution_log_spectral": 0.0,
+              "rms_delta": 0.0,
+              "stereo_correlation_delta": 0.0,
+              "temporal_envelope": 0.0,
+              "valid_waveform_alignment": true,
+              "waveform_correlation": 1.0,
+              "waveform_l2": 0.0
+            },
+            "offset": 16,
+            "state_distance": {
+              "combined_relative_l2": 0.0,
+              "macro_relative_l2": 0.0,
+              "micro_relative_l2": 0.0,
+              "reason": null,
+              "recurrent_relative_l2": 0.0,
+              "valid": true
+            }
+          },
+          {
+            "absolute_step": 81515,
+            "audio_distance": {
+              "centroid_delta_hz": 0.0,
+              "invalid_reason": null,
+              "multiresolution_log_spectral": 0.0,
+              "rms_delta": 0.0,
+              "stereo_correlation_delta": 0.0,
+              "temporal_envelope": 0.0,
+              "valid_waveform_alignment": true,
+              "waveform_correlation": 1.0,
+              "waveform_l2": 0.0
+            },
+            "offset": 32,
+            "state_distance": {
+              "combined_relative_l2": 0.0,
+              "macro_relative_l2": 0.0,
+              "micro_relative_l2": 0.0,
+              "reason": null,
+              "recurrent_relative_l2": 0.0,
+              "valid": true
+            }
+          },
+          {
+            "absolute_step": 81531,
+            "audio_distance": {
+              "centroid_delta_hz": 0.0,
+              "invalid_reason": null,
+              "multiresolution_log_spectral": 0.0,
+              "rms_delta": 0.0,
+              "stereo_correlation_delta": 0.0,
+              "temporal_envelope": 0.0,
+              "valid_waveform_alignment": true,
+              "waveform_correlation": 1.0,
+              "waveform_l2": 0.0
+            },
+            "offset": 48,
+            "state_distance": {
+              "combined_relative_l2": 0.0,
+              "macro_relative_l2": 0.0,
+              "micro_relative_l2": 0.0,
+              "reason": null,
+              "recurrent_relative_l2": 0.0,
+              "valid": true
+            }
+          },
+          {
+            "absolute_step": 81547,
+            "audio_distance": {
+              "centroid_delta_hz": 0.0,
+              "invalid_reason": null,
+              "multiresolution_log_spectral": 0.0,
+              "rms_delta": 0.0,
+              "stereo_correlation_delta": 0.0,
+              "temporal_envelope": 0.0,
+              "valid_waveform_alignment": true,
+              "waveform_correlation": 1.0,
+              "waveform_l2": 0.0
+            },
+            "offset": 64,
+            "state_distance": {
+              "combined_relative_l2": 0.0,
+              "macro_relative_l2": 0.0,
+              "micro_relative_l2": 0.0,
+              "reason": null,
+              "recurrent_relative_l2": 0.0,
+              "valid": true
+            }
+          }
+        ],
+        "subsystem_class": "learned_neural_state_transition"
+      }
+    },
+    {
+      "name": "micro_nca_hold",
+      "subsystem_class": "learned_neural_state_transition",
+      "exact_disabled_behavior": "retain the prior projected micro field instead of committing the learned micro CA next state; subsequent declared forcing remains active",
+      "comparison": {
+        "baseline": "ablation_full",
+        "condition": "micro_nca_hold",
+        "initial_state_equal": true,
+        "interpretation_constraint": "closed-loop compensation may mask or amplify a direct subsystem effect",
+        "points": [
+          {
+            "absolute_step": 81483,
+            "audio_distance": {
+              "centroid_delta_hz": null,
+              "invalid_reason": "waveforms are not sample-aligned",
+              "multiresolution_log_spectral": null,
+              "rms_delta": 0.0,
+              "stereo_correlation_delta": null,
+              "temporal_envelope": null,
+              "valid_waveform_alignment": false,
+              "waveform_correlation": null,
+              "waveform_l2": null
+            },
+            "offset": 0,
+            "state_distance": {
+              "combined_relative_l2": 0.0,
+              "macro_relative_l2": 0.0,
+              "micro_relative_l2": 0.0,
+              "reason": null,
+              "recurrent_relative_l2": 0.0,
+              "valid": true
+            }
+          },
+          {
+            "absolute_step": 81484,
+            "audio_distance": {
+              "centroid_delta_hz": 0.0,
+              "invalid_reason": null,
+              "multiresolution_log_spectral": 0.0,
+              "rms_delta": 0.0,
+              "stereo_correlation_delta": 0.0,
+              "temporal_envelope": 0.0,
+              "valid_waveform_alignment": true,
+              "waveform_correlation": 1.0,
+              "waveform_l2": 0.0
+            },
+            "offset": 1,
+            "state_distance": {
+              "combined_relative_l2": 0.011341201141476631,
+              "macro_relative_l2": 0.0,
+              "micro_relative_l2": 0.011976996436715126,
+              "reason": null,
+              "recurrent_relative_l2": 0.0,
+              "valid": true
+            }
+          },
+          {
+            "absolute_step": 81499,
+            "audio_distance": {
+              "centroid_delta_hz": 55.12890625,
+              "invalid_reason": null,
+              "multiresolution_log_spectral": 0.773047924041748,
+              "rms_delta": 0.00013400614261627197,
+              "stereo_correlation_delta": 0.0005286335945129395,
+              "temporal_envelope": 0.13180506229400635,
+              "valid_waveform_alignment": true,
+              "waveform_correlation": 0.35751551389694214,
+              "waveform_l2": 1.1347086429595947
+            },
+            "offset": 16,
+            "state_distance": {
+              "combined_relative_l2": 0.0728822723031044,
+              "macro_relative_l2": 0.013669469393789768,
+              "micro_relative_l2": 0.07632386684417725,
+              "reason": null,
+              "recurrent_relative_l2": 0.0,
+              "valid": true
+            }
+          },
+          {
+            "absolute_step": 81515,
+            "audio_distance": {
+              "centroid_delta_hz": 232.322265625,
+              "invalid_reason": null,
+              "multiresolution_log_spectral": 0.7486146092414856,
+              "rms_delta": 0.0005794018507003784,
+              "stereo_correlation_delta": 0.014098823070526123,
+              "temporal_envelope": 0.13992395997047424,
+              "valid_waveform_alignment": true,
+              "waveform_correlation": 0.9097505807876587,
+              "waveform_l2": 0.42679381370544434
+            },
+            "offset": 32,
+            "state_distance": {
+              "combined_relative_l2": 0.12529364228248596,
+              "macro_relative_l2": 0.055718280375003815,
+              "micro_relative_l2": 0.13034255802631378,
+              "reason": null,
+              "recurrent_relative_l2": 0.0,
+              "valid": true
+            }
+          },
+          {
+            "absolute_step": 81531,
+            "audio_distance": {
+              "centroid_delta_hz": 20.060546875,
+              "invalid_reason": null,
+              "multiresolution_log_spectral": 0.8044279217720032,
+              "rms_delta": 0.00003434717655181885,
+              "stereo_correlation_delta": 0.00016349554061889648,
+              "temporal_envelope": 0.1990823894739151,
+              "valid_waveform_alignment": true,
+              "waveform_correlation": 0.5485068559646606,
+              "waveform_l2": 0.9500222206115723
+            },
+            "offset": 48,
+            "state_distance": {
+              "combined_relative_l2": 0.1747230738401413,
+              "macro_relative_l2": 0.12239265441894531,
+              "micro_relative_l2": 0.17851939797401428,
+              "reason": null,
+              "recurrent_relative_l2": 0.0,
+              "valid": true
+            }
+          },
+          {
+            "absolute_step": 81547,
+            "audio_distance": {
+              "centroid_delta_hz": 135.90234375,
+              "invalid_reason": null,
+              "multiresolution_log_spectral": 0.8438758850097656,
+              "rms_delta": 0.00013359636068344116,
+              "stereo_correlation_delta": 0.004381775856018066,
+              "temporal_envelope": 0.1929362565279007,
+              "valid_waveform_alignment": true,
+              "waveform_correlation": 0.2887918949127197,
+              "waveform_l2": 1.191459059715271
+            },
+            "offset": 64,
+            "state_distance": {
+              "combined_relative_l2": 0.22213342785835266,
+              "macro_relative_l2": 0.22726595401763916,
+              "micro_relative_l2": 0.22189489006996155,
+              "reason": null,
+              "recurrent_relative_l2": 0.0,
+              "valid": true
+            }
+          }
+        ],
+        "subsystem_class": "learned_neural_state_transition"
+      }
+    },
+    {
+      "name": "episodic_read_zero",
+      "subsystem_class": "learned_neural_state_transition",
+      "exact_disabled_behavior": "replace the learned 64-value episodic readout with zeros while leaving slot storage intact",
+      "comparison": {
+        "baseline": "ablation_full",
+        "condition": "episodic_read_zero",
+        "initial_state_equal": true,
+        "interpretation_constraint": "closed-loop compensation may mask or amplify a direct subsystem effect",
+        "points": [
+          {
+            "absolute_step": 81483,
+            "audio_distance": {
+              "centroid_delta_hz": null,
+              "invalid_reason": "waveforms are not sample-aligned",
+              "multiresolution_log_spectral": null,
+              "rms_delta": 0.0,
+              "stereo_correlation_delta": null,
+              "temporal_envelope": null,
+              "valid_waveform_alignment": false,
+              "waveform_correlation": null,
+              "waveform_l2": null
+            },
+            "offset": 0,
+            "state_distance": {
+              "combined_relative_l2": 0.0,
+              "macro_relative_l2": 0.0,
+              "micro_relative_l2": 0.0,
+              "reason": null,
+              "recurrent_relative_l2": 0.0,
+              "valid": true
+            }
+          },
+          {
+            "absolute_step": 81484,
+            "audio_distance": {
+              "centroid_delta_hz": 4.96484375,
+              "invalid_reason": null,
+              "multiresolution_log_spectral": 0.2837362587451935,
+              "rms_delta": 0.00009631365537643433,
+              "stereo_correlation_delta": 0.006740987300872803,
+              "temporal_envelope": 0.009412900544703007,
+              "valid_waveform_alignment": true,
+              "waveform_correlation": 0.9990816116333008,
+              "waveform_l2": 0.04291412979364395
+            },
+            "offset": 1,
+            "state_distance": {
+              "combined_relative_l2": 0.014342844486236572,
+              "macro_relative_l2": 0.0,
+              "micro_relative_l2": 0.0,
+              "reason": null,
+              "recurrent_relative_l2": 0.3498069941997528,
+              "valid": true
+            }
+          },
+          {
+            "absolute_step": 81499,
+            "audio_distance": {
+              "centroid_delta_hz": 10.29833984375,
+              "invalid_reason": null,
+              "multiresolution_log_spectral": 0.32931557297706604,
+              "rms_delta": 0.00002193450927734375,
+              "stereo_correlation_delta": 0.014364421367645264,
+              "temporal_envelope": 0.012669072486460209,
+              "valid_waveform_alignment": true,
+              "waveform_correlation": 0.9974450469017029,
+              "waveform_l2": 0.07149647176265717
+            },
+            "offset": 16,
+            "state_distance": {
+              "combined_relative_l2": 0.029661914333701134,
+              "macro_relative_l2": 0.00012446517939679325,
+              "micro_relative_l2": 0.000016048279576352797,
+              "reason": null,
+              "recurrent_relative_l2": 0.7185003161430359,
+              "valid": true
+            }
+          },
+          {
+            "absolute_step": 81515,
+            "audio_distance": {
+              "centroid_delta_hz": 18.7001953125,
+              "invalid_reason": null,
+              "multiresolution_log_spectral": 0.26879143714904785,
+              "rms_delta": 0.0000903010368347168,
+              "stereo_correlation_delta": 0.013852119445800781,
+              "temporal_envelope": 0.016196198761463165,
+              "valid_waveform_alignment": true,
+              "waveform_correlation": 0.9964651465415955,
+              "waveform_l2": 0.08415083587169647
+            },
+            "offset": 32,
+            "state_distance": {
+              "combined_relative_l2": 0.03260352835059166,
+              "macro_relative_l2": 0.00026644582976587117,
+              "micro_relative_l2": 0.000030041013815207407,
+              "reason": null,
+              "recurrent_relative_l2": 0.7911993861198425,
+              "valid": true
+            }
+          },
+          {
+            "absolute_step": 81531,
+            "audio_distance": {
+              "centroid_delta_hz": 73.302734375,
+              "invalid_reason": null,
+              "multiresolution_log_spectral": 0.4219113290309906,
+              "rms_delta": 0.0007853582501411438,
+              "stereo_correlation_delta": 0.016144216060638428,
+              "temporal_envelope": 0.045262448489665985,
+              "valid_waveform_alignment": true,
+              "waveform_correlation": 0.9871918559074402,
+              "waveform_l2": 0.1614140272140503
+            },
+            "offset": 48,
+            "state_distance": {
+              "combined_relative_l2": 0.03700727969408035,
+              "macro_relative_l2": 0.04268154129385948,
+              "micro_relative_l2": 0.007539540529251099,
+              "reason": null,
+              "recurrent_relative_l2": 0.8269121050834656,
+              "valid": true
+            }
+          },
+          {
+            "absolute_step": 81547,
+            "audio_distance": {
+              "centroid_delta_hz": 64.611328125,
+              "invalid_reason": null,
+              "multiresolution_log_spectral": 0.4439159333705902,
+              "rms_delta": 0.000025056302547454834,
+              "stereo_correlation_delta": 0.016512930393218994,
+              "temporal_envelope": 0.056046102195978165,
+              "valid_waveform_alignment": true,
+              "waveform_correlation": 0.9514660239219666,
+              "waveform_l2": 0.3116152286529541
+            },
+            "offset": 64,
+            "state_distance": {
+              "combined_relative_l2": 0.0459233857691288,
+              "macro_relative_l2": 0.101279616355896,
+              "micro_relative_l2": 0.008109396323561668,
+              "reason": null,
+              "recurrent_relative_l2": 0.8496391773223877,
+              "valid": true
+            }
+          }
+        ],
+        "subsystem_class": "learned_neural_state_transition"
+      }
+    }
+  ],
+  "deferred_without_production_forward_hooks": [
+    "morphic_bypass",
+    "memory_to_micro_zero",
+    "temporal_decoder_neutral",
+    "carrier_fm_family",
+    "auxiliary_modal_family",
+    "regional_scan_partial_family",
+    "learned_gated_excitation_family",
+    "wavefolder_family",
+    "haas_width_path",
+    "saturation_or_dc_blocker"
+  ],
+  "warnings": [
+    "Transition holds are applied to the cloned next state; the intervention can affect audio from the following chunk onward.",
+    "Host controller and forcing interventions are not learned-neural ablations.",
+    "Unsafe renderer hooks were not inserted into the production forward path; unsupported names fail rather than silently approximating a stem."
+  ]
+}

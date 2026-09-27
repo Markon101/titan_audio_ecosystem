@@ -1,0 +1,196 @@
+{
+  "files": {
+    "full_audio": {
+      "byte_identical": true,
+      "new_bytes": 16428,
+      "new_sha256": "68014c8390c35abc8200583244b0a312652fe5799644bb14f63f9a22a6336827",
+      "old_bytes": 16428,
+      "old_sha256": "68014c8390c35abc8200583244b0a312652fe5799644bb14f63f9a22a6336827"
+    },
+    "model": {
+      "byte_identical": false,
+      "new_bytes": 38522204,
+      "new_sha256": "62b398f793ada63f49cc192605fa82b1af0d74104debf66e912bafe487ed950e",
+      "old_bytes": 38522204,
+      "old_sha256": "ec1332cdcf1dc15c3b18f90f4d1189e4c77160c76590685561d1dc27d83aa26c"
+    },
+    "morph": {
+      "byte_identical": true,
+      "new_bytes": 146,
+      "new_sha256": "fbc7140579d6b1bfee73794662572fe966059396121e36a8825631a087470c8c",
+      "old_bytes": 146,
+      "old_sha256": "fbc7140579d6b1bfee73794662572fe966059396121e36a8825631a087470c8c"
+    },
+    "optimizer": {
+      "byte_identical": false,
+      "new_bytes": 77047960,
+      "new_sha256": "f0344c2b20b3abbb438f0b10ef670fc28c2d10f357d94fbacd3be3f2ed9a762e",
+      "old_bytes": 77047960,
+      "old_sha256": "6687a54ba45bbf78c71a8b9bfdd2f3713643d68a65659f2822766c076cfc7c11"
+    },
+    "prime_audio": {
+      "byte_identical": true,
+      "new_bytes": 16428,
+      "new_sha256": "1cdf5e89d7e857872b0a5ed46e60afd49992bf0198ade3fe230a10bb76ab0840",
+      "old_bytes": 16428,
+      "old_sha256": "1cdf5e89d7e857872b0a5ed46e60afd49992bf0198ade3fe230a10bb76ab0840"
+    },
+    "world": {
+      "byte_identical": true,
+      "new_bytes": 1324835,
+      "new_sha256": "d08408e65061726fc8a14d6bd08b8ecfc9184530fe6f9e69be3cfdab155d8a8f",
+      "old_bytes": 1324835,
+      "old_sha256": "d08408e65061726fc8a14d6bd08b8ecfc9184530fe6f9e69be3cfdab155d8a8f"
+    }
+  },
+  "legacy_gate": {
+    "audio_equal": true,
+    "model_within_tolerance": true,
+    "optimizer_within_tolerance": true,
+    "pass": true,
+    "same_steps": true,
+    "world_payload_equal": true
+  },
+  "metadata": {
+    "new": {
+      "end_global_step": 1,
+      "experiments": {
+        "prime_width_score": false,
+        "spectral_deemphasis": false
+      },
+      "optimizer_updates_cumulative": 1
+    },
+    "old": {
+      "end_global_step": 1,
+      "experiments": null,
+      "optimizer_updates_cumulative": 1
+    }
+  },
+  "new_binary_sha256": "e7b96f94c608ce6e00c8e777d89dfce241e6ce93b389ac9e6f96708a675023d2",
+  "new_root": "/data/data/com.termux/files/usr/tmp/titan_audio_legacy_oracle_20260926/new_after_diag",
+  "old_binary_sha256": "7114d3cf37fe49cf4cfd8ab10f026e04c4802a04a3c6901dec03bbd0c7d9e80b",
+  "old_root": "/data/data/com.termux/files/usr/tmp/titan_audio_legacy_oracle_20260926/old",
+  "tensors": {
+    "model": {
+      "changed_elements": 148769,
+      "largest_deltas": [
+        {
+          "changed": 325,
+          "max_abs_delta": 7.450580596923828e-09,
+          "over_tolerance": 0,
+          "tensor": "model.gru_memory.w_in.weight"
+        },
+        {
+          "changed": 107,
+          "max_abs_delta": 7.450580596923828e-09,
+          "over_tolerance": 0,
+          "tensor": "model.gru_memory.w_iz.weight"
+        },
+        {
+          "changed": 20,
+          "max_abs_delta": 7.450580596923828e-09,
+          "over_tolerance": 0,
+          "tensor": "model.micro_ca.contract.weight"
+        },
+        {
+          "changed": 9,
+          "max_abs_delta": 7.450580596923828e-09,
+          "over_tolerance": 0,
+          "tensor": "model.micro_ca.expand.weight"
+        },
+        {
+          "changed": 1284,
+          "max_abs_delta": 7.450580596923828e-09,
+          "over_tolerance": 0,
+          "tensor": "model.temporal_decoder.block0.expand.weight"
+        },
+        {
+          "changed": 1207,
+          "max_abs_delta": 7.450580596923828e-09,
+          "over_tolerance": 0,
+          "tensor": "model.temporal_decoder.block1.expand.weight"
+        },
+        {
+          "changed": 1243,
+          "max_abs_delta": 7.450580596923828e-09,
+          "over_tolerance": 0,
+          "tensor": "model.temporal_decoder.block2.expand.weight"
+        },
+        {
+          "changed": 1234,
+          "max_abs_delta": 7.450580596923828e-09,
+          "over_tolerance": 0,
+          "tensor": "model.temporal_decoder.block3.expand.weight"
+        }
+      ],
+      "layout_equal": true,
+      "max_abs_delta": 7.450580596923828e-09,
+      "over_tolerance": 0,
+      "tensor_count": 130,
+      "tolerance": "1e-7 + 1e-6 * max(abs(old),abs(new)) for floating tensors; exact integers"
+    },
+    "optimizer": {
+      "changed_elements": 12339526,
+      "largest_deltas": [
+        {
+          "changed": 5,
+          "max_abs_delta": 1.4901161193847656e-08,
+          "over_tolerance": 0,
+          "tensor": "optimizer.m.model.wavefolder_l.weights"
+        },
+        {
+          "changed": 5,
+          "max_abs_delta": 1.4901161193847656e-08,
+          "over_tolerance": 0,
+          "tensor": "optimizer.m.model.wavefolder_r.weights"
+        },
+        {
+          "changed": 3,
+          "max_abs_delta": 7.450580596923828e-09,
+          "over_tolerance": 0,
+          "tensor": "optimizer.m.model.auxiliary_pitch_head_0.bias"
+        },
+        {
+          "changed": 1,
+          "max_abs_delta": 1.862645149230957e-09,
+          "over_tolerance": 0,
+          "tensor": "optimizer.m.model.fm_mod_ratio_0.bias"
+        },
+        {
+          "changed": 367,
+          "max_abs_delta": 1.862645149230957e-09,
+          "over_tolerance": 0,
+          "tensor": "optimizer.m.model.stereo_width_head_0.weight"
+        },
+        {
+          "changed": 6,
+          "max_abs_delta": 1.862645149230957e-09,
+          "over_tolerance": 0,
+          "tensor": "optimizer.m.model.wavefolder_r.mod_proj.bias"
+        },
+        {
+          "changed": 394,
+          "max_abs_delta": 9.313225746154785e-10,
+          "over_tolerance": 0,
+          "tensor": "optimizer.m.model.gru_memory.w_in.bias"
+        },
+        {
+          "changed": 369,
+          "max_abs_delta": 9.313225746154785e-10,
+          "over_tolerance": 0,
+          "tensor": "optimizer.m.model.morphic.l0_2.bias"
+        }
+      ],
+      "layout_equal": true,
+      "max_abs_delta": 1.4901161193847656e-08,
+      "over_tolerance": 0,
+      "tensor_count": 263,
+      "tolerance": "1e-7 + 1e-6 * max(abs(old),abs(new)) for floating tensors; exact integers"
+    }
+  },
+  "world": {
+    "payload_differing_bytes": 0,
+    "payload_equal": true,
+    "wrapper_header_equal": true
+  }
+}

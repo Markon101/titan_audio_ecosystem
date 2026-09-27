@@ -1,0 +1,226 @@
+{
+  "answer": "{\n  \"conclusions\": [\n    \"The causal audio pipeline in Titan Audio v9 is: world state (micro field, macro field, GRU hidden, episodic readout, oscillator phases, host controls) -> model.forward -> stereo waveform chunk -> tanh + stateful DC blocker -> streamed peak normalization to -1 dBFS -> PCM16 WAV. Target audio is sampled AFTER forward and only enters the loss/optimizer and later host ecology; it cannot condition the same chunk.\",\n    \"The listener's 'harsh and centered' report is consistent with the supplied measurements: the latest tagged continuation has L/R correlation 0.991, side/mid -23.31 dB, and 2-6 kHz fraction 47.3% vs 33.6% for the untagged parent, with 20-200 Hz dropping from 20.8% to 2.1%. These are diagnostics, not perceptual scores.\",\n    \"The center bias is plausibly a within-run outlier amplified by prime selection: the full 600 s WAV is not uniformly centered (per-minute correlation 0.740-0.992), and the 60 s prime is drawn from a very center-heavy interval (minutes 5-6, corr 0.990-0.992, side/mid ~-23 dB). The prime selection score uses field entropy, activity health, structured complexity, and stagnation, not audible width or harshness.\",\n    \"The prompt file (suno_priming_prompt*.txt) is written after rendering and prime extraction (src/main.rs:8682-8697), so its descriptive words cannot have caused the run. It is a post-render output.\",\n    \"The forward pass has no text prompt, target audio, prime, or external reference argument (research/audio_context.md:13-15; docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:101).\",\n    \"Offline waveform filtering tests signal processing only; they are not a proxy for latent-field diffusion, and a trained diffusion/flow decoder is also not a proxy (research/audio_context.md:64-67).\",\n    \"Canonical checkpoints, corpus, existing WAVs, and the normal renderer/training must remain intact; only copied WAVs and sidecar receipts are permitted for offline tests (research/audio_context.md:68-70).\"\n  ],\n  \"evidence\": [\n    \"research/audio_context.md:13-15 \u2014 forward has NO text prompt, target audio, prime, or external reference argument.\",\n    \"research/audio_context.md:16-18 \u2014 causal order: current world -> forward audio -> target sampling/loss -> optimizer and later host feedback; current target cannot change the same precomputed chunk.\",\n    \"research/audio_context.md:19-21 \u2014 suno_priming_prompt*.txt is written AFTER rendering and prime extraction; its words cannot cause the run.\",\n    \"research/audio_context.md:44-47 \u2014 side derives from L-R before a delayed scaled side stage; learned width bounded 0.05..0.50; global pan +/-0.10; pan-center loss penalizes bounded pan, does not directly reward correlation=1.\",\n    \"research/audio_context.md:48-50 \u2014 loss-visible tanh, later gain/saturation/DC blocker, whole-file peak normalization; sample peak below 0 dBFS does not exclude nonlinear saturation or perceptual harshness.\",\n    \"research/audio_context.md:51-53 \u2014 prime selection ~60 s using field entropy, activity health, complexity, stagnation; no listener rating or direct stereo/harshness ranking; selection can amplify a within-run outlier.\",\n    \"research/audio_context.md:64-67 \u2014 offline waveform filtering tests signal processing; not a proxy for latent-field diffusion; zero-output identity branch proves bypass only; latent field entropy cannot be recovered from a WAV.\",\n    \"research/audio_context.md:68-70 \u2014 canonical checkpoints, corpus, existing WAVs, normal renderer and training stay intact; offline test may create copied WAVs and sidecar receipts; use paired intervals and record level-matching gains.\",\n    \"analysis/audio_center_harshness_20260926/deepseek_packet.md:24-29 \u2014 measurement table: untagged parent corr 0.603, side/mid -6.01, 20-200 Hz 20.8%, 2-6 kHz 33.6%; latest tagged corr 0.991, side/mid -23.31, 20-200 Hz 2.1%, 2-6 kHz 47.3%.\",\n    \"analysis/audio_center_harshness_20260926/deepseek_packet.md:31-35 \u2014 full 600 s WAV not uniformly centered; per-minute corr 0.740-0.992; minutes 5-6 corr 0.990-0.992, side/mid ~-23 dB; prime is from a very center-heavy interval; selection score uses field entropy, activity health, structured complexity, stagnation.\",\n    \"analysis/audio_center_harshness_20260926/deepseek_packet.md:37-43 \u2014 training trace: median output corr 0.963 vs target 0.862; median truthful width 0.027; decoder width control 0.120; width raw -0.946; global pan 0.0999 at +0.10 limit; decoder side control 1.0; ultrasonic_ratio median 0.0965 is a pre-master guardrail, not a harshness score.\",\n    \"docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:101 \u2014 model.forward runs before TargetAudioLoader::sample_chunks; target does not directly condition the current chunk's neural forward or synthesis equations.\",\n    \"docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:105-108 \u2014 Audio v9 cannot honestly perform Image-style held-out reconstruction at inference; first-chunk invariance is an important negative control; target-feedback-conditioned ecological response is not direct reference-conditioned reconstruction.\",\n    \"src/main.rs:82-84 \u2014 SAMPLE_RATE 48000, CHUNK_SIZE 4096.\",\n    \"src/main.rs:94 \u2014 MACRO_UPDATE_EVERY = 4.\",\n    \"src/main.rs:112 \u2014 MAX_AUTOGRAD_TAPE_CHUNKS = 8.\",\n    \"src/main.rs:246 \u2014 MAX_STEREO_SIDE_GAIN = 1.25.\",\n    \"src/main.rs:253-255 \u2014 STEREO_SIDE_LOSS_WEIGHT 0.30, STEREO_CORRELATION_LOSS_WEIGHT 0.95, STEREO_LEVEL_LOSS_WEIGHT 0.45.\",\n    \"src/main.rs:5108-5122 \u2014 forward signature: micro, macro_t, mem, epi_out, phases, theta_prev, theta_prev2, force, absolute_step, train_ecology, energy, control. No target/reference argument.\",\n    \"src/main.rs:5565-5603 \u2014 mid = (L+R)/2 scaled by temporal_controls[4]; side = (L-R)/2 scaled by temporal_controls[5]; side_wide = side * width_val * learned_width; side_delayed from prev_haas_side; audio_l = mid + side_delayed; audio_r = mid - side_delayed.\",\n    \"src/main.rs:5583-5596 \u2014 pan_raw from spatial_panner; pan_t = soft_global_pan(pan_raw); width_val = stereo_side_gain(last_pan, control.width_mult); learned_width = soft_width_control(width_raw).\",\n    \"src/main.rs:5605-5614 \u2014 gain_l/gain_r from pan_t; audio scaled by 1.414.\",\n    \"src/main.rs:7103-7107 \u2014 audio_for_loss = stereo_chunk.tanh(); targets = target_loader.sample_chunks(...) AFTER forward.\",\n    \"src/main.rs:7211-7234 \u2014 stereo_geometry on output and target; side_geometry_loss, correlation_loss, stereo_level_loss; stereo_balance_loss combines them with the three weights.\",\n    \"src/main.rs:7227 \u2014 pan_center_loss(&pan).\",\n    \"src/main.rs:8059-8076 \u2014 post path: tanh(x*0.92) then stateful DC blocker; raw_peak tracked.\",\n    \"src/main.rs:8451-8455 \u2014 norm = 0.891 / raw_peak; streamed DC-blocked peak normalized to -1 dBFS.\",\n    \"src/main.rs:8463-8481 \u2014 prime selection: sliding window over chunk_scores; best_start, best_sum; prime_start_frame = best_start * CHUNK_SIZE.\",\n    \"src/main.rs:8510-8528 \u2014 output and prime written as PCM16 with norm applied; prime fade 2048 samples.\",\n    \"src/main.rs:8682-8697 \u2014 prompt formatted from run statistics and written to suno_priming_prompt txt AFTER rendering.\",\n    \"src/stereo.rs:3-7 \u2014 GLOBAL_PAN_LIMIT 0.10, PAN_CENTER_LOSS_WEIGHT 0.10, WIDTH_CONTROL_MIN 0.05, WIDTH_CONTROL_MAX 0.50.\",\n    \"src/stereo.rs:13-19 \u2014 soft_global_pan: z/sqrt(1+z^2) scaled by GLOBAL_PAN_LIMIT.\",\n    \"src/stereo.rs:21-26 \u2014 pan_center_loss: pan.sqr().\",\n    \"src/stereo.rs:28-41 \u2014 soft_width_control: unit * half_range + midpoint, bounded 0.05..0.50.\",\n    \"METRICS.md:64-76 \u2014 output_low_band_ratio and target_low_band_ratio compare the first supervised 20 Hz log band; decoder_pan bounded +/-0.10; pan_center_loss measures squared energy in the bounded audible residual.\",\n    \"METRICS.md:94-95 \u2014 ultrasonic_ratio is the fraction of pre-master magnitude above 20 kHz; aliasing/foldback guardrail, not a musical brightness score.\",\n    \"METRICS.md:129-134 \u2014 side_energy_width can be high for panned mono; width multiplies by interchannel incoherence; stereo_corr is final post-DC, pre-master normalized correlation.\"\n  ],\n  \"uncertainties\": [\n    \"No controlled blinded listening has been performed; perceptual improvement or degradation is not established (research/audio_context.md:58-60).\",\n    \"The supplied spectral fractions are MID-channel sampled FFT power fractions; changes in fraction can reflect denominator or stereo changes. Absolute and total L+R band power have not been reported (research/audio_context.md:54-57).\",\n    \"The three latest WAVs form one sequential continuation lineage, not independent seeds or matched arms (research/audio_context.md:28-29).\",\n    \"Target mix and online learning confound comparisons between elapsed portions of a run (research/audio_context.md:37-39).\",\n    \"The low-band loss term measures the first log band; it is not the whole 20-200 Hz measurement (research/audio_context.md:40-43).\",\n    \"The training trace's ultrasonic_ratio is a pre-master guardrail, not a harshness score (deepseek_packet.md:40-41).\",\n    \"Whether the harshness is caused by learned weights, initialized anatomy, carried world state, or controller forcing is not separable from existing scalar traces (docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:133-141).\",\n    \"Pre-side-scale renderer taps, frequency-specific loss gradients, detailed target mix attribution, and downstream priming outcomes are missing (research/audio_context.md:71-74).\",\n    \"The exact contribution of the wavefolder, scan synthesis, excitation noise, and tanh saturation to perceived harshness is not measured.\",\n    \"Whether the center bias is primarily from the learned width control, the global pan, the side excitation, or the target-relative stereo losses is not isolated.\",\n    \"The prime selection window is chosen by chunk_scores that do not include audible width or harshness; the selected interval may be unrepresentative of the full run.\"\n  ],\n  \"proposed_experiments\": [\n    {\n      \"name\": \"Paired-interval offline stereo and band-power audit\",\n      \"purpose\": \"Separate center bias from harshness and from prime-selection outlier effects without touching canonical files.\",\n      \"method\": \"Copy the latest full 600 s WAV and the untagged parent WAV to a sidecar directory. Compute per-60 s non-overlapping interval: L/R Pearson correlation, side/mid dB, L/R balance dB, absolute L+R band power in 20-200 Hz, 2-6 kHz, 6-20 kHz, and total power. Record level-matching gains. Compare the prime interval against the full-run distribution.\",\n      \"controls\": \"Use identical windowing and FFT parameters for both files; report absolute power, not only fractions; do not modify originals.\",\n      \"expected_discriminator\": \"If the prime interval is an extreme outlier in correlation and side/mid relative to the full run, center bias is partly a selection artifact. If harshness (2-6 kHz absolute power) is elevated across the full run, it is not only a prime-selection artifact.\",\n      \"cost\": \"Low; offline, no training, no model load.\"\n    },\n    {\n      \"name\": \"First-chunk invariance negative control\",\n      \"purpose\": \"Confirm that target audio does not condition the current chunk's forward pass.\",\n      \"method\": \"Clone identical pre-forward state, run model.forward with two different target chunks presented to the loss, and compare the emitted current-chunk waveform. Repeat across several steps.\",\n      \"controls\": \"Hold all world state, phases, controls, and RNG identical; vary only the target chunk.\",\n      \"expected_discriminator\": \"Identical current-chunk audio confirms no direct reference conditioning. Any difference would contradict the documented causal order and require source re-audit.\",\n      \"cost\": \"Low to moderate; requires harness access, no training.\"\n    },\n    {\n      \"name\": \"Side-path ablation on copied WAVs\",\n      \"purpose\": \"Estimate how much of the center bias is attributable to the side path versus the mid path.\",\n      \"method\": \"On copied WAVs, apply a mid/side decomposition and re-render with side gain set to 0, to the observed value, and to a modestly increased value. Measure correlation, side/mid, and 2-6 kHz absolute power for each.\",\n      \"controls\": \"Level-match all variants; use paired intervals; keep originals untouched.\",\n      \"expected_discriminator\": \"If increasing side gain reduces correlation and does not increase 2-6 kHz harshness, center bias and harshness are separable. If harshness tracks side gain, the side path contributes to harshness.\",\n      \"cost\": \"Low; offline signal processing only.\"\n    },\n    {\n      \"name\": \"Post-path stage ablation on copied WAVs\",\n      \"purpose\": \"Separate tanh saturation, DC blocker, and peak normalization contributions to harshness.\",\n      \"method\": \"On copied WAVs, bypass tanh, bypass DC blocker, and bypass normalization individually and in combination; measure 2-6 kHz absolute power, THD-like residual, and correlation.\",\n      \"controls\": \"Level-match; use paired intervals; do not modify originals.\",\n      \"expected_discriminator\": \"If harshness drops when tanh is bypassed, nonlinear saturation is a contributor. If it persists, the harshness originates earlier in the renderer.\",\n      \"cost\": \"Low; offline signal processing only.\"\n    },\n    {\n      \"name\": \"Prime-selection sensitivity re-scoring\",\n      \"purpose\": \"Test whether the prime selection score is biased toward center-heavy intervals.\",\n      \"method\": \"Recompute chunk_scores for the full run and correlate them with per-interval correlation and 2-6 kHz power. Identify whether high-scoring intervals are systematically more centered or brighter.\",\n      \"controls\": \"Use the same score formula as src/main.rs:8141-8145; do not change the selection.\",\n      \"expected_discriminator\": \"A positive correlation between score and center bias would indicate the selection criterion favors centered intervals. No correlation would weaken the selection-artifact hypothesis.\",\n      \"cost\": \"Low; requires trace data or recomputation from the full WAV.\"\n    }\n  ],\n  \"context_receipt\": {\n    \"project\": \"titan_audio_ecosystem\",\n    \"direct_reference_input\": false,\n    \"prompt_is_post_render_output\": true,\n    \"waveform_filter_tests_latent_diffusion\": false,\n    \"canonical_mutation_allowed\": false,\n    \"summary\": \"Titan Audio v9 is a CPU Rust NCA/GRU/DDSP ecosystem. Forward takes world state and host controls, not text or target audio. Target audio is sampled after forward and affects loss, optimizer, and later host ecology. The prompt file is written after rendering. Offline waveform filtering tests signal processing, not latent-field diffusion. Canonical checkpoints, corpus, and existing WAVs must remain intact. The listener's harsh/centered report is consistent with measured correlation 0.991, side/mid -23.31 dB, and 2-6 kHz fraction 47.3% in the latest tagged prime, but no blinded listening has been done.\",\n    \"evidence\": [\n      \"research/audio_context.md:13-15\",\n      \"research/audio_context.md:16-18\",\n      \"research/audio_context.md:19-21\",\n      \"research/audio_context.md:44-47\",\n      \"research/audio_context.md:48-50\",\n      \"research/audio_context.md:51-53\",\n      \"research/audio_context.md:64-67\",\n      \"research/audio_context.md:68-70\",\n      \"analysis/audio_center_harshness_20260926/deepseek_packet.md:24-29\",\n      \"analysis/audio_center_harshness_20260926/deepseek_packet.md:31-35\",\n      \"analysis/audio_center_harshness_20260926/deepseek_packet.md:37-43\",\n      \"docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:101\",\n      \"docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:105-108\",\n      \"src/main.rs:82-84\",\n      \"src/main.rs:94\",\n      \"src/main.rs:112\",\n      \"src/main.rs:246\",\n      \"src/main.rs:253-255\",\n      \"src/main.rs:5108-5122\",\n      \"src/main.rs:5565-5603\",\n      \"src/main.rs:5583-5596\",\n      \"src/main.rs:5605-5614\",\n      \"src/main.rs:7103-7107\",\n      \"src/main.rs:7211-7234\",\n      \"src/main.rs:7227\",\n      \"src/main.rs:8059-8076\",\n      \"src/main.rs:8451-8455\",\n      \"src/main.rs:8463-8481\",\n      \"src/main.rs:8510-8528\",\n      \"src/main.rs:8682-8697\",\n      \"src/stereo.rs:3-7\",\n      \"src/stereo.rs:13-19\",\n      \"src/stereo.rs:21-26\",\n      \"src/stereo.rs:28-41\",\n      \"METRICS.md:64-76\",\n      \"METRICS.md:94-95\",\n      \"METRICS.md:129-134\"\n    ],\n    \"hypotheses\": [\n      \"The center bias is partly a prime-selection artifact: the 60 s prime is drawn from a very center-heavy interval (minutes 5-6, corr 0.990-0.992, side/mid ~-23 dB) while the full run ranges 0.740-0.992.\",\n      \"The harshness is partly attributable to the post-render tanh saturation and/or the wavefolder and scan synthesis, but this is not isolated by existing measurements.\",\n      \"The learned width control and global pan are near their bounds (width raw -0.946, pan 0.0999 at +0.10 limit), which may contribute to center bias, but the causal share is not measured.\",\n      \"The target-relative stereo losses (side 0.30, correlation 0.95, level 0.45) may have driven the model toward high correlation, but the training trace shows output corr 0.963 vs target 0.862, so the target itself is not fully centered.\"\n    ],\n    \"missing_evidence\": [\n      \"Perceptual ratings and blinded listening.\",\n      \"Independent training replicas or matched arms.\",\n      \"Pre-side-scale renderer taps.\",\n      \"Frequency-specific loss gradients.\",\n      \"Detailed target mix attribution.\",\n      \"Downstream priming outcomes.\",\n      \"Absolute and total L+R band power.\",\n      \"Per-interval harshness measurements across the full run.\"\n    ],\n    \"discriminating_experiment\": \"Paired-interval offline stereo and band-power audit on copied WAVs: compute per-60 s correlation, side/mid, balance, and absolute L+R band power in 20-200 Hz, 2-6 kHz, 6-20 kHz, and total for the latest full 600 s WAV and the untagged parent. Compare the prime interval against the full-run distribution. This separates prime-selection outlier effects from run-wide harshness and center bias without touching canonical files.\",\n    \"recommendation\": \"Run the paired-interval offline audit first. It is the cheapest measurement that can separate prime-selection artifact from run-wide center bias and harshness. Do not change learned behavior, checkpoints, corpus, or existing WAVs. Treat all metrics as diagnostics; audible quality requires blinded listening.\"\n  }\n}",
+  "answer_json": {
+    "conclusions": [
+      "The causal audio pipeline in Titan Audio v9 is: world state (micro field, macro field, GRU hidden, episodic readout, oscillator phases, host controls) -> model.forward -> stereo waveform chunk -> tanh + stateful DC blocker -> streamed peak normalization to -1 dBFS -> PCM16 WAV. Target audio is sampled AFTER forward and only enters the loss/optimizer and later host ecology; it cannot condition the same chunk.",
+      "The listener's 'harsh and centered' report is consistent with the supplied measurements: the latest tagged continuation has L/R correlation 0.991, side/mid -23.31 dB, and 2-6 kHz fraction 47.3% vs 33.6% for the untagged parent, with 20-200 Hz dropping from 20.8% to 2.1%. These are diagnostics, not perceptual scores.",
+      "The center bias is plausibly a within-run outlier amplified by prime selection: the full 600 s WAV is not uniformly centered (per-minute correlation 0.740-0.992), and the 60 s prime is drawn from a very center-heavy interval (minutes 5-6, corr 0.990-0.992, side/mid ~-23 dB). The prime selection score uses field entropy, activity health, structured complexity, and stagnation, not audible width or harshness.",
+      "The prompt file (suno_priming_prompt*.txt) is written after rendering and prime extraction (src/main.rs:8682-8697), so its descriptive words cannot have caused the run. It is a post-render output.",
+      "The forward pass has no text prompt, target audio, prime, or external reference argument (research/audio_context.md:13-15; docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:101).",
+      "Offline waveform filtering tests signal processing only; they are not a proxy for latent-field diffusion, and a trained diffusion/flow decoder is also not a proxy (research/audio_context.md:64-67).",
+      "Canonical checkpoints, corpus, existing WAVs, and the normal renderer/training must remain intact; only copied WAVs and sidecar receipts are permitted for offline tests (research/audio_context.md:68-70)."
+    ],
+    "context_receipt": {
+      "canonical_mutation_allowed": false,
+      "direct_reference_input": false,
+      "discriminating_experiment": "Paired-interval offline stereo and band-power audit on copied WAVs: compute per-60 s correlation, side/mid, balance, and absolute L+R band power in 20-200 Hz, 2-6 kHz, 6-20 kHz, and total for the latest full 600 s WAV and the untagged parent. Compare the prime interval against the full-run distribution. This separates prime-selection outlier effects from run-wide harshness and center bias without touching canonical files.",
+      "evidence": [
+        "research/audio_context.md:13-15",
+        "research/audio_context.md:16-18",
+        "research/audio_context.md:19-21",
+        "research/audio_context.md:44-47",
+        "research/audio_context.md:48-50",
+        "research/audio_context.md:51-53",
+        "research/audio_context.md:64-67",
+        "research/audio_context.md:68-70",
+        "analysis/audio_center_harshness_20260926/deepseek_packet.md:24-29",
+        "analysis/audio_center_harshness_20260926/deepseek_packet.md:31-35",
+        "analysis/audio_center_harshness_20260926/deepseek_packet.md:37-43",
+        "docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:101",
+        "docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:105-108",
+        "src/main.rs:82-84",
+        "src/main.rs:94",
+        "src/main.rs:112",
+        "src/main.rs:246",
+        "src/main.rs:253-255",
+        "src/main.rs:5108-5122",
+        "src/main.rs:5565-5603",
+        "src/main.rs:5583-5596",
+        "src/main.rs:5605-5614",
+        "src/main.rs:7103-7107",
+        "src/main.rs:7211-7234",
+        "src/main.rs:7227",
+        "src/main.rs:8059-8076",
+        "src/main.rs:8451-8455",
+        "src/main.rs:8463-8481",
+        "src/main.rs:8510-8528",
+        "src/main.rs:8682-8697",
+        "src/stereo.rs:3-7",
+        "src/stereo.rs:13-19",
+        "src/stereo.rs:21-26",
+        "src/stereo.rs:28-41",
+        "METRICS.md:64-76",
+        "METRICS.md:94-95",
+        "METRICS.md:129-134"
+      ],
+      "hypotheses": [
+        "The center bias is partly a prime-selection artifact: the 60 s prime is drawn from a very center-heavy interval (minutes 5-6, corr 0.990-0.992, side/mid ~-23 dB) while the full run ranges 0.740-0.992.",
+        "The harshness is partly attributable to the post-render tanh saturation and/or the wavefolder and scan synthesis, but this is not isolated by existing measurements.",
+        "The learned width control and global pan are near their bounds (width raw -0.946, pan 0.0999 at +0.10 limit), which may contribute to center bias, but the causal share is not measured.",
+        "The target-relative stereo losses (side 0.30, correlation 0.95, level 0.45) may have driven the model toward high correlation, but the training trace shows output corr 0.963 vs target 0.862, so the target itself is not fully centered."
+      ],
+      "missing_evidence": [
+        "Perceptual ratings and blinded listening.",
+        "Independent training replicas or matched arms.",
+        "Pre-side-scale renderer taps.",
+        "Frequency-specific loss gradients.",
+        "Detailed target mix attribution.",
+        "Downstream priming outcomes.",
+        "Absolute and total L+R band power.",
+        "Per-interval harshness measurements across the full run."
+      ],
+      "project": "titan_audio_ecosystem",
+      "prompt_is_post_render_output": true,
+      "recommendation": "Run the paired-interval offline audit first. It is the cheapest measurement that can separate prime-selection artifact from run-wide center bias and harshness. Do not change learned behavior, checkpoints, corpus, or existing WAVs. Treat all metrics as diagnostics; audible quality requires blinded listening.",
+      "summary": "Titan Audio v9 is a CPU Rust NCA/GRU/DDSP ecosystem. Forward takes world state and host controls, not text or target audio. Target audio is sampled after forward and affects loss, optimizer, and later host ecology. The prompt file is written after rendering. Offline waveform filtering tests signal processing, not latent-field diffusion. Canonical checkpoints, corpus, and existing WAVs must remain intact. The listener's harsh/centered report is consistent with measured correlation 0.991, side/mid -23.31 dB, and 2-6 kHz fraction 47.3% in the latest tagged prime, but no blinded listening has been done.",
+      "waveform_filter_tests_latent_diffusion": false
+    },
+    "evidence": [
+      "research/audio_context.md:13-15 \u2014 forward has NO text prompt, target audio, prime, or external reference argument.",
+      "research/audio_context.md:16-18 \u2014 causal order: current world -> forward audio -> target sampling/loss -> optimizer and later host feedback; current target cannot change the same precomputed chunk.",
+      "research/audio_context.md:19-21 \u2014 suno_priming_prompt*.txt is written AFTER rendering and prime extraction; its words cannot cause the run.",
+      "research/audio_context.md:44-47 \u2014 side derives from L-R before a delayed scaled side stage; learned width bounded 0.05..0.50; global pan +/-0.10; pan-center loss penalizes bounded pan, does not directly reward correlation=1.",
+      "research/audio_context.md:48-50 \u2014 loss-visible tanh, later gain/saturation/DC blocker, whole-file peak normalization; sample peak below 0 dBFS does not exclude nonlinear saturation or perceptual harshness.",
+      "research/audio_context.md:51-53 \u2014 prime selection ~60 s using field entropy, activity health, complexity, stagnation; no listener rating or direct stereo/harshness ranking; selection can amplify a within-run outlier.",
+      "research/audio_context.md:64-67 \u2014 offline waveform filtering tests signal processing; not a proxy for latent-field diffusion; zero-output identity branch proves bypass only; latent field entropy cannot be recovered from a WAV.",
+      "research/audio_context.md:68-70 \u2014 canonical checkpoints, corpus, existing WAVs, normal renderer and training stay intact; offline test may create copied WAVs and sidecar receipts; use paired intervals and record level-matching gains.",
+      "analysis/audio_center_harshness_20260926/deepseek_packet.md:24-29 \u2014 measurement table: untagged parent corr 0.603, side/mid -6.01, 20-200 Hz 20.8%, 2-6 kHz 33.6%; latest tagged corr 0.991, side/mid -23.31, 20-200 Hz 2.1%, 2-6 kHz 47.3%.",
+      "analysis/audio_center_harshness_20260926/deepseek_packet.md:31-35 \u2014 full 600 s WAV not uniformly centered; per-minute corr 0.740-0.992; minutes 5-6 corr 0.990-0.992, side/mid ~-23 dB; prime is from a very center-heavy interval; selection score uses field entropy, activity health, structured complexity, stagnation.",
+      "analysis/audio_center_harshness_20260926/deepseek_packet.md:37-43 \u2014 training trace: median output corr 0.963 vs target 0.862; median truthful width 0.027; decoder width control 0.120; width raw -0.946; global pan 0.0999 at +0.10 limit; decoder side control 1.0; ultrasonic_ratio median 0.0965 is a pre-master guardrail, not a harshness score.",
+      "docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:101 \u2014 model.forward runs before TargetAudioLoader::sample_chunks; target does not directly condition the current chunk's neural forward or synthesis equations.",
+      "docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:105-108 \u2014 Audio v9 cannot honestly perform Image-style held-out reconstruction at inference; first-chunk invariance is an important negative control; target-feedback-conditioned ecological response is not direct reference-conditioned reconstruction.",
+      "src/main.rs:82-84 \u2014 SAMPLE_RATE 48000, CHUNK_SIZE 4096.",
+      "src/main.rs:94 \u2014 MACRO_UPDATE_EVERY = 4.",
+      "src/main.rs:112 \u2014 MAX_AUTOGRAD_TAPE_CHUNKS = 8.",
+      "src/main.rs:246 \u2014 MAX_STEREO_SIDE_GAIN = 1.25.",
+      "src/main.rs:253-255 \u2014 STEREO_SIDE_LOSS_WEIGHT 0.30, STEREO_CORRELATION_LOSS_WEIGHT 0.95, STEREO_LEVEL_LOSS_WEIGHT 0.45.",
+      "src/main.rs:5108-5122 \u2014 forward signature: micro, macro_t, mem, epi_out, phases, theta_prev, theta_prev2, force, absolute_step, train_ecology, energy, control. No target/reference argument.",
+      "src/main.rs:5565-5603 \u2014 mid = (L+R)/2 scaled by temporal_controls[4]; side = (L-R)/2 scaled by temporal_controls[5]; side_wide = side * width_val * learned_width; side_delayed from prev_haas_side; audio_l = mid + side_delayed; audio_r = mid - side_delayed.",
+      "src/main.rs:5583-5596 \u2014 pan_raw from spatial_panner; pan_t = soft_global_pan(pan_raw); width_val = stereo_side_gain(last_pan, control.width_mult); learned_width = soft_width_control(width_raw).",
+      "src/main.rs:5605-5614 \u2014 gain_l/gain_r from pan_t; audio scaled by 1.414.",
+      "src/main.rs:7103-7107 \u2014 audio_for_loss = stereo_chunk.tanh(); targets = target_loader.sample_chunks(...) AFTER forward.",
+      "src/main.rs:7211-7234 \u2014 stereo_geometry on output and target; side_geometry_loss, correlation_loss, stereo_level_loss; stereo_balance_loss combines them with the three weights.",
+      "src/main.rs:7227 \u2014 pan_center_loss(&pan).",
+      "src/main.rs:8059-8076 \u2014 post path: tanh(x*0.92) then stateful DC blocker; raw_peak tracked.",
+      "src/main.rs:8451-8455 \u2014 norm = 0.891 / raw_peak; streamed DC-blocked peak normalized to -1 dBFS.",
+      "src/main.rs:8463-8481 \u2014 prime selection: sliding window over chunk_scores; best_start, best_sum; prime_start_frame = best_start * CHUNK_SIZE.",
+      "src/main.rs:8510-8528 \u2014 output and prime written as PCM16 with norm applied; prime fade 2048 samples.",
+      "src/main.rs:8682-8697 \u2014 prompt formatted from run statistics and written to suno_priming_prompt txt AFTER rendering.",
+      "src/stereo.rs:3-7 \u2014 GLOBAL_PAN_LIMIT 0.10, PAN_CENTER_LOSS_WEIGHT 0.10, WIDTH_CONTROL_MIN 0.05, WIDTH_CONTROL_MAX 0.50.",
+      "src/stereo.rs:13-19 \u2014 soft_global_pan: z/sqrt(1+z^2) scaled by GLOBAL_PAN_LIMIT.",
+      "src/stereo.rs:21-26 \u2014 pan_center_loss: pan.sqr().",
+      "src/stereo.rs:28-41 \u2014 soft_width_control: unit * half_range + midpoint, bounded 0.05..0.50.",
+      "METRICS.md:64-76 \u2014 output_low_band_ratio and target_low_band_ratio compare the first supervised 20 Hz log band; decoder_pan bounded +/-0.10; pan_center_loss measures squared energy in the bounded audible residual.",
+      "METRICS.md:94-95 \u2014 ultrasonic_ratio is the fraction of pre-master magnitude above 20 kHz; aliasing/foldback guardrail, not a musical brightness score.",
+      "METRICS.md:129-134 \u2014 side_energy_width can be high for panned mono; width multiplies by interchannel incoherence; stereo_corr is final post-DC, pre-master normalized correlation."
+    ],
+    "proposed_experiments": [
+      {
+        "controls": "Use identical windowing and FFT parameters for both files; report absolute power, not only fractions; do not modify originals.",
+        "cost": "Low; offline, no training, no model load.",
+        "expected_discriminator": "If the prime interval is an extreme outlier in correlation and side/mid relative to the full run, center bias is partly a selection artifact. If harshness (2-6 kHz absolute power) is elevated across the full run, it is not only a prime-selection artifact.",
+        "method": "Copy the latest full 600 s WAV and the untagged parent WAV to a sidecar directory. Compute per-60 s non-overlapping interval: L/R Pearson correlation, side/mid dB, L/R balance dB, absolute L+R band power in 20-200 Hz, 2-6 kHz, 6-20 kHz, and total power. Record level-matching gains. Compare the prime interval against the full-run distribution.",
+        "name": "Paired-interval offline stereo and band-power audit",
+        "purpose": "Separate center bias from harshness and from prime-selection outlier effects without touching canonical files."
+      },
+      {
+        "controls": "Hold all world state, phases, controls, and RNG identical; vary only the target chunk.",
+        "cost": "Low to moderate; requires harness access, no training.",
+        "expected_discriminator": "Identical current-chunk audio confirms no direct reference conditioning. Any difference would contradict the documented causal order and require source re-audit.",
+        "method": "Clone identical pre-forward state, run model.forward with two different target chunks presented to the loss, and compare the emitted current-chunk waveform. Repeat across several steps.",
+        "name": "First-chunk invariance negative control",
+        "purpose": "Confirm that target audio does not condition the current chunk's forward pass."
+      },
+      {
+        "controls": "Level-match all variants; use paired intervals; keep originals untouched.",
+        "cost": "Low; offline signal processing only.",
+        "expected_discriminator": "If increasing side gain reduces correlation and does not increase 2-6 kHz harshness, center bias and harshness are separable. If harshness tracks side gain, the side path contributes to harshness.",
+        "method": "On copied WAVs, apply a mid/side decomposition and re-render with side gain set to 0, to the observed value, and to a modestly increased value. Measure correlation, side/mid, and 2-6 kHz absolute power for each.",
+        "name": "Side-path ablation on copied WAVs",
+        "purpose": "Estimate how much of the center bias is attributable to the side path versus the mid path."
+      },
+      {
+        "controls": "Level-match; use paired intervals; do not modify originals.",
+        "cost": "Low; offline signal processing only.",
+        "expected_discriminator": "If harshness drops when tanh is bypassed, nonlinear saturation is a contributor. If it persists, the harshness originates earlier in the renderer.",
+        "method": "On copied WAVs, bypass tanh, bypass DC blocker, and bypass normalization individually and in combination; measure 2-6 kHz absolute power, THD-like residual, and correlation.",
+        "name": "Post-path stage ablation on copied WAVs",
+        "purpose": "Separate tanh saturation, DC blocker, and peak normalization contributions to harshness."
+      },
+      {
+        "controls": "Use the same score formula as src/main.rs:8141-8145; do not change the selection.",
+        "cost": "Low; requires trace data or recomputation from the full WAV.",
+        "expected_discriminator": "A positive correlation between score and center bias would indicate the selection criterion favors centered intervals. No correlation would weaken the selection-artifact hypothesis.",
+        "method": "Recompute chunk_scores for the full run and correlate them with per-interval correlation and 2-6 kHz power. Identify whether high-scoring intervals are systematically more centered or brighter.",
+        "name": "Prime-selection sensitivity re-scoring",
+        "purpose": "Test whether the prime selection score is biased toward center-heavy intervals."
+      }
+    ],
+    "uncertainties": [
+      "No controlled blinded listening has been performed; perceptual improvement or degradation is not established (research/audio_context.md:58-60).",
+      "The supplied spectral fractions are MID-channel sampled FFT power fractions; changes in fraction can reflect denominator or stereo changes. Absolute and total L+R band power have not been reported (research/audio_context.md:54-57).",
+      "The three latest WAVs form one sequential continuation lineage, not independent seeds or matched arms (research/audio_context.md:28-29).",
+      "Target mix and online learning confound comparisons between elapsed portions of a run (research/audio_context.md:37-39).",
+      "The low-band loss term measures the first log band; it is not the whole 20-200 Hz measurement (research/audio_context.md:40-43).",
+      "The training trace's ultrasonic_ratio is a pre-master guardrail, not a harshness score (deepseek_packet.md:40-41).",
+      "Whether the harshness is caused by learned weights, initialized anatomy, carried world state, or controller forcing is not separable from existing scalar traces (docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:133-141).",
+      "Pre-side-scale renderer taps, frequency-specific loss gradients, detailed target mix attribution, and downstream priming outcomes are missing (research/audio_context.md:71-74).",
+      "The exact contribution of the wavefolder, scan synthesis, excitation noise, and tanh saturation to perceived harshness is not measured.",
+      "Whether the center bias is primarily from the learned width control, the global pan, the side excitation, or the target-relative stereo losses is not isolated.",
+      "The prime selection window is chosen by chunk_scores that do not include audible width or harshness; the selected interval may be unrepresentative of the full run."
+    ]
+  },
+  "approximate_input_tokens": 27040,
+  "attempts": 1,
+  "context": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "created_at_utc": "2026-09-26T07:27:50.230237+00:00",
+  "elapsed_seconds": 17.082,
+  "endpoint": "https://openrouter.ai/api/v1",
+  "files": [
+    {
+      "bytes": 102384,
+      "selection": "analysis/audio_center_harshness_20260926/team_v2/context_packet.md",
+      "sha256": "1093a68a5f48929d046cb7195f2138ceb5f707f939eff59d6b9e438b26192fd4"
+    }
+  ],
+  "finish_reason": "stop",
+  "id": "gen-1790407670-wwLsui3Qrx0h7RDnZIaG",
+  "max_tokens": 16384,
+  "purpose": "Reconstruct the causal audio pipeline and what the observations establish. Locate missing evidence and propose the cheapest separating measurement. Return a JSON object with conclusions, evidence, uncertainties, proposed_experiments, and a context_receipt object reconstructing these facts from the source: project (string), direct_reference_input (boolean), prompt_is_post_render_output (boolean), waveform_filter_tests_latent_diffusion (boolean), canonical_mutation_allowed (boolean). The receipt is mandatory. Cite original source paths and line numbers.",
+  "request": {
+    "bytes": 108160,
+    "sha256": "bc8b9165bead22639a5e0e447286c480f576a0bb330ac509c99a9875d81c94ed"
+  },
+  "requested_model": "deepseek/deepseek-v4.1-flash",
+  "returned_model": "deepseek/deepseek-v4.1-flash",
+  "role": "researcher",
+  "schema_version": 1,
+  "status": "ok",
+  "temperature": 0.1,
+  "token_estimate_method": "serialized UTF-8 bytes / 4; not model tokenization",
+  "usage": {
+    "completion_tokens": 4721,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0154176,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.0056652,
+      "upstream_inference_cost": 0.0154176,
+      "upstream_inference_prompt_cost": 0.0097524
+    },
+    "prompt_tokens": 32508,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 37229
+  }
+}

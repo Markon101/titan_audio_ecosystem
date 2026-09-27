@@ -1,0 +1,148 @@
+{
+  "answer": "{\n  \"conclusions\": [\n    \"The supplied evidence supports a measurement-design audit but not a perceptual verdict. The listener report (harsh, center-biased) is a single uncontrolled observation; no blinded listening has been performed (context_packet.md:58-60).\",\n    \"The mid-only spectral fractions in the deepseek_packet table are not a defensible basis for absolute band-energy claims. They are mid-channel Hann-window FFT power fractions normalized over 20-20,000 Hz (deepseek_packet.md:19-22). A change in fraction can be produced by a change in the denominator (total mid power) or by stereo redistribution, not only by a change in the band itself. The context contract explicitly requires absolute and total L+R band power before claiming bass recovery (context_packet.md:54-57).\",\n    \"The prime WAVs are not independent samples. The three latest WAVs form one sequential continuation lineage (context_packet.md:28-29), and the prime is a ~60 s window selected by a within-run score (field entropy, activity health, structured complexity, stagnation) with no listener rating or stereo/harshness ranking (context_packet.md:51-53; main.rs:8141-8145, 8459-8481). Selection can amplify a within-run outlier.\",\n    \"The latest 60 s prime is drawn from a center-heavy interval. The full 600 s WAV is not uniformly centered: non-overlapping 60 s intervals have L/R correlation 0.740-0.992, and minutes 5-6 have 0.990-0.992 with side/mid about -23 dB (deepseek_packet.md:31-35). The prime's correlation 0.991 and side/mid -23.31 dB (deepseek_packet.md:29) are therefore consistent with a selected extreme, not necessarily a run-wide property.\",\n    \"Level matching is not documented in the supplied measurement packet. The prime WAVs are peak-normalized to -1 dBFS at mastering (main.rs:8451-8455), but the table does not report per-file gains or whether comparisons were level-matched. The context contract requires recording level-matching gains for paired intervals (context_packet.md:68-70).\",\n    \"The training trace's median output correlation 0.963 versus target 0.862, median truthful width 0.027, decoder width control 0.120, width raw -0.946, global pan 0.0999 at its +0.10 limit, and decoder side control 1.0 (deepseek_packet.md:37-41) are consistent with a learned narrow/centered tendency, but they are training-time telemetry, not a perceptual measurement, and the target mix and loss history may confound attribution (deepseek_packet.md:42-43).\",\n    \"The ultrasonic_ratio median 0.0965 is a pre-master aliasing/foldback guardrail, not a harshness score (deepseek_packet.md:40-41; METRICS.md:94-95). It cannot be used to support or refute the harshness report.\",\n    \"The generated prompt text ('focused center image', 'bright glassy upper spectrum') is written after rendering and prime extraction and cannot cause the run (context_packet.md:19-21; main.rs:8682-8697). It is descriptive output, not a causal input.\",\n    \"The architecture provides several plausible mechanisms for center bias and harshness that are separable in principle: bounded global pan +/-0.10 with a pan-center loss (stereo.rs:3-4, 13-26; main.rs:5583-5614), learned width bounded 0.05..0.50 (stereo.rs:5-7, 28-41), side derived from L-R before a delayed scaled side stage (main.rs:5565-5603), and post-render tanh saturation plus DC blocker (main.rs:8059-8076). None of these is established as the cause by the supplied evidence.\",\n    \"Defensible units and limits: report absolute band power (e.g., dB re full scale or dB re 1 LSB^2) for L, R, and L+R, not only mid-channel fractions; report side/mid and correlation with their estimator definitions; report per-file level-matching gain; report the prime selection window and its score; and treat all perceptual claims as hypotheses pending blinded listening.\"\n  ],\n  \"evidence\": [\n    \"context_packet.md:54-57: 'The supplied first survey uses MID-channel sampled FFT power fractions. Changes in fraction can reflect denominator or stereo changes. Measure absolute and total L+R band power before claiming bass recovery.'\",\n    \"context_packet.md:51-53: 'Approximately 60 seconds selected using field entropy, activity health, complexity, stagnation. No listener rating or direct stereo/harshness ranking. Selection can amplify a within-run outlier.'\",\n    \"context_packet.md:28-29: 'The three latest WAVs form one sequential continuation lineage, not independent seeds or matched arms.'\",\n    \"context_packet.md:58-60: 'The listener reports harsh/centered sound. Neither the PI nor agents have performed controlled blinded listening yet; no perceptual improvement is established.'\",\n    \"context_packet.md:68-70: 'Use paired intervals and record level-matching gains.'\",\n    \"deepseek_packet.md:17-22: measurement definitions for correlation, side/mid, balance, and mid-channel Hann-window FFT power fractions normalized over 20-20,000 Hz.\",\n    \"deepseek_packet.md:24-29: the four-row table of prime measurements.\",\n    \"deepseek_packet.md:31-35: 'The latest full 600-second WAV is not uniformly centered: non-overlapping 60-second intervals have L/R correlation 0.740-0.992; minutes 5-6 have 0.990-0.992 and side/mid about -23 dB. The current 60-second prime is from a very center-heavy interval.'\",\n    \"deepseek_packet.md:37-43: training trace medians and the note that target mix and loss history may confound attribution.\",\n    \"deepseek_packet.md:40-41: 'ultrasonic_ratio median is 0.0965, but this is a pre-master guardrail, not a harshness score.'\",\n    \"main.rs:8141-8145: chunk_scores formula using field_entropy, activity_health, structured_complexity, stagnation.\",\n    \"main.rs:8459-8481: prime window selection by maximum summed chunk score.\",\n    \"main.rs:8451-8455: streamed peak normalization to -1 dBFS.\",\n    \"main.rs:8059-8076: post-render tanh saturation and stateful DC blocker.\",\n    \"main.rs:5565-5614: mid/side construction, delayed side stage, learned width, bounded pan, and gain application.\",\n    \"stereo.rs:3-7, 13-41: GLOBAL_PAN_LIMIT 0.10, PAN_CENTER_LOSS_WEIGHT 0.10, WIDTH_CONTROL_MIN 0.05, WIDTH_CONTROL_MAX 0.50, soft_global_pan, pan_center_loss, soft_width_control.\",\n    \"METRICS.md:94-95: ultrasonic_ratio is an aliasing/foldback guardrail, not a musical brightness score.\",\n    \"METRICS.md:129-134: side_energy_width can be high for panned mono; width multiplies by interchannel incoherence; stereo_corr is post-DC, pre-master normalized correlation.\",\n    \"METRICS.md:155-157: 'Claims about improved sound should be supported by repeated seeded runs, ablation comparisons, objective audio measurements, and blinded listening\u2014not by these internal metrics alone.'\"\n  ],\n  \"uncertainties\": [\n    \"No blinded listening has been performed, so the harshness and center-bias reports are unverified perceptual hypotheses.\",\n    \"The supplied table does not report absolute band power, total L+R power, or per-file level-matching gains, so the bass-recovery and harshness interpretations of the fraction changes are not established.\",\n    \"The prime selection score is not a perceptual or stereo metric; the relationship between the selected prime and the listener's experience of the full run is unknown.\",\n    \"The training trace is a single lineage; no independent seeds or matched arms are available, so run-to-run variability is unknown.\",\n    \"The target mix and loss history may confound attribution of the observed correlation and width values.\",\n    \"The relative contribution of learned weights, carried world state, controller forcing, and post-render saturation to the reported sound is not separable from the supplied evidence.\",\n    \"The exact estimator details (window overlap, detrending, DC handling, frequency bin edges) for the table's fractions are not fully specified in the supplied excerpt.\",\n    \"Whether the prime WAVs were level-matched before any comparison is not stated.\",\n    \"The relationship between the pre-master ultrasonic_ratio and audible harshness is not established.\",\n    \"No pre-side-scale renderer taps are available (context_packet.md:71-74), so the side-stage contribution cannot be isolated from the supplied files.\"\n  ],\n  \"proposed_experiments\": [\n    {\n      \"name\": \"Absolute and total band power re-measurement\",\n      \"purpose\": \"Replace mid-only fractions with defensible absolute units and test whether the apparent bass loss is a denominator or stereo effect.\",\n      \"method\": \"For each prime WAV and for non-overlapping 60 s intervals of the full 600 s WAV, compute Hann-window FFT power in dB re full scale for L, R, and L+R separately, in the same bands (20-200 Hz, 2-6 kHz, 6-20 kHz) plus total 20-20,000 Hz. Report absolute band power, total power, and the fraction. Report per-file peak and RMS and any level-matching gain applied.\",\n      \"controls\": \"Use identical window length, hop, and band edges across files. Report the estimator definition. Do not compare fractions without also reporting absolute and total power.\",\n      \"expected_discrimination\": \"If absolute 20-200 Hz power is similar across files but the fraction differs, the apparent bass loss is a denominator or stereo effect. If absolute power also differs, the band change is real in the mid channel.\"\n    },\n    {\n      \"name\": \"Stereo decomposition of the prime and full run\",\n      \"purpose\": \"Test whether the center bias is a run-wide property or a selected-interval property, and separate mid/side from correlation and balance.\",\n      \"method\": \"For each 60 s interval of the full 600 s WAV, compute L/R correlation, side/mid dB, L/R balance dB, and absolute L, R, and L+R band power. Plot or tabulate the interval series. Mark the prime selection window and its score.\",\n      \"controls\": \"Use the same estimator definitions as the supplied table. Report the prime window boundaries and score.\",\n      \"expected_discrimination\": \"If the prime interval is an extreme relative to the interval distribution, the center bias is at least partly a selection artifact. If the whole run is center-heavy, the bias is run-wide.\"\n    },\n    {\n      \"name\": \"Level-matched paired interval comparison\",\n      \"purpose\": \"Test whether apparent spectral differences survive level matching.\",\n      \"method\": \"Select paired intervals (e.g., prime vs a matched non-prime interval of similar duration and content) and apply a documented level-matching gain to equalize RMS or integrated loudness before spectral comparison. Report the gains.\",\n      \"controls\": \"Use the same matching criterion for all pairs. Report both matched and unmatched results.\",\n      \"expected_discrimination\": \"If spectral differences disappear after level matching, they were level artifacts. If they persist, they are not explained by level alone.\"\n    },\n    {\n      \"name\": \"Blinded listening with matched loudness\",\n      \"purpose\": \"Test the harshness and center-bias reports under controlled conditions.\",\n      \"method\": \"Present level-matched, blinded pairs (e.g., prime vs non-prime interval, or run vs a reference) to listeners and collect ratings on harshness and perceived width/center. Randomize order and include catch trials.\",\n      \"controls\": \"Level-match, blind, randomize, and report inter-rater agreement. Do not use the generated prompt text as a cue.\",\n      \"expected_discrimination\": \"If blinded ratings do not reproduce the original report, the report may be context- or selection-dependent. If they do, the perceptual claim gains support.\"\n    },\n    {\n      \"name\": \"Offline side-stage and saturation isolation\",\n      \"purpose\": \"Separate signal-domain smoothing, side-stage scaling, and post-render saturation as candidate mechanisms.\",\n      \"method\": \"On copied WAVs only, apply offline interventions: (a) reduce side gain, (b) bypass or reduce the tanh saturation, (c) apply a linear high-frequency tilt. Measure absolute band power and correlation before and after. Label each as an intervention render, not a stem.\",\n      \"controls\": \"Preserve canonical files; write sidecar receipts. Do not claim latent-field diffusion or reconstruction from these tests (context_packet.md:64-67).\",\n      \"expected_discrimination\": \"If reducing side gain changes correlation but not harshness-related high-band power, the two reports have different mechanisms. If saturation reduction changes high-band power, the post-render stage is implicated.\"\n    },\n    {\n      \"name\": \"Prime selection sensitivity\",\n      \"purpose\": \"Quantify how much the prime selection score can amplify a within-run outlier.\",\n      \"method\": \"Recompute the prime selection score series and identify the top-k windows. Compare their stereo and spectral statistics to the full-run distribution. Report the score margin between the selected window and the next-best windows.\",\n      \"controls\": \"Use the same score formula as main.rs:8141-8145. Do not change the selection.\",\n      \"expected_discrimination\": \"If the selected window is a clear outlier with a large score margin, selection amplification is plausible. If the score surface is flat, selection is less likely to explain the report.\"\n    }\n  ]\n}",
+  "answer_json": {
+    "conclusions": [
+      "The supplied evidence supports a measurement-design audit but not a perceptual verdict. The listener report (harsh, center-biased) is a single uncontrolled observation; no blinded listening has been performed (context_packet.md:58-60).",
+      "The mid-only spectral fractions in the deepseek_packet table are not a defensible basis for absolute band-energy claims. They are mid-channel Hann-window FFT power fractions normalized over 20-20,000 Hz (deepseek_packet.md:19-22). A change in fraction can be produced by a change in the denominator (total mid power) or by stereo redistribution, not only by a change in the band itself. The context contract explicitly requires absolute and total L+R band power before claiming bass recovery (context_packet.md:54-57).",
+      "The prime WAVs are not independent samples. The three latest WAVs form one sequential continuation lineage (context_packet.md:28-29), and the prime is a ~60 s window selected by a within-run score (field entropy, activity health, structured complexity, stagnation) with no listener rating or stereo/harshness ranking (context_packet.md:51-53; main.rs:8141-8145, 8459-8481). Selection can amplify a within-run outlier.",
+      "The latest 60 s prime is drawn from a center-heavy interval. The full 600 s WAV is not uniformly centered: non-overlapping 60 s intervals have L/R correlation 0.740-0.992, and minutes 5-6 have 0.990-0.992 with side/mid about -23 dB (deepseek_packet.md:31-35). The prime's correlation 0.991 and side/mid -23.31 dB (deepseek_packet.md:29) are therefore consistent with a selected extreme, not necessarily a run-wide property.",
+      "Level matching is not documented in the supplied measurement packet. The prime WAVs are peak-normalized to -1 dBFS at mastering (main.rs:8451-8455), but the table does not report per-file gains or whether comparisons were level-matched. The context contract requires recording level-matching gains for paired intervals (context_packet.md:68-70).",
+      "The training trace's median output correlation 0.963 versus target 0.862, median truthful width 0.027, decoder width control 0.120, width raw -0.946, global pan 0.0999 at its +0.10 limit, and decoder side control 1.0 (deepseek_packet.md:37-41) are consistent with a learned narrow/centered tendency, but they are training-time telemetry, not a perceptual measurement, and the target mix and loss history may confound attribution (deepseek_packet.md:42-43).",
+      "The ultrasonic_ratio median 0.0965 is a pre-master aliasing/foldback guardrail, not a harshness score (deepseek_packet.md:40-41; METRICS.md:94-95). It cannot be used to support or refute the harshness report.",
+      "The generated prompt text ('focused center image', 'bright glassy upper spectrum') is written after rendering and prime extraction and cannot cause the run (context_packet.md:19-21; main.rs:8682-8697). It is descriptive output, not a causal input.",
+      "The architecture provides several plausible mechanisms for center bias and harshness that are separable in principle: bounded global pan +/-0.10 with a pan-center loss (stereo.rs:3-4, 13-26; main.rs:5583-5614), learned width bounded 0.05..0.50 (stereo.rs:5-7, 28-41), side derived from L-R before a delayed scaled side stage (main.rs:5565-5603), and post-render tanh saturation plus DC blocker (main.rs:8059-8076). None of these is established as the cause by the supplied evidence.",
+      "Defensible units and limits: report absolute band power (e.g., dB re full scale or dB re 1 LSB^2) for L, R, and L+R, not only mid-channel fractions; report side/mid and correlation with their estimator definitions; report per-file level-matching gain; report the prime selection window and its score; and treat all perceptual claims as hypotheses pending blinded listening."
+    ],
+    "evidence": [
+      "context_packet.md:54-57: 'The supplied first survey uses MID-channel sampled FFT power fractions. Changes in fraction can reflect denominator or stereo changes. Measure absolute and total L+R band power before claiming bass recovery.'",
+      "context_packet.md:51-53: 'Approximately 60 seconds selected using field entropy, activity health, complexity, stagnation. No listener rating or direct stereo/harshness ranking. Selection can amplify a within-run outlier.'",
+      "context_packet.md:28-29: 'The three latest WAVs form one sequential continuation lineage, not independent seeds or matched arms.'",
+      "context_packet.md:58-60: 'The listener reports harsh/centered sound. Neither the PI nor agents have performed controlled blinded listening yet; no perceptual improvement is established.'",
+      "context_packet.md:68-70: 'Use paired intervals and record level-matching gains.'",
+      "deepseek_packet.md:17-22: measurement definitions for correlation, side/mid, balance, and mid-channel Hann-window FFT power fractions normalized over 20-20,000 Hz.",
+      "deepseek_packet.md:24-29: the four-row table of prime measurements.",
+      "deepseek_packet.md:31-35: 'The latest full 600-second WAV is not uniformly centered: non-overlapping 60-second intervals have L/R correlation 0.740-0.992; minutes 5-6 have 0.990-0.992 and side/mid about -23 dB. The current 60-second prime is from a very center-heavy interval.'",
+      "deepseek_packet.md:37-43: training trace medians and the note that target mix and loss history may confound attribution.",
+      "deepseek_packet.md:40-41: 'ultrasonic_ratio median is 0.0965, but this is a pre-master guardrail, not a harshness score.'",
+      "main.rs:8141-8145: chunk_scores formula using field_entropy, activity_health, structured_complexity, stagnation.",
+      "main.rs:8459-8481: prime window selection by maximum summed chunk score.",
+      "main.rs:8451-8455: streamed peak normalization to -1 dBFS.",
+      "main.rs:8059-8076: post-render tanh saturation and stateful DC blocker.",
+      "main.rs:5565-5614: mid/side construction, delayed side stage, learned width, bounded pan, and gain application.",
+      "stereo.rs:3-7, 13-41: GLOBAL_PAN_LIMIT 0.10, PAN_CENTER_LOSS_WEIGHT 0.10, WIDTH_CONTROL_MIN 0.05, WIDTH_CONTROL_MAX 0.50, soft_global_pan, pan_center_loss, soft_width_control.",
+      "METRICS.md:94-95: ultrasonic_ratio is an aliasing/foldback guardrail, not a musical brightness score.",
+      "METRICS.md:129-134: side_energy_width can be high for panned mono; width multiplies by interchannel incoherence; stereo_corr is post-DC, pre-master normalized correlation.",
+      "METRICS.md:155-157: 'Claims about improved sound should be supported by repeated seeded runs, ablation comparisons, objective audio measurements, and blinded listening\u2014not by these internal metrics alone.'"
+    ],
+    "proposed_experiments": [
+      {
+        "controls": "Use identical window length, hop, and band edges across files. Report the estimator definition. Do not compare fractions without also reporting absolute and total power.",
+        "expected_discrimination": "If absolute 20-200 Hz power is similar across files but the fraction differs, the apparent bass loss is a denominator or stereo effect. If absolute power also differs, the band change is real in the mid channel.",
+        "method": "For each prime WAV and for non-overlapping 60 s intervals of the full 600 s WAV, compute Hann-window FFT power in dB re full scale for L, R, and L+R separately, in the same bands (20-200 Hz, 2-6 kHz, 6-20 kHz) plus total 20-20,000 Hz. Report absolute band power, total power, and the fraction. Report per-file peak and RMS and any level-matching gain applied.",
+        "name": "Absolute and total band power re-measurement",
+        "purpose": "Replace mid-only fractions with defensible absolute units and test whether the apparent bass loss is a denominator or stereo effect."
+      },
+      {
+        "controls": "Use the same estimator definitions as the supplied table. Report the prime window boundaries and score.",
+        "expected_discrimination": "If the prime interval is an extreme relative to the interval distribution, the center bias is at least partly a selection artifact. If the whole run is center-heavy, the bias is run-wide.",
+        "method": "For each 60 s interval of the full 600 s WAV, compute L/R correlation, side/mid dB, L/R balance dB, and absolute L, R, and L+R band power. Plot or tabulate the interval series. Mark the prime selection window and its score.",
+        "name": "Stereo decomposition of the prime and full run",
+        "purpose": "Test whether the center bias is a run-wide property or a selected-interval property, and separate mid/side from correlation and balance."
+      },
+      {
+        "controls": "Use the same matching criterion for all pairs. Report both matched and unmatched results.",
+        "expected_discrimination": "If spectral differences disappear after level matching, they were level artifacts. If they persist, they are not explained by level alone.",
+        "method": "Select paired intervals (e.g., prime vs a matched non-prime interval of similar duration and content) and apply a documented level-matching gain to equalize RMS or integrated loudness before spectral comparison. Report the gains.",
+        "name": "Level-matched paired interval comparison",
+        "purpose": "Test whether apparent spectral differences survive level matching."
+      },
+      {
+        "controls": "Level-match, blind, randomize, and report inter-rater agreement. Do not use the generated prompt text as a cue.",
+        "expected_discrimination": "If blinded ratings do not reproduce the original report, the report may be context- or selection-dependent. If they do, the perceptual claim gains support.",
+        "method": "Present level-matched, blinded pairs (e.g., prime vs non-prime interval, or run vs a reference) to listeners and collect ratings on harshness and perceived width/center. Randomize order and include catch trials.",
+        "name": "Blinded listening with matched loudness",
+        "purpose": "Test the harshness and center-bias reports under controlled conditions."
+      },
+      {
+        "controls": "Preserve canonical files; write sidecar receipts. Do not claim latent-field diffusion or reconstruction from these tests (context_packet.md:64-67).",
+        "expected_discrimination": "If reducing side gain changes correlation but not harshness-related high-band power, the two reports have different mechanisms. If saturation reduction changes high-band power, the post-render stage is implicated.",
+        "method": "On copied WAVs only, apply offline interventions: (a) reduce side gain, (b) bypass or reduce the tanh saturation, (c) apply a linear high-frequency tilt. Measure absolute band power and correlation before and after. Label each as an intervention render, not a stem.",
+        "name": "Offline side-stage and saturation isolation",
+        "purpose": "Separate signal-domain smoothing, side-stage scaling, and post-render saturation as candidate mechanisms."
+      },
+      {
+        "controls": "Use the same score formula as main.rs:8141-8145. Do not change the selection.",
+        "expected_discrimination": "If the selected window is a clear outlier with a large score margin, selection amplification is plausible. If the score surface is flat, selection is less likely to explain the report.",
+        "method": "Recompute the prime selection score series and identify the top-k windows. Compare their stereo and spectral statistics to the full-run distribution. Report the score margin between the selected window and the next-best windows.",
+        "name": "Prime selection sensitivity",
+        "purpose": "Quantify how much the prime selection score can amplify a within-run outlier."
+      }
+    ],
+    "uncertainties": [
+      "No blinded listening has been performed, so the harshness and center-bias reports are unverified perceptual hypotheses.",
+      "The supplied table does not report absolute band power, total L+R power, or per-file level-matching gains, so the bass-recovery and harshness interpretations of the fraction changes are not established.",
+      "The prime selection score is not a perceptual or stereo metric; the relationship between the selected prime and the listener's experience of the full run is unknown.",
+      "The training trace is a single lineage; no independent seeds or matched arms are available, so run-to-run variability is unknown.",
+      "The target mix and loss history may confound attribution of the observed correlation and width values.",
+      "The relative contribution of learned weights, carried world state, controller forcing, and post-render saturation to the reported sound is not separable from the supplied evidence.",
+      "The exact estimator details (window overlap, detrending, DC handling, frequency bin edges) for the table's fractions are not fully specified in the supplied excerpt.",
+      "Whether the prime WAVs were level-matched before any comparison is not stated.",
+      "The relationship between the pre-master ultrasonic_ratio and audible harshness is not established.",
+      "No pre-side-scale renderer taps are available (context_packet.md:71-74), so the side-stage contribution cannot be isolated from the supplied files."
+    ]
+  },
+  "approximate_input_tokens": 26943,
+  "attempts": 2,
+  "context": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "created_at_utc": "2026-09-26T07:25:42.592152+00:00",
+  "elapsed_seconds": 59.209,
+  "endpoint": "https://openrouter.ai/api/v1",
+  "files": [
+    {
+      "bytes": 102384,
+      "selection": "analysis/audio_center_harshness_20260926/team_v2/context_packet.md",
+      "sha256": "1093a68a5f48929d046cb7195f2138ceb5f707f939eff59d6b9e438b26192fd4"
+    }
+  ],
+  "finish_reason": "stop",
+  "id": "gen-1790407588-SwvvzUW0MpIKlWW1H4jf",
+  "max_tokens": 16384,
+  "purpose": "Audit the measurement design, mid-only spectra, sequential-run dependence, prime selection, level matching, and listening inference. Define defensible units and limits.",
+  "request": {
+    "bytes": 107771,
+    "sha256": "85c867c507a3a3f533c7e4ea8b49b93286d020c768245a00ec65d9fe3cccdfaf"
+  },
+  "requested_model": "deepseek/deepseek-v4.1-flash",
+  "returned_model": "deepseek/deepseek-v4.1-flash",
+  "role": "researcher",
+  "schema_version": 1,
+  "status": "ok",
+  "temperature": 0.1,
+  "token_estimate_method": "serialized UTF-8 bytes / 4; not model tokenization",
+  "usage": {
+    "completion_tokens": 3053,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0133932,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.0036636,
+      "upstream_inference_cost": 0.0133932,
+      "upstream_inference_prompt_cost": 0.0097296
+    },
+    "prompt_tokens": 32432,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 35485
+  },
+  "usage_scope": "Returned completion only; earlier attempts may have been billed."
+}

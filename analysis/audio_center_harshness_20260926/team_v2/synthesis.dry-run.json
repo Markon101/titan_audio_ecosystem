@@ -1,0 +1,29 @@
+{
+  "approximate_input_tokens": 59086,
+  "context": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "created_at_utc": "2026-09-26T07:43:37.505187+00:00",
+  "endpoint": "https://openrouter.ai/api/v1",
+  "files": [
+    {
+      "bytes": 219922,
+      "selection": "analysis/audio_center_harshness_20260926/team_v2/synthesis_context.md",
+      "sha256": "143bd3fc357b273e97b71746ef918af383474c67086a51ff48595e9ab5bd3c62"
+    }
+  ],
+  "max_tokens": 16384,
+  "purpose": "Challenge the independent team reviews against the shared source evidence. Return the required context_receipt and summary, accepted and rejected claims, CLAIM A / CLAIM B / WHY THEY DIFFER / DISCRIMINATING EXPERIMENT for disagreements, and a bounded next action. Agent agreement is advisory, not evidence. Do not promote offline filtering to proof about latent dynamics or generative diffusion. Return a JSON object with conclusions, evidence, uncertainties, proposed_experiments, and a context_receipt object reconstructing these facts from the source: project (string), direct_reference_input (boolean), prompt_is_post_render_output (boolean), waveform_filter_tests_latent_diffusion (boolean), canonical_mutation_allowed (boolean). The receipt is mandatory. Cite original source paths and line numbers.",
+  "request": {
+    "bytes": 236342,
+    "sha256": "2157e7a769d04f574afe1f6f7e9843fbefb44f63f223fca774ccb692cb0637ac"
+  },
+  "requested_model": "deepseek/deepseek-v4.1-flash",
+  "role": "adversarial-reviewer",
+  "schema_version": 1,
+  "status": "dry_run",
+  "temperature": 0.1,
+  "token_estimate_method": "serialized UTF-8 bytes / 4; not model tokenization",
+  "usage": null
+}

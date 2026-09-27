@@ -1,0 +1,19 @@
+{
+  "pairs": [
+    {
+      "id": "original_prime",
+      "raw": "/sdcard/Download/titan_prime_60s_v9-long-01_9bcf582d4b13.wav",
+      "eq": "eq_level_matched/latest_eq.wav"
+    },
+    {
+      "id": "window_60_120",
+      "raw": "balanced_primes/prime_window1_60s_to_120s_raw.wav",
+      "eq": "eq_level_matched/window1_eq.wav"
+    },
+    {
+      "id": "window_180_240",
+      "raw": "balanced_primes/prime_window3_180s_to_240s_raw.wav",
+      "eq": "eq_level_matched/window3_eq.wav"
+    }
+  ]
+}

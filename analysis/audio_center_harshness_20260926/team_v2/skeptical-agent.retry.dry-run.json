@@ -1,0 +1,29 @@
+{
+  "approximate_input_tokens": 27042,
+  "context": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "created_at_utc": "2026-09-26T07:29:01.404288+00:00",
+  "endpoint": "https://openrouter.ai/api/v1",
+  "files": [
+    {
+      "bytes": 102384,
+      "selection": "analysis/audio_center_harshness_20260926/team_v2/context_packet.md",
+      "sha256": "1093a68a5f48929d046cb7195f2138ceb5f707f939eff59d6b9e438b26192fd4"
+    }
+  ],
+  "max_tokens": 16384,
+  "purpose": "Find the strongest mundane explanations and unsupported leaps, including center collapse, harshness, output smoothing, and practical priming. Offer decisive controls. Return a JSON object with conclusions, evidence, uncertainties, proposed_experiments, and a context_receipt object reconstructing these facts from the source: project (string), direct_reference_input (boolean), prompt_is_post_render_output (boolean), waveform_filter_tests_latent_diffusion (boolean), canonical_mutation_allowed (boolean). The receipt is mandatory. Cite original source paths and line numbers.",
+  "request": {
+    "bytes": 108165,
+    "sha256": "24f256530a3aa5294d1c6c624b60d6a6521d39e23a63d8cfaa31949cf3afd002"
+  },
+  "requested_model": "deepseek/deepseek-v4.1-flash",
+  "role": "result-skeptic",
+  "schema_version": 1,
+  "status": "dry_run",
+  "temperature": 0.1,
+  "token_estimate_method": "serialized UTF-8 bytes / 4; not model tokenization",
+  "usage": null
+}

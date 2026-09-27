@@ -1,0 +1,372 @@
+[
+  {
+    "relative_path": "provenance.json",
+    "media_type": "application/json",
+    "sha256": "a35987112b1ad7efc25135547801541b4f1d03f41acb363b997a60895203f70b",
+    "bytes": 540953,
+    "condition": null,
+    "start_offset": null,
+    "end_offset": null,
+    "processing": "read-only identity report"
+  },
+  {
+    "relative_path": "ablations/target_independent_feedback_ablation/summary.json",
+    "media_type": "application/json",
+    "sha256": "8bab27cdc92b1316922d04a0515e33bffac2841ae5d025bf11783cd994775902",
+    "bytes": 14818,
+    "condition": "target_independent_feedback_ablation",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "frozen rollout summary"
+  },
+  {
+    "relative_path": "ablations/target_independent_feedback_ablation/trace.csv",
+    "media_type": "text/csv",
+    "sha256": "f2306e9e1f3acb51d782681bf7abc5b56b1b9ccf8b5ef954f03f855b6ab0d348",
+    "bytes": 2093,
+    "condition": "target_independent_feedback_ablation",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "stride-sampled operational metrics"
+  },
+  {
+    "relative_path": "ablations/target_independent_feedback_ablation/raw_renderer.wav",
+    "media_type": "audio/wav",
+    "sha256": "d91f24a1f0f64e52df34524ca1f2752a22364aaafa827bba8fa8010efbb2388a",
+    "bytes": 1048620,
+    "condition": "target_independent_feedback_ablation",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "full learned renderer after analysis tanh observation; before boost, saturation, and DC block"
+  },
+  {
+    "relative_path": "ablations/target_independent_feedback_ablation/post_dsp.wav",
+    "media_type": "audio/wav",
+    "sha256": "ac5f3256c720eca7c43bd7535b862f3710efd0e37d640182498b2a49427e3647",
+    "bytes": 1048620,
+    "condition": "target_independent_feedback_ablation",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "post-saturation stateful DC-block; no final mastering normalization"
+  },
+  {
+    "relative_path": "ablations/target_independent_feedback_ablation/spectrogram.png",
+    "media_type": "image/png",
+    "sha256": "60e8ca489f12e9d4f638a498ee76594178d6ceaf56d8d05c93130287ee1e42e9",
+    "bytes": 393570,
+    "condition": "target_independent_feedback_ablation",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "fixed -80..0 dB analysis spectrogram"
+  },
+  {
+    "relative_path": "ablations/target_independent_feedback_ablation/micro_atlas_000064.png",
+    "media_type": "image/png",
+    "sha256": "2f1d4e722535123c17c5c0a694e1a83d50cd55cb3f3da2fa8d19e6b5fbd8b0f8",
+    "bytes": 787072,
+    "condition": "target_independent_feedback_ablation",
+    "start_offset": 64,
+    "end_offset": 64,
+    "processing": "fixed [-1,1] micro-state atlas"
+  },
+  {
+    "relative_path": "ablations/target_independent_feedback_ablation/macro_atlas_000064.png",
+    "media_type": "image/png",
+    "sha256": "558bb34fca1be4f46ab530a8c7c03f75d07d7a6ed9a5f4123296569588c3dea9",
+    "bytes": 196947,
+    "condition": "target_independent_feedback_ablation",
+    "start_offset": 64,
+    "end_offset": 64,
+    "processing": "fixed [-1,1] macro-state atlas"
+  },
+  {
+    "relative_path": "ablations/gru_hold/summary.json",
+    "media_type": "application/json",
+    "sha256": "c05b1d26fd999c06bbbf26ce68a073e7744857998d8c801aa4fe51134d01bf1b",
+    "bytes": 15774,
+    "condition": "gru_hold",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "frozen rollout summary"
+  },
+  {
+    "relative_path": "ablations/gru_hold/trace.csv",
+    "media_type": "text/csv",
+    "sha256": "eb1bad99c5accb1c2bf58edb5d2cff4f566ed3544179634d04619fe5ef469caf",
+    "bytes": 2869,
+    "condition": "gru_hold",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "stride-sampled operational metrics"
+  },
+  {
+    "relative_path": "ablations/gru_hold/raw_renderer.wav",
+    "media_type": "audio/wav",
+    "sha256": "d91f24a1f0f64e52df34524ca1f2752a22364aaafa827bba8fa8010efbb2388a",
+    "bytes": 1048620,
+    "condition": "gru_hold",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "full learned renderer after analysis tanh observation; before boost, saturation, and DC block"
+  },
+  {
+    "relative_path": "ablations/gru_hold/post_dsp.wav",
+    "media_type": "audio/wav",
+    "sha256": "ac5f3256c720eca7c43bd7535b862f3710efd0e37d640182498b2a49427e3647",
+    "bytes": 1048620,
+    "condition": "gru_hold",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "post-saturation stateful DC-block; no final mastering normalization"
+  },
+  {
+    "relative_path": "ablations/gru_hold/spectrogram.png",
+    "media_type": "image/png",
+    "sha256": "60e8ca489f12e9d4f638a498ee76594178d6ceaf56d8d05c93130287ee1e42e9",
+    "bytes": 393570,
+    "condition": "gru_hold",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "fixed -80..0 dB analysis spectrogram"
+  },
+  {
+    "relative_path": "ablations/gru_hold/micro_atlas_000064.png",
+    "media_type": "image/png",
+    "sha256": "2f1d4e722535123c17c5c0a694e1a83d50cd55cb3f3da2fa8d19e6b5fbd8b0f8",
+    "bytes": 787072,
+    "condition": "gru_hold",
+    "start_offset": 64,
+    "end_offset": 64,
+    "processing": "fixed [-1,1] micro-state atlas"
+  },
+  {
+    "relative_path": "ablations/gru_hold/macro_atlas_000064.png",
+    "media_type": "image/png",
+    "sha256": "558bb34fca1be4f46ab530a8c7c03f75d07d7a6ed9a5f4123296569588c3dea9",
+    "bytes": 196947,
+    "condition": "gru_hold",
+    "start_offset": 64,
+    "end_offset": 64,
+    "processing": "fixed [-1,1] macro-state atlas"
+  },
+  {
+    "relative_path": "ablations/micro_nca_hold/summary.json",
+    "media_type": "application/json",
+    "sha256": "ffc8157b65f30381c2db23609140ba4cf8dd9324d353c004faf71f31e9f72ccf",
+    "bytes": 15778,
+    "condition": "micro_nca_hold",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "frozen rollout summary"
+  },
+  {
+    "relative_path": "ablations/micro_nca_hold/trace.csv",
+    "media_type": "text/csv",
+    "sha256": "7352dfe1996ccf98e02448eb38fd45de7e01bc043e3c2c060c7f3afbd40b8f80",
+    "bytes": 2871,
+    "condition": "micro_nca_hold",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "stride-sampled operational metrics"
+  },
+  {
+    "relative_path": "ablations/micro_nca_hold/raw_renderer.wav",
+    "media_type": "audio/wav",
+    "sha256": "2f393c83fe99bc5d2c163145cf0ea8e6fccc4082abefac7c0691c857badfc010",
+    "bytes": 1048620,
+    "condition": "micro_nca_hold",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "full learned renderer after analysis tanh observation; before boost, saturation, and DC block"
+  },
+  {
+    "relative_path": "ablations/micro_nca_hold/post_dsp.wav",
+    "media_type": "audio/wav",
+    "sha256": "2decfa0ae2bf3293efc86bad64ffb476acc62ea43d51a3e4b74765577c33f205",
+    "bytes": 1048620,
+    "condition": "micro_nca_hold",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "post-saturation stateful DC-block; no final mastering normalization"
+  },
+  {
+    "relative_path": "ablations/micro_nca_hold/spectrogram.png",
+    "media_type": "image/png",
+    "sha256": "fd3f44c90d2745b881b85c632bf01bf09ad71c90f9bd9bb92217127d6076285b",
+    "bytes": 393570,
+    "condition": "micro_nca_hold",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "fixed -80..0 dB analysis spectrogram"
+  },
+  {
+    "relative_path": "ablations/micro_nca_hold/micro_atlas_000064.png",
+    "media_type": "image/png",
+    "sha256": "1c0b727639030c7d92896b7df576290a6926bfb76ed850acae08e30fb6c71ea8",
+    "bytes": 787072,
+    "condition": "micro_nca_hold",
+    "start_offset": 64,
+    "end_offset": 64,
+    "processing": "fixed [-1,1] micro-state atlas"
+  },
+  {
+    "relative_path": "ablations/micro_nca_hold/macro_atlas_000064.png",
+    "media_type": "image/png",
+    "sha256": "9be9cc9ef5085e630dfc6b2b38c700102c8330d1274a7a4b1656593c30e22516",
+    "bytes": 196947,
+    "condition": "micro_nca_hold",
+    "start_offset": 64,
+    "end_offset": 64,
+    "processing": "fixed [-1,1] macro-state atlas"
+  },
+  {
+    "relative_path": "ablations/episodic_read_zero/summary.json",
+    "media_type": "application/json",
+    "sha256": "0cded64cf42c1e14af51b337b83dfc884dec4f3308d1ced7e33236fabc603456",
+    "bytes": 15775,
+    "condition": "episodic_read_zero",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "frozen rollout summary"
+  },
+  {
+    "relative_path": "ablations/episodic_read_zero/trace.csv",
+    "media_type": "text/csv",
+    "sha256": "63047def79cab17c25753f5cff7a33ac906bcadeaa319ecd640508c4d57cf386",
+    "bytes": 2867,
+    "condition": "episodic_read_zero",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "stride-sampled operational metrics"
+  },
+  {
+    "relative_path": "ablations/episodic_read_zero/raw_renderer.wav",
+    "media_type": "audio/wav",
+    "sha256": "26e6236215c487baff642514e11901fa759dd321ed0dc251235f56632f9ce638",
+    "bytes": 1048620,
+    "condition": "episodic_read_zero",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "full learned renderer after analysis tanh observation; before boost, saturation, and DC block"
+  },
+  {
+    "relative_path": "ablations/episodic_read_zero/post_dsp.wav",
+    "media_type": "audio/wav",
+    "sha256": "137c3bb51567a6e3f59c7166fcd3c37bd1e0b25309b72569623de6b2960af865",
+    "bytes": 1048620,
+    "condition": "episodic_read_zero",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "post-saturation stateful DC-block; no final mastering normalization"
+  },
+  {
+    "relative_path": "ablations/episodic_read_zero/spectrogram.png",
+    "media_type": "image/png",
+    "sha256": "2e5a99bcc066eeb836d24a93b3f4451d6b7a807683e2b86fd86c38d37ed3b822",
+    "bytes": 393570,
+    "condition": "episodic_read_zero",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "fixed -80..0 dB analysis spectrogram"
+  },
+  {
+    "relative_path": "ablations/episodic_read_zero/micro_atlas_000064.png",
+    "media_type": "image/png",
+    "sha256": "ce4a513055746a376d21b2721d83bf63af6147907b07aabe8f7d6604e8570598",
+    "bytes": 787072,
+    "condition": "episodic_read_zero",
+    "start_offset": 64,
+    "end_offset": 64,
+    "processing": "fixed [-1,1] micro-state atlas"
+  },
+  {
+    "relative_path": "ablations/episodic_read_zero/macro_atlas_000064.png",
+    "media_type": "image/png",
+    "sha256": "f1f0230d9add6d5ea88ee7a1577c31225ceb399329679b8bbb61e596e3e5b3fd",
+    "bytes": 196947,
+    "condition": "episodic_read_zero",
+    "start_offset": 64,
+    "end_offset": 64,
+    "processing": "fixed [-1,1] macro-state atlas"
+  },
+  {
+    "relative_path": "ablations/summary.json",
+    "media_type": "application/json",
+    "sha256": "064d7a95cdf47f7c074a127c8e25514269d208cefbcf79e5c32199c6e9326f42",
+    "bytes": 23682,
+    "condition": null,
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "typed cloned-state causal comparisons"
+  },
+  {
+    "relative_path": "ablations/full/summary.json",
+    "media_type": "application/json",
+    "sha256": "238cfd2ba1412d84d35691de596436cbfd9d89bd22edea4397f5b28ab50b265c",
+    "bytes": 15761,
+    "condition": "ablation_full",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "frozen rollout summary"
+  },
+  {
+    "relative_path": "ablations/full/trace.csv",
+    "media_type": "text/csv",
+    "sha256": "eb1bad99c5accb1c2bf58edb5d2cff4f566ed3544179634d04619fe5ef469caf",
+    "bytes": 2869,
+    "condition": "ablation_full",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "stride-sampled operational metrics"
+  },
+  {
+    "relative_path": "ablations/full/raw_renderer.wav",
+    "media_type": "audio/wav",
+    "sha256": "d91f24a1f0f64e52df34524ca1f2752a22364aaafa827bba8fa8010efbb2388a",
+    "bytes": 1048620,
+    "condition": "ablation_full",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "full learned renderer after analysis tanh observation; before boost, saturation, and DC block"
+  },
+  {
+    "relative_path": "ablations/full/post_dsp.wav",
+    "media_type": "audio/wav",
+    "sha256": "ac5f3256c720eca7c43bd7535b862f3710efd0e37d640182498b2a49427e3647",
+    "bytes": 1048620,
+    "condition": "ablation_full",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "post-saturation stateful DC-block; no final mastering normalization"
+  },
+  {
+    "relative_path": "ablations/full/spectrogram.png",
+    "media_type": "image/png",
+    "sha256": "60e8ca489f12e9d4f638a498ee76594178d6ceaf56d8d05c93130287ee1e42e9",
+    "bytes": 393570,
+    "condition": "ablation_full",
+    "start_offset": 0,
+    "end_offset": 64,
+    "processing": "fixed -80..0 dB analysis spectrogram"
+  },
+  {
+    "relative_path": "ablations/full/micro_atlas_000064.png",
+    "media_type": "image/png",
+    "sha256": "2f1d4e722535123c17c5c0a694e1a83d50cd55cb3f3da2fa8d19e6b5fbd8b0f8",
+    "bytes": 787072,
+    "condition": "ablation_full",
+    "start_offset": 64,
+    "end_offset": 64,
+    "processing": "fixed [-1,1] micro-state atlas"
+  },
+  {
+    "relative_path": "ablations/full/macro_atlas_000064.png",
+    "media_type": "image/png",
+    "sha256": "558bb34fca1be4f46ab530a8c7c03f75d07d7a6ed9a5f4123296569588c3dea9",
+    "bytes": 196947,
+    "condition": "ablation_full",
+    "start_offset": 64,
+    "end_offset": 64,
+    "processing": "fixed [-1,1] macro-state atlas"
+  }
+]

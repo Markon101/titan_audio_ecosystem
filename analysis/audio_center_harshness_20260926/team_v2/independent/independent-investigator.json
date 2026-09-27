@@ -1,0 +1,281 @@
+{
+  "answer": "{\"conclusions\": {\"pipeline_reconstruction\": \"Causal order per chunk: (1) host state (micro/macro field tapes, GRU hidden, episodic readout, phases, energy, SynthesisControl) enters model.forward; (2) forward computes next_micro/next_macro/next_hidden/refined_hidden, then temporal_decoder -> 76 controls, oscillator heads, regional scan synth, excitation noise, wavefolders, mid/side + Haas + bounded pan/width, producing stereo_chunk; (3) only AFTER forward does target_loader.sample_chunks run and min-of-K target selection occur (main.rs:7107-7141); (4) losses (mimic/band/chroma/envelope/onset/recurrence/modulation/low-band/stereo/pan) are computed against that target and backpropagated; (5) post path applies tanh(0.92*x), stateful DC blocker, then whole-file peak normalization to -1 dBFS and PCM16 (main.rs:8059-8076, 8451-8531). Target audio never enters the current forward pass; it affects weights and later host ecology only.\", \"what_observations_establish\": [\"The latest 60s prime is drawn from a center-heavy interval: full-file L/R correlation ranges 0.740-0.992, minutes 5-6 are 0.990-0.992 with side/mid ~-23 dB (deepseek_packet.md:31-35).\", \"The prime-selection score uses field entropy, activity health, structured complexity, and stagnation only (main.rs:8141-8145, 8463-8479); it has no width or harshness term, so it can select a within-run outlier.\", \"The 20-200 Hz fraction collapse (20.8% -> 2.1%) and 2-6 kHz rise (33.6% -> 47.3%) are MID-channel normalized fractions (deepseek_packet.md:19-29). A fraction change can be produced by denominator growth (high-band energy) or by stereo change, not necessarily by absolute bass loss.\", \"Training trace shows median output correlation 0.963 vs target 0.862, truthful width 0.027, decoder width control 0.120, width raw -0.946, global pan 0.0999 at its +0.10 limit, decoder side control 1.0 (deepseek_packet.md:37-41). These are consistent with a near-collapsed side path and a pan head pinned at its bound.\", \"The pan head is bounded to +/-0.10 (stereo.rs:3, 13-19) and pan_center_loss penalizes only the bounded residual (stereo.rs:21-26); it does not reward correlation=1. So the observed correlation ~0.99 is not directly incentivized by pan_center_loss.\", \"The learned width control is bounded 0.05..0.50 (stereo.rs:5-6, 28-41); side gain is further clamped (stereo.rs:9-11). Increasing side gain cannot synthesize missing side information (context_packet.md:44-47).\", \"The prompt file is written after rendering and prime extraction (main.rs:8682-8697); its words cannot cause the run.\", \"AdamW moments are persisted and resumed only under matching conditions (AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:112-124); the three latest WAVs are one sequential lineage, not independent seeds (context_packet.md:28-29).\"], \"supported_conclusions\": [\"The listener report (harsh + centered) is consistent with the measured prime being a center-heavy, high-mid-fraction interval, but the measurements are diagnostics, not perceptual scores (deepseek_packet.md:22, context_packet.md:58-60).\", \"The center bias in the prime is at least partly a selection artifact: the prime is chosen by a score with no width term from a run whose full-file correlation varies 0.740-0.992.\", \"The harshness hypothesis cannot be attributed to a single mechanism from the supplied evidence. At least four separable candidates exist: (a) learned renderer spectral tilt (scan_brightness, partial amplitudes, wavefolder drive); (b) post-render tanh saturation at 0.92 drive; (c) whole-file peak normalization raising a quiet-but-bright interval; (d) target-mix/loss-history confound during online learning.\", \"The low-band fraction drop is not yet established as absolute bass loss; the supplied metric is a normalized mid-channel fraction.\"], \"hypotheses\": [{\"id\": \"H1_selection_artifact\", \"claim\": \"The prime's center bias is dominated by prime selection, not by a global collapse of the run's stereo field.\", \"status\": \"supported_by_measurement\", \"evidence\": \"deepseek_packet.md:31-35 (full-file corr 0.740-0.992; minutes 5-6 ~0.99); main.rs:8141-8145, 8463-8479 (score has no width term).\"}, {\"id\": \"H2_side_path_collapse\", \"claim\": \"The learned side path is near-collapsed in the latest lineage, so the renderer cannot produce wide output even if selected.\", \"status\": \"partially_supported\", \"evidence\": \"deepseek_packet.md:37-41 (truthful width 0.027, width raw -0.946, side control 1.0); stereo.rs:5-11, 28-41 (bounded width, side gain clamp).\"}, {\"id\": \"H3_pan_rail\", \"claim\": \"The global pan head is pinned at its +0.10 bound, contributing a small but persistent L/R imbalance.\", \"status\": \"supported_by_trace\", \"evidence\": \"deepseek_packet.md:39 (global pan 0.0999 at +0.10 limit); stereo.rs:3, 13-19.\"}, {\"id\": \"H4_saturation_harshness\", \"claim\": \"Post-render tanh at 0.92 drive plus peak normalization contributes audible harshness on bright intervals.\", \"status\": \"speculative\", \"evidence\": \"main.rs:8059-8061 (tanh 0.92), 8451-8514 (peak normalize to -1 dBFS, PCM16). No direct measurement supplied.\"}, {\"id\": \"H5_target_confound\", \"claim\": \"The 2-6 kHz rise and 20-200 Hz drop partly reflect the target mix and online learning during the run, not only the frozen checkpoint.\", \"status\": \"speculative\", \"evidence\": \"context_packet.md:37-39 (target mix and online learning confound elapsed-portion comparisons); main.rs:7107-7256 (targets sampled after forward).\"}, {\"id\": \"H6_scan_brightness\", \"claim\": \"The regional scan brightness tilt and partial amplitude heads bias the spectrum upward.\", \"status\": \"speculative\", \"evidence\": \"main.rs:5383-5396 (scan_brightness affine on control.spectral_tilt, learned_amps affine 1.6/0.20).\"}], \"missing_evidence\": [\"No controlled blinded listening; no perceptual ratings (context_packet.md:58-60, 71-74).\", \"No absolute L+R band power; only normalized mid-channel fractions (context_packet.md:54-57).\", \"No pre-side-scale renderer taps, so the side path cannot be measured before the Haas/width stage (context_packet.md:71-74).\", \"No frequency-specific loss gradients, so the 2-6 kHz rise cannot be attributed to a specific loss term.\", \"No detailed target-mix attribution per interval, so the target confound cannot be quantified.\", \"No independent training replicas or matched arms; the three WAVs are one lineage (context_packet.md:28-29).\", \"No downstream priming outcomes (context_packet.md:71-74).\", \"No measurement of the post-render tanh saturation rate or crest factor on the prime interval.\"], \"discriminating_experiment\": {\"name\": \"Cheapest separating measurement: absolute band power + saturation/crest on the same prime interval, plus a side-path tap\", \"rationale\": \"The single cheapest measurement that separates the leading hypotheses is to recompute, on the exact same 60s prime interval, (a) absolute L+R band power in 20-200 Hz, 2-6 kHz, 6-20 kHz (not fractions), (b) crest factor and fraction of samples with |x|>0.5 after the 0.92 tanh, and (c) the pre-Haas side energy if a renderer tap is available. This separates H1/H2 (stereo/selection) from H4 (saturation) from H5 (target confound) without retraining.\", \"controls\": [\"Use the same 60s interval and the same 8192-sample Hann windows as the supplied survey.\", \"Level-match before any A/B comparison; record the gain applied.\", \"Compare against the untagged parent prime and the first tagged continuation prime as paired intervals.\", \"Do not mutate canonical checkpoints, corpus, or existing WAVs; write copied WAVs and sidecar receipts only (context_packet.md:68-70).\"], \"expected_separation\": {\"if_absolute_bass_preserved_and_high_band_absolute_flat\": \"H1/H2 favored; harshness is a selection/stereo artifact.\", \"if_absolute_high_band_energy_rises_and_saturation_fraction_high\": \"H4 favored; post-render saturation is a candidate.\", \"if_absolute_bands_match_target_bands_closely\": \"H5 favored; target mix dominates.\", \"if_pre_haas_side_energy_is_low\": \"H2 favored; side path collapse is real, not just selection.\"}}, \"uncertainties\": [\"The supplied spectral fractions are mid-channel only; the true L+R band power is unknown.\", \"The listener report is unblinded and single-observer; no perceptual rating exists.\", \"The trace's ultrasonic_ratio is a pre-master guardrail, not a harshness score (deepseek_packet.md:40-41).\", \"The relationship between the 0.92 tanh drive and audible harshness is not measured.\", \"Whether the pan head at +0.10 is a learned equilibrium or a transient is unknown from the supplied trace.\", \"The target mix during the prime interval is not attributed.\"], \"recommendation\": \"Before any training fork or diffusion mechanism, run the cheapest separating measurement above on the existing prime interval. If absolute bass is preserved and high-band absolute energy is flat, treat the report as a prime-selection artifact and add a width/harshness term to prime selection (a reversible, non-learned change). If absolute high-band energy rises with high saturation fraction, test an offline level-matched tanh-drive reduction on a copied WAV as a signal-domain probe, explicitly labeled as signal processing, not a latent-diffusion proxy (context_packet.md:64-67). Do not equate smoothing with quality (deepseek_packet.md:48-51).\", \"context_receipt\": {\"project\": \"titan_audio_ecosystem\", \"direct_reference_input\": false, \"prompt_is_post_render_output\": true, \"waveform_filter_tests_latent_diffusion\": false, \"canonical_mutation_allowed\": false}, \"evidence\": [{\"source\": \"analysis/audio_center_harshness_20260926/deepseek_packet.md\", \"lines\": \"17-35\", \"claim\": \"Prime measurements and full-file correlation range.\"}, {\"source\": \"analysis/audio_center_harshness_20260926/deepseek_packet.md\", \"lines\": \"37-43\", \"claim\": \"Training trace stereo/width/pan values and prompt text.\"}, {\"source\": \"research/audio_context.md\", \"lines\": \"16-18\", \"claim\": \"Causal order: forward before target sampling.\"}, {\"source\": \"research/audio_context.md\", \"lines\": \"44-47\", \"claim\": \"Stereo controls bounded; side gain cannot synthesize missing side.\"}, {\"source\": \"research/audio_context.md\", \"lines\": \"51-57\", \"claim\": \"Prime selection has no width/harshness term; metrics are mid-channel fractions.\"}, {\"source\": \"src/main.rs\", \"lines\": \"7107-7141\", \"claim\": \"Target sampling and min-of-K selection occur after forward.\"}, {\"source\": \"src/main.rs\", \"lines\": \"8059-8076\", \"claim\": \"Post path: tanh 0.92 then stateful DC blocker.\"}, {\"source\": \"src/main.rs\", \"lines\": \"8451-8531\", \"claim\": \"Whole-file peak normalization to -1 dBFS and PCM16 encoding.\"}, {\"source\": \"src/main.rs\", \"lines\": \"8141-8145\", \"claim\": \"Prime score uses field entropy, activity health, structured complexity, stagnation.\"}, {\"source\": \"src/main.rs\", \"lines\": \"8463-8479\", \"claim\": \"Prime selection is a sliding-window max of chunk_scores.\"}, {\"source\": \"src/stereo.rs\", \"lines\": \"3-41\", \"claim\": \"Pan limit +/-0.10, pan_center_loss on bounded residual, width 0.05..0.50.\"}, {\"source\": \"docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md\", \"lines\": \"112-124\", \"claim\": \"AdamW moments persisted; checkpoint-set transactionality is the real reproducibility limit.\"}], \"proposed_experiments\": [{\"id\": \"E1_absolute_band_power\", \"description\": \"Recompute absolute L+R band power (20-200 Hz, 2-6 kHz, 6-20 kHz) on the exact same 60s prime interval using the same 8192-sample Hann windows. Compare against untagged parent and first tagged continuation primes.\", \"cost\": \"low\", \"separates\": [\"H1\", \"H5\"], \"controls\": [\"same interval\", \"same windowing\", \"level-matched\"]}, {\"id\": \"E2_saturation_crest\", \"description\": \"On the same interval, measure crest factor and fraction of samples with |x|>0.5 after the 0.92 tanh, before peak normalization.\", \"cost\": \"low\", \"separates\": [\"H4\"], \"controls\": [\"pre-normalization tap\"]}, {\"id\": \"E3_side_path_tap\", \"description\": \"If a renderer tap exists, measure pre-Haas side energy on the same interval; otherwise flag as missing evidence.\", \"cost\": \"medium\", \"separates\": [\"H2\"], \"controls\": [\"same interval\"]}, {\"id\": \"E4_offline_tanh_probe\", \"description\": \"On a copied WAV only, apply a level-matched reduced tanh drive and compare crest/band power. Label explicitly as signal-domain processing, not a latent-diffusion proxy.\", \"cost\": \"low\", \"separates\": [\"H4\"], \"controls\": [\"copied WAV\", \"sidecar receipt\", \"level-matched\"]}, {\"id\": \"E5_prime_selection_audit\", \"description\": \"Recompute chunk_scores for the full 600s and report the score distribution and the rank of the selected interval; check whether a width term would change the selection.\", \"cost\": \"low\", \"separates\": [\"H1\"], \"controls\": [\"no mutation of canonical files\"]}]}}",
+  "answer_json": {
+    "conclusions": {
+      "context_receipt": {
+        "canonical_mutation_allowed": false,
+        "direct_reference_input": false,
+        "project": "titan_audio_ecosystem",
+        "prompt_is_post_render_output": true,
+        "waveform_filter_tests_latent_diffusion": false
+      },
+      "discriminating_experiment": {
+        "controls": [
+          "Use the same 60s interval and the same 8192-sample Hann windows as the supplied survey.",
+          "Level-match before any A/B comparison; record the gain applied.",
+          "Compare against the untagged parent prime and the first tagged continuation prime as paired intervals.",
+          "Do not mutate canonical checkpoints, corpus, or existing WAVs; write copied WAVs and sidecar receipts only (context_packet.md:68-70)."
+        ],
+        "expected_separation": {
+          "if_absolute_bands_match_target_bands_closely": "H5 favored; target mix dominates.",
+          "if_absolute_bass_preserved_and_high_band_absolute_flat": "H1/H2 favored; harshness is a selection/stereo artifact.",
+          "if_absolute_high_band_energy_rises_and_saturation_fraction_high": "H4 favored; post-render saturation is a candidate.",
+          "if_pre_haas_side_energy_is_low": "H2 favored; side path collapse is real, not just selection."
+        },
+        "name": "Cheapest separating measurement: absolute band power + saturation/crest on the same prime interval, plus a side-path tap",
+        "rationale": "The single cheapest measurement that separates the leading hypotheses is to recompute, on the exact same 60s prime interval, (a) absolute L+R band power in 20-200 Hz, 2-6 kHz, 6-20 kHz (not fractions), (b) crest factor and fraction of samples with |x|>0.5 after the 0.92 tanh, and (c) the pre-Haas side energy if a renderer tap is available. This separates H1/H2 (stereo/selection) from H4 (saturation) from H5 (target confound) without retraining."
+      },
+      "evidence": [
+        {
+          "claim": "Prime measurements and full-file correlation range.",
+          "lines": "17-35",
+          "source": "analysis/audio_center_harshness_20260926/deepseek_packet.md"
+        },
+        {
+          "claim": "Training trace stereo/width/pan values and prompt text.",
+          "lines": "37-43",
+          "source": "analysis/audio_center_harshness_20260926/deepseek_packet.md"
+        },
+        {
+          "claim": "Causal order: forward before target sampling.",
+          "lines": "16-18",
+          "source": "research/audio_context.md"
+        },
+        {
+          "claim": "Stereo controls bounded; side gain cannot synthesize missing side.",
+          "lines": "44-47",
+          "source": "research/audio_context.md"
+        },
+        {
+          "claim": "Prime selection has no width/harshness term; metrics are mid-channel fractions.",
+          "lines": "51-57",
+          "source": "research/audio_context.md"
+        },
+        {
+          "claim": "Target sampling and min-of-K selection occur after forward.",
+          "lines": "7107-7141",
+          "source": "src/main.rs"
+        },
+        {
+          "claim": "Post path: tanh 0.92 then stateful DC blocker.",
+          "lines": "8059-8076",
+          "source": "src/main.rs"
+        },
+        {
+          "claim": "Whole-file peak normalization to -1 dBFS and PCM16 encoding.",
+          "lines": "8451-8531",
+          "source": "src/main.rs"
+        },
+        {
+          "claim": "Prime score uses field entropy, activity health, structured complexity, stagnation.",
+          "lines": "8141-8145",
+          "source": "src/main.rs"
+        },
+        {
+          "claim": "Prime selection is a sliding-window max of chunk_scores.",
+          "lines": "8463-8479",
+          "source": "src/main.rs"
+        },
+        {
+          "claim": "Pan limit +/-0.10, pan_center_loss on bounded residual, width 0.05..0.50.",
+          "lines": "3-41",
+          "source": "src/stereo.rs"
+        },
+        {
+          "claim": "AdamW moments persisted; checkpoint-set transactionality is the real reproducibility limit.",
+          "lines": "112-124",
+          "source": "docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md"
+        }
+      ],
+      "hypotheses": [
+        {
+          "claim": "The prime's center bias is dominated by prime selection, not by a global collapse of the run's stereo field.",
+          "evidence": "deepseek_packet.md:31-35 (full-file corr 0.740-0.992; minutes 5-6 ~0.99); main.rs:8141-8145, 8463-8479 (score has no width term).",
+          "id": "H1_selection_artifact",
+          "status": "supported_by_measurement"
+        },
+        {
+          "claim": "The learned side path is near-collapsed in the latest lineage, so the renderer cannot produce wide output even if selected.",
+          "evidence": "deepseek_packet.md:37-41 (truthful width 0.027, width raw -0.946, side control 1.0); stereo.rs:5-11, 28-41 (bounded width, side gain clamp).",
+          "id": "H2_side_path_collapse",
+          "status": "partially_supported"
+        },
+        {
+          "claim": "The global pan head is pinned at its +0.10 bound, contributing a small but persistent L/R imbalance.",
+          "evidence": "deepseek_packet.md:39 (global pan 0.0999 at +0.10 limit); stereo.rs:3, 13-19.",
+          "id": "H3_pan_rail",
+          "status": "supported_by_trace"
+        },
+        {
+          "claim": "Post-render tanh at 0.92 drive plus peak normalization contributes audible harshness on bright intervals.",
+          "evidence": "main.rs:8059-8061 (tanh 0.92), 8451-8514 (peak normalize to -1 dBFS, PCM16). No direct measurement supplied.",
+          "id": "H4_saturation_harshness",
+          "status": "speculative"
+        },
+        {
+          "claim": "The 2-6 kHz rise and 20-200 Hz drop partly reflect the target mix and online learning during the run, not only the frozen checkpoint.",
+          "evidence": "context_packet.md:37-39 (target mix and online learning confound elapsed-portion comparisons); main.rs:7107-7256 (targets sampled after forward).",
+          "id": "H5_target_confound",
+          "status": "speculative"
+        },
+        {
+          "claim": "The regional scan brightness tilt and partial amplitude heads bias the spectrum upward.",
+          "evidence": "main.rs:5383-5396 (scan_brightness affine on control.spectral_tilt, learned_amps affine 1.6/0.20).",
+          "id": "H6_scan_brightness",
+          "status": "speculative"
+        }
+      ],
+      "missing_evidence": [
+        "No controlled blinded listening; no perceptual ratings (context_packet.md:58-60, 71-74).",
+        "No absolute L+R band power; only normalized mid-channel fractions (context_packet.md:54-57).",
+        "No pre-side-scale renderer taps, so the side path cannot be measured before the Haas/width stage (context_packet.md:71-74).",
+        "No frequency-specific loss gradients, so the 2-6 kHz rise cannot be attributed to a specific loss term.",
+        "No detailed target-mix attribution per interval, so the target confound cannot be quantified.",
+        "No independent training replicas or matched arms; the three WAVs are one lineage (context_packet.md:28-29).",
+        "No downstream priming outcomes (context_packet.md:71-74).",
+        "No measurement of the post-render tanh saturation rate or crest factor on the prime interval."
+      ],
+      "pipeline_reconstruction": "Causal order per chunk: (1) host state (micro/macro field tapes, GRU hidden, episodic readout, phases, energy, SynthesisControl) enters model.forward; (2) forward computes next_micro/next_macro/next_hidden/refined_hidden, then temporal_decoder -> 76 controls, oscillator heads, regional scan synth, excitation noise, wavefolders, mid/side + Haas + bounded pan/width, producing stereo_chunk; (3) only AFTER forward does target_loader.sample_chunks run and min-of-K target selection occur (main.rs:7107-7141); (4) losses (mimic/band/chroma/envelope/onset/recurrence/modulation/low-band/stereo/pan) are computed against that target and backpropagated; (5) post path applies tanh(0.92*x), stateful DC blocker, then whole-file peak normalization to -1 dBFS and PCM16 (main.rs:8059-8076, 8451-8531). Target audio never enters the current forward pass; it affects weights and later host ecology only.",
+      "proposed_experiments": [
+        {
+          "controls": [
+            "same interval",
+            "same windowing",
+            "level-matched"
+          ],
+          "cost": "low",
+          "description": "Recompute absolute L+R band power (20-200 Hz, 2-6 kHz, 6-20 kHz) on the exact same 60s prime interval using the same 8192-sample Hann windows. Compare against untagged parent and first tagged continuation primes.",
+          "id": "E1_absolute_band_power",
+          "separates": [
+            "H1",
+            "H5"
+          ]
+        },
+        {
+          "controls": [
+            "pre-normalization tap"
+          ],
+          "cost": "low",
+          "description": "On the same interval, measure crest factor and fraction of samples with |x|>0.5 after the 0.92 tanh, before peak normalization.",
+          "id": "E2_saturation_crest",
+          "separates": [
+            "H4"
+          ]
+        },
+        {
+          "controls": [
+            "same interval"
+          ],
+          "cost": "medium",
+          "description": "If a renderer tap exists, measure pre-Haas side energy on the same interval; otherwise flag as missing evidence.",
+          "id": "E3_side_path_tap",
+          "separates": [
+            "H2"
+          ]
+        },
+        {
+          "controls": [
+            "copied WAV",
+            "sidecar receipt",
+            "level-matched"
+          ],
+          "cost": "low",
+          "description": "On a copied WAV only, apply a level-matched reduced tanh drive and compare crest/band power. Label explicitly as signal-domain processing, not a latent-diffusion proxy.",
+          "id": "E4_offline_tanh_probe",
+          "separates": [
+            "H4"
+          ]
+        },
+        {
+          "controls": [
+            "no mutation of canonical files"
+          ],
+          "cost": "low",
+          "description": "Recompute chunk_scores for the full 600s and report the score distribution and the rank of the selected interval; check whether a width term would change the selection.",
+          "id": "E5_prime_selection_audit",
+          "separates": [
+            "H1"
+          ]
+        }
+      ],
+      "recommendation": "Before any training fork or diffusion mechanism, run the cheapest separating measurement above on the existing prime interval. If absolute bass is preserved and high-band absolute energy is flat, treat the report as a prime-selection artifact and add a width/harshness term to prime selection (a reversible, non-learned change). If absolute high-band energy rises with high saturation fraction, test an offline level-matched tanh-drive reduction on a copied WAV as a signal-domain probe, explicitly labeled as signal processing, not a latent-diffusion proxy (context_packet.md:64-67). Do not equate smoothing with quality (deepseek_packet.md:48-51).",
+      "supported_conclusions": [
+        "The listener report (harsh + centered) is consistent with the measured prime being a center-heavy, high-mid-fraction interval, but the measurements are diagnostics, not perceptual scores (deepseek_packet.md:22, context_packet.md:58-60).",
+        "The center bias in the prime is at least partly a selection artifact: the prime is chosen by a score with no width term from a run whose full-file correlation varies 0.740-0.992.",
+        "The harshness hypothesis cannot be attributed to a single mechanism from the supplied evidence. At least four separable candidates exist: (a) learned renderer spectral tilt (scan_brightness, partial amplitudes, wavefolder drive); (b) post-render tanh saturation at 0.92 drive; (c) whole-file peak normalization raising a quiet-but-bright interval; (d) target-mix/loss-history confound during online learning.",
+        "The low-band fraction drop is not yet established as absolute bass loss; the supplied metric is a normalized mid-channel fraction."
+      ],
+      "uncertainties": [
+        "The supplied spectral fractions are mid-channel only; the true L+R band power is unknown.",
+        "The listener report is unblinded and single-observer; no perceptual rating exists.",
+        "The trace's ultrasonic_ratio is a pre-master guardrail, not a harshness score (deepseek_packet.md:40-41).",
+        "The relationship between the 0.92 tanh drive and audible harshness is not measured.",
+        "Whether the pan head at +0.10 is a learned equilibrium or a transient is unknown from the supplied trace.",
+        "The target mix during the prime interval is not attributed."
+      ],
+      "what_observations_establish": [
+        "The latest 60s prime is drawn from a center-heavy interval: full-file L/R correlation ranges 0.740-0.992, minutes 5-6 are 0.990-0.992 with side/mid ~-23 dB (deepseek_packet.md:31-35).",
+        "The prime-selection score uses field entropy, activity health, structured complexity, and stagnation only (main.rs:8141-8145, 8463-8479); it has no width or harshness term, so it can select a within-run outlier.",
+        "The 20-200 Hz fraction collapse (20.8% -> 2.1%) and 2-6 kHz rise (33.6% -> 47.3%) are MID-channel normalized fractions (deepseek_packet.md:19-29). A fraction change can be produced by denominator growth (high-band energy) or by stereo change, not necessarily by absolute bass loss.",
+        "Training trace shows median output correlation 0.963 vs target 0.862, truthful width 0.027, decoder width control 0.120, width raw -0.946, global pan 0.0999 at its +0.10 limit, decoder side control 1.0 (deepseek_packet.md:37-41). These are consistent with a near-collapsed side path and a pan head pinned at its bound.",
+        "The pan head is bounded to +/-0.10 (stereo.rs:3, 13-19) and pan_center_loss penalizes only the bounded residual (stereo.rs:21-26); it does not reward correlation=1. So the observed correlation ~0.99 is not directly incentivized by pan_center_loss.",
+        "The learned width control is bounded 0.05..0.50 (stereo.rs:5-6, 28-41); side gain is further clamped (stereo.rs:9-11). Increasing side gain cannot synthesize missing side information (context_packet.md:44-47).",
+        "The prompt file is written after rendering and prime extraction (main.rs:8682-8697); its words cannot cause the run.",
+        "AdamW moments are persisted and resumed only under matching conditions (AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:112-124); the three latest WAVs are one sequential lineage, not independent seeds (context_packet.md:28-29)."
+      ]
+    }
+  },
+  "approximate_input_tokens": 26938,
+  "attempts": 1,
+  "context": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "created_at_utc": "2026-09-26T07:25:02.096247+00:00",
+  "elapsed_seconds": 40.379,
+  "endpoint": "https://openrouter.ai/api/v1",
+  "files": [
+    {
+      "bytes": 102384,
+      "selection": "analysis/audio_center_harshness_20260926/team_v2/context_packet.md",
+      "sha256": "1093a68a5f48929d046cb7195f2138ceb5f707f939eff59d6b9e438b26192fd4"
+    }
+  ],
+  "finish_reason": "stop",
+  "id": "gen-1790407502-i24bCyuvATbpcaUuusyP",
+  "max_tokens": 16384,
+  "purpose": "Reconstruct the causal audio pipeline and what the observations establish. Locate missing evidence and propose the cheapest separating measurement.",
+  "request": {
+    "bytes": 107750,
+    "sha256": "7e74839981253cc3397054e7a827c76e2e91deeeb66d66d90cbfb62faa2b4bdd"
+  },
+  "requested_model": "deepseek/deepseek-v4.1-flash",
+  "returned_model": "deepseek/deepseek-v4.1-flash",
+  "role": "researcher",
+  "schema_version": 1,
+  "status": "ok",
+  "temperature": 0.1,
+  "token_estimate_method": "serialized UTF-8 bytes / 4; not model tokenization",
+  "usage": {
+    "completion_tokens": 3378,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00595812,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.00141876,
+      "upstream_inference_cost": 0.00595812,
+      "upstream_inference_prompt_cost": 0.00453936
+    },
+    "prompt_tokens": 32424,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 35802
+  }
+}

@@ -1,0 +1,181 @@
+{
+  "answer": "{\n  \"conclusions\": [\n    \"The reported harshness and center bias are most plausibly explained by mundane, non-exotic mechanisms already visible in the supplied evidence: (a) the 60-second prime is selected by an internal score that does not measure width or harshness, so it can land on a center-heavy, bright interval; (b) the latest continuation's measured L/R correlation (0.991) and side/mid (-23.31 dB) are near mono-collapse, consistent with a center-heavy prime; (c) the audible path ends in tanh saturation plus DC blocking plus whole-file peak normalization, so a sample peak below 0 dBFS does not exclude nonlinear harshness; (d) the learned width control is bounded to 0.05..0.50 and the global pan to +/-0.10, so the renderer cannot synthesize missing side information.\",\n    \"The strongest unsupported leap in the packet is treating the generated prompt text ('focused center image', 'bright glassy upper spectrum') as a cause of the run. The source writes the prompt after rendering and prime extraction (src/main.rs:8682-8697), so it is a post-render description, not an input.\",\n    \"A second unsupported leap is treating waveform-domain filtering or a trained diffusion/flow decoder as a proxy for latent-field diffusion. The context contract explicitly separates these (research/audio_context.md:64-67).\",\n    \"A third unsupported leap is inferring that the whole 600-second WAV is uniformly centered. The packet itself reports non-overlapping 60-second intervals with correlation 0.740-0.992 (deepseek_packet.md:31-35), so the prime is a within-run outlier, not a global property.\",\n    \"The 'center collapse' is better described as a prime-selection artifact plus a bounded-width renderer, not as proof that the model lost stereo capability. The full-run interval spread contradicts uniform collapse.\",\n    \"The 'harshness' claim is not established by the supplied metrics. ultrasonic_ratio is explicitly a pre-master aliasing guardrail, not a harshness score (deepseek_packet.md:40-41; METRICS.md:94-95). No blinded listening has been performed (audio_context.md:58-60).\",\n    \"Practical priming is a downstream, out-of-scope concern here: the prompt file may influence a later external music system, but that is outside this experiment (audio_context.md:19-21).\"\n  ],\n  \"evidence\": [\n    {\n      \"claim\": \"Prompt is written after rendering and prime extraction.\",\n      \"source\": \"src/main.rs:8682-8697\",\n      \"detail\": \"prompt is formatted and written to suno_priming_prompt after the mastering/prime block at 8448-8542.\"\n    },\n    {\n      \"claim\": \"Prime selection uses field entropy, activity health, structured complexity, stagnation; not width or harshness.\",\n      \"source\": \"src/main.rs:8141-8145 and 8463-8479\",\n      \"detail\": \"chunk_scores combine field_entropy, activity_health, structured_complexity, stagnation; the prime window maximizes the sum of these scores.\"\n    },\n    {\n      \"claim\": \"Latest continuation is near mono-collapse in the prime interval.\",\n      \"source\": \"analysis/audio_center_harshness_20260926/deepseek_packet.md:24-35\",\n      \"detail\": \"tagged latest continuation: L/R corr 0.991, side/mid -23.31 dB; minutes 5-6 have 0.990-0.992 and side/mid about -23 dB.\"\n    },\n    {\n      \"claim\": \"Full run is not uniformly centered.\",\n      \"source\": \"analysis/audio_center_harshness_20260926/deepseek_packet.md:31-35\",\n      \"detail\": \"non-overlapping 60-second intervals have L/R correlation 0.740-0.992.\"\n    },\n    {\n      \"claim\": \"Width and pan are bounded; side gain cannot synthesize missing side information.\",\n      \"source\": \"src/stereo.rs:3-11, 28-41; research/audio_context.md:44-47\",\n      \"detail\": \"GLOBAL_PAN_LIMIT 0.10; WIDTH_CONTROL_MIN 0.05, WIDTH_CONTROL_MAX 0.50; side_gain clamps to maximum.\"\n    },\n    {\n      \"claim\": \"Audible path ends in tanh saturation, DC blocker, and whole-file peak normalization.\",\n      \"source\": \"src/main.rs:8059-8076 and 8448-8455\",\n      \"detail\": \"per-sample tanh(x*0.92), stateful DC blocker, then norm = 0.891 / raw_peak.\"\n    },\n    {\n      \"claim\": \"ultrasonic_ratio is a guardrail, not a harshness score.\",\n      \"source\": \"METRICS.md:94-95 and deepseek_packet.md:40-41\",\n      \"detail\": \"explicitly labeled pre-master aliasing/foldback guardrail.\"\n    },\n    {\n      \"claim\": \"No blinded listening has been performed.\",\n      \"source\": \"research/audio_context.md:58-60\",\n      \"detail\": \"listener reports harsh/centered; no controlled blinded listening yet.\"\n    },\n    {\n      \"claim\": \"Waveform filtering is not a proxy for latent-field diffusion.\",\n      \"source\": \"research/audio_context.md:64-67\",\n      \"detail\": \"explicit inference limit.\"\n    },\n    {\n      \"claim\": \"Target audio does not enter the current forward pass.\",\n      \"source\": \"research/audio_context.md:13-18; docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:101-108\",\n      \"detail\": \"forward has no target argument; target sampling occurs after forward.\"\n    },\n    {\n      \"claim\": \"Training trace shows near-collapse and pan at its limit.\",\n      \"source\": \"analysis/audio_center_harshness_20260926/deepseek_packet.md:37-43\",\n      \"detail\": \"median output correlation 0.963 vs target 0.862; median truthful width 0.027; global pan 0.0999 at +0.10 limit; decoder side control 1.0.\"\n    }\n  ],\n  \"uncertainties\": [\n    \"No blinded listening has been performed, so the perceptual harshness claim is unverified.\",\n    \"The supplied spectral fractions are mid-channel only and normalized; changes can reflect denominator or stereo changes rather than absolute band power (research/audio_context.md:54-57).\",\n    \"The target mix and online learning confound comparisons between elapsed portions of a run (research/audio_context.md:37-39).\",\n    \"The three latest WAVs are one sequential continuation lineage, not independent seeds or matched arms (research/audio_context.md:28-29).\",\n    \"Per-frequency loss gradients, pre-side-scale renderer taps, and detailed target-mix attribution are missing (research/audio_context.md:71-74).\",\n    \"It is not established whether the harshness is dominated by tanh saturation, wavefolder behavior, scan-partial brightness, or the target distribution; the supplied metrics do not separate these.\",\n    \"It is not established whether the center bias is dominated by prime selection, learned width rail, pan rail, or target correlation; the trace shows several of these simultaneously.\",\n    \"The prompt text is descriptive and post-hoc; any downstream priming effect is outside this experiment and unmeasured.\"\n  ],\n  \"proposed_experiments\": [\n    {\n      \"name\": \"Prime-selection control (decisive for center-collapse attribution)\",\n      \"design\": \"From the existing finalized 600-second WAV, extract multiple non-overlapping 60-second windows (including the current prime interval and a low-correlation interval). Compute L/R correlation, side/mid, and absolute L+R band power per window. Compare the current prime interval against the full-run distribution.\",\n      \"prediction_if_artifact\": \"The current prime is an extreme outlier in correlation/side-mid relative to the run distribution.\",\n      \"prediction_if_real_collapse\": \"All or most windows are similarly center-heavy.\",\n      \"controls\": \"Use the same measurement code and window length; report absolute and total L+R band power, not only fractions; do not resynthesize.\"\n    },\n    {\n      \"name\": \"Level-matched A/B of prime vs non-prime interval\",\n      \"design\": \"Create copied WAVs of the prime interval and a matched non-prime interval, level-matched to the same RMS. Blind the listener to which is which.\",\n      \"prediction_if_artifact\": \"Harshness/centering ratings track the prime interval, not the run as a whole.\",\n      \"controls\": \"Record level-matching gains in sidecar receipts; keep canonical files byte-for-byte intact.\"\n    },\n    {\n      \"name\": \"Post-path ablation (signal-domain only)\",\n      \"design\": \"On copied WAVs, bypass or reduce the tanh saturation and DC blocker in an offline signal-domain test, level-matched to the original.\",\n      \"prediction_if_harshness_is_post_path\": \"Reducing tanh drive reduces perceived harshness at matched level.\",\n      \"prediction_if_harshness_is_upstream\": \"No perceptual change.\",\n      \"controls\": \"This tests signal processing only; it is not a proxy for latent-field diffusion (research/audio_context.md:64-67).\"\n    },\n    {\n      \"name\": \"Stereo-geometry diagnostic on the full run\",\n      \"design\": \"Compute per-window correlation, side/mid, and balance across the full 600 seconds using the same estimators as the packet.\",\n      \"prediction_if_artifact\": \"Wide spread with the prime at one extreme.\",\n      \"prediction_if_real_collapse\": \"Narrow spread near correlation 1.\"\n    },\n    {\n      \"name\": \"Prompt-causality negative control\",\n      \"design\": \"Confirm by source inspection and, if desired, by a no-prompt-file run that the prompt text is not read by forward or by the renderer.\",\n      \"prediction\": \"Removing or altering the prompt file does not change the rendered audio for the same checkpoint and seed.\",\n      \"controls\": \"Do not mutate canonical checkpoints or corpus.\"\n    },\n    {\n      \"name\": \"Target-mix attribution audit\",\n      \"design\": \"From existing traces, tabulate target_file/target_frame/target_chunks_left against output correlation and band fractions for the prime interval.\",\n      \"prediction_if_target_confound\": \"Prime-interval center bias co-occurs with a specific target family or episode.\",\n      \"controls\": \"Read-only; do not call load_or_create_corpus_manifest (docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:110).\"\n    }\n  ],\n  \"context_receipt\": {\n    \"project\": \"titan_audio_ecosystem\",\n    \"direct_reference_input\": false,\n    \"prompt_is_post_render_output\": true,\n    \"waveform_filter_tests_latent_diffusion\": false,\n    \"canonical_mutation_allowed\": false\n  }\n}",
+  "answer_json": {
+    "conclusions": [
+      "The reported harshness and center bias are most plausibly explained by mundane, non-exotic mechanisms already visible in the supplied evidence: (a) the 60-second prime is selected by an internal score that does not measure width or harshness, so it can land on a center-heavy, bright interval; (b) the latest continuation's measured L/R correlation (0.991) and side/mid (-23.31 dB) are near mono-collapse, consistent with a center-heavy prime; (c) the audible path ends in tanh saturation plus DC blocking plus whole-file peak normalization, so a sample peak below 0 dBFS does not exclude nonlinear harshness; (d) the learned width control is bounded to 0.05..0.50 and the global pan to +/-0.10, so the renderer cannot synthesize missing side information.",
+      "The strongest unsupported leap in the packet is treating the generated prompt text ('focused center image', 'bright glassy upper spectrum') as a cause of the run. The source writes the prompt after rendering and prime extraction (src/main.rs:8682-8697), so it is a post-render description, not an input.",
+      "A second unsupported leap is treating waveform-domain filtering or a trained diffusion/flow decoder as a proxy for latent-field diffusion. The context contract explicitly separates these (research/audio_context.md:64-67).",
+      "A third unsupported leap is inferring that the whole 600-second WAV is uniformly centered. The packet itself reports non-overlapping 60-second intervals with correlation 0.740-0.992 (deepseek_packet.md:31-35), so the prime is a within-run outlier, not a global property.",
+      "The 'center collapse' is better described as a prime-selection artifact plus a bounded-width renderer, not as proof that the model lost stereo capability. The full-run interval spread contradicts uniform collapse.",
+      "The 'harshness' claim is not established by the supplied metrics. ultrasonic_ratio is explicitly a pre-master aliasing guardrail, not a harshness score (deepseek_packet.md:40-41; METRICS.md:94-95). No blinded listening has been performed (audio_context.md:58-60).",
+      "Practical priming is a downstream, out-of-scope concern here: the prompt file may influence a later external music system, but that is outside this experiment (audio_context.md:19-21)."
+    ],
+    "context_receipt": {
+      "canonical_mutation_allowed": false,
+      "direct_reference_input": false,
+      "project": "titan_audio_ecosystem",
+      "prompt_is_post_render_output": true,
+      "waveform_filter_tests_latent_diffusion": false
+    },
+    "evidence": [
+      {
+        "claim": "Prompt is written after rendering and prime extraction.",
+        "detail": "prompt is formatted and written to suno_priming_prompt after the mastering/prime block at 8448-8542.",
+        "source": "src/main.rs:8682-8697"
+      },
+      {
+        "claim": "Prime selection uses field entropy, activity health, structured complexity, stagnation; not width or harshness.",
+        "detail": "chunk_scores combine field_entropy, activity_health, structured_complexity, stagnation; the prime window maximizes the sum of these scores.",
+        "source": "src/main.rs:8141-8145 and 8463-8479"
+      },
+      {
+        "claim": "Latest continuation is near mono-collapse in the prime interval.",
+        "detail": "tagged latest continuation: L/R corr 0.991, side/mid -23.31 dB; minutes 5-6 have 0.990-0.992 and side/mid about -23 dB.",
+        "source": "analysis/audio_center_harshness_20260926/deepseek_packet.md:24-35"
+      },
+      {
+        "claim": "Full run is not uniformly centered.",
+        "detail": "non-overlapping 60-second intervals have L/R correlation 0.740-0.992.",
+        "source": "analysis/audio_center_harshness_20260926/deepseek_packet.md:31-35"
+      },
+      {
+        "claim": "Width and pan are bounded; side gain cannot synthesize missing side information.",
+        "detail": "GLOBAL_PAN_LIMIT 0.10; WIDTH_CONTROL_MIN 0.05, WIDTH_CONTROL_MAX 0.50; side_gain clamps to maximum.",
+        "source": "src/stereo.rs:3-11, 28-41; research/audio_context.md:44-47"
+      },
+      {
+        "claim": "Audible path ends in tanh saturation, DC blocker, and whole-file peak normalization.",
+        "detail": "per-sample tanh(x*0.92), stateful DC blocker, then norm = 0.891 / raw_peak.",
+        "source": "src/main.rs:8059-8076 and 8448-8455"
+      },
+      {
+        "claim": "ultrasonic_ratio is a guardrail, not a harshness score.",
+        "detail": "explicitly labeled pre-master aliasing/foldback guardrail.",
+        "source": "METRICS.md:94-95 and deepseek_packet.md:40-41"
+      },
+      {
+        "claim": "No blinded listening has been performed.",
+        "detail": "listener reports harsh/centered; no controlled blinded listening yet.",
+        "source": "research/audio_context.md:58-60"
+      },
+      {
+        "claim": "Waveform filtering is not a proxy for latent-field diffusion.",
+        "detail": "explicit inference limit.",
+        "source": "research/audio_context.md:64-67"
+      },
+      {
+        "claim": "Target audio does not enter the current forward pass.",
+        "detail": "forward has no target argument; target sampling occurs after forward.",
+        "source": "research/audio_context.md:13-18; docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:101-108"
+      },
+      {
+        "claim": "Training trace shows near-collapse and pan at its limit.",
+        "detail": "median output correlation 0.963 vs target 0.862; median truthful width 0.027; global pan 0.0999 at +0.10 limit; decoder side control 1.0.",
+        "source": "analysis/audio_center_harshness_20260926/deepseek_packet.md:37-43"
+      }
+    ],
+    "proposed_experiments": [
+      {
+        "controls": "Use the same measurement code and window length; report absolute and total L+R band power, not only fractions; do not resynthesize.",
+        "design": "From the existing finalized 600-second WAV, extract multiple non-overlapping 60-second windows (including the current prime interval and a low-correlation interval). Compute L/R correlation, side/mid, and absolute L+R band power per window. Compare the current prime interval against the full-run distribution.",
+        "name": "Prime-selection control (decisive for center-collapse attribution)",
+        "prediction_if_artifact": "The current prime is an extreme outlier in correlation/side-mid relative to the run distribution.",
+        "prediction_if_real_collapse": "All or most windows are similarly center-heavy."
+      },
+      {
+        "controls": "Record level-matching gains in sidecar receipts; keep canonical files byte-for-byte intact.",
+        "design": "Create copied WAVs of the prime interval and a matched non-prime interval, level-matched to the same RMS. Blind the listener to which is which.",
+        "name": "Level-matched A/B of prime vs non-prime interval",
+        "prediction_if_artifact": "Harshness/centering ratings track the prime interval, not the run as a whole."
+      },
+      {
+        "controls": "This tests signal processing only; it is not a proxy for latent-field diffusion (research/audio_context.md:64-67).",
+        "design": "On copied WAVs, bypass or reduce the tanh saturation and DC blocker in an offline signal-domain test, level-matched to the original.",
+        "name": "Post-path ablation (signal-domain only)",
+        "prediction_if_harshness_is_post_path": "Reducing tanh drive reduces perceived harshness at matched level.",
+        "prediction_if_harshness_is_upstream": "No perceptual change."
+      },
+      {
+        "design": "Compute per-window correlation, side/mid, and balance across the full 600 seconds using the same estimators as the packet.",
+        "name": "Stereo-geometry diagnostic on the full run",
+        "prediction_if_artifact": "Wide spread with the prime at one extreme.",
+        "prediction_if_real_collapse": "Narrow spread near correlation 1."
+      },
+      {
+        "controls": "Do not mutate canonical checkpoints or corpus.",
+        "design": "Confirm by source inspection and, if desired, by a no-prompt-file run that the prompt text is not read by forward or by the renderer.",
+        "name": "Prompt-causality negative control",
+        "prediction": "Removing or altering the prompt file does not change the rendered audio for the same checkpoint and seed."
+      },
+      {
+        "controls": "Read-only; do not call load_or_create_corpus_manifest (docs/AUDIO_SCIENTIFIC_INSTRUMENTATION_PLAN.md:110).",
+        "design": "From existing traces, tabulate target_file/target_frame/target_chunks_left against output correlation and band fractions for the prime interval.",
+        "name": "Target-mix attribution audit",
+        "prediction_if_target_confound": "Prime-interval center bias co-occurs with a specific target family or episode."
+      }
+    ],
+    "uncertainties": [
+      "No blinded listening has been performed, so the perceptual harshness claim is unverified.",
+      "The supplied spectral fractions are mid-channel only and normalized; changes can reflect denominator or stereo changes rather than absolute band power (research/audio_context.md:54-57).",
+      "The target mix and online learning confound comparisons between elapsed portions of a run (research/audio_context.md:37-39).",
+      "The three latest WAVs are one sequential continuation lineage, not independent seeds or matched arms (research/audio_context.md:28-29).",
+      "Per-frequency loss gradients, pre-side-scale renderer taps, and detailed target-mix attribution are missing (research/audio_context.md:71-74).",
+      "It is not established whether the harshness is dominated by tanh saturation, wavefolder behavior, scan-partial brightness, or the target distribution; the supplied metrics do not separate these.",
+      "It is not established whether the center bias is dominated by prime selection, learned width rail, pan rail, or target correlation; the trace shows several of these simultaneously.",
+      "The prompt text is descriptive and post-hoc; any downstream priming effect is outside this experiment and unmeasured."
+    ]
+  },
+  "approximate_input_tokens": 27042,
+  "attempts": 1,
+  "context": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "created_at_utc": "2026-09-26T07:29:01.495231+00:00",
+  "elapsed_seconds": 20.456,
+  "endpoint": "https://openrouter.ai/api/v1",
+  "files": [
+    {
+      "bytes": 102384,
+      "selection": "analysis/audio_center_harshness_20260926/team_v2/context_packet.md",
+      "sha256": "1093a68a5f48929d046cb7195f2138ceb5f707f939eff59d6b9e438b26192fd4"
+    }
+  ],
+  "finish_reason": "stop",
+  "id": "gen-1790407741-XLU4fJXkXF6Z6c7qUvec",
+  "max_tokens": 16384,
+  "purpose": "Find the strongest mundane explanations and unsupported leaps, including center collapse, harshness, output smoothing, and practical priming. Offer decisive controls. Return a JSON object with conclusions, evidence, uncertainties, proposed_experiments, and a context_receipt object reconstructing these facts from the source: project (string), direct_reference_input (boolean), prompt_is_post_render_output (boolean), waveform_filter_tests_latent_diffusion (boolean), canonical_mutation_allowed (boolean). The receipt is mandatory. Cite original source paths and line numbers.",
+  "request": {
+    "bytes": 108165,
+    "sha256": "24f256530a3aa5294d1c6c624b60d6a6521d39e23a63d8cfaa31949cf3afd002"
+  },
+  "requested_model": "deepseek/deepseek-v4.1-flash",
+  "returned_model": "deepseek/deepseek-v4.1-flash",
+  "role": "result-skeptic",
+  "schema_version": 1,
+  "status": "ok",
+  "temperature": 0.1,
+  "token_estimate_method": "serialized UTF-8 bytes / 4; not model tokenization",
+  "usage": {
+    "completion_tokens": 2405,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.012639,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.002886,
+      "upstream_inference_cost": 0.012639,
+      "upstream_inference_prompt_cost": 0.009753
+    },
+    "prompt_tokens": 32510,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 34915
+  }
+}

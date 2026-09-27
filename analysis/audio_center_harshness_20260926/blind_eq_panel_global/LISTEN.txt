@@ -1,0 +1,6 @@
+Blind listening panel
+
+Play listen_A.wav through listen_F.wav with the same playback settings.
+For each file, record perceived harshness, stereo image, transient detail,
+and usefulness as an audio reference. Add free-form notes.
+Use key.json only after all ratings are complete.

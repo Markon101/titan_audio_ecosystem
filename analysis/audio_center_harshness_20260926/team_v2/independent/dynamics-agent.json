@@ -1,0 +1,206 @@
+{
+  "answer": "{\n  \"conclusions\": [\n    \"The three candidate mechanisms are separable in principle but not by any single existing artifact: (a) waveform/signal-domain heat diffusion is an offline filter on the finalized WAV; (b) latent-field diffusion would act on the micro/macro CA field or the 512-d recurrent/MorphicStack state before the decoder; (c) a learned decoder is the existing 64+16-token spatial-temporal decoder plus control heads (src/main.rs:130-143, 5194-5196).\",\n    \"Only (a) is testable with the current checkpoint and renderer without training: it is a copied-WAV, sidecar-receipt offline experiment (context_packet.md:64-70). It cannot test (b) or (c) because latent field entropy is not recoverable from a WAV (context_packet.md:67) and a trained diffusion/flow decoder is not a proxy for latent-field diffusion (context_packet.md:65-66).\",\n    \"Mechanism (b) is not currently implemented as a module; renderer proposal documents are unimplemented ideas (context_packet.md:62-63). Any latent-diffusion claim therefore requires a new module and a training fork, which is outside the reversible-experiment budget.\",\n    \"Mechanism (c) is already present and is the most likely locus of the reported harshness/center bias: the decoder's temporal controls drive mid/side (src/main.rs:5565-5572), wavefolder drive (5520-5536), openness (5538-5563), and the learned width head (5591-5599). The trace shows decoder width control 0.120, width raw -0.946, decoder side control 1.0, global pan 0.0999 at its +0.10 limit (deepseek_packet.md:37-41).\",\n    \"Preservation risks differ by mechanism. Offline waveform filtering risks only creating copied WAVs and sidecars (context_packet.md:68-70). Latent-field diffusion risks changing the object under study and cannot be validated against the frozen checkpoint. A learned decoder change risks altering trained behavior and invalidating the v9-long-01 lineage (deepseek_packet.md:45-47).\",\n    \"The reported center bias is at least partly a selection artifact: the 60-second prime is drawn from a very center-heavy interval (minutes 5-6, correlation 0.990-0.992, side/mid about -23 dB) while the full 600-second WAV ranges 0.740-0.992 (deepseek_packet.md:31-35). Prime selection uses field entropy, activity health, complexity, stagnation, not audible width or harshness (context_packet.md:51-53).\",\n    \"Harshness is not established by any supplied metric. ultrasonic_ratio is a pre-master foldback guardrail, not a harshness score (deepseek_packet.md:40-41; METRICS.md:94-95). No controlled blinded listening has been performed (context_packet.md:58-60).\"\n  ],\n  \"evidence\": [\n    \"context_packet.md:64-67 \u2014 offline waveform filtering tests signal processing; it is not a proxy for latent-field diffusion; a trained diffusion/flow decoder is also not a proxy; latent field entropy cannot be recovered from a WAV.\",\n    \"context_packet.md:68-70 \u2014 preservation/budget: canonical checkpoints, corpus, existing WAVs, normal renderer and training stay intact; offline test may create copied WAVs and sidecar receipts; use paired intervals and record level-matching gains.\",\n    \"context_packet.md:62-63 \u2014 renderer proposal documents contain unimplemented ideas; they are not available modules.\",\n    \"context_packet.md:51-53 \u2014 prime selection uses field entropy, activity health, complexity, stagnation; no listener rating or direct stereo/harshness ranking; selection can amplify a within-run outlier.\",\n    \"context_packet.md:58-60 \u2014 listener reports harsh/centered sound; no controlled blinded listening yet; no perceptual improvement established.\",\n    \"deepseek_packet.md:24-29 \u2014 measurement table: untagged parent corr 0.603, side/mid -6.01; tagged latest corr 0.991, side/mid -23.31, 20-200 Hz 2.1%, 2-6 kHz 47.3%.\",\n    \"deepseek_packet.md:31-35 \u2014 latest full 600-second WAV is not uniformly centered; minutes 5-6 have corr 0.990-0.992 and side/mid about -23 dB; current prime is from a very center-heavy interval.\",\n    \"deepseek_packet.md:37-41 \u2014 trace: median output corr 0.963 vs target 0.862; median truthful width 0.027; decoder width control 0.120; width raw -0.946; global pan 0.0999 at +0.10 limit; decoder side control 1.0; ultrasonic_ratio median 0.0965 is a pre-master guardrail.\",\n    \"deepseek_packet.md:45-47 \u2014 Audio v9 does not take target audio into the current forward pass; checkpoint set and existing audio files must remain byte-for-byte intact.\",\n    \"src/main.rs:130-143 \u2014 decoder is low-rate (32 control frames per 4096-sample chunk), 76-control output head; DECODER_CONTROL_COUNT = 12 + 32*2.\",\n    \"src/main.rs:5194-5196 \u2014 temporal_decoder.forward(next_micro, next_macro, refined_hidden) produces temporal_controls.\",\n    \"src/main.rs:5520-5536 \u2014 fold_drive_l/r from temporal_controls[10,11] feed wavefolder_l/r.\",\n    \"src/main.rs:5565-5572 \u2014 mid and side are formed from audio_l/audio_r and scaled by temporal_controls[4] and [5].\",\n    \"src/main.rs:5591-5599 \u2014 width_val = stereo_side_gain(last_pan, control.width_mult); learned_width = soft_width_control(width_raw); side_wide = side * width_val * learned_width.\",\n    \"src/main.rs:5600-5603 \u2014 Haas side path: side_history cat of prev_haas_side and side_wide; side_delayed = first CHUNK_SIZE; audio_l = mid + side_delayed; audio_r = mid - side_delayed.\",\n    \"src/main.rs:8059-8076 \u2014 post path: tanh(0.92*x) then stateful DC blocker; raw_peak tracked.\",\n    \"src/main.rs:8451-8455 \u2014 streamed mastering: norm = 0.891 / raw_peak; whole-file peak normalization to -1 dBFS.\",\n    \"src/main.rs:8463-8482 \u2014 prime selection by sliding-window sum of chunk_scores; fade 2048 samples.\",\n    \"src/stereo.rs:3-7 \u2014 GLOBAL_PAN_LIMIT 0.10; WIDTH_CONTROL_MIN 0.05; WIDTH_CONTROL_MAX 0.50.\",\n    \"src/stereo.rs:9-11 \u2014 side_gain = ((1 + |last_pan|*0.8) * width_mult.clamp(0.5,1.6)).clamp(0.5, maximum).\",\n    \"src/stereo.rs:28-41 \u2014 soft_width_control maps raw to [0.05, 0.50] with polynomial tail.\",\n    \"src/stereo.rs:48-51 \u2014 correlation_aware_width multiplies side_energy_width by incoherence sqrt((1-corr)/2).\",\n    \"METRICS.md:94-95 \u2014 ultrasonic_ratio is a pre-master aliasing/foldback guardrail, not a musical brightness score.\",\n    \"METRICS.md:129-134 \u2014 side_energy_width can be high for panned mono; width multiplies by incoherence; stereo_corr is post-DC, pre-master.\",\n    \"METRICS.md:155-157 \u2014 claims about improved sound require repeated seeded runs, ablation comparisons, objective audio measurements, and blinded listening.\"\n  ],\n  \"uncertainties\": [\n    \"No perceptual rating exists for any of the three mechanisms; harshness and center bias are listener reports only (context_packet.md:58-60).\",\n    \"The supplied spectral fractions are MID-channel sampled FFT power fractions; changes can reflect denominator or stereo changes, so absolute and total L+R band power must be measured before claiming bass recovery (context_packet.md:54-57).\",\n    \"The three latest WAVs form one sequential continuation lineage, not independent seeds or matched arms (context_packet.md:28-29), so between-WAV differences confound elapsed training, target mix, and online learning (context_packet.md:37-39).\",\n    \"Target mix and loss history may confound attribution of the center bias (deepseek_packet.md:42-43).\",\n    \"It is not established whether the harshness is caused by the wavefolder, the scan partials, the tanh saturation, the DC blocker, or the peak normalization; no frequency-specific loss gradients or pre-side-scale renderer taps are available (context_packet.md:71-74).\",\n    \"Latent-field diffusion has no implemented module; any claim about it is speculation until a module exists and is tested against a frozen baseline.\",\n    \"A learned decoder change cannot be evaluated against the frozen checkpoint without a training fork, which is outside the reversible-experiment budget (deepseek_packet.md:45-47).\",\n    \"The trace's decoder width control 0.120 and width raw -0.946 are consistent with a width head near its lower operating region, but the trace is a sampled summary (704 rows) and does not by itself prove the audible width is collapsed.\",\n    \"The global pan at 0.0999 is at the +0.10 limit, but pan_center_loss penalizes only the bounded audible residual (src/stereo.rs:21-26), so the pan head can sit at the rail without a strong gradient to return.\"\n  ],\n  \"proposed_experiments\": [\n    {\n      \"id\": \"E1_waveform_filter_paired\",\n      \"mechanism_tested\": \"signal-domain smoothing / waveform heat diffusion\",\n      \"design\": \"Offline, on copied WAVs only. Apply a small family of low-pass or heat-kernel filters (e.g., one-pole, Gaussian, or explicit heat equation with small diffusion coefficient) to the latest prime and to the full 600-second WAV. Use paired non-overlapping 60-second intervals. Record level-matching gains and sidecar receipts. Do not modify canonical files.\",\n      \"controls\": [\n        \"Identity filter (zero diffusion) as negative control.\",\n        \"Level-matched gain-only copy as a second negative control.\",\n        \"Same filter applied to the untagged parent prime for a cross-lineage reference.\"\n      ],\n      \"measurements\": [\n        \"Absolute and total L+R band power in 20-200 Hz, 2-6 kHz, 6-20 kHz before and after.\",\n        \"L/R correlation, side/mid dB, L/R balance dB before and after.\",\n        \"Peak and RMS before and after; note that whole-file peak normalization is applied at render time (src/main.rs:8451-8455), so post-filter renormalization must be reported.\"\n      ],\n      \"what_it_can_conclude\": \"Whether signal-domain smoothing changes the measured stereo and band statistics in the direction of the listener report.\",\n      \"what_it_cannot_conclude\": \"It cannot test latent-field diffusion or a learned decoder (context_packet.md:64-67). It cannot establish perceptual improvement without blinded listening (METRICS.md:155-157).\"\n    },\n    {\n      \"id\": \"E2_prime_selection_audit\",\n      \"mechanism_tested\": \"selection artifact vs. renderer behavior\",\n      \"design\": \"Recompute the prime selection score over the full 600-second WAV and report the score, correlation, side/mid, and band fractions for every non-overlapping 60-second interval. Compare the selected interval to the distribution.\",\n      \"controls\": [\n        \"Report the same statistics for the untagged parent and the two earlier tagged continuations.\"\n      ],\n      \"measurements\": [\n        \"Per-interval L/R correlation, side/mid dB, balance dB, 20-200 Hz, 2-6 kHz, 6-20 kHz.\",\n        \"Selection score components (field entropy, activity health, structured complexity, stagnation) if recoverable from the trace.\"\n      ],\n      \"what_it_can_conclude\": \"Whether the reported center bias is concentrated in the selected prime interval or is present across the run.\",\n      \"what_it_cannot_conclude\": \"It cannot attribute the bias to a specific renderer subsystem.\"\n    },\n    {\n      \"id\": \"E3_frozen_renderer_tap_contrast\",\n      \"mechanism_tested\": \"learned decoder contribution to center bias and harshness\",\n      \"design\": \"On a frozen checkpoint, run a short render with instrumentation that records, per chunk, the pre-side-scale side energy, the learned width control, the wavefolder drive, the openness curve, and the mid/side split before and after the Haas path. This is an observation-only intervention; it must not change weights or the canonical renderer.\",\n      \"controls\": [\n        \"Same run with the width head output held at its trace median (0.120) to test sensitivity.\",\n        \"Same run with the wavefolder drive held at 1.0 to test sensitivity.\"\n      ],\n      \"measurements\": [\n        \"Per-chunk side energy before and after width scaling.\",\n        \"Per-chunk wavefolder drive and openness.\",\n        \"Per-chunk mid/side ratio and correlation.\"\n      ],\n      \"what_it_can_conclude\": \"Whether the center bias is produced by the learned width head, the side excitation, or the Haas path.\",\n      \"what_it_cannot_conclude\": \"It cannot test latent-field diffusion, and it cannot establish perceptual improvement.\"\n    },\n    {\n      \"id\": \"E4_latent_diffusion_module_gate\",\n      \"mechanism_tested\": \"latent-field diffusion\",\n      \"design\": \"Not runnable now. A latent-diffusion experiment requires a new module that operates on the micro/macro field or the 512-d recurrent state before the decoder, plus a training fork. It must be gated on a written module specification and a frozen-baseline comparison.\",\n      \"controls\": [\n        \"Frozen baseline with no diffusion.\",\n        \"Zero-output identity branch to prove bypass behavior only (context_packet.md:66-67).\"\n      ],\n      \"measurements\": [\n        \"Field entropy, movement, and decoder control statistics before and after.\",\n        \"Absolute and total L+R band power, correlation, side/mid.\"\n      ],\n      \"what_it_can_conclude\": \"Nothing until the module exists and is trained.\",\n      \"what_it_cannot_conclude\": \"It cannot be inferred from a WAV filter or from a trained diffusion/flow decoder (context_packet.md:64-67).\"\n    },\n    {\n      \"id\": \"E5_blinded_listening\",\n      \"mechanism_tested\": \"perceptual harshness and center bias\",\n      \"design\": \"Paired, level-matched, blinded A/B between the latest prime and a reference (untagged parent prime or a filtered copy). Randomize order and require a stated preference and a harshness rating.\",\n      \"controls\": [\n        \"Level-matched gain-only copy as a null.\",\n        \"Repeat with a second listener if available.\"\n      ],\n      \"measurements\": [\n        \"Preference, harshness rating, perceived width rating.\"\n      ],\n      \"what_it_can_conclude\": \"Whether the listener report replicates under controlled conditions.\",\n      \"what_it_cannot_conclude\": \"It cannot attribute the percept to a specific mechanism without the instrumented experiments above.\"\n    }\n  ],\n  \"context_receipt\": {\n    \"project\": \"titan_audio_ecosystem\",\n    \"direct_reference_input\": false,\n    \"prompt_is_post_render_output\": true,\n    \"waveform_filter_tests_latent_diffusion\": false,\n    \"canonical_mutation_allowed\": false\n  },\n  \"summary\": \"Waveform heat diffusion, latent-field diffusion, and a learned decoder are three distinct mechanisms. Only waveform filtering is testable offline on copied WAVs; it cannot test latent-field diffusion or a learned decoder. The learned decoder is already present and is the most plausible locus of the reported center bias, but the current prime is drawn from a very center-heavy interval, so selection is a confound. No perceptual improvement is established. Proposed experiments are offline, paired, and preservation-safe; the latent-diffusion experiment is gated on a module that does not yet exist.\",\n  \"hypotheses\": [\n    \"H1 (supported by measurement): the reported center bias is partly a prime-selection artifact; the selected interval is among the most correlated in the run (deepseek_packet.md:31-35).\",\n    \"H2 (plausible, not established): the learned width head and side excitation are contributing to the center bias; the trace shows width control 0.120 and width raw -0.946 (deepseek_packet.md:37-41).\",\n    \"H3 (speculation): the harshness is associated with the wavefolder drive, scan partials, or the tanh saturation; no frequency-specific loss gradients or pre-side-scale taps are available to test this (context_packet.md:71-74).\",\n    \"H4 (speculation): latent-field diffusion would reduce high-band state energy; this is not testable from a WAV and no module exists (context_packet.md:62-67).\"\n  ],\n  \"missing_evidence\": [\n    \"Perceptual ratings under controlled blinded listening (context_packet.md:58-60, 71-74).\",\n    \"Independent training replicas or matched arms; the three WAVs are one sequential lineage (context_packet.md:28-29).\",\n    \"Pre-side-scale renderer taps and frequency-specific loss gradients (context_packet.md:71-74).\",\n    \"Detailed target mix attribution (context_packet.md:71-74).\",\n    \"Absolute and total L+R band power; the supplied fractions are MID-channel sampled FFT power fractions (context_packet.md:54-57).\",\n    \"A written specification and implementation of any latent-diffusion module (context_packet.md:62-63).\"\n  ],\n  \"recommendation\": \"Run E1 (offline waveform filter on copied WAVs with paired intervals and level-matching receipts) and E2 (prime-selection audit) first; both are preservation-safe and can be completed without touching the checkpoint or renderer. Run E3 (frozen renderer tap contrast) only if instrumentation can be added without changing weights or canonical outputs. Do not attempt E4 (latent diffusion) until a module specification exists. Treat all conclusions as provisional until E5 (blinded listening) is performed.\"\n}",
+  "answer_json": {
+    "conclusions": [
+      "The three candidate mechanisms are separable in principle but not by any single existing artifact: (a) waveform/signal-domain heat diffusion is an offline filter on the finalized WAV; (b) latent-field diffusion would act on the micro/macro CA field or the 512-d recurrent/MorphicStack state before the decoder; (c) a learned decoder is the existing 64+16-token spatial-temporal decoder plus control heads (src/main.rs:130-143, 5194-5196).",
+      "Only (a) is testable with the current checkpoint and renderer without training: it is a copied-WAV, sidecar-receipt offline experiment (context_packet.md:64-70). It cannot test (b) or (c) because latent field entropy is not recoverable from a WAV (context_packet.md:67) and a trained diffusion/flow decoder is not a proxy for latent-field diffusion (context_packet.md:65-66).",
+      "Mechanism (b) is not currently implemented as a module; renderer proposal documents are unimplemented ideas (context_packet.md:62-63). Any latent-diffusion claim therefore requires a new module and a training fork, which is outside the reversible-experiment budget.",
+      "Mechanism (c) is already present and is the most likely locus of the reported harshness/center bias: the decoder's temporal controls drive mid/side (src/main.rs:5565-5572), wavefolder drive (5520-5536), openness (5538-5563), and the learned width head (5591-5599). The trace shows decoder width control 0.120, width raw -0.946, decoder side control 1.0, global pan 0.0999 at its +0.10 limit (deepseek_packet.md:37-41).",
+      "Preservation risks differ by mechanism. Offline waveform filtering risks only creating copied WAVs and sidecars (context_packet.md:68-70). Latent-field diffusion risks changing the object under study and cannot be validated against the frozen checkpoint. A learned decoder change risks altering trained behavior and invalidating the v9-long-01 lineage (deepseek_packet.md:45-47).",
+      "The reported center bias is at least partly a selection artifact: the 60-second prime is drawn from a very center-heavy interval (minutes 5-6, correlation 0.990-0.992, side/mid about -23 dB) while the full 600-second WAV ranges 0.740-0.992 (deepseek_packet.md:31-35). Prime selection uses field entropy, activity health, complexity, stagnation, not audible width or harshness (context_packet.md:51-53).",
+      "Harshness is not established by any supplied metric. ultrasonic_ratio is a pre-master foldback guardrail, not a harshness score (deepseek_packet.md:40-41; METRICS.md:94-95). No controlled blinded listening has been performed (context_packet.md:58-60)."
+    ],
+    "context_receipt": {
+      "canonical_mutation_allowed": false,
+      "direct_reference_input": false,
+      "project": "titan_audio_ecosystem",
+      "prompt_is_post_render_output": true,
+      "waveform_filter_tests_latent_diffusion": false
+    },
+    "evidence": [
+      "context_packet.md:64-67 \u2014 offline waveform filtering tests signal processing; it is not a proxy for latent-field diffusion; a trained diffusion/flow decoder is also not a proxy; latent field entropy cannot be recovered from a WAV.",
+      "context_packet.md:68-70 \u2014 preservation/budget: canonical checkpoints, corpus, existing WAVs, normal renderer and training stay intact; offline test may create copied WAVs and sidecar receipts; use paired intervals and record level-matching gains.",
+      "context_packet.md:62-63 \u2014 renderer proposal documents contain unimplemented ideas; they are not available modules.",
+      "context_packet.md:51-53 \u2014 prime selection uses field entropy, activity health, complexity, stagnation; no listener rating or direct stereo/harshness ranking; selection can amplify a within-run outlier.",
+      "context_packet.md:58-60 \u2014 listener reports harsh/centered sound; no controlled blinded listening yet; no perceptual improvement established.",
+      "deepseek_packet.md:24-29 \u2014 measurement table: untagged parent corr 0.603, side/mid -6.01; tagged latest corr 0.991, side/mid -23.31, 20-200 Hz 2.1%, 2-6 kHz 47.3%.",
+      "deepseek_packet.md:31-35 \u2014 latest full 600-second WAV is not uniformly centered; minutes 5-6 have corr 0.990-0.992 and side/mid about -23 dB; current prime is from a very center-heavy interval.",
+      "deepseek_packet.md:37-41 \u2014 trace: median output corr 0.963 vs target 0.862; median truthful width 0.027; decoder width control 0.120; width raw -0.946; global pan 0.0999 at +0.10 limit; decoder side control 1.0; ultrasonic_ratio median 0.0965 is a pre-master guardrail.",
+      "deepseek_packet.md:45-47 \u2014 Audio v9 does not take target audio into the current forward pass; checkpoint set and existing audio files must remain byte-for-byte intact.",
+      "src/main.rs:130-143 \u2014 decoder is low-rate (32 control frames per 4096-sample chunk), 76-control output head; DECODER_CONTROL_COUNT = 12 + 32*2.",
+      "src/main.rs:5194-5196 \u2014 temporal_decoder.forward(next_micro, next_macro, refined_hidden) produces temporal_controls.",
+      "src/main.rs:5520-5536 \u2014 fold_drive_l/r from temporal_controls[10,11] feed wavefolder_l/r.",
+      "src/main.rs:5565-5572 \u2014 mid and side are formed from audio_l/audio_r and scaled by temporal_controls[4] and [5].",
+      "src/main.rs:5591-5599 \u2014 width_val = stereo_side_gain(last_pan, control.width_mult); learned_width = soft_width_control(width_raw); side_wide = side * width_val * learned_width.",
+      "src/main.rs:5600-5603 \u2014 Haas side path: side_history cat of prev_haas_side and side_wide; side_delayed = first CHUNK_SIZE; audio_l = mid + side_delayed; audio_r = mid - side_delayed.",
+      "src/main.rs:8059-8076 \u2014 post path: tanh(0.92*x) then stateful DC blocker; raw_peak tracked.",
+      "src/main.rs:8451-8455 \u2014 streamed mastering: norm = 0.891 / raw_peak; whole-file peak normalization to -1 dBFS.",
+      "src/main.rs:8463-8482 \u2014 prime selection by sliding-window sum of chunk_scores; fade 2048 samples.",
+      "src/stereo.rs:3-7 \u2014 GLOBAL_PAN_LIMIT 0.10; WIDTH_CONTROL_MIN 0.05; WIDTH_CONTROL_MAX 0.50.",
+      "src/stereo.rs:9-11 \u2014 side_gain = ((1 + |last_pan|*0.8) * width_mult.clamp(0.5,1.6)).clamp(0.5, maximum).",
+      "src/stereo.rs:28-41 \u2014 soft_width_control maps raw to [0.05, 0.50] with polynomial tail.",
+      "src/stereo.rs:48-51 \u2014 correlation_aware_width multiplies side_energy_width by incoherence sqrt((1-corr)/2).",
+      "METRICS.md:94-95 \u2014 ultrasonic_ratio is a pre-master aliasing/foldback guardrail, not a musical brightness score.",
+      "METRICS.md:129-134 \u2014 side_energy_width can be high for panned mono; width multiplies by incoherence; stereo_corr is post-DC, pre-master.",
+      "METRICS.md:155-157 \u2014 claims about improved sound require repeated seeded runs, ablation comparisons, objective audio measurements, and blinded listening."
+    ],
+    "hypotheses": [
+      "H1 (supported by measurement): the reported center bias is partly a prime-selection artifact; the selected interval is among the most correlated in the run (deepseek_packet.md:31-35).",
+      "H2 (plausible, not established): the learned width head and side excitation are contributing to the center bias; the trace shows width control 0.120 and width raw -0.946 (deepseek_packet.md:37-41).",
+      "H3 (speculation): the harshness is associated with the wavefolder drive, scan partials, or the tanh saturation; no frequency-specific loss gradients or pre-side-scale taps are available to test this (context_packet.md:71-74).",
+      "H4 (speculation): latent-field diffusion would reduce high-band state energy; this is not testable from a WAV and no module exists (context_packet.md:62-67)."
+    ],
+    "missing_evidence": [
+      "Perceptual ratings under controlled blinded listening (context_packet.md:58-60, 71-74).",
+      "Independent training replicas or matched arms; the three WAVs are one sequential lineage (context_packet.md:28-29).",
+      "Pre-side-scale renderer taps and frequency-specific loss gradients (context_packet.md:71-74).",
+      "Detailed target mix attribution (context_packet.md:71-74).",
+      "Absolute and total L+R band power; the supplied fractions are MID-channel sampled FFT power fractions (context_packet.md:54-57).",
+      "A written specification and implementation of any latent-diffusion module (context_packet.md:62-63)."
+    ],
+    "proposed_experiments": [
+      {
+        "controls": [
+          "Identity filter (zero diffusion) as negative control.",
+          "Level-matched gain-only copy as a second negative control.",
+          "Same filter applied to the untagged parent prime for a cross-lineage reference."
+        ],
+        "design": "Offline, on copied WAVs only. Apply a small family of low-pass or heat-kernel filters (e.g., one-pole, Gaussian, or explicit heat equation with small diffusion coefficient) to the latest prime and to the full 600-second WAV. Use paired non-overlapping 60-second intervals. Record level-matching gains and sidecar receipts. Do not modify canonical files.",
+        "id": "E1_waveform_filter_paired",
+        "measurements": [
+          "Absolute and total L+R band power in 20-200 Hz, 2-6 kHz, 6-20 kHz before and after.",
+          "L/R correlation, side/mid dB, L/R balance dB before and after.",
+          "Peak and RMS before and after; note that whole-file peak normalization is applied at render time (src/main.rs:8451-8455), so post-filter renormalization must be reported."
+        ],
+        "mechanism_tested": "signal-domain smoothing / waveform heat diffusion",
+        "what_it_can_conclude": "Whether signal-domain smoothing changes the measured stereo and band statistics in the direction of the listener report.",
+        "what_it_cannot_conclude": "It cannot test latent-field diffusion or a learned decoder (context_packet.md:64-67). It cannot establish perceptual improvement without blinded listening (METRICS.md:155-157)."
+      },
+      {
+        "controls": [
+          "Report the same statistics for the untagged parent and the two earlier tagged continuations."
+        ],
+        "design": "Recompute the prime selection score over the full 600-second WAV and report the score, correlation, side/mid, and band fractions for every non-overlapping 60-second interval. Compare the selected interval to the distribution.",
+        "id": "E2_prime_selection_audit",
+        "measurements": [
+          "Per-interval L/R correlation, side/mid dB, balance dB, 20-200 Hz, 2-6 kHz, 6-20 kHz.",
+          "Selection score components (field entropy, activity health, structured complexity, stagnation) if recoverable from the trace."
+        ],
+        "mechanism_tested": "selection artifact vs. renderer behavior",
+        "what_it_can_conclude": "Whether the reported center bias is concentrated in the selected prime interval or is present across the run.",
+        "what_it_cannot_conclude": "It cannot attribute the bias to a specific renderer subsystem."
+      },
+      {
+        "controls": [
+          "Same run with the width head output held at its trace median (0.120) to test sensitivity.",
+          "Same run with the wavefolder drive held at 1.0 to test sensitivity."
+        ],
+        "design": "On a frozen checkpoint, run a short render with instrumentation that records, per chunk, the pre-side-scale side energy, the learned width control, the wavefolder drive, the openness curve, and the mid/side split before and after the Haas path. This is an observation-only intervention; it must not change weights or the canonical renderer.",
+        "id": "E3_frozen_renderer_tap_contrast",
+        "measurements": [
+          "Per-chunk side energy before and after width scaling.",
+          "Per-chunk wavefolder drive and openness.",
+          "Per-chunk mid/side ratio and correlation."
+        ],
+        "mechanism_tested": "learned decoder contribution to center bias and harshness",
+        "what_it_can_conclude": "Whether the center bias is produced by the learned width head, the side excitation, or the Haas path.",
+        "what_it_cannot_conclude": "It cannot test latent-field diffusion, and it cannot establish perceptual improvement."
+      },
+      {
+        "controls": [
+          "Frozen baseline with no diffusion.",
+          "Zero-output identity branch to prove bypass behavior only (context_packet.md:66-67)."
+        ],
+        "design": "Not runnable now. A latent-diffusion experiment requires a new module that operates on the micro/macro field or the 512-d recurrent state before the decoder, plus a training fork. It must be gated on a written module specification and a frozen-baseline comparison.",
+        "id": "E4_latent_diffusion_module_gate",
+        "measurements": [
+          "Field entropy, movement, and decoder control statistics before and after.",
+          "Absolute and total L+R band power, correlation, side/mid."
+        ],
+        "mechanism_tested": "latent-field diffusion",
+        "what_it_can_conclude": "Nothing until the module exists and is trained.",
+        "what_it_cannot_conclude": "It cannot be inferred from a WAV filter or from a trained diffusion/flow decoder (context_packet.md:64-67)."
+      },
+      {
+        "controls": [
+          "Level-matched gain-only copy as a null.",
+          "Repeat with a second listener if available."
+        ],
+        "design": "Paired, level-matched, blinded A/B between the latest prime and a reference (untagged parent prime or a filtered copy). Randomize order and require a stated preference and a harshness rating.",
+        "id": "E5_blinded_listening",
+        "measurements": [
+          "Preference, harshness rating, perceived width rating."
+        ],
+        "mechanism_tested": "perceptual harshness and center bias",
+        "what_it_can_conclude": "Whether the listener report replicates under controlled conditions.",
+        "what_it_cannot_conclude": "It cannot attribute the percept to a specific mechanism without the instrumented experiments above."
+      }
+    ],
+    "recommendation": "Run E1 (offline waveform filter on copied WAVs with paired intervals and level-matching receipts) and E2 (prime-selection audit) first; both are preservation-safe and can be completed without touching the checkpoint or renderer. Run E3 (frozen renderer tap contrast) only if instrumentation can be added without changing weights or canonical outputs. Do not attempt E4 (latent diffusion) until a module specification exists. Treat all conclusions as provisional until E5 (blinded listening) is performed.",
+    "summary": "Waveform heat diffusion, latent-field diffusion, and a learned decoder are three distinct mechanisms. Only waveform filtering is testable offline on copied WAVs; it cannot test latent-field diffusion or a learned decoder. The learned decoder is already present and is the most plausible locus of the reported center bias, but the current prime is drawn from a very center-heavy interval, so selection is a confound. No perceptual improvement is established. Proposed experiments are offline, paired, and preservation-safe; the latent-diffusion experiment is gated on a module that does not yet exist.",
+    "uncertainties": [
+      "No perceptual rating exists for any of the three mechanisms; harshness and center bias are listener reports only (context_packet.md:58-60).",
+      "The supplied spectral fractions are MID-channel sampled FFT power fractions; changes can reflect denominator or stereo changes, so absolute and total L+R band power must be measured before claiming bass recovery (context_packet.md:54-57).",
+      "The three latest WAVs form one sequential continuation lineage, not independent seeds or matched arms (context_packet.md:28-29), so between-WAV differences confound elapsed training, target mix, and online learning (context_packet.md:37-39).",
+      "Target mix and loss history may confound attribution of the center bias (deepseek_packet.md:42-43).",
+      "It is not established whether the harshness is caused by the wavefolder, the scan partials, the tanh saturation, the DC blocker, or the peak normalization; no frequency-specific loss gradients or pre-side-scale renderer taps are available (context_packet.md:71-74).",
+      "Latent-field diffusion has no implemented module; any claim about it is speculation until a module exists and is tested against a frozen baseline.",
+      "A learned decoder change cannot be evaluated against the frozen checkpoint without a training fork, which is outside the reversible-experiment budget (deepseek_packet.md:45-47).",
+      "The trace's decoder width control 0.120 and width raw -0.946 are consistent with a width head near its lower operating region, but the trace is a sampled summary (704 rows) and does not by itself prove the audible width is collapsed.",
+      "The global pan at 0.0999 is at the +0.10 limit, but pan_center_loss penalizes only the bounded audible residual (src/stereo.rs:21-26), so the pan head can sit at the rail without a strong gradient to return."
+    ]
+  },
+  "approximate_input_tokens": 26946,
+  "attempts": 1,
+  "context": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "created_at_utc": "2026-09-26T07:25:23.958298+00:00",
+  "elapsed_seconds": 22.482,
+  "endpoint": "https://openrouter.ai/api/v1",
+  "files": [
+    {
+      "bytes": 102384,
+      "selection": "analysis/audio_center_harshness_20260926/team_v2/context_packet.md",
+      "sha256": "1093a68a5f48929d046cb7195f2138ceb5f707f939eff59d6b9e438b26192fd4"
+    }
+  ],
+  "finish_reason": "stop",
+  "id": "gen-1790407524-9H6bW5l0AXwGHsGrH68n",
+  "max_tokens": 16384,
+  "purpose": "Compare waveform heat diffusion, latent diffusion, and a learned decoder. State which experiment can test which mechanism and the preservation risks.",
+  "request": {
+    "bytes": 107784,
+    "sha256": "33fd88c89d9ba494f9867c3840b6158469cbcb0d002a27b32b42bb1743b96d92"
+  },
+  "requested_model": "deepseek/deepseek-v4.1-flash",
+  "returned_model": "deepseek/deepseek-v4.1-flash",
+  "role": "dynamical-systems-critic",
+  "schema_version": 1,
+  "status": "ok",
+  "temperature": 0.1,
+  "token_estimate_method": "serialized UTF-8 bytes / 4; not model tokenization",
+  "usage": {
+    "completion_tokens": 4110,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.0073305,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.002466,
+      "upstream_inference_cost": 0.0073305,
+      "upstream_inference_prompt_cost": 0.0048645
+    },
+    "prompt_tokens": 32430,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 36540
+  }
+}

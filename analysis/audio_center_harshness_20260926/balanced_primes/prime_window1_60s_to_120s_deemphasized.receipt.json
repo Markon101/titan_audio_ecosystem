@@ -1,0 +1,57 @@
+{
+  "input_wav": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/audio_center_harshness_20260926/balanced_primes/prime_window1_60s_to_120s_raw.wav",
+  "input_sha256": "9b10c681f75a20ea733b330e543fa15862df8663880e1f2fde63f0d6f874cb62",
+  "output_wav": "analysis/audio_center_harshness_20260926/balanced_primes/prime_window1_60s_to_120s_deemphasized.wav",
+  "output_sha256": "ac48357df451c89eff85d60d83b52aba600194f1e63de7f1cc6c8c142331e01d",
+  "filter_parameters": {
+    "type": "parametric_peaking_bell",
+    "center_frequency_hz": 3500.0,
+    "q_factor": 1.0,
+    "gain_db": -3.0,
+    "target_peak_dbfs": -1.0,
+    "post_gain_applied": 1.0
+  },
+  "before_metrics": {
+    "rms": 0.20739470441249858,
+    "peak": 0.811492919921875,
+    "peak_dbfs": -1.8143052986964456,
+    "crest_db": 11.849741441708106,
+    "lr_correlation": 0.7832078062772106,
+    "side_over_mid_db": -8.405105515896633,
+    "bands": {
+      "20-200Hz": 0.026397794082666994,
+      "200-2000Hz": 0.4306938704438559,
+      "2000-6000Hz": 0.46347195551127907,
+      "6000-12000Hz": 0.03543120429409426,
+      "12000-20000Hz": 0.028884925568974696,
+      "20000-24000Hz": 0.014786109723543304
+    }
+  },
+  "after_metrics": {
+    "rms": 0.18545412511157866,
+    "peak": 0.7442626953125,
+    "peak_dbfs": -2.5654749721967103,
+    "crest_db": 12.069795069520566,
+    "lr_correlation": 0.776898478650882,
+    "side_over_mid_db": -8.372992140183863,
+    "bands": {
+      "20-200Hz": 0.03300312822517761,
+      "200-2000Hz": 0.5312726368201053,
+      "2000-6000Hz": 0.3419641894396013,
+      "6000-12000Hz": 0.03934123373803928,
+      "12000-20000Hz": 0.03552341149473499,
+      "20000-24000Hz": 0.01847742705899317
+    }
+  },
+  "impact_summary": {
+    "band_2k_6k_before": 0.46347195551127907,
+    "band_2k_6k_after": 0.3419641894396013,
+    "band_2k_6k_delta_percent": -12.15077660716778,
+    "peak_dbfs_before": -1.8143052986964456,
+    "peak_dbfs_after": -2.5654749721967103,
+    "correlation_before": 0.7832078062772106,
+    "correlation_after": 0.776898478650882,
+    "side_over_mid_db_before": -8.405105515896633,
+    "side_over_mid_db_after": -8.372992140183863
+  }
+}

@@ -1,0 +1,713 @@
+{
+  "schema_version": 1,
+  "description": "waveform low-pass and mid/side probe; no latent or learned diffusion",
+  "tool": {
+    "script_sha256": "cad504a643c9654c4c4756d10e215b72836b3bd333f105c4fcd3af24c7df04a8",
+    "numpy_version": "2.4.4"
+  },
+  "source": {
+    "path": "/storage/emulated/0/Download/titan_prime_60s_v9-long-01_9bcf582d4b13.wav",
+    "sha256_before": "4f8e6a604f5a3f37ec39818f71af6955a0488d4d937491cf1e051162c05ee48d",
+    "sha256_after": "4f8e6a604f5a3f37ec39818f71af6955a0488d4d937491cf1e051162c05ee48d",
+    "exact_copy": "source_original.wav",
+    "copy_sha256": "4f8e6a604f5a3f37ec39818f71af6955a0488d4d937491cf1e051162c05ee48d"
+  },
+  "interval": {
+    "start_frame": 0,
+    "frames": 2879488,
+    "sample_rate": 48000
+  },
+  "controls": {
+    "nu": 0.1,
+    "steps": 5,
+    "side_gain": 2,
+    "seed": 123
+  },
+  "common_stereo_rms_target_before_headroom": 0.21710528002642734,
+  "listening_peak_limit_dbfs": -1,
+  "raw_float_metrics_before_gain": {
+    "original": {
+      "stereo_rms": 0.231587750718067,
+      "peak": 0.729034423828125,
+      "at_or_over_full_scale_samples": 0,
+      "pcm16_endpoint_samples": 0,
+      "crest_db": 9.96064901589039,
+      "lr_centered_correlation": 0.990812643061937,
+      "left_over_right_power_db": -0.12760473676744521,
+      "side_over_mid_power_db": -23.307918199913637,
+      "onset_envelope_change_proxy": 0.0,
+      "onset_proxy_definition": "mean absolute change in adjacent normalized 10ms RMS envelope differences from source; not musical quality",
+      "spectrum": {
+        "method": "sampled Hann FFT; one-sided power in full-scale squared units",
+        "fft_frames": 4096,
+        "sampled_windows": 128,
+        "lr_total_power_including_dc": 0.10725450096612643,
+        "bands": [
+          {
+            "hz": [
+              20,
+              200
+            ],
+            "lr_power": 0.002433108701374807,
+            "lr_total_fraction": 0.022685376179627573,
+            "mid_power": 0.001199665148791573,
+            "side_power": 1.6889201895830167e-05
+          },
+          {
+            "hz": [
+              200,
+              2000
+            ],
+            "lr_power": 0.04691117016624719,
+            "lr_total_fraction": 0.4373818324049904,
+            "mid_power": 0.023365521251712346,
+            "side_power": 9.006383141122275e-05
+          },
+          {
+            "hz": [
+              2000,
+              6000
+            ],
+            "lr_power": 0.05001508200892845,
+            "lr_total_fraction": 0.46632152085369755,
+            "mid_power": 0.024902094150875274,
+            "side_power": 0.00010544685358896535
+          },
+          {
+            "hz": [
+              6000,
+              12000
+            ],
+            "lr_power": 0.0034884774778189604,
+            "lr_total_fraction": 0.03252523154175792,
+            "mid_power": 0.0017277816528233538,
+            "side_power": 1.6457086086127506e-05
+          },
+          {
+            "hz": [
+              12000,
+              20000
+            ],
+            "lr_power": 0.0030710168028279393,
+            "lr_total_fraction": 0.02863298766172844,
+            "mid_power": 0.0015224759605612643,
+            "side_power": 1.303244085270518e-05
+          },
+          {
+            "hz": [
+              20000,
+              24000
+            ],
+            "lr_power": 0.0012969991832473885,
+            "lr_total_fraction": 0.012092724981835608,
+            "mid_power": 0.0006419845111409797,
+            "side_power": 6.515080482714895e-06
+          }
+        ]
+      }
+    },
+    "waveform_heat": {
+      "stereo_rms": 0.21710528002642734,
+      "peak": 0.6837137902832031,
+      "at_or_over_full_scale_samples": 0,
+      "pcm16_endpoint_samples": 0,
+      "crest_db": 9.964079077782504,
+      "lr_centered_correlation": 0.9913782294633721,
+      "left_over_right_power_db": -0.07575539748399653,
+      "side_over_mid_power_db": -23.6165396311562,
+      "onset_envelope_change_proxy": 0.016250440903977852,
+      "onset_proxy_definition": "mean absolute change in adjacent normalized 10ms RMS envelope differences from source; not musical quality",
+      "spectrum": {
+        "method": "sampled Hann FFT; one-sided power in full-scale squared units",
+        "fft_frames": 4096,
+        "sampled_windows": 128,
+        "lr_total_power_including_dc": 0.09425763773247539,
+        "bands": [
+          {
+            "hz": [
+              20,
+              200
+            ],
+            "lr_power": 0.002432633239081132,
+            "lr_total_fraction": 0.025808340815685393,
+            "mid_power": 0.0011994301261080294,
+            "side_power": 1.6886493432536188e-05
+          },
+          {
+            "hz": [
+              200,
+              2000
+            ],
+            "lr_power": 0.04673099197587206,
+            "lr_total_fraction": 0.4957793670631259,
+            "mid_power": 0.02327608389864745,
+            "side_power": 8.941208928860334e-05
+          },
+          {
+            "hz": [
+              2000,
+              6000
+            ],
+            "lr_power": 0.04384144951884149,
+            "lr_total_fraction": 0.46512357590876074,
+            "mid_power": 0.02182923777320308,
+            "side_power": 9.148698621763703e-05
+          },
+          {
+            "hz": [
+              6000,
+              12000
+            ],
+            "lr_power": 0.0010765332931707671,
+            "lr_total_fraction": 0.011421178368868244,
+            "mid_power": 0.0005335359168231799,
+            "side_power": 4.730729762203551e-06
+          },
+          {
+            "hz": [
+              12000,
+              20000
+            ],
+            "lr_power": 0.00012771401642950307,
+            "lr_total_fraction": 0.0013549460765395424,
+            "mid_power": 6.315844844905175e-05,
+            "side_power": 6.985597656998035e-07
+          },
+          {
+            "hz": [
+              20000,
+              24000
+            ],
+            "lr_power": 9.669290758739974e-06,
+            "lr_total_fraction": 0.00010258363132527913,
+            "mid_power": 4.787698119625318e-06,
+            "side_power": 4.6947259744668006e-08
+          }
+        ]
+      }
+    },
+    "side_gain": {
+      "stereo_rms": 0.23319649226844086,
+      "peak": 0.76727294921875,
+      "at_or_over_full_scale_samples": 0,
+      "pcm16_endpoint_samples": 0,
+      "crest_db": 10.344557471936453,
+      "lr_centered_correlation": 0.9637387639353754,
+      "left_over_right_power_db": -0.2517527837774328,
+      "side_over_mid_power_db": -17.287318286634015,
+      "onset_envelope_change_proxy": 0.0015454750945425612,
+      "onset_proxy_definition": "mean absolute change in adjacent normalized 10ms RMS envelope differences from source; not musical quality",
+      "spectrum": {
+        "method": "sampled Hann FFT; one-sided power in full-scale squared units",
+        "fft_frames": 4096,
+        "sampled_windows": 128,
+        "lr_total_power_including_dc": 0.10874624668140419,
+        "bands": [
+          {
+            "hz": [
+              20,
+              200
+            ],
+            "lr_power": 0.002534443912749787,
+            "lr_total_fraction": 0.02330603574921526,
+            "mid_power": 0.001199665148791573,
+            "side_power": 6.755680758332067e-05
+          },
+          {
+            "hz": [
+              200,
+              2000
+            ],
+            "lr_power": 0.04745155315471449,
+            "lr_total_fraction": 0.43635118087095137,
+            "mid_power": 0.02336552125171235,
+            "side_power": 0.000360255325644891
+          },
+          {
+            "hz": [
+              2000,
+              6000
+            ],
+            "lr_power": 0.050647763130462264,
+            "lr_total_fraction": 0.46574263182476466,
+            "mid_power": 0.024902094150875274,
+            "side_power": 0.00042178741435586144
+          },
+          {
+            "hz": [
+              6000,
+              12000
+            ],
+            "lr_power": 0.0035872199943357257,
+            "lr_total_fraction": 0.03298706947417935,
+            "mid_power": 0.0017277816528233538,
+            "side_power": 6.582834434451003e-05
+          },
+          {
+            "hz": [
+              12000,
+              20000
+            ],
+            "lr_power": 0.0031492114479441734,
+            "lr_total_fraction": 0.02895926566707607,
+            "mid_power": 0.0015224759605612643,
+            "side_power": 5.212976341082072e-05
+          },
+          {
+            "hz": [
+              20000,
+              24000
+            ],
+            "lr_power": 0.0013360896661436775,
+            "lr_total_fraction": 0.012286306028179926,
+            "mid_power": 0.0006419845111409797,
+            "side_power": 2.6060321930859572e-05
+          }
+        ]
+      }
+    },
+    "waveform_heat_and_side_gain": {
+      "stereo_rms": 0.21851074411194582,
+      "peak": 0.7099387789916992,
+      "at_or_over_full_scale_samples": 0,
+      "pcm16_endpoint_samples": 0,
+      "crest_db": 10.234962066477905,
+      "lr_centered_correlation": 0.9659494627543941,
+      "left_over_right_power_db": -0.1495790164270505,
+      "side_over_mid_power_db": -17.59593971787658,
+      "onset_envelope_change_proxy": 0.015704375464129307,
+      "onset_proxy_definition": "mean absolute change in adjacent normalized 10ms RMS envelope differences from source; not musical quality",
+      "spectrum": {
+        "method": "sampled Hann FFT; one-sided power in full-scale squared units",
+        "fft_frames": 4096,
+        "sampled_windows": 128,
+        "lr_total_power_including_dc": 0.09547852730790107,
+        "bands": [
+          {
+            "hz": [
+              20,
+              200
+            ],
+            "lr_power": 0.0025339521996763483,
+            "lr_total_fraction": 0.026539498158625847,
+            "mid_power": 0.0011994301261080292,
+            "side_power": 6.754597373014474e-05
+          },
+          {
+            "hz": [
+              200,
+              2000
+            ],
+            "lr_power": 0.04726746451160373,
+            "lr_total_fraction": 0.4950585837920882,
+            "mid_power": 0.02327608389864745,
+            "side_power": 0.0003576483571544134
+          },
+          {
+            "hz": [
+              2000,
+              6000
+            ],
+            "lr_power": 0.04439037143614732,
+            "lr_total_fraction": 0.464925179386108,
+            "mid_power": 0.021829237773203076,
+            "side_power": 0.00036594794487054816
+          },
+          {
+            "hz": [
+              6000,
+              12000
+            ],
+            "lr_power": 0.0011049176717439868,
+            "lr_total_fraction": 0.011572420552537705,
+            "mid_power": 0.00053353591682318,
+            "side_power": 1.8922919048814214e-05
+          },
+          {
+            "hz": [
+              12000,
+              20000
+            ],
+            "lr_power": 0.00013190537502370204,
+            "lr_total_fraction": 0.0013815187429350574,
+            "mid_power": 6.315844844905175e-05,
+            "side_power": 2.794239062799212e-06
+          },
+          {
+            "hz": [
+              20000,
+              24000
+            ],
+            "lr_power": 9.95097431720799e-06,
+            "lr_total_fraction": 0.00010422211776599661,
+            "mid_power": 4.787698119625318e-06,
+            "side_power": 1.877890389786719e-07
+          }
+        ]
+      }
+    }
+  },
+  "listening_pcm16": {
+    "A": {
+      "condition": "side_gain",
+      "file": "listen_A.wav",
+      "sha256": "039db1583e17a48ebd2f76c2d38f5945e2336d57f3fe40b9cf287bb0e0539041",
+      "rms_match_gain": 0.9309971943167552,
+      "shared_headroom_gain": 1.0,
+      "combined_gain": 0.9309971943167552,
+      "metrics": {
+        "stereo_rms": 0.21710528486061997,
+        "peak": 0.714324951171875,
+        "at_or_over_full_scale_samples": 0,
+        "pcm16_endpoint_samples": 0,
+        "crest_db": 10.34450849655994,
+        "lr_centered_correlation": 0.9637387496478171,
+        "left_over_right_power_db": -0.25175265711526457,
+        "side_over_mid_power_db": -17.287316612547816,
+        "onset_envelope_change_proxy": 0.0015454833211214465,
+        "onset_proxy_definition": "mean absolute change in adjacent normalized 10ms RMS envelope differences from source; not musical quality",
+        "spectrum": {
+          "method": "sampled Hann FFT; one-sided power in full-scale squared units",
+          "fft_frames": 4096,
+          "sampled_windows": 128,
+          "lr_total_power_including_dc": 0.09425643131585151,
+          "bands": [
+            {
+              "hz": [
+                20,
+                200
+              ],
+              "lr_power": 0.002196745963815137,
+              "lr_total_fraction": 0.023306059153182693,
+              "mid_power": 0.0010398174272986903,
+              "side_power": 5.855555460887802e-05
+            },
+            {
+              "hz": [
+                200,
+                2000
+              ],
+              "lr_power": 0.04112891011253285,
+              "lr_total_fraction": 0.43635123395146,
+              "mid_power": 0.02025220141661225,
+              "side_power": 0.00031225363965417383
+            },
+            {
+              "hz": [
+                2000,
+                6000
+              ],
+              "lr_power": 0.0438992258528104,
+              "lr_total_fraction": 0.46574249884026403,
+              "mid_power": 0.021584026525276682,
+              "side_power": 0.0003655864011285274
+            },
+            {
+              "hz": [
+                6000,
+                12000
+              ],
+              "lr_power": 0.0031092462750282653,
+              "lr_total_fraction": 0.03298709946496107,
+              "mid_power": 0.001497565857306829,
+              "side_power": 5.7057280207304516e-05
+            },
+            {
+              "hz": [
+                12000,
+                20000
+              ],
+              "lr_power": 0.002729598056957285,
+              "lr_total_fraction": 0.028959276506135202,
+              "mid_power": 0.001319615245699194,
+              "side_power": 4.518378277944756e-05
+            },
+            {
+              "hz": [
+                20000,
+                24000
+              ],
+              "lr_power": 0.0011580646837603317,
+              "lr_total_fraction": 0.012286320069552378,
+              "mid_power": 0.0005564442268928079,
+              "side_power": 2.2588114987357877e-05
+            }
+          ]
+        }
+      }
+    },
+    "B": {
+      "condition": "waveform_heat_and_side_gain",
+      "file": "listen_B.wav",
+      "sha256": "f2a867e18a811baaf2f52b6754b7f8358643e8217f3728bdf30ef049de28fe03",
+      "rms_match_gain": 0.9935679863650163,
+      "shared_headroom_gain": 1.0,
+      "combined_gain": 0.9935679863650163,
+      "metrics": {
+        "stereo_rms": 0.21710527931857873,
+        "peak": 0.70538330078125,
+        "at_or_over_full_scale_samples": 0,
+        "pcm16_endpoint_samples": 0,
+        "crest_db": 10.235095794411652,
+        "lr_centered_correlation": 0.965949470815565,
+        "left_over_right_power_db": -0.14957859524156156,
+        "side_over_mid_power_db": -17.595940863590272,
+        "onset_envelope_change_proxy": 0.015704323700840548,
+        "onset_proxy_definition": "mean absolute change in adjacent normalized 10ms RMS envelope differences from source; not musical quality",
+        "spectrum": {
+          "method": "sampled Hann FFT; one-sided power in full-scale squared units",
+          "fft_frames": 4096,
+          "sampled_windows": 128,
+          "lr_total_power_including_dc": 0.09425423901463241,
+          "bands": [
+            {
+              "hz": [
+                20,
+                200
+              ],
+              "lr_power": 0.0025014599896657614,
+              "lr_total_fraction": 0.02653949589765851,
+              "mid_power": 0.0011840497633480466,
+              "side_power": 6.66802314848342e-05
+            },
+            {
+              "hz": [
+                200,
+                2000
+              ],
+              "lr_power": 0.04666137359767556,
+              "lr_total_fraction": 0.49505862108155857,
+              "mid_power": 0.022977625445501904,
+              "side_power": 0.00035306135333583515
+            },
+            {
+              "hz": [
+                2000,
+                6000
+              ],
+              "lr_power": 0.04382116537349247,
+              "lr_total_fraction": 0.4649251411036218,
+              "mid_power": 0.021549327218724143,
+              "side_power": 0.00036125546802212073
+            },
+            {
+              "hz": [
+                6000,
+                12000
+              ],
+              "lr_power": 0.001090749531830083,
+              "lr_total_fraction": 0.011572418845382123,
+              "mid_power": 0.0005266945652528406,
+              "side_power": 1.868020066220077e-05
+            },
+            {
+              "hz": [
+                12000,
+                20000
+              ],
+              "lr_power": 0.00013021436513594283,
+              "lr_total_fraction": 0.001381522640225527,
+              "mid_power": 6.234875016664674e-05,
+              "side_power": 2.7584324013247082e-06
+            },
+            {
+              "hz": [
+                20000,
+                24000
+              ],
+              "lr_power": 9.823422232886435e-06,
+              "lr_total_fraction": 0.0001042226040503219,
+              "mid_power": 4.7263136923503736e-06,
+              "side_power": 1.853974240928445e-07
+            }
+          ]
+        }
+      }
+    },
+    "C": {
+      "condition": "waveform_heat",
+      "file": "listen_C.wav",
+      "sha256": "db1883fa55549aee32386b1dc8c6fac2f08186b18d65c3fdc0e42a873e51f04e",
+      "rms_match_gain": 1.0,
+      "shared_headroom_gain": 1.0,
+      "combined_gain": 1.0,
+      "metrics": {
+        "stereo_rms": 0.2171052813957408,
+        "peak": 0.6837158203125,
+        "at_or_over_full_scale_samples": 0,
+        "pcm16_endpoint_samples": 0,
+        "crest_db": 9.964104812422539,
+        "lr_centered_correlation": 0.9913782282825022,
+        "left_over_right_power_db": -0.07575533575009503,
+        "side_over_mid_power_db": -23.61653906730769,
+        "onset_envelope_change_proxy": 0.01625046216242435,
+        "onset_proxy_definition": "mean absolute change in adjacent normalized 10ms RMS envelope differences from source; not musical quality",
+        "spectrum": {
+          "method": "sampled Hann FFT; one-sided power in full-scale squared units",
+          "fft_frames": 4096,
+          "sampled_windows": 128,
+          "lr_total_power_including_dc": 0.09425763887328914,
+          "bands": [
+            {
+              "hz": [
+                20,
+                200
+              ],
+              "lr_power": 0.0024326349500140925,
+              "lr_total_fraction": 0.025808358654987016,
+              "mid_power": 0.0011994309303037295,
+              "side_power": 1.6886544703316947e-05
+            },
+            {
+              "hz": [
+                200,
+                2000
+              ],
+              "lr_power": 0.04673098932114589,
+              "lr_total_fraction": 0.4957793328980637,
+              "mid_power": 0.023276082993312,
+              "side_power": 8.941166726093364e-05
+            },
+            {
+              "hz": [
+                2000,
+                6000
+              ],
+              "lr_power": 0.04384145086327828,
+              "lr_total_fraction": 0.46512358454272856,
+              "mid_power": 0.021829238753157818,
+              "side_power": 9.148667848130658e-05
+            },
+            {
+              "hz": [
+                6000,
+                12000
+              ],
+              "lr_power": 0.001076533880090083,
+              "lr_total_fraction": 0.011421184457392054,
+              "mid_power": 0.0005335361716430093,
+              "side_power": 4.730768402032263e-06
+            },
+            {
+              "hz": [
+                12000,
+                20000
+              ],
+              "lr_power": 0.00012771427218993028,
+              "lr_total_fraction": 0.0013549487735590004,
+              "mid_power": 6.315860239086159e-05,
+              "side_power": 6.98533704103447e-07
+            },
+            {
+              "hz": [
+                20000,
+                24000
+              ],
+              "lr_power": 9.669309449325373e-06,
+              "lr_total_fraction": 0.00010258382837622167,
+              "mid_power": 4.7876990677086684e-06,
+              "side_power": 4.695565695401753e-08
+            }
+          ]
+        }
+      }
+    },
+    "D": {
+      "condition": "original",
+      "file": "listen_D.wav",
+      "sha256": "a5aae8c57dfd409f7d64dd2af8176b3944f8cb7a64268880ca57f0ea6cb7efa5",
+      "rms_match_gain": 0.9374644356329946,
+      "shared_headroom_gain": 1.0,
+      "combined_gain": 0.9374644356329946,
+      "metrics": {
+        "stereo_rms": 0.21710528009803948,
+        "peak": 0.683441162109375,
+        "at_or_over_full_scale_samples": 0,
+        "pcm16_endpoint_samples": 0,
+        "crest_db": 9.960614920020696,
+        "lr_centered_correlation": 0.9908126393024329,
+        "left_over_right_power_db": -0.1276044415683795,
+        "side_over_mid_power_db": -23.307916667415725,
+        "onset_envelope_change_proxy": 1.475108587276331e-06,
+        "onset_proxy_definition": "mean absolute change in adjacent normalized 10ms RMS envelope differences from source; not musical quality",
+        "spectrum": {
+          "method": "sampled Hann FFT; one-sided power in full-scale squared units",
+          "fft_frames": 4096,
+          "sampled_windows": 128,
+          "lr_total_power_including_dc": 0.09425951288919505,
+          "bands": [
+            {
+              "hz": [
+                20,
+                200
+              ],
+              "lr_power": 0.002138309723750939,
+              "lr_total_fraction": 0.02268534663726289,
+              "mid_power": 0.0010543119413440618,
+              "side_power": 1.4842920531408013e-05
+            },
+            {
+              "hz": [
+                200,
+                2000
+              ],
+              "lr_power": 0.04122740238714254,
+              "lr_total_fraction": 0.4373818739717721,
+              "mid_power": 0.020534549430293987,
+              "side_power": 7.915176327730084e-05
+            },
+            {
+              "hz": [
+                2000,
+                6000
+              ],
+              "lr_power": 0.04395523861599993,
+              "lr_total_fraction": 0.4663215124787528,
+              "mid_power": 0.02188494872069953,
+              "side_power": 9.267058730045057e-05
+            },
+            {
+              "hz": [
+                6000,
+                12000
+              ],
+              "lr_power": 0.0030658111892496046,
+              "lr_total_fraction": 0.03252521782977554,
+              "mid_power": 0.0015184423248417644,
+              "side_power": 1.4463269783037592e-05
+            },
+            {
+              "hz": [
+                12000,
+                20000
+              ],
+              "lr_power": 0.0026989315750569893,
+              "lr_total_fraction": 0.028632988780980292,
+              "mid_power": 0.0013380123402363588,
+              "side_power": 1.1453447292134279e-05
+            },
+            {
+              "hz": [
+                20000,
+                24000
+              ],
+              "lr_power": 0.001139855146082426,
+              "lr_total_fraction": 0.012092733254651556,
+              "mid_power": 0.0005642017973112105,
+              "side_power": 5.725775730002316e-06
+            }
+          ]
+        }
+      }
+    }
+  },
+  "limitations": [
+    "RMS matching is not perceptual loudness matching.",
+    "Inspect listening labels before the receipt to avoid revealing conditions.",
+    "FFT windows are sampled; band fractions cannot establish bass recovery.",
+    "Side gain preserves raw mono fold-down before level matching, cannot create side information from mono, and can emphasize existing side artifacts.",
+    "Waveform heat diffusion is low-pass filtering, not latent or learned diffusion.",
+    "No acoustic quality or downstream generation claim; source prefix only.",
+    "A silent condition makes the common target zero; all listening conditions then become silent."
+  ]
+}

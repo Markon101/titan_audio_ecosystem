@@ -1,0 +1,6 @@
+B_original_exact.wav: selected practical TITAN B clip, copied byte for byte.
+O_ordered_seams.wav: same block order with seam fades.
+S_shuffled_4s.wav: full blocks permuted, same seam fades.
+Use O versus S for a timing-order comparison; B is the practical input.
+Keep downstream model, mode, text prompt, upload length and settings fixed.
+Save every generated output with its input label and settings.

@@ -1,0 +1,98 @@
+{
+  "files": {
+    "full_audio": {
+      "byte_identical": true,
+      "new_bytes": 16428,
+      "new_sha256": "68014c8390c35abc8200583244b0a312652fe5799644bb14f63f9a22a6336827",
+      "old_bytes": 16428,
+      "old_sha256": "68014c8390c35abc8200583244b0a312652fe5799644bb14f63f9a22a6336827"
+    },
+    "model": {
+      "byte_identical": true,
+      "new_bytes": 38522204,
+      "new_sha256": "ec1332cdcf1dc15c3b18f90f4d1189e4c77160c76590685561d1dc27d83aa26c",
+      "old_bytes": 38522204,
+      "old_sha256": "ec1332cdcf1dc15c3b18f90f4d1189e4c77160c76590685561d1dc27d83aa26c"
+    },
+    "morph": {
+      "byte_identical": true,
+      "new_bytes": 146,
+      "new_sha256": "fbc7140579d6b1bfee73794662572fe966059396121e36a8825631a087470c8c",
+      "old_bytes": 146,
+      "old_sha256": "fbc7140579d6b1bfee73794662572fe966059396121e36a8825631a087470c8c"
+    },
+    "optimizer": {
+      "byte_identical": true,
+      "new_bytes": 77047960,
+      "new_sha256": "6687a54ba45bbf78c71a8b9bfdd2f3713643d68a65659f2822766c076cfc7c11",
+      "old_bytes": 77047960,
+      "old_sha256": "6687a54ba45bbf78c71a8b9bfdd2f3713643d68a65659f2822766c076cfc7c11"
+    },
+    "prime_audio": {
+      "byte_identical": true,
+      "new_bytes": 16428,
+      "new_sha256": "1cdf5e89d7e857872b0a5ed46e60afd49992bf0198ade3fe230a10bb76ab0840",
+      "old_bytes": 16428,
+      "old_sha256": "1cdf5e89d7e857872b0a5ed46e60afd49992bf0198ade3fe230a10bb76ab0840"
+    },
+    "world": {
+      "byte_identical": true,
+      "new_bytes": 1324835,
+      "new_sha256": "d08408e65061726fc8a14d6bd08b8ecfc9184530fe6f9e69be3cfdab155d8a8f",
+      "old_bytes": 1324835,
+      "old_sha256": "d08408e65061726fc8a14d6bd08b8ecfc9184530fe6f9e69be3cfdab155d8a8f"
+    }
+  },
+  "legacy_gate": {
+    "audio_equal": true,
+    "model_within_tolerance": true,
+    "optimizer_within_tolerance": true,
+    "pass": true,
+    "same_steps": true,
+    "world_payload_equal": true
+  },
+  "metadata": {
+    "new": {
+      "end_global_step": 1,
+      "experiments": {
+        "prime_width_score": false,
+        "spectral_deemphasis": false
+      },
+      "optimizer_updates_cumulative": 1
+    },
+    "old": {
+      "end_global_step": 1,
+      "experiments": null,
+      "optimizer_updates_cumulative": 1
+    }
+  },
+  "new_binary_sha256": "9a757ed5c9505ac50802218e51972105af734f791bf86863ef216c1d560440a7",
+  "new_root": "/data/data/com.termux/files/usr/tmp/titan_audio_legacy_oracle_20260926/new_final",
+  "old_binary_sha256": "7114d3cf37fe49cf4cfd8ab10f026e04c4802a04a3c6901dec03bbd0c7d9e80b",
+  "old_root": "/data/data/com.termux/files/usr/tmp/titan_audio_legacy_oracle_20260926/old",
+  "tensors": {
+    "model": {
+      "changed_elements": 0,
+      "largest_deltas": [],
+      "layout_equal": true,
+      "max_abs_delta": 0.0,
+      "over_tolerance": 0,
+      "tensor_count": 130,
+      "tolerance": "1e-7 + 1e-6 * max(abs(old),abs(new)) for floating tensors; exact integers"
+    },
+    "optimizer": {
+      "changed_elements": 0,
+      "largest_deltas": [],
+      "layout_equal": true,
+      "max_abs_delta": 0.0,
+      "over_tolerance": 0,
+      "tensor_count": 263,
+      "tolerance": "1e-7 + 1e-6 * max(abs(old),abs(new)) for floating tensors; exact integers"
+    }
+  },
+  "world": {
+    "payload_differing_bytes": 0,
+    "payload_equal": true,
+    "wrapper_header_equal": true
+  }
+}

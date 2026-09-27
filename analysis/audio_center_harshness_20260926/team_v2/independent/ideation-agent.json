@@ -1,0 +1,191 @@
+{
+  "answer": "{\"conclusions\": {\"summary\": \"The supplied evidence describes a center-biased, harsh-leaning renderer whose center collapse is consistent with at least three separable mechanisms (learned width/pan rails, loss geometry, and post-render nonlinearity). The evidence does not establish which dominates. The cheapest discriminating tests are offline, checkpoint-preserving, and sidecar-only, so they cannot certify perceptual improvement.\", \"key_points\": [\"Latest tagged prime shows L/R correlation 0.991 and side/mid -23.31 dB, plus 2-6 kHz at 47.3% and 6-20 kHz at 6.2%, consistent with mono-like center and upper-mid emphasis.\", \"The 600 s file is not uniformly centered: minutes 5-6 are 0.990-0.992 correlation, so the 60 s prime is a selected within-run extreme. Prime selection uses field entropy, activity health, complexity, and stagnation, not width or harshness (context lines 51-54; main.rs 8463-8481).\", \"Learned width is bounded 0.05..0.50 and pan +/-0.10; increasing side gain cannot synthesize missing side information (context lines 44-47; stereo.rs 3-11).\", \"Stereo loss combines side/mid, correlation, and level terms with weights 0.30/0.95/0.45; pan-center loss is separate and smaller (main.rs 253-255, 7227-7234; stereo.rs 4).\", \"Loss-visible tanh, then later tanh(0.92 x) and a DC blocker, then whole-file peak normalization to 0.891; a sub-0 dBFS peak does not exclude saturation (main.rs 8059-8076, 8451).\", \"The forward pass has no target-audio argument; target sampling occurs after forward (main.rs 7041-7107; context lines 13-16).\"], \"bounded_purpose_fit\": \"All proposed tests are offline signal or frozen-rollout diagnostics that preserve checkpoints, corpus, and the normal renderer. None is a proxy for latent-field diffusion.\"}, \"evidence\": [{\"source\": \"analysis/audio_center_harshness_20260926/deepseek_packet.md\", \"lines\": \"24-35\", \"claim\": \"Table shows latest prime corr 0.991, side/mid -23.31 dB, 2-6 kHz 47.3%; full-file minutes 5-6 are 0.990-0.992.\"}, {\"source\": \"analysis/audio_center_harshness_20260926/deepseek_packet.md\", \"lines\": \"37-43\", \"claim\": \"Training trace median output corr 0.963 vs target 0.862; width control 0.120; pan 0.0999 at limit; decoder side control 1.0; ultrasonic_ratio is a guardrail, not a harshness score.\"}, {\"source\": \"research/audio_context.md\", \"lines\": \"44-47\", \"claim\": \"Side derives from L-R before delayed scaled side stage; width bounded 0.05..0.50; pan +/-0.10; scaling side cannot create missing side information.\"}, {\"source\": \"research/audio_context.md\", \"lines\": \"48-50\", \"claim\": \"Loss-visible tanh, later saturation/DC/peak normalization; sub-0 dBFS peak does not exclude saturation or harshness.\"}, {\"source\": \"src/stereo.rs\", \"lines\": \"3-11, 21-41\", \"claim\": \"Pan limit 0.10, pan-center weight 0.10, width range 0.05..0.50, side_gain depends on last_pan and width_mult.\"}, {\"source\": \"src/main.rs\", \"lines\": \"253-255, 7227-7234\", \"claim\": \"Stereo side/correlation/level weights 0.30/0.95/0.45 combined into stereo_balance_loss; pan_center_loss weighted separately.\"}, {\"source\": \"src/main.rs\", \"lines\": \"8059-8076, 8451-8455\", \"claim\": \"Post path applies tanh(x*0.92), stateful DC blocker, then peak normalization to 0.891.\"}, {\"source\": \"src/main.rs\", \"lines\": \"8463-8481\", \"claim\": \"Prime is the highest-scoring 60 s window by chunk_scores (field entropy, complexity, activity, stagnation).\"}, {\"source\": \"src/main.rs\", \"lines\": \"7041-7107\", \"claim\": \"model.forward runs before target_loader.sample_chunks; forward has no target argument.\"}], \"uncertainties\": [\"No blinded listening has been performed; perceptual harshness and center bias are unverified (context lines 58-60).\", \"Target mix and online learning confound comparisons between elapsed portions of the run (context lines 38-39).\", \"The 60 s prime is a selected within-run outlier; metrics on it may not represent the run.\", \"Whether the harshness is spectral (upper-mid emphasis), nonlinear (post-render saturation), or statistical (center collapse reducing interchannel decorrelation) is not separable from the supplied metrics alone.\", \"Frequency-specific loss gradients and pre-side-scale renderer taps are missing (context line 72).\"], \"hypotheses\": {\"conventional\": [{\"id\": \"H1\", \"claim\": \"CLAIM A: Center bias is a learned-control rail effect. The width head saturates low and the pan head sits at its +0.10 limit, so the side path contributes little and mid dominates. Harshness is a secondary consequence of correlated channels plus upper-mid partials.\", \"falsifier\": \"If a frozen rollout with width_mult forced to 1.0 and pan raw zeroed still shows corr > 0.95 and side/mid < -18 dB, the rail story is insufficient.\", \"cheapest_discriminating_experiment\": \"Frozen single-chunk probe: load the latest checkpoint, hold world state and RNG fixed, run forward with (a) width_mult=1.0 and last_pan=0, (b) width_mult=0.5, (c) width_mult=1.6. Compare side/mid and L/R correlation of the emitted chunk. No training, no checkpoint writes.\"}, {\"id\": \"H2\", \"claim\": \"CLAIM B: Harshness is dominated by the post-render nonlinearity chain (loss-visible tanh, then tanh(0.92x), then peak normalization), which adds harmonics when the pre-master signal is hot in the 2-6 kHz region.\", \"falsifier\": \"If offline bypass of the second tanh and DC blocker on the existing WAV does not reduce measured 2-6 kHz energy relative to 20-20 kHz while preserving level, the nonlinearity is not the dominant contributor.\", \"cheapest_discriminating_experiment\": \"Offline sidecar test on copied WAVs: apply (a) exact inverse of peak normalization, (b) atanh of the second-stage tanh on the pre-normalized signal if recoverable, (c) DC-blocker bypass. Compare 2-6 kHz and 6-20 kHz absolute band power, level-matched. Label as signal-domain only.\"}], \"unconventional\": [{\"id\": \"H3\", \"claim\": \"CLAIM C (speculative, retained): The perceived center bias is partly an artifact of the prime-selection objective. chunk_scores rewards field entropy and structured complexity, which can be maximized by coherent high-energy mid-channel motion; the 60 s prime therefore oversamples center-heavy, upper-mid-dense intervals even if the full 600 s file has more width elsewhere.\", \"falsifier\": \"If re-ranking the same run's chunks by an objective that includes measured side/mid and 2-6 kHz balance selects a window whose correlation and band fractions are statistically indistinguishable from the current prime, the selection-objective story fails.\", \"cheapest_discriminating_experiment\": \"Offline re-selection: from the existing full 600 s WAV, compute per-60 s window correlation, side/mid, and 2-6 kHz fraction using the same estimator family as the packet, then rank windows by (a) current chunk_scores proxy if recoverable from trace, (b) side/mid, (c) 2-6 kHz balance. Compare the top windows. This tests selection bias only; it does not test the renderer.\"}], \"why_they_differ\": \"H1 places the cause in learned control heads; H2 places it in the fixed post-render chain; H3 places it in the evaluation/selection pipeline. They make different predictions about what a frozen forward probe, an offline signal test, and a re-ranking test would each show.\", \"discriminating_experiment\": \"Run the three experiments above in order. H1 and H2 are separable because H1 changes the emitted chunk before mastering while H2 changes only the post path. H3 is separable because it changes only which window is reported, not the audio. None requires training or checkpoint mutation.\"}, \"missing_evidence\": [\"Blinded listening ratings for harshness and center bias.\", \"Pre-side-scale renderer taps to separate side generation from side scaling.\", \"Frequency-specific loss gradients for the 2-6 kHz region.\", \"Per-chunk side/mid and correlation trace across the full 600 s file.\", \"Independent training replicas to separate checkpoint effects from run-specific state.\"], \"context_receipt\": {\"project\": \"titan_audio_ecosystem\", \"direct_reference_input\": false, \"prompt_is_post_render_output\": true, \"waveform_filter_tests_latent_diffusion\": false, \"canonical_mutation_allowed\": false}, \"proposed_experiments\": [{\"id\": \"E1_frozen_width_pan_probe\", \"tests\": \"H1\", \"method\": \"Frozen single-chunk forward with fixed world state and RNG; vary width_mult in {0.5, 1.0, 1.6} and last_pan in {0.0, +0.10, -0.10}. Measure side/mid and L/R correlation on the emitted chunk before mastering.\", \"cost\": \"Low; one process, no training, no file writes beyond copied outputs.\", \"success_criterion\": \"If side/mid changes by >6 dB across width_mult while correlation stays >0.95, H1 is weakened. If correlation tracks width_mult strongly, H1 is supported.\", \"controls\": \"Identical world state, seed, chunk index, and target-free forward; report level-matched gains.\"}, {\"id\": \"E2_offline_post_chain_bypass\", \"tests\": \"H2\", \"method\": \"On copied WAVs, apply level-matched variants: (a) as-is, (b) second-stage tanh removed via atanh where the pre-normalized signal is recoverable, (c) DC-blocker bypass. Compare absolute 2-6 kHz and 6-20 kHz band power and crest factor.\", \"cost\": \"Low; offline only, sidecar receipts.\", \"success_criterion\": \"If 2-6 kHz fraction drops materially with (b) while total L+R power is matched, H2 is supported.\", \"controls\": \"Level-match each variant to the original RMS; report gain applied; do not overwrite canonical WAVs.\"}, {\"id\": \"E3_prime_reselection_audit\", \"tests\": \"H3\", \"method\": \"From the existing 600 s WAV, compute per-60 s correlation, side/mid, and 2-6 kHz fraction with the packet's estimator family. Compare top windows under current-score proxy versus side/mid and 2-6 kHz objectives.\", \"cost\": \"Low; analysis only.\", \"success_criterion\": \"If the current-selection window is a statistical outlier on correlation and 2-6 kHz relative to the alternative objectives, H3 is supported.\", \"controls\": \"Use the same window length and estimator; report both selected windows and their metrics.\"}], \"recommendation\": \"Run E1 and E3 first (cheapest, checkpoint-preserving), then E2 if H2 remains live. Treat all results as diagnostics, not perceptual proof. Do not raise the learned-width rail or change loss weights before E1 clarifies whether the rail is the binding constraint. Label H3 and any diffusion-adjacent idea as speculation until a frozen or sidecar test discriminates it.\"}",
+  "answer_json": {
+    "conclusions": {
+      "bounded_purpose_fit": "All proposed tests are offline signal or frozen-rollout diagnostics that preserve checkpoints, corpus, and the normal renderer. None is a proxy for latent-field diffusion.",
+      "key_points": [
+        "Latest tagged prime shows L/R correlation 0.991 and side/mid -23.31 dB, plus 2-6 kHz at 47.3% and 6-20 kHz at 6.2%, consistent with mono-like center and upper-mid emphasis.",
+        "The 600 s file is not uniformly centered: minutes 5-6 are 0.990-0.992 correlation, so the 60 s prime is a selected within-run extreme. Prime selection uses field entropy, activity health, complexity, and stagnation, not width or harshness (context lines 51-54; main.rs 8463-8481).",
+        "Learned width is bounded 0.05..0.50 and pan +/-0.10; increasing side gain cannot synthesize missing side information (context lines 44-47; stereo.rs 3-11).",
+        "Stereo loss combines side/mid, correlation, and level terms with weights 0.30/0.95/0.45; pan-center loss is separate and smaller (main.rs 253-255, 7227-7234; stereo.rs 4).",
+        "Loss-visible tanh, then later tanh(0.92 x) and a DC blocker, then whole-file peak normalization to 0.891; a sub-0 dBFS peak does not exclude saturation (main.rs 8059-8076, 8451).",
+        "The forward pass has no target-audio argument; target sampling occurs after forward (main.rs 7041-7107; context lines 13-16)."
+      ],
+      "summary": "The supplied evidence describes a center-biased, harsh-leaning renderer whose center collapse is consistent with at least three separable mechanisms (learned width/pan rails, loss geometry, and post-render nonlinearity). The evidence does not establish which dominates. The cheapest discriminating tests are offline, checkpoint-preserving, and sidecar-only, so they cannot certify perceptual improvement."
+    },
+    "context_receipt": {
+      "canonical_mutation_allowed": false,
+      "direct_reference_input": false,
+      "project": "titan_audio_ecosystem",
+      "prompt_is_post_render_output": true,
+      "waveform_filter_tests_latent_diffusion": false
+    },
+    "evidence": [
+      {
+        "claim": "Table shows latest prime corr 0.991, side/mid -23.31 dB, 2-6 kHz 47.3%; full-file minutes 5-6 are 0.990-0.992.",
+        "lines": "24-35",
+        "source": "analysis/audio_center_harshness_20260926/deepseek_packet.md"
+      },
+      {
+        "claim": "Training trace median output corr 0.963 vs target 0.862; width control 0.120; pan 0.0999 at limit; decoder side control 1.0; ultrasonic_ratio is a guardrail, not a harshness score.",
+        "lines": "37-43",
+        "source": "analysis/audio_center_harshness_20260926/deepseek_packet.md"
+      },
+      {
+        "claim": "Side derives from L-R before delayed scaled side stage; width bounded 0.05..0.50; pan +/-0.10; scaling side cannot create missing side information.",
+        "lines": "44-47",
+        "source": "research/audio_context.md"
+      },
+      {
+        "claim": "Loss-visible tanh, later saturation/DC/peak normalization; sub-0 dBFS peak does not exclude saturation or harshness.",
+        "lines": "48-50",
+        "source": "research/audio_context.md"
+      },
+      {
+        "claim": "Pan limit 0.10, pan-center weight 0.10, width range 0.05..0.50, side_gain depends on last_pan and width_mult.",
+        "lines": "3-11, 21-41",
+        "source": "src/stereo.rs"
+      },
+      {
+        "claim": "Stereo side/correlation/level weights 0.30/0.95/0.45 combined into stereo_balance_loss; pan_center_loss weighted separately.",
+        "lines": "253-255, 7227-7234",
+        "source": "src/main.rs"
+      },
+      {
+        "claim": "Post path applies tanh(x*0.92), stateful DC blocker, then peak normalization to 0.891.",
+        "lines": "8059-8076, 8451-8455",
+        "source": "src/main.rs"
+      },
+      {
+        "claim": "Prime is the highest-scoring 60 s window by chunk_scores (field entropy, complexity, activity, stagnation).",
+        "lines": "8463-8481",
+        "source": "src/main.rs"
+      },
+      {
+        "claim": "model.forward runs before target_loader.sample_chunks; forward has no target argument.",
+        "lines": "7041-7107",
+        "source": "src/main.rs"
+      }
+    ],
+    "hypotheses": {
+      "conventional": [
+        {
+          "cheapest_discriminating_experiment": "Frozen single-chunk probe: load the latest checkpoint, hold world state and RNG fixed, run forward with (a) width_mult=1.0 and last_pan=0, (b) width_mult=0.5, (c) width_mult=1.6. Compare side/mid and L/R correlation of the emitted chunk. No training, no checkpoint writes.",
+          "claim": "CLAIM A: Center bias is a learned-control rail effect. The width head saturates low and the pan head sits at its +0.10 limit, so the side path contributes little and mid dominates. Harshness is a secondary consequence of correlated channels plus upper-mid partials.",
+          "falsifier": "If a frozen rollout with width_mult forced to 1.0 and pan raw zeroed still shows corr > 0.95 and side/mid < -18 dB, the rail story is insufficient.",
+          "id": "H1"
+        },
+        {
+          "cheapest_discriminating_experiment": "Offline sidecar test on copied WAVs: apply (a) exact inverse of peak normalization, (b) atanh of the second-stage tanh on the pre-normalized signal if recoverable, (c) DC-blocker bypass. Compare 2-6 kHz and 6-20 kHz absolute band power, level-matched. Label as signal-domain only.",
+          "claim": "CLAIM B: Harshness is dominated by the post-render nonlinearity chain (loss-visible tanh, then tanh(0.92x), then peak normalization), which adds harmonics when the pre-master signal is hot in the 2-6 kHz region.",
+          "falsifier": "If offline bypass of the second tanh and DC blocker on the existing WAV does not reduce measured 2-6 kHz energy relative to 20-20 kHz while preserving level, the nonlinearity is not the dominant contributor.",
+          "id": "H2"
+        }
+      ],
+      "discriminating_experiment": "Run the three experiments above in order. H1 and H2 are separable because H1 changes the emitted chunk before mastering while H2 changes only the post path. H3 is separable because it changes only which window is reported, not the audio. None requires training or checkpoint mutation.",
+      "unconventional": [
+        {
+          "cheapest_discriminating_experiment": "Offline re-selection: from the existing full 600 s WAV, compute per-60 s window correlation, side/mid, and 2-6 kHz fraction using the same estimator family as the packet, then rank windows by (a) current chunk_scores proxy if recoverable from trace, (b) side/mid, (c) 2-6 kHz balance. Compare the top windows. This tests selection bias only; it does not test the renderer.",
+          "claim": "CLAIM C (speculative, retained): The perceived center bias is partly an artifact of the prime-selection objective. chunk_scores rewards field entropy and structured complexity, which can be maximized by coherent high-energy mid-channel motion; the 60 s prime therefore oversamples center-heavy, upper-mid-dense intervals even if the full 600 s file has more width elsewhere.",
+          "falsifier": "If re-ranking the same run's chunks by an objective that includes measured side/mid and 2-6 kHz balance selects a window whose correlation and band fractions are statistically indistinguishable from the current prime, the selection-objective story fails.",
+          "id": "H3"
+        }
+      ],
+      "why_they_differ": "H1 places the cause in learned control heads; H2 places it in the fixed post-render chain; H3 places it in the evaluation/selection pipeline. They make different predictions about what a frozen forward probe, an offline signal test, and a re-ranking test would each show."
+    },
+    "missing_evidence": [
+      "Blinded listening ratings for harshness and center bias.",
+      "Pre-side-scale renderer taps to separate side generation from side scaling.",
+      "Frequency-specific loss gradients for the 2-6 kHz region.",
+      "Per-chunk side/mid and correlation trace across the full 600 s file.",
+      "Independent training replicas to separate checkpoint effects from run-specific state."
+    ],
+    "proposed_experiments": [
+      {
+        "controls": "Identical world state, seed, chunk index, and target-free forward; report level-matched gains.",
+        "cost": "Low; one process, no training, no file writes beyond copied outputs.",
+        "id": "E1_frozen_width_pan_probe",
+        "method": "Frozen single-chunk forward with fixed world state and RNG; vary width_mult in {0.5, 1.0, 1.6} and last_pan in {0.0, +0.10, -0.10}. Measure side/mid and L/R correlation on the emitted chunk before mastering.",
+        "success_criterion": "If side/mid changes by >6 dB across width_mult while correlation stays >0.95, H1 is weakened. If correlation tracks width_mult strongly, H1 is supported.",
+        "tests": "H1"
+      },
+      {
+        "controls": "Level-match each variant to the original RMS; report gain applied; do not overwrite canonical WAVs.",
+        "cost": "Low; offline only, sidecar receipts.",
+        "id": "E2_offline_post_chain_bypass",
+        "method": "On copied WAVs, apply level-matched variants: (a) as-is, (b) second-stage tanh removed via atanh where the pre-normalized signal is recoverable, (c) DC-blocker bypass. Compare absolute 2-6 kHz and 6-20 kHz band power and crest factor.",
+        "success_criterion": "If 2-6 kHz fraction drops materially with (b) while total L+R power is matched, H2 is supported.",
+        "tests": "H2"
+      },
+      {
+        "controls": "Use the same window length and estimator; report both selected windows and their metrics.",
+        "cost": "Low; analysis only.",
+        "id": "E3_prime_reselection_audit",
+        "method": "From the existing 600 s WAV, compute per-60 s correlation, side/mid, and 2-6 kHz fraction with the packet's estimator family. Compare top windows under current-score proxy versus side/mid and 2-6 kHz objectives.",
+        "success_criterion": "If the current-selection window is a statistical outlier on correlation and 2-6 kHz relative to the alternative objectives, H3 is supported.",
+        "tests": "H3"
+      }
+    ],
+    "recommendation": "Run E1 and E3 first (cheapest, checkpoint-preserving), then E2 if H2 remains live. Treat all results as diagnostics, not perceptual proof. Do not raise the learned-width rail or change loss weights before E1 clarifies whether the rail is the binding constraint. Label H3 and any diffusion-adjacent idea as speculation until a frozen or sidecar test discriminates it.",
+    "uncertainties": [
+      "No blinded listening has been performed; perceptual harshness and center bias are unverified (context lines 58-60).",
+      "Target mix and online learning confound comparisons between elapsed portions of the run (context lines 38-39).",
+      "The 60 s prime is a selected within-run outlier; metrics on it may not represent the run.",
+      "Whether the harshness is spectral (upper-mid emphasis), nonlinear (post-render saturation), or statistical (center collapse reducing interchannel decorrelation) is not separable from the supplied metrics alone.",
+      "Frequency-specific loss gradients and pre-side-scale renderer taps are missing (context line 72)."
+    ]
+  },
+  "approximate_input_tokens": 26935,
+  "attempts": 1,
+  "context": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "created_at_utc": "2026-09-26T07:25:46.543429+00:00",
+  "elapsed_seconds": 33.958,
+  "endpoint": "https://openrouter.ai/api/v1",
+  "files": [
+    {
+      "bytes": 102384,
+      "selection": "analysis/audio_center_harshness_20260926/team_v2/context_packet.md",
+      "sha256": "1093a68a5f48929d046cb7195f2138ceb5f707f939eff59d6b9e438b26192fd4"
+    }
+  ],
+  "finish_reason": "stop",
+  "id": "gen-1790407546-wGJ5BZmoXizvD8DfQg2W",
+  "max_tokens": 16384,
+  "purpose": "Generate distinct conventional and unconventional hypotheses about useful stereo/timbre variation. Preserve one unusual but testable idea with a cheap falsifier.",
+  "request": {
+    "bytes": 107737,
+    "sha256": "95b2764fae87d5f58c87198165209fa5d3575a241faabcb9e05cb9ba519032e9"
+  },
+  "requested_model": "deepseek/deepseek-v4.1-flash",
+  "returned_model": "deepseek/deepseek-v4.1-flash",
+  "role": "mechanistic-competitor",
+  "schema_version": 1,
+  "status": "ok",
+  "temperature": 0.8,
+  "token_estimate_method": "serialized UTF-8 bytes / 4; not model tokenization",
+  "usage": {
+    "completion_tokens": 2705,
+    "completion_tokens_details": {
+      "audio_tokens": 0,
+      "image_tokens": 0,
+      "reasoning_tokens": 0
+    },
+    "cost": 0.00567476,
+    "cost_details": {
+      "upstream_inference_completions_cost": 0.0011361,
+      "upstream_inference_cost": 0.00567476,
+      "upstream_inference_prompt_cost": 0.00453866
+    },
+    "prompt_tokens": 32419,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "total_tokens": 35124
+  }
+}

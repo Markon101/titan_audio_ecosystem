@@ -1,0 +1,57 @@
+{
+  "input_wav": "/storage/emulated/0/Download/titan_prime_60s_v9-long-01_9bcf582d4b13.wav",
+  "input_sha256": "4f8e6a604f5a3f37ec39818f71af6955a0488d4d937491cf1e051162c05ee48d",
+  "output_wav": "analysis/audio_center_harshness_20260926/deemphasized/titan_prime_60s_v9-long-01_deemphasized.wav",
+  "output_sha256": "c5135e4cdbc8f74d3937ec8a8e211618d8096bbbcf91861c2bb6198e4cab28f3",
+  "filter_parameters": {
+    "type": "parametric_peaking_bell",
+    "center_frequency_hz": 3500.0,
+    "q_factor": 1.0,
+    "gain_db": -3.0,
+    "target_peak_dbfs": -1.0,
+    "post_gain_applied": 1.0
+  },
+  "before_metrics": {
+    "rms": 0.231587750718067,
+    "peak": 0.729034423828125,
+    "peak_dbfs": -2.745039290276013,
+    "crest_db": 9.96064901589039,
+    "lr_correlation": 0.990812643061937,
+    "side_over_mid_db": -23.307918199913637,
+    "bands": {
+      "20-200Hz": 0.022685376179627573,
+      "200-2000Hz": 0.4373818324049904,
+      "2000-6000Hz": 0.46632152085369755,
+      "6000-12000Hz": 0.03252523154175792,
+      "12000-20000Hz": 0.02863298766172844,
+      "20000-24000Hz": 0.012092724981835608
+    }
+  },
+  "after_metrics": {
+    "rms": 0.20798488796692322,
+    "peak": 0.70513916015625,
+    "peak_dbfs": -3.034503319066864,
+    "crest_db": 10.604861069274431,
+    "lr_correlation": 0.9907053363017837,
+    "side_over_mid_db": -23.24982541313849,
+    "bands": {
+      "20-200Hz": 0.028085234058795396,
+      "200-2000Hz": 0.5347901015227229,
+      "2000-6000Hz": 0.3510682719519321,
+      "6000-12000Hz": 0.03576647254016897,
+      "12000-20000Hz": 0.03488033501474524,
+      "20000-24000Hz": 0.014963151442801068
+    }
+  },
+  "impact_summary": {
+    "band_2k_6k_before": 0.46632152085369755,
+    "band_2k_6k_after": 0.3510682719519321,
+    "band_2k_6k_delta_percent": -11.525324890176547,
+    "peak_dbfs_before": -2.745039290276013,
+    "peak_dbfs_after": -3.034503319066864,
+    "correlation_before": 0.990812643061937,
+    "correlation_after": 0.9907053363017837,
+    "side_over_mid_db_before": -23.307918199913637,
+    "side_over_mid_db_after": -23.24982541313849
+  }
+}

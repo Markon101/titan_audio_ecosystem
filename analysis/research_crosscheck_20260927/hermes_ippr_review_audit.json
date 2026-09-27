@@ -1,0 +1,52 @@
+{
+  "claim_boundary": "Transport status alone is not a usable research answer; content and finish_reason=stop are required. Completion does not certify scientific correctness.",
+  "complete_count": 0,
+  "entries": [
+    {
+      "answer_chars": 7776,
+      "answer_nonempty": true,
+      "answer_sha256": "9f7e9226f8561e1c2f065e980443ecc0079bdaec2e625a93877d770f449fcbba",
+      "complete_for_research": false,
+      "completion_tokens": 2048,
+      "finish_reason": "length",
+      "index": 0,
+      "model": "deepseek/deepseek-v4.1-flash",
+      "prompt_tokens": 6373,
+      "reason": "nonstop_finish",
+      "role": "experiment-critic",
+      "status": "ok"
+    },
+    {
+      "answer_chars": 8283,
+      "answer_nonempty": true,
+      "answer_sha256": "2ba075df283c8cbc74285899d1cee51953518b395bc906f2299c2e4ee52ff580",
+      "complete_for_research": false,
+      "completion_tokens": 2048,
+      "finish_reason": "length",
+      "index": 1,
+      "model": "deepseek/deepseek-v4.1-flash",
+      "prompt_tokens": 6371,
+      "reason": "nonstop_finish",
+      "role": "counter-hypothesis-generator",
+      "status": "ok"
+    },
+    {
+      "answer_chars": 7732,
+      "answer_nonempty": true,
+      "answer_sha256": "e35a7ab8012e9e0594d8046cf47722769c304839fda514c0230008f8a12321ff",
+      "complete_for_research": false,
+      "completion_tokens": 2048,
+      "finish_reason": "length",
+      "index": 2,
+      "model": "deepseek/deepseek-v4.1-flash",
+      "prompt_tokens": 6376,
+      "reason": "nonstop_finish",
+      "role": "skeptical-reviewer",
+      "status": "ok"
+    }
+  ],
+  "incomplete_count": 3,
+  "schema": "research_review_completion_audit_v1",
+  "source_path": "/data/data/com.termux/files/home/.hermes/cache/scratch/ippr/postrun_review.json",
+  "source_sha256": "650aa2bd506f92c1bc6245e6d3278994aa778d1dd29b5b10f5f0370e2d2276fc"
+}

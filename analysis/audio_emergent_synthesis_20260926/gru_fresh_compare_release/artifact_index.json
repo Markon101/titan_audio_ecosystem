@@ -1,0 +1,222 @@
+[
+  {
+    "relative_path": "provenance.json",
+    "media_type": "application/json",
+    "sha256": "ccdb68edf37f0353c2efaa5ce8affc1c12e92f7da53642badf74103b37772b7e",
+    "bytes": 541116,
+    "condition": null,
+    "start_offset": null,
+    "end_offset": null,
+    "processing": "read-only identity report"
+  },
+  {
+    "relative_path": "rollouts/summary.json",
+    "media_type": "application/json",
+    "sha256": "b4d74cc2cd624b030323054d3a28b4d4a6bbb1b5b16e7f6e8d1324a7d9e807e8",
+    "bytes": 4897,
+    "condition": "frozen_full",
+    "start_offset": 0,
+    "end_offset": 1,
+    "processing": "frozen rollout summary"
+  },
+  {
+    "relative_path": "rollouts/trace.csv",
+    "media_type": "text/csv",
+    "sha256": "653e4aeef2dfa14e2534b4038a006cfe8cad55f2ec90e46e8604acf0f3a0f02b",
+    "bytes": 1082,
+    "condition": "frozen_full",
+    "start_offset": 0,
+    "end_offset": 1,
+    "processing": "stride-sampled operational metrics"
+  },
+  {
+    "relative_path": "rollouts/micro_atlas_000001.png",
+    "media_type": "image/png",
+    "sha256": "0df842a0d9d2307b8c34d933b0eed2d96dda0a298dd72e080977188448d7f8da",
+    "bytes": 787072,
+    "condition": "frozen_full",
+    "start_offset": 1,
+    "end_offset": 1,
+    "processing": "fixed [-1,1] micro-state atlas"
+  },
+  {
+    "relative_path": "rollouts/macro_atlas_000001.png",
+    "media_type": "image/png",
+    "sha256": "18f96499d2d04f3ab06bb84ffb69bf1640ed4c5e3527536700ba201bdd308d72",
+    "bytes": 196947,
+    "condition": "frozen_full",
+    "start_offset": 1,
+    "end_offset": 1,
+    "processing": "fixed [-1,1] macro-state atlas"
+  },
+  {
+    "relative_path": "controls/trained_initialization.json",
+    "media_type": "application/json",
+    "sha256": "4fd457bbde350df3f0905c1fed496d8bb2322cd94aa95eae09f13fc8c6a96e1a",
+    "bytes": 8337,
+    "condition": null,
+    "start_offset": 0,
+    "end_offset": 1,
+    "processing": "active-depth-matched frozen controls"
+  },
+  {
+    "relative_path": "controls/trained_saved_world/summary.json",
+    "media_type": "application/json",
+    "sha256": "fcb542247ade7a2641f0a2015305111611f561c8b719c4d80cfde246ce1660a6",
+    "bytes": 4905,
+    "condition": "trained_saved_world",
+    "start_offset": 0,
+    "end_offset": 1,
+    "processing": "frozen rollout summary"
+  },
+  {
+    "relative_path": "controls/trained_saved_world/trace.csv",
+    "media_type": "text/csv",
+    "sha256": "653e4aeef2dfa14e2534b4038a006cfe8cad55f2ec90e46e8604acf0f3a0f02b",
+    "bytes": 1082,
+    "condition": "trained_saved_world",
+    "start_offset": 0,
+    "end_offset": 1,
+    "processing": "stride-sampled operational metrics"
+  },
+  {
+    "relative_path": "controls/trained_saved_world/micro_atlas_000001.png",
+    "media_type": "image/png",
+    "sha256": "0df842a0d9d2307b8c34d933b0eed2d96dda0a298dd72e080977188448d7f8da",
+    "bytes": 787072,
+    "condition": "trained_saved_world",
+    "start_offset": 1,
+    "end_offset": 1,
+    "processing": "fixed [-1,1] micro-state atlas"
+  },
+  {
+    "relative_path": "controls/trained_saved_world/macro_atlas_000001.png",
+    "media_type": "image/png",
+    "sha256": "18f96499d2d04f3ab06bb84ffb69bf1640ed4c5e3527536700ba201bdd308d72",
+    "bytes": 196947,
+    "condition": "trained_saved_world",
+    "start_offset": 1,
+    "end_offset": 1,
+    "processing": "fixed [-1,1] macro-state atlas"
+  },
+  {
+    "relative_path": "controls/trained_fresh_world/summary.json",
+    "media_type": "application/json",
+    "sha256": "f4144ec43747faa0e82f3a06be089d454cd6b0fb993b800bb4e5faa1488cbca4",
+    "bytes": 4913,
+    "condition": "trained_fresh_world",
+    "start_offset": 0,
+    "end_offset": 1,
+    "processing": "frozen rollout summary"
+  },
+  {
+    "relative_path": "controls/trained_fresh_world/trace.csv",
+    "media_type": "text/csv",
+    "sha256": "f5d23914f807cd3fc7b39f705c8e985967be0977c3d55517d92bac2190c050a0",
+    "bytes": 1087,
+    "condition": "trained_fresh_world",
+    "start_offset": 0,
+    "end_offset": 1,
+    "processing": "stride-sampled operational metrics"
+  },
+  {
+    "relative_path": "controls/trained_fresh_world/micro_atlas_000001.png",
+    "media_type": "image/png",
+    "sha256": "7c98d8b79fd2eec54ec1f3c6af08ede8a1b675c98689b91a4a56ce1b3ff49da3",
+    "bytes": 787072,
+    "condition": "trained_fresh_world",
+    "start_offset": 1,
+    "end_offset": 1,
+    "processing": "fixed [-1,1] micro-state atlas"
+  },
+  {
+    "relative_path": "controls/trained_fresh_world/macro_atlas_000001.png",
+    "media_type": "image/png",
+    "sha256": "3dd5db97bd6fe3b2ef3193545d466ad490300b9b0bd5dfb4bd802aca67a2643c",
+    "bytes": 196947,
+    "condition": "trained_fresh_world",
+    "start_offset": 1,
+    "end_offset": 1,
+    "processing": "fixed [-1,1] macro-state atlas"
+  },
+  {
+    "relative_path": "controls/init_depth_matched_fresh_world/summary.json",
+    "media_type": "application/json",
+    "sha256": "789223e697b2a3b38c885d5940e050e308e439c9a6f83ce4df703536fd21651c",
+    "bytes": 4956,
+    "condition": "init_depth_matched_fresh_world",
+    "start_offset": 0,
+    "end_offset": 1,
+    "processing": "frozen rollout summary"
+  },
+  {
+    "relative_path": "controls/init_depth_matched_fresh_world/trace.csv",
+    "media_type": "text/csv",
+    "sha256": "55aa4d3841a1daa4ad4566fb1f8514b5219638816ed6da410a34e2b4e11eb20d",
+    "bytes": 1081,
+    "condition": "init_depth_matched_fresh_world",
+    "start_offset": 0,
+    "end_offset": 1,
+    "processing": "stride-sampled operational metrics"
+  },
+  {
+    "relative_path": "controls/init_depth_matched_fresh_world/micro_atlas_000001.png",
+    "media_type": "image/png",
+    "sha256": "0627387e23f114140ba109238968bce8075bc47a581cbf22dcc0b20d516c1756",
+    "bytes": 787072,
+    "condition": "init_depth_matched_fresh_world",
+    "start_offset": 1,
+    "end_offset": 1,
+    "processing": "fixed [-1,1] micro-state atlas"
+  },
+  {
+    "relative_path": "controls/init_depth_matched_fresh_world/macro_atlas_000001.png",
+    "media_type": "image/png",
+    "sha256": "cf7635fa86a380bd877fa8d630a7918b6c74f67483538b452a658b6b799fe1eb",
+    "bytes": 196947,
+    "condition": "init_depth_matched_fresh_world",
+    "start_offset": 1,
+    "end_offset": 1,
+    "processing": "fixed [-1,1] macro-state atlas"
+  },
+  {
+    "relative_path": "controls/init_native_depth_fresh_world/summary.json",
+    "media_type": "application/json",
+    "sha256": "9c6701ea9f8f39930718d4a8b51e587e078f0e29008e5d78b72a87b2a1994e05",
+    "bytes": 4954,
+    "condition": "init_native_depth_fresh_world",
+    "start_offset": 0,
+    "end_offset": 1,
+    "processing": "frozen rollout summary"
+  },
+  {
+    "relative_path": "controls/init_native_depth_fresh_world/trace.csv",
+    "media_type": "text/csv",
+    "sha256": "dbf91ab5b3f192fefb7a41323e9bbb5bd4c131f89ea5876942313cbdc0d8c4cc",
+    "bytes": 1090,
+    "condition": "init_native_depth_fresh_world",
+    "start_offset": 0,
+    "end_offset": 1,
+    "processing": "stride-sampled operational metrics"
+  },
+  {
+    "relative_path": "controls/init_native_depth_fresh_world/micro_atlas_000001.png",
+    "media_type": "image/png",
+    "sha256": "0cfd57813b69da91b37e104598c7eaf31298641843b2cb69d46bfac323cb87e9",
+    "bytes": 787072,
+    "condition": "init_native_depth_fresh_world",
+    "start_offset": 1,
+    "end_offset": 1,
+    "processing": "fixed [-1,1] micro-state atlas"
+  },
+  {
+    "relative_path": "controls/init_native_depth_fresh_world/macro_atlas_000001.png",
+    "media_type": "image/png",
+    "sha256": "62cf120536fbf25f29880b6eba510361ef065b062eff0d01362a45759e9536db",
+    "bytes": 196947,
+    "condition": "init_native_depth_fresh_world",
+    "start_offset": 1,
+    "end_offset": 1,
+    "processing": "fixed [-1,1] macro-state atlas"
+  }
+]

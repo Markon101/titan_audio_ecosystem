@@ -1,0 +1,893 @@
+{
+  "schema_version": 2,
+  "supersedes": "diagnostic_report.json and RESEARCH_DIAGNOSTIC_FINDINGS.md",
+  "run_lineage": {
+    "status": "unavailable",
+    "reasons": [
+      "metadata completed_chunks imply 458752 frames, but hashed WAV has 28798976 frames",
+      "metadata rendered_seconds differs from hashed WAV duration"
+    ],
+    "audio_frames": 28798976,
+    "audio_seconds": 599.9786666666666,
+    "metadata_path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/audio_center_harshness_20260926/metadata_v9_9bcf582d4b13.json",
+    "metadata_run_id": "1790407773163-p11144-s42",
+    "metadata_completed_chunks": 112,
+    "trace_path": "/sdcard/Download/uncertainty_trace_rust_v9-long-01.csv",
+    "trace_sha256": "18676e20a6146a0a7bdddff0668901e69350d95b69ae5869615ee47f9b364e6f",
+    "trace_rows": 12,
+    "trace_run_ids": [
+      "1790407773163-p11144-s42"
+    ],
+    "trace_step_range": [
+      81371,
+      81481
+    ]
+  },
+  "experiment_e1_full_run_intervals": {
+    "full_wav": "/sdcard/Download/rust_ecosystem_out_v9-long-01_9bcf582d4b13.wav",
+    "full_wav_sha256": "22091e4f6fceddd7b61e304bf6b9ddb0d03b98596365346f688cfd3591082185",
+    "prime_wav": "/sdcard/Download/titan_prime_60s_v9-long-01_9bcf582d4b13.wav",
+    "prime_wav_sha256": "4f8e6a604f5a3f37ec39818f71af6955a0488d4d937491cf1e051162c05ee48d",
+    "total_duration_sec": 599.9786666666666,
+    "total_frames": 28798976,
+    "num_windows": 10,
+    "prime_alignment": {
+      "method": "unique exact PCM16 stereo match of all samples except 2048 faded frames per edge",
+      "start_frame": 17031168,
+      "end_frame_exclusive": 19910656,
+      "start_sec": 354.816,
+      "end_sec": 414.80533333333335
+    },
+    "prime_metrics": {
+      "rms": 0.231587750718067,
+      "peak_dbfs": -2.745039290276013,
+      "lr_correlation": 0.990812643061937,
+      "side_over_mid_db": -23.307918199913637,
+      "bands_fraction": {
+        "20-200Hz": 0.022685376179627573,
+        "200-2000Hz": 0.4373818324049904,
+        "2000-6000Hz": 0.46632152085369755,
+        "6000-12000Hz": 0.03252523154175792,
+        "12000-20000Hz": 0.02863298766172844,
+        "20000-24000Hz": 0.012092724981835608
+      }
+    },
+    "windows_distribution": {
+      "correlation_min": 0.7399430435165749,
+      "correlation_max": 0.9916435784739899,
+      "correlation_mean": 0.8882647927689268,
+      "correlation_std": 0.08828670400814098,
+      "correlation_quartiles": [
+        0.8140985275528461,
+        0.9172209767171154,
+        0.9577871762521838
+      ],
+      "side_over_mid_min_db": -23.718761952767494,
+      "side_over_mid_max_db": -7.790461996712655,
+      "side_over_mid_mean_db": -14.229638432968278,
+      "band_2k_6k_fraction_min": 0.4613422666417292,
+      "band_2k_6k_fraction_max": 0.4731806980281824,
+      "band_2k_6k_fraction_mean": 0.4665902348932815
+    },
+    "windows": [
+      {
+        "rms": 0.21436324434426413,
+        "peak": 0.74591064453125,
+        "peak_dbfs": -2.5462639039328816,
+        "crest_db": 10.830729668461274,
+        "lr_correlation": 0.959331287828288,
+        "side_over_mid_db": -16.54709210391508,
+        "lr_total_power": 0.09196417046196478,
+        "bands": [
+          {
+            "hz": [
+              20,
+              200
+            ],
+            "lr_power": 0.002294291682929386,
+            "lr_fraction": 0.024947668982435677,
+            "mid_power": 0.0010982093919647588,
+            "side_power": 4.8936449499934426e-05
+          },
+          {
+            "hz": [
+              200,
+              2000
+            ],
+            "lr_power": 0.03977370502942679,
+            "lr_fraction": 0.4324913151462252,
+            "mid_power": 0.01945538415443896,
+            "side_power": 0.0004314683602744112
+          },
+          {
+            "hz": [
+              2000,
+              6000
+            ],
+            "lr_power": 0.04261108322154499,
+            "lr_fraction": 0.4633443982313568,
+            "mid_power": 0.020885785260187067,
+            "side_power": 0.00041975635058538887
+          },
+          {
+            "hz": [
+              6000,
+              12000
+            ],
+            "lr_power": 0.0032819377572906065,
+            "lr_fraction": 0.03568713490052057,
+            "mid_power": 0.0015879605250010173,
+            "side_power": 5.3008353644285424e-05
+          },
+          {
+            "hz": [
+              12000,
+              20000
+            ],
+            "lr_power": 0.002879096258891486,
+            "lr_fraction": 0.031306717001076456,
+            "mid_power": 0.0013938110133214351,
+            "side_power": 4.5737116124308255e-05
+          },
+          {
+            "hz": [
+              20000,
+              24000
+            ],
+            "lr_power": 0.0010932731086797359,
+            "lr_fraction": 0.01188803316756823,
+            "mid_power": 0.0005285368912812616,
+            "side_power": 1.80996630586066e-05
+          }
+        ],
+        "window_index": 0,
+        "start_sec": 0.0,
+        "end_sec": 60.0,
+        "frame_count": 2880000,
+        "partial_window": false
+      },
+      {
+        "rms": 0.20748021606220704,
+        "peak": 0.811492919921875,
+        "peak_dbfs": -1.8143052986964456,
+        "crest_db": 11.84616086970436,
+        "lr_correlation": 0.7833134752966888,
+        "side_over_mid_db": -8.407652388992034,
+        "lr_total_power": 0.08597753508840586,
+        "bands": [
+          {
+            "hz": [
+              20,
+              200
+            ],
+            "lr_power": 0.0022670506247943196,
+            "lr_fraction": 0.026367941607807657,
+            "mid_power": 0.0009539476187660427,
+            "side_power": 0.00017957769363111724
+          },
+          {
+            "hz": [
+              200,
+              2000
+            ],
+            "lr_power": 0.037037080535208246,
+            "lr_fraction": 0.43077625448467555,
+            "mid_power": 0.01625222021054145,
+            "side_power": 0.002266320057062644
+          },
+          {
+            "hz": [
+              2000,
+              6000
+            ],
+            "lr_power": 0.03984830616487877,
+            "lr_fraction": 0.4634734657594568,
+            "mid_power": 0.017533604494045098,
+            "side_power": 0.0023905485883943156
+          },
+          {
+            "hz": [
+              6000,
+              12000
+            ],
+            "lr_power": 0.0030441605045584026,
+            "lr_fraction": 0.035406464042360176,
+            "mid_power": 0.0012990761235480346,
+            "side_power": 0.00022300412873116687
+          },
+          {
+            "hz": [
+              12000,
+              20000
+            ],
+            "lr_power": 0.002481393497964219,
+            "lr_fraction": 0.028860951822039814,
+            "mid_power": 0.001056546178083815,
+            "side_power": 0.00018415057089829457
+          },
+          {
+            "hz": [
+              20000,
+              24000
+            ],
+            "lr_power": 0.0012708651403888322,
+            "lr_fraction": 0.014781362818578983,
+            "mid_power": 0.000539191146867201,
+            "side_power": 9.624142332721514e-05
+          }
+        ],
+        "window_index": 1,
+        "start_sec": 60.0,
+        "end_sec": 120.0,
+        "frame_count": 2880000,
+        "partial_window": false
+      },
+      {
+        "rms": 0.21590200597130974,
+        "peak": 0.73046875,
+        "peak_dbfs": -2.7279671755070116,
+        "crest_db": 10.586899275796002,
+        "lr_correlation": 0.9531548415238712,
+        "side_over_mid_db": -15.78897692840327,
+        "lr_total_power": 0.09353919450171333,
+        "bands": [
+          {
+            "hz": [
+              20,
+              200
+            ],
+            "lr_power": 0.002292618636648385,
+            "lr_fraction": 0.024509711130839294,
+            "mid_power": 0.0010902675241982827,
+            "side_power": 5.6041794125909306e-05
+          },
+          {
+            "hz": [
+              200,
+              2000
+            ],
+            "lr_power": 0.040823336830735295,
+            "lr_fraction": 0.4364302798223,
+            "mid_power": 0.01991057824467945,
+            "side_power": 0.0005010901706882037
+          },
+          {
+            "hz": [
+              2000,
+              6000
+            ],
+            "lr_power": 0.043427451247003535,
+            "lr_fraction": 0.46427010066040375,
+            "mid_power": 0.021202062590453125,
+            "side_power": 0.0005116630330486388
+          },
+          {
+            "hz": [
+              6000,
+              12000
+            ],
+            "lr_power": 0.0031360512241465884,
+            "lr_fraction": 0.03352660070307903,
+            "mid_power": 0.0015094343770751424,
+            "side_power": 5.859123499814937e-05
+          },
+          {
+            "hz": [
+              12000,
+              20000
+            ],
+            "lr_power": 0.0023362479441326506,
+            "lr_fraction": 0.02497613921712634,
+            "mid_power": 0.0011259608823894016,
+            "side_power": 4.216308967692356e-05
+          },
+          {
+            "hz": [
+              20000,
+              24000
+            ],
+            "lr_power": 0.00148653674919172,
+            "lr_fraction": 0.01589212690049936,
+            "mid_power": 0.0007120933276955473,
+            "side_power": 3.117504690031272e-05
+          }
+        ],
+        "window_index": 2,
+        "start_sec": 120.0,
+        "end_sec": 180.0,
+        "frame_count": 2880000,
+        "partial_window": false
+      },
+      {
+        "rms": 0.22005678638215995,
+        "peak": 0.8900146484375,
+        "peak_dbfs": -1.0120569079282231,
+        "crest_db": 12.137247763801415,
+        "lr_correlation": 0.7399430435165749,
+        "side_over_mid_db": -7.790461996712655,
+        "lr_total_power": 0.0966318357386611,
+        "bands": [
+          {
+            "hz": [
+              20,
+              200
+            ],
+            "lr_power": 0.002463478090299648,
+            "lr_fraction": 0.02549344190212919,
+            "mid_power": 0.0009966224080847422,
+            "side_power": 0.00023511663706508176
+          },
+          {
+            "hz": [
+              200,
+              2000
+            ],
+            "lr_power": 0.0422140026412172,
+            "lr_fraction": 0.4368539862513234,
+            "mid_power": 0.018135341852008702,
+            "side_power": 0.002971659468599881
+          },
+          {
+            "hz": [
+              2000,
+              6000
+            ],
+            "lr_power": 0.04458035012942517,
+            "lr_fraction": 0.4613422666417292,
+            "mid_power": 0.019184414942660887,
+            "side_power": 0.003105760122051689
+          },
+          {
+            "hz": [
+              6000,
+              12000
+            ],
+            "lr_power": 0.0033282100881546687,
+            "lr_fraction": 0.03444216973333454,
+            "mid_power": 0.001397901524762196,
+            "side_power": 0.0002662035193151399
+          },
+          {
+            "hz": [
+              12000,
+              20000
+            ],
+            "lr_power": 0.002341211641303819,
+            "lr_fraction": 0.024228160661622734,
+            "mid_power": 0.0009811458298310607,
+            "side_power": 0.00018945999082084885
+          },
+          {
+            "hz": [
+              20000,
+              24000
+            ],
+            "lr_power": 0.0016637082371669808,
+            "lr_fraction": 0.017216978487984508,
+            "mid_power": 0.0006858975779463313,
+            "side_power": 0.00014595654063715894
+          }
+        ],
+        "window_index": 3,
+        "start_sec": 180.0,
+        "end_sec": 240.0,
+        "frame_count": 2880000,
+        "partial_window": false
+      },
+      {
+        "rms": 0.22200080091815055,
+        "peak": 0.890960693359375,
+        "peak_dbfs": -1.0028291074482363,
+        "crest_db": 12.0700800671691,
+        "lr_correlation": 0.8174450709294895,
+        "side_over_mid_db": -9.66487755110229,
+        "lr_total_power": 0.09826305961628612,
+        "bands": [
+          {
+            "hz": [
+              20,
+              200
+            ],
+            "lr_power": 0.0024877116028975067,
+            "lr_fraction": 0.025316854702183457,
+            "mid_power": 0.00107724337929362,
+            "side_power": 0.00016661242215513315
+          },
+          {
+            "hz": [
+              200,
+              2000
+            ],
+            "lr_power": 0.042584357865795314,
+            "lr_fraction": 0.43337097411871534,
+            "mid_power": 0.019239209880492186,
+            "side_power": 0.002052969052405484
+          },
+          {
+            "hz": [
+              2000,
+              6000
+            ],
+            "lr_power": 0.045735037334780064,
+            "lr_fraction": 0.465434696552029,
+            "mid_power": 0.020691815861804293,
+            "side_power": 0.0021757028055857247
+          },
+          {
+            "hz": [
+              6000,
+              12000
+            ],
+            "lr_power": 0.0032861226176978398,
+            "lr_fraction": 0.03344209543779764,
+            "mid_power": 0.0014550860159560143,
+            "side_power": 0.00018797529289290776
+          },
+          {
+            "hz": [
+              12000,
+              20000
+            ],
+            "lr_power": 0.0024778632748469367,
+            "lr_fraction": 0.025216630588574263,
+            "mid_power": 0.0010995984040783563,
+            "side_power": 0.00013933323334511187
+          },
+          {
+            "hz": [
+              20000,
+              24000
+            ],
+            "lr_power": 0.0016497189927210246,
+            "lr_fraction": 0.016788801398644828,
+            "mid_power": 0.0007183130150953944,
+            "side_power": 0.00010654648126511804
+          }
+        ],
+        "window_index": 4,
+        "start_sec": 240.0,
+        "end_sec": 300.0,
+        "frame_count": 2880000,
+        "partial_window": false
+      },
+      {
+        "rms": 0.22693651372764556,
+        "peak": 0.723663330078125,
+        "peak_dbfs": -2.80926867317217,
+        "crest_db": 10.072643750722639,
+        "lr_correlation": 0.9916435784739899,
+        "side_over_mid_db": -23.718761952767494,
+        "lr_total_power": 0.10296256929727574,
+        "bands": [
+          {
+            "hz": [
+              20,
+              200
+            ],
+            "lr_power": 0.002521353992569259,
+            "lr_fraction": 0.024488064058401184,
+            "mid_power": 0.0012439941321292238,
+            "side_power": 1.6682864155405837e-05
+          },
+          {
+            "hz": [
+              200,
+              2000
+            ],
+            "lr_power": 0.04464150550507804,
+            "lr_fraction": 0.43357023634664876,
+            "mid_power": 0.022237661846039432,
+            "side_power": 8.309090649958882e-05
+          },
+          {
+            "hz": [
+              2000,
+              6000
+            ],
+            "lr_power": 0.048231511346120956,
+            "lr_fraction": 0.46843733286089534,
+            "mid_power": 0.024031258958750232,
+            "side_power": 8.449671431030428e-05
+          },
+          {
+            "hz": [
+              6000,
+              12000
+            ],
+            "lr_power": 0.0033609931519659277,
+            "lr_fraction": 0.03264286405151756,
+            "mid_power": 0.0016658965539686022,
+            "side_power": 1.4600022014360435e-05
+          },
+          {
+            "hz": [
+              12000,
+              20000
+            ],
+            "lr_power": 0.0027461634455540882,
+            "lr_fraction": 0.026671473568470366,
+            "mid_power": 0.0013620250617863378,
+            "side_power": 1.1056660990705167e-05
+          },
+          {
+            "hz": [
+              20000,
+              24000
+            ],
+            "lr_power": 0.0014290537583843165,
+            "lr_fraction": 0.013879352158145179,
+            "mid_power": 0.0007068053012726419,
+            "side_power": 7.72157791951627e-06
+          }
+        ],
+        "window_index": 5,
+        "start_sec": 300.0,
+        "end_sec": 360.0,
+        "frame_count": 2880000,
+        "partial_window": false
+      },
+      {
+        "rms": 0.23231280823959588,
+        "peak": 0.729034423828125,
+        "peak_dbfs": -2.745039290276013,
+        "crest_db": 9.933497616221649,
+        "lr_correlation": 0.9903916635921699,
+        "side_over_mid_db": -23.121805857298774,
+        "lr_total_power": 0.10802092859265804,
+        "bands": [
+          {
+            "hz": [
+              20,
+              200
+            ],
+            "lr_power": 0.0024547413949893983,
+            "lr_fraction": 0.02272468332730332,
+            "mid_power": 0.0012098091242592707,
+            "side_power": 1.7561573235428357e-05
+          },
+          {
+            "hz": [
+              200,
+              2000
+            ],
+            "lr_power": 0.04726454469430305,
+            "lr_fraction": 0.4375498832502679,
+            "mid_power": 0.023537923682281192,
+            "side_power": 9.43486648703409e-05
+          },
+          {
+            "hz": [
+              2000,
+              6000
+            ],
+            "lr_power": 0.0503705874695408,
+            "lr_fraction": 0.4663039665163959,
+            "mid_power": 0.02507295848849935,
+            "side_power": 0.00011233524627104734
+          },
+          {
+            "hz": [
+              6000,
+              12000
+            ],
+            "lr_power": 0.003492689785807177,
+            "lr_fraction": 0.032333454556551254,
+            "mid_power": 0.0017293360636979104,
+            "side_power": 1.700882920567933e-05
+          },
+          {
+            "hz": [
+              12000,
+              20000
+            ],
+            "lr_power": 0.0031080024185081616,
+            "lr_fraction": 0.02877222459573826,
+            "mid_power": 0.0015403803783121952,
+            "side_power": 1.3620830941885103e-05
+          },
+          {
+            "hz": [
+              20000,
+              24000
+            ],
+            "lr_power": 0.0012898578714241329,
+            "lr_fraction": 0.011940814509085806,
+            "mid_power": 0.0006383077131785004,
+            "side_power": 6.6212225335663446e-06
+          }
+        ],
+        "window_index": 6,
+        "start_sec": 360.0,
+        "end_sec": 420.0,
+        "frame_count": 2880000,
+        "partial_window": false
+      },
+      {
+        "rms": 0.23227897427255145,
+        "peak": 0.848724365234375,
+        "peak_dbfs": -1.4246665978019648,
+        "crest_db": 11.255135411159182,
+        "lr_correlation": 0.8129830130939649,
+        "side_over_mid_db": -9.530030152257003,
+        "lr_total_power": 0.1079892048553278,
+        "bands": [
+          {
+            "hz": [
+              20,
+              200
+            ],
+            "lr_power": 0.0024025235241957035,
+            "lr_fraction": 0.02224781196800498,
+            "mid_power": 0.001040049486268673,
+            "side_power": 0.00016121227582917874
+          },
+          {
+            "hz": [
+              200,
+              2000
+            ],
+            "lr_power": 0.04716006318343995,
+            "lr_fraction": 0.43671090315573563,
+            "mid_power": 0.021323302853988108,
+            "side_power": 0.0022567287377318625
+          },
+          {
+            "hz": [
+              2000,
+              6000
+            ],
+            "lr_power": 0.05081781696081882,
+            "lr_fraction": 0.47058237931188596,
+            "mid_power": 0.022876183711601994,
+            "side_power": 0.0025327247688074323
+          },
+          {
+            "hz": [
+              6000,
+              12000
+            ],
+            "lr_power": 0.003422323117605415,
+            "lr_fraction": 0.031691344724597906,
+            "mid_power": 0.00151435690033654,
+            "side_power": 0.00019680465846616473
+          },
+          {
+            "hz": [
+              12000,
+              20000
+            ],
+            "lr_power": 0.0030962984748063413,
+            "lr_fraction": 0.02867229626289429,
+            "mid_power": 0.0013645984006308595,
+            "side_power": 0.00018355083677231243
+          },
+          {
+            "hz": [
+              20000,
+              24000
+            ],
+            "lr_power": 0.0010470616865170118,
+            "lr_fraction": 0.00969598477847625,
+            "mid_power": 0.00046272220404832174,
+            "side_power": 6.080863921018398e-05
+          }
+        ],
+        "window_index": 7,
+        "start_sec": 420.0,
+        "end_sec": 480.0,
+        "frame_count": 2880000,
+        "partial_window": false
+      },
+      {
+        "rms": 0.23305908351583923,
+        "peak": 0.771575927734375,
+        "peak_dbfs": -2.2524266059235982,
+        "crest_db": 10.398252708139859,
+        "lr_correlation": 0.9503371657355206,
+        "side_over_mid_db": -15.78079825419698,
+        "lr_total_power": 0.1090549927283774,
+        "bands": [
+          {
+            "hz": [
+              20,
+              200
+            ],
+            "lr_power": 0.002332766211075924,
+            "lr_fraction": 0.021390732810244922,
+            "mid_power": 0.0011143483641416335,
+            "side_power": 5.20347413963284e-05
+          },
+          {
+            "hz": [
+              200,
+              2000
+            ],
+            "lr_power": 0.04827591523712415,
+            "lr_fraction": 0.4426749663572458,
+            "mid_power": 0.02358896099251825,
+            "side_power": 0.0005489966260438291
+          },
+          {
+            "hz": [
+              2000,
+              6000
+            ],
+            "lr_power": 0.051204922739555604,
+            "lr_fraction": 0.46953304437048005,
+            "mid_power": 0.024921270055380446,
+            "side_power": 0.0006811913143974031
+          },
+          {
+            "hz": [
+              6000,
+              12000
+            ],
+            "lr_power": 0.003342459983377607,
+            "lr_fraction": 0.03064930728758702,
+            "mid_power": 0.0016117169226060714,
+            "side_power": 5.951306908273407e-05
+          },
+          {
+            "hz": [
+              12000,
+              20000
+            ],
+            "lr_power": 0.002888632886837188,
+            "lr_fraction": 0.026487855480692095,
+            "mid_power": 0.001393798226772897,
+            "side_power": 5.051821664569648e-05
+          },
+          {
+            "hz": [
+              20000,
+              24000
+            ],
+            "lr_power": 0.0009637981995631549,
+            "lr_fraction": 0.008837726503395229,
+            "mid_power": 0.00046501941637213393,
+            "side_power": 1.687968340944352e-05
+          }
+        ],
+        "window_index": 8,
+        "start_sec": 480.0,
+        "end_sec": 540.0,
+        "frame_count": 2880000,
+        "partial_window": false
+      },
+      {
+        "rms": 0.23032588333692053,
+        "peak": 0.848724365234375,
+        "peak_dbfs": -1.4246665978019648,
+        "crest_db": 11.328478493650742,
+        "lr_correlation": 0.8841047876987103,
+        "side_over_mid_db": -11.945927144037196,
+        "lr_total_power": 0.10611120291500668,
+        "bands": [
+          {
+            "hz": [
+              20,
+              200
+            ],
+            "lr_power": 0.002108337149866634,
+            "lr_fraction": 0.019869128724847057,
+            "mid_power": 0.000960942082275744,
+            "side_power": 9.322649265757269e-05
+          },
+          {
+            "hz": [
+              200,
+              2000
+            ],
+            "lr_power": 0.0469094090662638,
+            "lr_fraction": 0.4420778181530697,
+            "mid_power": 0.02214360238991364,
+            "side_power": 0.0013111021432182504
+          },
+          {
+            "hz": [
+              2000,
+              6000
+            ],
+            "lr_power": 0.05020977306393297,
+            "lr_fraction": 0.4731806980281824,
+            "mid_power": 0.023547742324372477,
+            "side_power": 0.0015571442075940265
+          },
+          {
+            "hz": [
+              6000,
+              12000
+            ],
+            "lr_power": 0.0031262524398720263,
+            "lr_fraction": 0.02946203938877314,
+            "mid_power": 0.0014509222313182843,
+            "side_power": 0.00011220398861772976
+          },
+          {
+            "hz": [
+              12000,
+              20000
+            ],
+            "lr_power": 0.0026783756630262712,
+            "lr_fraction": 0.025241214777026,
+            "mid_power": 0.001243907326227855,
+            "side_power": 9.528050528528508e-05
+          },
+          {
+            "hz": [
+              20000,
+              24000
+            ],
+            "lr_power": 0.0010359351915422276,
+            "lr_fraction": 0.009762731578606215,
+            "mid_power": 0.0004776376595319263,
+            "side_power": 4.0329936239188565e-05
+          }
+        ],
+        "window_index": 9,
+        "start_sec": 540.0,
+        "end_sec": 599.9786666666666,
+        "frame_count": 2878976,
+        "partial_window": true
+      }
+    ]
+  },
+  "experiment_e2_telemetry_trace": {
+    "status": "unavailable",
+    "reason": "trace/run metadata do not match the hashed WAV",
+    "lineage_reasons": [
+      "metadata completed_chunks imply 458752 frames, but hashed WAV has 28798976 frames",
+      "metadata rendered_seconds differs from hashed WAV duration"
+    ]
+  },
+  "experiment_e3_prime_selection_sensitivity": {
+    "status": "unavailable",
+    "reasons": [
+      "metadata completed_chunks imply 458752 frames, but hashed WAV has 28798976 frames",
+      "metadata rendered_seconds differs from hashed WAV duration",
+      "exact per-chunk score stream is unavailable; trace is sampled every 10 chunks",
+      "prior reconstruction omitted the renderer score's observation-width term"
+    ]
+  },
+  "experiment_e4_post_mastering_distortion": {
+    "status": "simulation_only",
+    "test_signal": "one second, 1 kHz pure sine at each listed pre-tanh amplitude",
+    "nonlinearity": "tanh(0.92 * test_signal)",
+    "limitation": "The pre-tanh renderer waveform was not saved. These test-tone THD values cannot measure actual render distortion or identify the cause of perceived harshness.",
+    "prime_actual_peak": 0.729034423828125,
+    "prime_actual_rms": 0.23158775071806703,
+    "prime_actual_crest_db": 9.960649015890388,
+    "simulated_tanh_0_92_thd": [
+      {
+        "amplitude": 0.1,
+        "thd_ratio": 0.0007038444636307325,
+        "thd_percent": 0.07038444636307324,
+        "thd_db": -63.05046602311915
+      },
+      {
+        "amplitude": 0.3,
+        "thd_ratio": 0.006229687218441656,
+        "thd_percent": 0.6229687218441655,
+        "thd_db": -44.110675158999264
+      },
+      {
+        "amplitude": 0.5,
+        "thd_ratio": 0.016753610361372153,
+        "thd_percent": 1.6753610361372153,
+        "thd_db": -35.5178317832129
+      },
+      {
+        "amplitude": 0.7,
+        "thd_ratio": 0.0313552710633792,
+        "thd_percent": 3.13552710633792,
+        "thd_db": -30.073788808746325
+      },
+      {
+        "amplitude": 0.9,
+        "thd_ratio": 0.04892736251650677,
+        "thd_percent": 4.892736251650677,
+        "thd_db": -26.208963894651998
+      }
+    ]
+  }
+}

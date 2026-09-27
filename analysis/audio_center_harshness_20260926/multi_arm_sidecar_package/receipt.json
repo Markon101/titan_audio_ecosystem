@@ -1,0 +1,411 @@
+{
+  "canonical_inputs_mutated": false,
+  "checkpoint_inputs": {
+    "model": {
+      "bytes": 67974972,
+      "mtime_ns": 1790405457964052235,
+      "path": "/storage/emulated/0/Download/titan_model_v9_v9-long-01.safetensors",
+      "sha256": "0778fc0ab7b27f3d144e666de7a582de5e25d408913ceb1c31453670de99849a"
+    },
+    "morph_state": {
+      "bytes": 148,
+      "mtime_ns": 1790407793452051344,
+      "path": "/storage/emulated/0/Download/titan_morph_state_v9_v9-long-01.json",
+      "sha256": "941bcc2480a733787db7e83d78af35de6f7ce383448db25ad6cc468fe1527e3a"
+    },
+    "optimizer": {
+      "bytes": 135955352,
+      "mtime_ns": 1790405458084052235,
+      "path": "/storage/emulated/0/Download/titan_optimizer_v9_v9-long-01.safetensors",
+      "sha256": "3ee59cd3cd9e04ef03ed5f37e14022e1f4f6afcdc05bb8c01b9419c18d696c75"
+    },
+    "world": {
+      "bytes": 1387707,
+      "mtime_ns": 1790405458112052235,
+      "path": "/storage/emulated/0/Download/titan_world_v9_v9-long-01.bin",
+      "sha256": "b9f67bc3ca39826f1ce956555c77aa4a08f74f8f71cd03d3e087d6fca82052d9"
+    }
+  },
+  "clip_frames": 2880000,
+  "clip_seconds_requested": 60.0,
+  "clips": [
+    {
+      "end_frame_exclusive": 2880000,
+      "fade_frames_per_edge": 2048,
+      "id": "clip_01",
+      "processing": "sample-exact PCM16 interval with integer edge fades; no gain or resampling",
+      "selection_labels": [
+        "opening"
+      ],
+      "signal_checks": {
+        "both_channels_zero_fraction": 1.388888888888889e-06,
+        "clipped_frames": 0,
+        "dc_left_fraction_full_scale": -6.081899007161459e-07,
+        "dc_right_fraction_full_scale": 2.0627975463867187e-07,
+        "duration_seconds": 60.0,
+        "peak_dbfs": -2.5462639039328816,
+        "rms_left_dbfs": -13.068034069925247,
+        "rms_right_dbfs": -13.71538180113216,
+        "scope": "basic PCM checks only; no musical quality or downstream claim",
+        "stereo_correlation": 0.9593809107391416
+      },
+      "start_frame": 0,
+      "wav": {
+        "bytes": 11520044,
+        "relative_path": "clips/clip_01.wav",
+        "sha256": "df98d3bf8d6d966c96cfaa556501495806ac2a272da66239323517c980f6ea8c"
+      }
+    },
+    {
+      "end_frame_exclusive": 15839488,
+      "fade_frames_per_edge": 2048,
+      "id": "clip_02",
+      "processing": "sample-exact PCM16 interval with integer edge fades; no gain or resampling",
+      "selection_labels": [
+        "middle"
+      ],
+      "signal_checks": {
+        "both_channels_zero_fraction": 1.388888888888889e-06,
+        "clipped_frames": 0,
+        "dc_left_fraction_full_scale": -6.331443786621094e-07,
+        "dc_right_fraction_full_scale": -5.534383985731336e-07,
+        "duration_seconds": 60.0,
+        "peak_dbfs": -2.80926867317217,
+        "rms_left_dbfs": -12.975856077612942,
+        "rms_right_dbfs": -12.959888422262608,
+        "scope": "basic PCM checks only; no musical quality or downstream claim",
+        "stereo_correlation": 0.9871179545540879
+      },
+      "start_frame": 12959488,
+      "wav": {
+        "bytes": 11520044,
+        "relative_path": "clips/clip_02.wav",
+        "sha256": "8a16402d9eee687ee052504b65d5615c77bd9a497e91ef96bf6db2db37e6ba20"
+      }
+    },
+    {
+      "end_frame_exclusive": 28798976,
+      "fade_frames_per_edge": 2048,
+      "id": "clip_03",
+      "processing": "sample-exact PCM16 interval with integer edge fades; no gain or resampling",
+      "selection_labels": [
+        "ending"
+      ],
+      "signal_checks": {
+        "both_channels_zero_fraction": 1.0416666666666667e-06,
+        "clipped_frames": 0,
+        "dc_left_fraction_full_scale": 2.003383636474609e-06,
+        "dc_right_fraction_full_scale": 1.909669240315755e-06,
+        "duration_seconds": 60.0,
+        "peak_dbfs": -1.4246665978019648,
+        "rms_left_dbfs": -12.353533595880265,
+        "rms_right_dbfs": -13.201896898661156,
+        "scope": "basic PCM checks only; no musical quality or downstream claim",
+        "stereo_correlation": 0.8841414745468298
+      },
+      "start_frame": 25918976,
+      "wav": {
+        "bytes": 11520044,
+        "relative_path": "clips/clip_03.wav",
+        "sha256": "c973b680abdc2c8ad67f03a4a23711419bc7a9583d088025c1dc44d03bc8ffb9"
+      }
+    },
+    {
+      "end_frame_exclusive": 13388018,
+      "fade_frames_per_edge": 2048,
+      "id": "clip_04",
+      "processing": "sample-exact PCM16 interval with integer edge fades; no gain or resampling",
+      "selection_labels": [
+        "seeded"
+      ],
+      "signal_checks": {
+        "both_channels_zero_fraction": 6.944444444444445e-07,
+        "clipped_frames": 0,
+        "dc_left_fraction_full_scale": 8.132616678873698e-07,
+        "dc_right_fraction_full_scale": -3.230836656358507e-08,
+        "duration_seconds": 60.0,
+        "peak_dbfs": -1.0028291074482363,
+        "rms_left_dbfs": -11.812804354568488,
+        "rms_right_dbfs": -14.77786844601244,
+        "scope": "basic PCM checks only; no musical quality or downstream claim",
+        "stereo_correlation": 0.6462724632167042
+      },
+      "start_frame": 10508018,
+      "wav": {
+        "bytes": 11520044,
+        "relative_path": "clips/clip_04.wav",
+        "sha256": "1da8403960fbc42cbffafb67c3c3b68f2eacb07eba26da96ac304319972a9a64"
+      }
+    },
+    {
+      "end_frame_exclusive": null,
+      "id": "legacy_prime",
+      "processing": "byte-for-byte copy of existing prime; source offsets unknown",
+      "selection_labels": [
+        "existing_export"
+      ],
+      "signal_checks": {
+        "both_channels_zero_fraction": 1.0418518847795165e-06,
+        "clipped_frames": 0,
+        "dc_left_fraction_full_scale": -1.3970633489139388e-07,
+        "dc_right_fraction_full_scale": -5.968943089882646e-08,
+        "duration_seconds": 59.989333333333335,
+        "peak_dbfs": -2.745039290276013,
+        "rms_left_dbfs": -12.76995931920949,
+        "rms_right_dbfs": -12.642354582442046,
+        "scope": "basic PCM checks only; no musical quality or downstream claim",
+        "stereo_correlation": 0.9908126430619423
+      },
+      "source": {
+        "bytes": 11517996,
+        "mtime_ns": 1790406056316052007,
+        "path": "/storage/emulated/0/Download/titan_prime_60s_v9-long-01_9bcf582d4b13.wav",
+        "sha256": "4f8e6a604f5a3f37ec39818f71af6955a0488d4d937491cf1e051162c05ee48d"
+      },
+      "start_frame": null,
+      "wav": {
+        "bytes": 11517996,
+        "relative_path": "clips/legacy_prime.wav",
+        "sha256": "4f8e6a604f5a3f37ec39818f71af6955a0488d4d937491cf1e051162c05ee48d"
+      }
+    },
+    {
+      "end_frame_exclusive": null,
+      "id": "prime_window1_balanced_wide",
+      "processing": "candidate prime; checked 48 kHz stereo PCM16 WAV",
+      "selection_labels": [
+        "candidate_remediation"
+      ],
+      "signal_checks": {
+        "both_channels_zero_fraction": 6.944444444444445e-07,
+        "clipped_frames": 0,
+        "dc_left_fraction_full_scale": 1.2205547756618923e-06,
+        "dc_right_fraction_full_scale": 1.5640364752875434e-06,
+        "duration_seconds": 60.0,
+        "peak_dbfs": -2.5654749721967103,
+        "rms_left_dbfs": -13.566513218444616,
+        "rms_right_dbfs": -16.05600853760482,
+        "scope": "basic PCM checks only; no musical quality or downstream claim",
+        "stereo_correlation": 0.7768984786508674
+      },
+      "source": {
+        "bytes": 11520044,
+        "mtime_ns": 1790410432200050338,
+        "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/audio_center_harshness_20260926/balanced_primes/prime_window1_60s_to_120s_deemphasized.wav",
+        "sha256": "ac48357df451c89eff85d60d83b52aba600194f1e63de7f1cc6c8c142331e01d"
+      },
+      "start_frame": null,
+      "wav": {
+        "bytes": 11520044,
+        "relative_path": "clips/prime_window1_balanced_wide.wav",
+        "sha256": "ac48357df451c89eff85d60d83b52aba600194f1e63de7f1cc6c8c142331e01d"
+      }
+    },
+    {
+      "end_frame_exclusive": null,
+      "id": "prime_window3_max_wide",
+      "processing": "candidate prime; checked 48 kHz stereo PCM16 WAV",
+      "selection_labels": [
+        "candidate_remediation"
+      ],
+      "signal_checks": {
+        "both_channels_zero_fraction": 6.944444444444445e-07,
+        "clipped_frames": 0,
+        "dc_left_fraction_full_scale": -3.4578111436631944e-07,
+        "dc_right_fraction_full_scale": 6.410280863444011e-07,
+        "duration_seconds": 60.0,
+        "peak_dbfs": -1.7644714275041162,
+        "rms_left_dbfs": -13.161754412511717,
+        "rms_right_dbfs": -15.32172477264621,
+        "scope": "basic PCM checks only; no musical quality or downstream claim",
+        "stereo_correlation": 0.7353860504942568
+      },
+      "source": {
+        "bytes": 11520044,
+        "mtime_ns": 1790410436596050336,
+        "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/audio_center_harshness_20260926/balanced_primes/prime_window3_180s_to_240s_deemphasized.wav",
+        "sha256": "2091cfcd75c0b28a939b290992bae89d8f4ba6d799eb68105326dbe3feae2fa9"
+      },
+      "start_frame": null,
+      "wav": {
+        "bytes": 11520044,
+        "relative_path": "clips/prime_window3_max_wide.wav",
+        "sha256": "2091cfcd75c0b28a939b290992bae89d8f4ba6d799eb68105326dbe3feae2fa9"
+      }
+    }
+  ],
+  "corpus_audit": {
+    "candidate_count_scope": "present WAVs after production name/role filtering; format and length indexing not checked",
+    "declared_role_counts": {
+      "development": 7,
+      "exclude": 65,
+      "train": 266,
+      "validation": 5
+    },
+    "manifest": {
+      "bytes": 56398,
+      "mtime_ns": 1786335668662887717,
+      "path": "/storage/emulated/0/Download/titan_corpus_manifest_v7.json",
+      "sha256": "cce78314c64ee507120a51ea74cc1705c4174e0acb07efe3e7ee7e4e7478575c"
+    },
+    "manifest_edited": false,
+    "mixed_role_families": [],
+    "present_name_role_candidates": {
+      "development": 7,
+      "train": 255,
+      "validation": 4
+    },
+    "quarantine_role_conflicts": [
+      {
+        "declared_role": "train",
+        "file": "rust_ecosystem_out_countryhop_chaos.wav",
+        "production_filename_filter_excludes": true
+      },
+      {
+        "declared_role": "validation",
+        "file": "rust_ecosystem_outqb.wav (Remix).wav",
+        "production_filename_filter_excludes": true
+      }
+    ]
+  },
+  "git_source": {
+    "commit": "6b9f680f1241bfc50957b182f2afc5d746fc782f",
+    "dirty": true
+  },
+  "interpretation": "candidate clips and basic PCM checks; no musical ranking or downstream result",
+  "listening_notes": {
+    "bytes": 234,
+    "relative_path": "listening_notes.csv",
+    "sha256": "39b7c23c739d8accbea8dc4e98c806154c61c7e8a9c0f863a46c469194262e78"
+  },
+  "metadata_audio_bytes_match": true,
+  "prompts": [
+    {
+      "applies_to": [
+        "clip_01",
+        "clip_02",
+        "clip_03",
+        "clip_04",
+        "legacy_prime",
+        "prime_window1_balanced_wide",
+        "prime_window3_max_wide"
+      ],
+      "file": {
+        "bytes": 91,
+        "relative_path": "prompts/neutral.txt",
+        "sha256": "46dfbd72a171acdd684672d10720690b4ecef20b1b7dd12b2e3598640cbc0eb8"
+      },
+      "id": "neutral"
+    },
+    {
+      "applies_to": [
+        "clip_01",
+        "clip_02",
+        "clip_03",
+        "clip_04",
+        "legacy_prime",
+        "prime_window1_balanced_wide",
+        "prime_window3_max_wide"
+      ],
+      "file": {
+        "bytes": 183,
+        "relative_path": "prompts/audible_descriptors.txt",
+        "sha256": "21bf400586c43f68e8109b6aac4a0caf7017ae88288ec6502f678a179d37ee5b"
+      },
+      "id": "audible_descriptors"
+    },
+    {
+      "applies_to": [
+        "legacy_prime"
+      ],
+      "file": {
+        "bytes": 445,
+        "relative_path": "prompts/legacy_run_prompt.txt",
+        "sha256": "5abc42b03e7dfe74f5e64b56385af7029852d5baec0557672f10cda0e4e47428"
+      },
+      "id": "legacy_run_prompt",
+      "source": {
+        "bytes": 445,
+        "mtime_ns": 1790407793320051344,
+        "path": "/storage/emulated/0/Download/suno_priming_prompt_v9-long-01.txt",
+        "sha256": "5abc42b03e7dfe74f5e64b56385af7029852d5baec0557672f10cda0e4e47428"
+      },
+      "warning": "whole-run proxy prompt; confirm audible descriptors before use"
+    }
+  ],
+  "run_metadata": {
+    "bytes": 6137,
+    "mtime_ns": 1790411076492050092,
+    "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/audio_center_harshness_20260926/metadata_v9_9bcf582d4b13.json",
+    "sha256": "83a10d020dc3a3445eb543e027c4c95d4ad1834620b2ba7332dc2a6bcc9f76b7"
+  },
+  "run_metadata_reported_build": {
+    "git_commit": "6b9f680f1241",
+    "git_dirty": true,
+    "package": "titan-audio-ecosystem",
+    "release": true,
+    "version": "9.0.0"
+  },
+  "run_metadata_reported_run": {
+    "completed_chunks": 112,
+    "development_plateau_ready": false,
+    "development_relative_improvement": 0.0,
+    "elapsed_seconds": 18.42625617980957,
+    "end_global_step": 81483,
+    "end_manifold_depth": 4,
+    "end_morph_depth": 16,
+    "end_rad_amp": 0.232829287648201,
+    "end_spatial_rings": 2,
+    "morph_event_count": 0,
+    "optimizer_migration": {
+      "exact": 200,
+      "initialized": 0,
+      "renderer_control_resets": 0,
+      "resized": 0
+    },
+    "optimizer_resumed": true,
+    "optimizer_updates_cumulative": 3117,
+    "optimizer_updates_run": 1,
+    "phase_profile": {
+      "backward_ms_per_chunk": 101.481842875,
+      "checkpoint_ms_per_chunk": 0.0,
+      "loss_and_metrics_ms_per_chunk": 4.0522363214285715,
+      "model_forward_ms_per_chunk": 50.522229294642855,
+      "optimizer_ms_per_chunk": 0.5100446428571429,
+      "output_io_ms_per_chunk": 0.1471144375,
+      "target_load_ms_per_chunk": 0.2881891696428571
+    },
+    "rendered_seconds": 9.557332992553711,
+    "start_global_step": 81371,
+    "start_manifold_depth": 4,
+    "start_morph_depth": 16,
+    "start_rad_amp": 0.2302377074956894,
+    "start_spatial_rings": 2,
+    "steps_per_second": 6.078282833099365
+  },
+  "schema": {
+    "name": "titan_prime_package",
+    "version": 1
+  },
+  "selection_seed": 42,
+  "source_wav": {
+    "bytes": 115195948,
+    "mtime_ns": 1790406056316052007,
+    "path": "/storage/emulated/0/Download/rust_ecosystem_out_v9-long-01_9bcf582d4b13.wav",
+    "sha256": "22091e4f6fceddd7b61e304bf6b9ddb0d03b98596365346f688cfd3591082185"
+  },
+  "source_wav_format": {
+    "channels": 2,
+    "compression": "NONE",
+    "duration_seconds": 599.9786666666666,
+    "frames": 28798976,
+    "sample_rate": 48000,
+    "sample_width_bytes": 2
+  },
+  "tool": {
+    "bytes": 18497,
+    "mtime_ns": 1790411059432050098,
+    "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/scripts/prime_package.py",
+    "sha256": "ddbb4d785f8fb85c1f3bac0e9d6bdd3df8c1d83b4d973f8d7312284bc07d7f85"
+  }
+}

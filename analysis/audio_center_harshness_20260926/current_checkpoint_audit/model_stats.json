@@ -1,0 +1,3407 @@
+{
+  "architecture": {
+    "controller_actions": 10,
+    "decoder_control_frames": 32,
+    "decoder_controls": 76,
+    "episodic_capacity": 16,
+    "episodic_readout": 64,
+    "macro_state": [
+      1,
+      64,
+      32,
+      32
+    ],
+    "manifold_active_sheets": 4,
+    "manifold_feature_channels_per_sheet": 16,
+    "manifold_storage_channels": 64,
+    "micro_state": [
+      1,
+      64,
+      64,
+      64
+    ],
+    "morphic_active_depth": 16,
+    "morphic_physical_depth": 16,
+    "morphic_width": 512,
+    "novelty_capacity": 48,
+    "recurrent_memory": 512,
+    "regional_partials": 32,
+    "world_model_observation": 12
+  },
+  "interpretation_constraint": "parameter count is anatomy, not causal importance",
+  "learned_parameters": {
+    "active_count_scope": "only wholly inactive MorphicStack blocks are excluded; shared folded-manifold tensors remain allocated",
+    "active_exact_whole_blocks": 16988839,
+    "adam_two_moment_bytes_estimate": 135910712,
+    "fp32_weight_bytes": 67955356,
+    "inactive_reserved_whole_blocks": 0,
+    "nonfinite": 0,
+    "subsystems": {
+      "episodic_attention": 98496,
+      "gru_recurrent_memory": 986112,
+      "macro_nca": 17856,
+      "micro_nca": 17856,
+      "morphic_stack": 8413184,
+      "objective_arbiter": 1415,
+      "oscillator_synthesis": 12314,
+      "recurrent_to_micro": 295488,
+      "regional_scan_synthesis": 49248,
+      "spatial_temporal_decoder": 7035084,
+      "stereo_control": 1026,
+      "wavefolders": 8224,
+      "world_model_planner": 52536
+    },
+    "tensors": [
+      {
+        "active": true,
+        "bytes": 256,
+        "dtype": "f32",
+        "elements": 64,
+        "maximum": 0.3199521005153656,
+        "minimum": -0.29037708044052124,
+        "name": "arbiter.fc1.bias",
+        "nonfinite": 0,
+        "rms": 0.1388576775789261,
+        "shape": [
+          64
+        ],
+        "subsystem": "objective_arbiter",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 3584,
+        "dtype": "f32",
+        "elements": 896,
+        "maximum": 1.4114376306533813,
+        "minimum": -1.3876012563705444,
+        "name": "arbiter.fc1.weight",
+        "nonfinite": 0,
+        "rms": 0.24955496191978455,
+        "shape": [
+          64,
+          14
+        ],
+        "subsystem": "objective_arbiter",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 28,
+        "dtype": "f32",
+        "elements": 7,
+        "maximum": 0.2886345088481903,
+        "minimum": -0.20547430217266083,
+        "name": "arbiter.fc2.bias",
+        "nonfinite": 0,
+        "rms": 0.25480473041534424,
+        "shape": [
+          7
+        ],
+        "subsystem": "objective_arbiter",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1792,
+        "dtype": "f32",
+        "elements": 448,
+        "maximum": 0.9788020253181458,
+        "minimum": -0.9261167049407959,
+        "name": "arbiter.fc2.weight",
+        "nonfinite": 0,
+        "rms": 0.19701261818408966,
+        "shape": [
+          7,
+          64
+        ],
+        "subsystem": "objective_arbiter",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 256,
+        "dtype": "f32",
+        "elements": 64,
+        "maximum": 7.071628260746365e-7,
+        "minimum": -5.53558550109301e-7,
+        "name": "episodic.wk.bias",
+        "nonfinite": 0,
+        "rms": 2.475144071922841e-7,
+        "shape": [
+          64
+        ],
+        "subsystem": "episodic_attention",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 131072,
+        "dtype": "f32",
+        "elements": 32768,
+        "maximum": 0.1520567387342453,
+        "minimum": -0.1548987478017807,
+        "name": "episodic.wk.weight",
+        "nonfinite": 0,
+        "rms": 0.03360263630747795,
+        "shape": [
+          64,
+          512
+        ],
+        "subsystem": "episodic_attention",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 256,
+        "dtype": "f32",
+        "elements": 64,
+        "maximum": 0.06875964999198914,
+        "minimum": -0.06294436007738113,
+        "name": "episodic.wq.bias",
+        "nonfinite": 0,
+        "rms": 0.035009149461984634,
+        "shape": [
+          64
+        ],
+        "subsystem": "episodic_attention",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 131072,
+        "dtype": "f32",
+        "elements": 32768,
+        "maximum": 0.09655335545539856,
+        "minimum": -0.09604547172784805,
+        "name": "episodic.wq.weight",
+        "nonfinite": 0,
+        "rms": 0.02817145735025406,
+        "shape": [
+          64,
+          512
+        ],
+        "subsystem": "episodic_attention",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 256,
+        "dtype": "f32",
+        "elements": 64,
+        "maximum": 0.19124841690063477,
+        "minimum": -0.18268680572509766,
+        "name": "episodic.wv.bias",
+        "nonfinite": 0,
+        "rms": 0.0893244743347168,
+        "shape": [
+          64
+        ],
+        "subsystem": "episodic_attention",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 131072,
+        "dtype": "f32",
+        "elements": 32768,
+        "maximum": 0.2611273527145386,
+        "minimum": -0.3092872202396393,
+        "name": "episodic.wv.weight",
+        "nonfinite": 0,
+        "rms": 0.08459757268428802,
+        "shape": [
+          64,
+          512
+        ],
+        "subsystem": "episodic_attention",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 256,
+        "dtype": "f32",
+        "elements": 64,
+        "maximum": 0.0644303560256958,
+        "minimum": -0.07570463418960571,
+        "name": "model.asymp_contract.contract.bias",
+        "nonfinite": 0,
+        "rms": 0.03115173429250717,
+        "shape": [
+          64
+        ],
+        "subsystem": "recurrent_to_micro",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 131072,
+        "dtype": "f32",
+        "elements": 32768,
+        "maximum": 0.29031065106391907,
+        "minimum": -0.3400808572769165,
+        "name": "model.asymp_contract.contract.weight",
+        "nonfinite": 0,
+        "rms": 0.04474695026874542,
+        "shape": [
+          64,
+          512
+        ],
+        "subsystem": "recurrent_to_micro",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.09858322888612747,
+        "minimum": -0.12237655371427536,
+        "name": "model.asymp_contract.expand.bias",
+        "nonfinite": 0,
+        "rms": 0.05542560666799545,
+        "shape": [
+          512
+        ],
+        "subsystem": "recurrent_to_micro",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.20136331021785736,
+        "minimum": -0.20023296773433685,
+        "name": "model.asymp_contract.expand.weight",
+        "nonfinite": 0,
+        "rms": 0.054258331656455994,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "recurrent_to_micro",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 24,
+        "dtype": "f32",
+        "elements": 6,
+        "maximum": 0.04912295565009117,
+        "minimum": -0.035408809781074524,
+        "name": "model.auxiliary_pitch_head_0.bias",
+        "nonfinite": 0,
+        "rms": 0.03546237573027611,
+        "shape": [
+          6
+        ],
+        "subsystem": "oscillator_synthesis",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 12288,
+        "dtype": "f32",
+        "elements": 3072,
+        "maximum": 0.08982923626899719,
+        "minimum": -0.09505875408649445,
+        "name": "model.auxiliary_pitch_head_0.weight",
+        "nonfinite": 0,
+        "rms": 0.04214351996779442,
+        "shape": [
+          6,
+          512
+        ],
+        "subsystem": "oscillator_synthesis",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 4,
+        "dtype": "f32",
+        "elements": 1,
+        "maximum": 4.067100524902344,
+        "minimum": 4.067100524902344,
+        "name": "model.base_freq_l",
+        "nonfinite": 0,
+        "rms": 4.067100524902344,
+        "shape": [
+          1
+        ],
+        "subsystem": "oscillator_synthesis",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 4,
+        "dtype": "f32",
+        "elements": 1,
+        "maximum": 3.5305097103118896,
+        "minimum": 3.5305097103118896,
+        "name": "model.base_freq_r",
+        "nonfinite": 0,
+        "rms": 3.5305097103118896,
+        "shape": [
+          1
+        ],
+        "subsystem": "oscillator_synthesis",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 8,
+        "dtype": "f32",
+        "elements": 2,
+        "maximum": 0.019579673185944557,
+        "minimum": -0.04821101576089859,
+        "name": "model.carrier_pitch_head_0.bias",
+        "nonfinite": 0,
+        "rms": 0.03679446876049042,
+        "shape": [
+          2
+        ],
+        "subsystem": "oscillator_synthesis",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 4096,
+        "dtype": "f32",
+        "elements": 1024,
+        "maximum": 0.21666540205478668,
+        "minimum": -0.202636256814003,
+        "name": "model.carrier_pitch_head_0.weight",
+        "nonfinite": 0,
+        "rms": 0.06043165922164917,
+        "shape": [
+          2,
+          512
+        ],
+        "subsystem": "oscillator_synthesis",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 8,
+        "dtype": "f32",
+        "elements": 2,
+        "maximum": 0.06824573874473572,
+        "minimum": -0.05161328241229057,
+        "name": "model.fm_mod_index_0.bias",
+        "nonfinite": 0,
+        "rms": 0.0605037659406662,
+        "shape": [
+          2
+        ],
+        "subsystem": "oscillator_synthesis",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 4096,
+        "dtype": "f32",
+        "elements": 1024,
+        "maximum": 0.1256275177001953,
+        "minimum": -0.12844489514827728,
+        "name": "model.fm_mod_index_0.weight",
+        "nonfinite": 0,
+        "rms": 0.053363192826509476,
+        "shape": [
+          2,
+          512
+        ],
+        "subsystem": "oscillator_synthesis",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 8,
+        "dtype": "f32",
+        "elements": 2,
+        "maximum": 0.028537236154079437,
+        "minimum": 0.025269735604524612,
+        "name": "model.fm_mod_ratio_0.bias",
+        "nonfinite": 0,
+        "rms": 0.026953045278787613,
+        "shape": [
+          2
+        ],
+        "subsystem": "oscillator_synthesis",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 4096,
+        "dtype": "f32",
+        "elements": 1024,
+        "maximum": 0.1194804459810257,
+        "minimum": -0.07317866384983063,
+        "name": "model.fm_mod_ratio_0.weight",
+        "nonfinite": 0,
+        "rms": 0.05774211511015892,
+        "shape": [
+          2,
+          512
+        ],
+        "subsystem": "oscillator_synthesis",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.05637044832110405,
+        "minimum": -0.09265237301588058,
+        "name": "model.gru_memory.w_hn.bias",
+        "nonfinite": 0,
+        "rms": 0.03381641209125519,
+        "shape": [
+          512
+        ],
+        "subsystem": "gru_recurrent_memory",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.11123177409172058,
+        "minimum": -0.11593344062566757,
+        "name": "model.gru_memory.w_hn.weight",
+        "nonfinite": 0,
+        "rms": 0.029613681137561798,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "gru_recurrent_memory",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.05558908358216286,
+        "minimum": -0.05252568796277046,
+        "name": "model.gru_memory.w_hr.bias",
+        "nonfinite": 0,
+        "rms": 0.02837360091507435,
+        "shape": [
+          512
+        ],
+        "subsystem": "gru_recurrent_memory",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.09096457064151764,
+        "minimum": -0.09055214375257492,
+        "name": "model.gru_memory.w_hr.weight",
+        "nonfinite": 0,
+        "rms": 0.026778601109981537,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "gru_recurrent_memory",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.058757100254297256,
+        "minimum": -0.07333660870790482,
+        "name": "model.gru_memory.w_hz.bias",
+        "nonfinite": 0,
+        "rms": 0.029140494763851166,
+        "shape": [
+          512
+        ],
+        "subsystem": "gru_recurrent_memory",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.12688924372196198,
+        "minimum": -0.11805831640958786,
+        "name": "model.gru_memory.w_hz.weight",
+        "nonfinite": 0,
+        "rms": 0.033957064151763916,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "gru_recurrent_memory",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.056333258748054504,
+        "minimum": -0.08177118003368378,
+        "name": "model.gru_memory.w_in.bias",
+        "nonfinite": 0,
+        "rms": 0.03456050530076027,
+        "shape": [
+          512
+        ],
+        "subsystem": "gru_recurrent_memory",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 262144,
+        "dtype": "f32",
+        "elements": 65536,
+        "maximum": 0.16053229570388794,
+        "minimum": -0.17316760122776031,
+        "name": "model.gru_memory.w_in.weight",
+        "nonfinite": 0,
+        "rms": 0.03726552799344063,
+        "shape": [
+          512,
+          128
+        ],
+        "subsystem": "gru_recurrent_memory",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.05558908358216286,
+        "minimum": -0.05252568796277046,
+        "name": "model.gru_memory.w_ir.bias",
+        "nonfinite": 0,
+        "rms": 0.02837360091507435,
+        "shape": [
+          512
+        ],
+        "subsystem": "gru_recurrent_memory",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 262144,
+        "dtype": "f32",
+        "elements": 65536,
+        "maximum": 0.10092587769031525,
+        "minimum": -0.10703728348016739,
+        "name": "model.gru_memory.w_ir.weight",
+        "nonfinite": 0,
+        "rms": 0.034083329141139984,
+        "shape": [
+          512,
+          128
+        ],
+        "subsystem": "gru_recurrent_memory",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.058757100254297256,
+        "minimum": -0.07333660870790482,
+        "name": "model.gru_memory.w_iz.bias",
+        "nonfinite": 0,
+        "rms": 0.029140494763851166,
+        "shape": [
+          512
+        ],
+        "subsystem": "gru_recurrent_memory",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 262144,
+        "dtype": "f32",
+        "elements": 65536,
+        "maximum": 0.17229342460632324,
+        "minimum": -0.15601982176303864,
+        "name": "model.gru_memory.w_iz.weight",
+        "nonfinite": 0,
+        "rms": 0.03959392383694649,
+        "shape": [
+          512,
+          128
+        ],
+        "subsystem": "gru_recurrent_memory",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 256,
+        "dtype": "f32",
+        "elements": 64,
+        "maximum": 0.725313663482666,
+        "minimum": -0.6042713522911072,
+        "name": "model.macro_ca.contract.bias",
+        "nonfinite": 0,
+        "rms": 0.24090313911437988,
+        "shape": [
+          64
+        ],
+        "subsystem": "macro_nca",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 32768,
+        "dtype": "f32",
+        "elements": 8192,
+        "maximum": 0.7856807708740234,
+        "minimum": -0.568591296672821,
+        "name": "model.macro_ca.contract.weight",
+        "nonfinite": 0,
+        "rms": 0.10611341148614883,
+        "shape": [
+          64,
+          128,
+          1,
+          1
+        ],
+        "subsystem": "macro_nca",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 512,
+        "dtype": "f32",
+        "elements": 128,
+        "maximum": 0.16850543022155762,
+        "minimum": -0.19379360973834991,
+        "name": "model.macro_ca.expand.bias",
+        "nonfinite": 0,
+        "rms": 0.06144140660762787,
+        "shape": [
+          128
+        ],
+        "subsystem": "macro_nca",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 32768,
+        "dtype": "f32",
+        "elements": 8192,
+        "maximum": 0.6969524621963501,
+        "minimum": -0.6823520064353943,
+        "name": "model.macro_ca.expand.weight",
+        "nonfinite": 0,
+        "rms": 0.14818008244037628,
+        "shape": [
+          128,
+          64,
+          1,
+          1
+        ],
+        "subsystem": "macro_nca",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 256,
+        "dtype": "f32",
+        "elements": 64,
+        "maximum": 0.10332251340150833,
+        "minimum": -0.14295656979084015,
+        "name": "model.macro_ca.far_perception.bias",
+        "nonfinite": 0,
+        "rms": 0.05293629318475723,
+        "shape": [
+          64
+        ],
+        "subsystem": "macro_nca",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2304,
+        "dtype": "f32",
+        "elements": 576,
+        "maximum": 0.6204036474227905,
+        "minimum": -0.40880024433135986,
+        "name": "model.macro_ca.far_perception.weight",
+        "nonfinite": 0,
+        "rms": 0.2085818201303482,
+        "shape": [
+          64,
+          1,
+          3,
+          3
+        ],
+        "subsystem": "macro_nca",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 256,
+        "dtype": "f32",
+        "elements": 64,
+        "maximum": 0.20005446672439575,
+        "minimum": -0.16957809031009674,
+        "name": "model.macro_ca.perception.bias",
+        "nonfinite": 0,
+        "rms": 0.08613759279251099,
+        "shape": [
+          64
+        ],
+        "subsystem": "macro_nca",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2304,
+        "dtype": "f32",
+        "elements": 576,
+        "maximum": 0.7144525647163391,
+        "minimum": -0.604428768157959,
+        "name": "model.macro_ca.perception.weight",
+        "nonfinite": 0,
+        "rms": 0.2688266634941101,
+        "shape": [
+          64,
+          1,
+          3,
+          3
+        ],
+        "subsystem": "macro_nca",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 256,
+        "dtype": "f32",
+        "elements": 64,
+        "maximum": 0.14418284595012665,
+        "minimum": -0.14170219004154205,
+        "name": "model.micro_ca.contract.bias",
+        "nonfinite": 0,
+        "rms": 0.05807992443442345,
+        "shape": [
+          64
+        ],
+        "subsystem": "micro_nca",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 32768,
+        "dtype": "f32",
+        "elements": 8192,
+        "maximum": 0.48962804675102234,
+        "minimum": -0.47498977184295654,
+        "name": "model.micro_ca.contract.weight",
+        "nonfinite": 0,
+        "rms": 0.10855057090520859,
+        "shape": [
+          64,
+          128,
+          1,
+          1
+        ],
+        "subsystem": "micro_nca",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 512,
+        "dtype": "f32",
+        "elements": 128,
+        "maximum": 0.08054176717996597,
+        "minimum": -0.25387123227119446,
+        "name": "model.micro_ca.expand.bias",
+        "nonfinite": 0,
+        "rms": 0.12241309136152267,
+        "shape": [
+          128
+        ],
+        "subsystem": "micro_nca",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 32768,
+        "dtype": "f32",
+        "elements": 8192,
+        "maximum": 0.5974019765853882,
+        "minimum": -0.7056105732917786,
+        "name": "model.micro_ca.expand.weight",
+        "nonfinite": 0,
+        "rms": 0.14437313377857208,
+        "shape": [
+          128,
+          64,
+          1,
+          1
+        ],
+        "subsystem": "micro_nca",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 256,
+        "dtype": "f32",
+        "elements": 64,
+        "maximum": 0.24891123175621033,
+        "minimum": -0.20340514183044434,
+        "name": "model.micro_ca.far_perception.bias",
+        "nonfinite": 0,
+        "rms": 0.10342153906822205,
+        "shape": [
+          64
+        ],
+        "subsystem": "micro_nca",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2304,
+        "dtype": "f32",
+        "elements": 576,
+        "maximum": 0.4964771866798401,
+        "minimum": -0.5987542271614075,
+        "name": "model.micro_ca.far_perception.weight",
+        "nonfinite": 0,
+        "rms": 0.20551972091197968,
+        "shape": [
+          64,
+          1,
+          3,
+          3
+        ],
+        "subsystem": "micro_nca",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 256,
+        "dtype": "f32",
+        "elements": 64,
+        "maximum": 0.24996605515480042,
+        "minimum": -0.25098952651023865,
+        "name": "model.micro_ca.perception.bias",
+        "nonfinite": 0,
+        "rms": 0.12653939425945282,
+        "shape": [
+          64
+        ],
+        "subsystem": "micro_nca",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2304,
+        "dtype": "f32",
+        "elements": 576,
+        "maximum": 0.5317922830581665,
+        "minimum": -0.4978054463863373,
+        "name": "model.micro_ca.perception.weight",
+        "nonfinite": 0,
+        "rms": 0.18949364125728607,
+        "shape": [
+          64,
+          1,
+          3,
+          3
+        ],
+        "subsystem": "micro_nca",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.24929536879062653,
+        "minimum": -0.08801082521677017,
+        "name": "model.morphic.l0_1.bias",
+        "nonfinite": 0,
+        "rms": 0.06610259413719177,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.4685361385345459,
+        "minimum": -0.46852320432662964,
+        "name": "model.morphic.l0_1.weight",
+        "nonfinite": 0,
+        "rms": 0.07207513600587845,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.42548567056655884,
+        "minimum": -0.09705367684364319,
+        "name": "model.morphic.l0_2.bias",
+        "nonfinite": 0,
+        "rms": 0.0441301055252552,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.49245378375053406,
+        "minimum": -0.6521231532096863,
+        "name": "model.morphic.l0_2.weight",
+        "nonfinite": 0,
+        "rms": 0.036893025040626526,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.2741888463497162,
+        "minimum": -0.25944870710372925,
+        "name": "model.morphic.l10_1.bias",
+        "nonfinite": 0,
+        "rms": 0.14845435321331024,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.737587034702301,
+        "minimum": -0.6310378313064575,
+        "name": "model.morphic.l10_1.weight",
+        "nonfinite": 0,
+        "rms": 0.15601235628128052,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.4768661558628082,
+        "minimum": -0.3374382257461548,
+        "name": "model.morphic.l10_2.bias",
+        "nonfinite": 0,
+        "rms": 0.14977629482746124,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.7039666175842285,
+        "minimum": -0.678046464920044,
+        "name": "model.morphic.l10_2.weight",
+        "nonfinite": 0,
+        "rms": 0.09853870421648026,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.2542189061641693,
+        "minimum": -0.2410535216331482,
+        "name": "model.morphic.l11_1.bias",
+        "nonfinite": 0,
+        "rms": 0.16724833846092224,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.6574258208274841,
+        "minimum": -0.6606594920158386,
+        "name": "model.morphic.l11_1.weight",
+        "nonfinite": 0,
+        "rms": 0.19596774876117706,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.5952900648117065,
+        "minimum": -0.10908669978380203,
+        "name": "model.morphic.l11_2.bias",
+        "nonfinite": 0,
+        "rms": 0.09133214503526688,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.7476332783699036,
+        "minimum": -0.43312084674835205,
+        "name": "model.morphic.l11_2.weight",
+        "nonfinite": 0,
+        "rms": 0.07562149316072464,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.2430611401796341,
+        "minimum": -0.13401785492897034,
+        "name": "model.morphic.l12_1.bias",
+        "nonfinite": 0,
+        "rms": 0.08653213828802109,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.5347423553466797,
+        "minimum": -0.42678603529930115,
+        "name": "model.morphic.l12_1.weight",
+        "nonfinite": 0,
+        "rms": 0.08204586058855057,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.3049534559249878,
+        "minimum": -0.1528089940547943,
+        "name": "model.morphic.l12_2.bias",
+        "nonfinite": 0,
+        "rms": 0.07630171626806259,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.4350692927837372,
+        "minimum": -0.6388735771179199,
+        "name": "model.morphic.l12_2.weight",
+        "nonfinite": 0,
+        "rms": 0.07160919159650803,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.10880210250616074,
+        "minimum": -0.09822851419448853,
+        "name": "model.morphic.l13_1.bias",
+        "nonfinite": 0,
+        "rms": 0.06251926720142365,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.4136427938938141,
+        "minimum": -0.3482379913330078,
+        "name": "model.morphic.l13_1.weight",
+        "nonfinite": 0,
+        "rms": 0.059951357543468475,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.3074168860912323,
+        "minimum": -0.15224365890026093,
+        "name": "model.morphic.l13_2.bias",
+        "nonfinite": 0,
+        "rms": 0.08928943425416946,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.4315359592437744,
+        "minimum": -0.4049929976463318,
+        "name": "model.morphic.l13_2.weight",
+        "nonfinite": 0,
+        "rms": 0.08603078871965408,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.320374071598053,
+        "minimum": -0.11731688678264618,
+        "name": "model.morphic.l14_1.bias",
+        "nonfinite": 0,
+        "rms": 0.11829941719770432,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.520932674407959,
+        "minimum": -0.34315750002861023,
+        "name": "model.morphic.l14_1.weight",
+        "nonfinite": 0,
+        "rms": 0.11103636771440506,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.32835614681243896,
+        "minimum": -0.08707663416862488,
+        "name": "model.morphic.l14_2.bias",
+        "nonfinite": 0,
+        "rms": 0.10977942496538162,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.4434828758239746,
+        "minimum": -0.7087330222129822,
+        "name": "model.morphic.l14_2.weight",
+        "nonfinite": 0,
+        "rms": 0.07044368982315063,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.160627081990242,
+        "minimum": -0.0879259929060936,
+        "name": "model.morphic.l15_1.bias",
+        "nonfinite": 0,
+        "rms": 0.07494436204433441,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.282725989818573,
+        "minimum": -0.21888796985149384,
+        "name": "model.morphic.l15_1.weight",
+        "nonfinite": 0,
+        "rms": 0.05982193723320961,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.3335326910018921,
+        "minimum": -0.18236644566059113,
+        "name": "model.morphic.l15_2.bias",
+        "nonfinite": 0,
+        "rms": 0.0961528867483139,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.39502042531967163,
+        "minimum": -0.2593805491924286,
+        "name": "model.morphic.l15_2.weight",
+        "nonfinite": 0,
+        "rms": 0.0500052273273468,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.251093327999115,
+        "minimum": -0.2862592935562134,
+        "name": "model.morphic.l1_1.bias",
+        "nonfinite": 0,
+        "rms": 0.13032758235931396,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.587767481803894,
+        "minimum": -0.5049244165420532,
+        "name": "model.morphic.l1_1.weight",
+        "nonfinite": 0,
+        "rms": 0.0809197947382927,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.3223579227924347,
+        "minimum": -0.2576625645160675,
+        "name": "model.morphic.l1_2.bias",
+        "nonfinite": 0,
+        "rms": 0.11605051159858704,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.6524048447608948,
+        "minimum": -0.6773387789726257,
+        "name": "model.morphic.l1_2.weight",
+        "nonfinite": 0,
+        "rms": 0.08152966946363449,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.21194523572921753,
+        "minimum": -0.31067579984664917,
+        "name": "model.morphic.l2_1.bias",
+        "nonfinite": 0,
+        "rms": 0.15334509313106537,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.5177614092826843,
+        "minimum": -0.5254329442977905,
+        "name": "model.morphic.l2_1.weight",
+        "nonfinite": 0,
+        "rms": 0.09016460180282593,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.3167700171470642,
+        "minimum": -0.3319333791732788,
+        "name": "model.morphic.l2_2.bias",
+        "nonfinite": 0,
+        "rms": 0.1254550963640213,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.4880577325820923,
+        "minimum": -0.7144960761070251,
+        "name": "model.morphic.l2_2.weight",
+        "nonfinite": 0,
+        "rms": 0.09285382926464081,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.2639072835445404,
+        "minimum": -0.2901609241962433,
+        "name": "model.morphic.l3_1.bias",
+        "nonfinite": 0,
+        "rms": 0.17315492033958435,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.6133868098258972,
+        "minimum": -0.7262569665908813,
+        "name": "model.morphic.l3_1.weight",
+        "nonfinite": 0,
+        "rms": 0.10519614070653915,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.278560608625412,
+        "minimum": -0.3730226159095764,
+        "name": "model.morphic.l3_2.bias",
+        "nonfinite": 0,
+        "rms": 0.11783748120069504,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.49874943494796753,
+        "minimum": -0.6489354372024536,
+        "name": "model.morphic.l3_2.weight",
+        "nonfinite": 0,
+        "rms": 0.08510662615299225,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.1927056461572647,
+        "minimum": -0.2924835979938507,
+        "name": "model.morphic.l4_1.bias",
+        "nonfinite": 0,
+        "rms": 0.13881047070026398,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.5748856067657471,
+        "minimum": -0.5192981362342834,
+        "name": "model.morphic.l4_1.weight",
+        "nonfinite": 0,
+        "rms": 0.09263775497674942,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.3075280785560608,
+        "minimum": -0.5170027017593384,
+        "name": "model.morphic.l4_2.bias",
+        "nonfinite": 0,
+        "rms": 0.17724622786045074,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.5696039795875549,
+        "minimum": -0.635872483253479,
+        "name": "model.morphic.l4_2.weight",
+        "nonfinite": 0,
+        "rms": 0.09469396620988846,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.11618602275848389,
+        "minimum": -0.30106985569000244,
+        "name": "model.morphic.l5_1.bias",
+        "nonfinite": 0,
+        "rms": 0.1527075618505478,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.6158051490783691,
+        "minimum": -0.495247483253479,
+        "name": "model.morphic.l5_1.weight",
+        "nonfinite": 0,
+        "rms": 0.10272437334060669,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.26962849497795105,
+        "minimum": -0.35508838295936584,
+        "name": "model.morphic.l5_2.bias",
+        "nonfinite": 0,
+        "rms": 0.12098141014575958,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.5775248408317566,
+        "minimum": -0.5259726047515869,
+        "name": "model.morphic.l5_2.weight",
+        "nonfinite": 0,
+        "rms": 0.08006100356578827,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.20274746417999268,
+        "minimum": -0.24834728240966797,
+        "name": "model.morphic.l6_1.bias",
+        "nonfinite": 0,
+        "rms": 0.14392592012882233,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.5544188022613525,
+        "minimum": -0.6541038155555725,
+        "name": "model.morphic.l6_1.weight",
+        "nonfinite": 0,
+        "rms": 0.09864248335361481,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.5294783711433411,
+        "minimum": -0.43612292408943176,
+        "name": "model.morphic.l6_2.bias",
+        "nonfinite": 0,
+        "rms": 0.1466834545135498,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.4758869409561157,
+        "minimum": -0.5634223818778992,
+        "name": "model.morphic.l6_2.weight",
+        "nonfinite": 0,
+        "rms": 0.09488589316606522,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.08577453345060349,
+        "minimum": -0.22736132144927979,
+        "name": "model.morphic.l7_1.bias",
+        "nonfinite": 0,
+        "rms": 0.1501154750585556,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.4896898865699768,
+        "minimum": -0.5678851008415222,
+        "name": "model.morphic.l7_1.weight",
+        "nonfinite": 0,
+        "rms": 0.0999026969075203,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.4093075692653656,
+        "minimum": -0.4871091842651367,
+        "name": "model.morphic.l7_2.bias",
+        "nonfinite": 0,
+        "rms": 0.1808953434228897,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.5059093832969666,
+        "minimum": -0.5379163026809692,
+        "name": "model.morphic.l7_2.weight",
+        "nonfinite": 0,
+        "rms": 0.09196259081363678,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.30172398686408997,
+        "minimum": -0.20777083933353424,
+        "name": "model.morphic.l8_1.bias",
+        "nonfinite": 0,
+        "rms": 0.11354240030050278,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.678402304649353,
+        "minimum": -0.5879431366920471,
+        "name": "model.morphic.l8_1.weight",
+        "nonfinite": 0,
+        "rms": 0.09414650499820709,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.535076379776001,
+        "minimum": -0.29000094532966614,
+        "name": "model.morphic.l8_2.bias",
+        "nonfinite": 0,
+        "rms": 0.13088613748550415,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.7026361227035522,
+        "minimum": -0.6522942185401917,
+        "name": "model.morphic.l8_2.weight",
+        "nonfinite": 0,
+        "rms": 0.07571584731340408,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.2629540264606476,
+        "minimum": -0.2694009840488434,
+        "name": "model.morphic.l9_1.bias",
+        "nonfinite": 0,
+        "rms": 0.164168581366539,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.569575309753418,
+        "minimum": -0.6041679382324219,
+        "name": "model.morphic.l9_1.weight",
+        "nonfinite": 0,
+        "rms": 0.12027928978204727,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.3806685209274292,
+        "minimum": -0.39416688680648804,
+        "name": "model.morphic.l9_2.bias",
+        "nonfinite": 0,
+        "rms": 0.18061263859272003,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1048576,
+        "dtype": "f32",
+        "elements": 262144,
+        "maximum": 0.6194209456443787,
+        "minimum": -0.5870769023895264,
+        "name": "model.morphic.l9_2.weight",
+        "nonfinite": 0,
+        "rms": 0.08960041403770447,
+        "shape": [
+          512,
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 1.0,
+        "minimum": 1.0,
+        "name": "model.morphic.norm0.weight",
+        "nonfinite": 0,
+        "rms": 1.0,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 1.0,
+        "minimum": 1.0,
+        "name": "model.morphic.norm1.weight",
+        "nonfinite": 0,
+        "rms": 1.0,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 1.0,
+        "minimum": 1.0,
+        "name": "model.morphic.norm10.weight",
+        "nonfinite": 0,
+        "rms": 1.0,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 1.0,
+        "minimum": 1.0,
+        "name": "model.morphic.norm11.weight",
+        "nonfinite": 0,
+        "rms": 1.0,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 1.0,
+        "minimum": 1.0,
+        "name": "model.morphic.norm12.weight",
+        "nonfinite": 0,
+        "rms": 1.0,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 1.0,
+        "minimum": 1.0,
+        "name": "model.morphic.norm13.weight",
+        "nonfinite": 0,
+        "rms": 1.0,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 1.0,
+        "minimum": 1.0,
+        "name": "model.morphic.norm14.weight",
+        "nonfinite": 0,
+        "rms": 1.0,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 1.0,
+        "minimum": 1.0,
+        "name": "model.morphic.norm15.weight",
+        "nonfinite": 0,
+        "rms": 1.0,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 1.0,
+        "minimum": 1.0,
+        "name": "model.morphic.norm2.weight",
+        "nonfinite": 0,
+        "rms": 1.0,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 1.0,
+        "minimum": 1.0,
+        "name": "model.morphic.norm3.weight",
+        "nonfinite": 0,
+        "rms": 1.0,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 1.0,
+        "minimum": 1.0,
+        "name": "model.morphic.norm4.weight",
+        "nonfinite": 0,
+        "rms": 1.0,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 1.0,
+        "minimum": 1.0,
+        "name": "model.morphic.norm5.weight",
+        "nonfinite": 0,
+        "rms": 1.0,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 1.0,
+        "minimum": 1.0,
+        "name": "model.morphic.norm6.weight",
+        "nonfinite": 0,
+        "rms": 1.0,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 1.0,
+        "minimum": 1.0,
+        "name": "model.morphic.norm7.weight",
+        "nonfinite": 0,
+        "rms": 1.0,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 1.0,
+        "minimum": 1.0,
+        "name": "model.morphic.norm8.weight",
+        "nonfinite": 0,
+        "rms": 1.0,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 1.0,
+        "minimum": 1.0,
+        "name": "model.morphic.norm9.weight",
+        "nonfinite": 0,
+        "rms": 1.0,
+        "shape": [
+          512
+        ],
+        "subsystem": "morphic_stack",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 40,
+        "dtype": "f32",
+        "elements": 10,
+        "maximum": 0.07430345565080643,
+        "minimum": -0.0486685074865818,
+        "name": "model.oscillator_gain_head_0.bias",
+        "nonfinite": 0,
+        "rms": 0.044107500463724136,
+        "shape": [
+          10
+        ],
+        "subsystem": "oscillator_synthesis",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 20480,
+        "dtype": "f32",
+        "elements": 5120,
+        "maximum": 0.1690465658903122,
+        "minimum": -0.24355249106884003,
+        "name": "model.oscillator_gain_head_0.weight",
+        "nonfinite": 0,
+        "rms": 0.057486239820718765,
+        "shape": [
+          10,
+          512
+        ],
+        "subsystem": "oscillator_synthesis",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 128,
+        "dtype": "f32",
+        "elements": 32,
+        "maximum": 0.11460097134113312,
+        "minimum": -0.11240064352750778,
+        "name": "model.partial_amplitude_head_0.bias",
+        "nonfinite": 0,
+        "rms": 0.05665998160839081,
+        "shape": [
+          32
+        ],
+        "subsystem": "regional_scan_synthesis",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 65536,
+        "dtype": "f32",
+        "elements": 16384,
+        "maximum": 0.20132525265216827,
+        "minimum": -0.36442631483078003,
+        "name": "model.partial_amplitude_head_0.weight",
+        "nonfinite": 0,
+        "rms": 0.06714751571416855,
+        "shape": [
+          32,
+          512
+        ],
+        "subsystem": "regional_scan_synthesis",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 128,
+        "dtype": "f32",
+        "elements": 32,
+        "maximum": 0.06984344869852066,
+        "minimum": -0.06053910031914711,
+        "name": "model.partial_damping_head_0.bias",
+        "nonfinite": 0,
+        "rms": 0.04033474996685982,
+        "shape": [
+          32
+        ],
+        "subsystem": "regional_scan_synthesis",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 65536,
+        "dtype": "f32",
+        "elements": 16384,
+        "maximum": 0.16119271516799927,
+        "minimum": -0.27210143208503723,
+        "name": "model.partial_damping_head_0.weight",
+        "nonfinite": 0,
+        "rms": 0.04608873650431633,
+        "shape": [
+          32,
+          512
+        ],
+        "subsystem": "regional_scan_synthesis",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 128,
+        "dtype": "f32",
+        "elements": 32,
+        "maximum": 0.055404722690582275,
+        "minimum": -0.05844556912779808,
+        "name": "model.partial_ratio_head_0.bias",
+        "nonfinite": 0,
+        "rms": 0.03515210375189781,
+        "shape": [
+          32
+        ],
+        "subsystem": "regional_scan_synthesis",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 65536,
+        "dtype": "f32",
+        "elements": 16384,
+        "maximum": 0.12844376266002655,
+        "minimum": -0.3269319534301758,
+        "name": "model.partial_ratio_head_0.weight",
+        "nonfinite": 0,
+        "rms": 0.047654151916503906,
+        "shape": [
+          32,
+          512
+        ],
+        "subsystem": "regional_scan_synthesis",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 4,
+        "dtype": "f32",
+        "elements": 1,
+        "maximum": 0.0648123249411583,
+        "minimum": 0.0648123249411583,
+        "name": "model.spatial_panner_0.bias",
+        "nonfinite": 0,
+        "rms": 0.0648123249411583,
+        "shape": [
+          1
+        ],
+        "subsystem": "stereo_control",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 1.786836862564087,
+        "minimum": -0.6292643547058105,
+        "name": "model.spatial_panner_0.weight",
+        "nonfinite": 0,
+        "rms": 0.28853240609169006,
+        "shape": [
+          1,
+          512
+        ],
+        "subsystem": "stereo_control",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 4,
+        "dtype": "f32",
+        "elements": 1,
+        "maximum": -0.025073185563087463,
+        "minimum": -0.025073185563087463,
+        "name": "model.stereo_width_head_0.bias",
+        "nonfinite": 0,
+        "rms": 0.025073185563087463,
+        "shape": [
+          1
+        ],
+        "subsystem": "stereo_control",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 2048,
+        "dtype": "f32",
+        "elements": 512,
+        "maximum": 0.5751098990440369,
+        "minimum": -0.22909843921661377,
+        "name": "model.stereo_width_head_0.weight",
+        "nonfinite": 0,
+        "rms": 0.06651083379983902,
+        "shape": [
+          1,
+          512
+        ],
+        "subsystem": "stereo_control",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 896,
+        "dtype": "f32",
+        "elements": 224,
+        "maximum": 0.5092434287071228,
+        "minimum": -0.5527651309967041,
+        "name": "model.temporal_decoder.block0.contract.bias",
+        "nonfinite": 0,
+        "rms": 0.2573329508304596,
+        "shape": [
+          224
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 401408,
+        "dtype": "f32",
+        "elements": 100352,
+        "maximum": 0.6759955286979675,
+        "minimum": -0.6583497524261475,
+        "name": "model.temporal_decoder.block0.contract.weight",
+        "nonfinite": 0,
+        "rms": 0.21142245829105377,
+        "shape": [
+          224,
+          448
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1792,
+        "dtype": "f32",
+        "elements": 448,
+        "maximum": 0.4586260914802551,
+        "minimum": -0.48875388503074646,
+        "name": "model.temporal_decoder.block0.expand.bias",
+        "nonfinite": 0,
+        "rms": 0.17768344283103943,
+        "shape": [
+          448
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 401408,
+        "dtype": "f32",
+        "elements": 100352,
+        "maximum": 0.7565408945083618,
+        "minimum": -0.8770908117294312,
+        "name": "model.temporal_decoder.block0.expand.weight",
+        "nonfinite": 0,
+        "rms": 0.21730251610279083,
+        "shape": [
+          448,
+          224
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 896,
+        "dtype": "f32",
+        "elements": 224,
+        "maximum": 1.0,
+        "minimum": 1.0,
+        "name": "model.temporal_decoder.block0.norm.weight",
+        "nonfinite": 0,
+        "rms": 1.0,
+        "shape": [
+          224
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 896,
+        "dtype": "f32",
+        "elements": 224,
+        "maximum": 0.5092434287071228,
+        "minimum": -0.5527651309967041,
+        "name": "model.temporal_decoder.block1.contract.bias",
+        "nonfinite": 0,
+        "rms": 0.2573329508304596,
+        "shape": [
+          224
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 401408,
+        "dtype": "f32",
+        "elements": 100352,
+        "maximum": 0.6881929636001587,
+        "minimum": -0.7057468295097351,
+        "name": "model.temporal_decoder.block1.contract.weight",
+        "nonfinite": 0,
+        "rms": 0.21863143146038055,
+        "shape": [
+          224,
+          448
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1792,
+        "dtype": "f32",
+        "elements": 448,
+        "maximum": 0.45984452962875366,
+        "minimum": -0.576748788356781,
+        "name": "model.temporal_decoder.block1.expand.bias",
+        "nonfinite": 0,
+        "rms": 0.17458802461624146,
+        "shape": [
+          448
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 401408,
+        "dtype": "f32",
+        "elements": 100352,
+        "maximum": 0.760266125202179,
+        "minimum": -0.7832037210464478,
+        "name": "model.temporal_decoder.block1.expand.weight",
+        "nonfinite": 0,
+        "rms": 0.2182338982820511,
+        "shape": [
+          448,
+          224
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 896,
+        "dtype": "f32",
+        "elements": 224,
+        "maximum": 1.0,
+        "minimum": 1.0,
+        "name": "model.temporal_decoder.block1.norm.weight",
+        "nonfinite": 0,
+        "rms": 1.0,
+        "shape": [
+          224
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 896,
+        "dtype": "f32",
+        "elements": 224,
+        "maximum": 0.5092434287071228,
+        "minimum": -0.5527651309967041,
+        "name": "model.temporal_decoder.block2.contract.bias",
+        "nonfinite": 0,
+        "rms": 0.2573329508304596,
+        "shape": [
+          224
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 401408,
+        "dtype": "f32",
+        "elements": 100352,
+        "maximum": 0.6561580300331116,
+        "minimum": -0.7312161326408386,
+        "name": "model.temporal_decoder.block2.contract.weight",
+        "nonfinite": 0,
+        "rms": 0.21866609156131744,
+        "shape": [
+          224,
+          448
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1792,
+        "dtype": "f32",
+        "elements": 448,
+        "maximum": 0.4024306833744049,
+        "minimum": -0.625747799873352,
+        "name": "model.temporal_decoder.block2.expand.bias",
+        "nonfinite": 0,
+        "rms": 0.17980752885341644,
+        "shape": [
+          448
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 401408,
+        "dtype": "f32",
+        "elements": 100352,
+        "maximum": 0.7915109992027283,
+        "minimum": -0.8075968027114868,
+        "name": "model.temporal_decoder.block2.expand.weight",
+        "nonfinite": 0,
+        "rms": 0.2141544371843338,
+        "shape": [
+          448,
+          224
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 896,
+        "dtype": "f32",
+        "elements": 224,
+        "maximum": 1.0,
+        "minimum": 1.0,
+        "name": "model.temporal_decoder.block2.norm.weight",
+        "nonfinite": 0,
+        "rms": 1.0,
+        "shape": [
+          224
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 896,
+        "dtype": "f32",
+        "elements": 224,
+        "maximum": 0.5092434287071228,
+        "minimum": -0.5527651309967041,
+        "name": "model.temporal_decoder.block3.contract.bias",
+        "nonfinite": 0,
+        "rms": 0.2573329508304596,
+        "shape": [
+          224
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 401408,
+        "dtype": "f32",
+        "elements": 100352,
+        "maximum": 0.6977776885032654,
+        "minimum": -0.7286757230758667,
+        "name": "model.temporal_decoder.block3.contract.weight",
+        "nonfinite": 0,
+        "rms": 0.21699956059455872,
+        "shape": [
+          224,
+          448
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1792,
+        "dtype": "f32",
+        "elements": 448,
+        "maximum": 0.4203355312347412,
+        "minimum": -0.6984285712242126,
+        "name": "model.temporal_decoder.block3.expand.bias",
+        "nonfinite": 0,
+        "rms": 0.1978956013917923,
+        "shape": [
+          448
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 401408,
+        "dtype": "f32",
+        "elements": 100352,
+        "maximum": 0.7581365704536438,
+        "minimum": -0.7787442803382874,
+        "name": "model.temporal_decoder.block3.expand.weight",
+        "nonfinite": 0,
+        "rms": 0.20968595147132874,
+        "shape": [
+          448,
+          224
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 896,
+        "dtype": "f32",
+        "elements": 224,
+        "maximum": 1.0,
+        "minimum": 1.0,
+        "name": "model.temporal_decoder.block3.norm.weight",
+        "nonfinite": 0,
+        "rms": 1.0,
+        "shape": [
+          224
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 896,
+        "dtype": "f32",
+        "elements": 224,
+        "maximum": 0.5092434287071228,
+        "minimum": -0.5527651309967041,
+        "name": "model.temporal_decoder.block4.contract.bias",
+        "nonfinite": 0,
+        "rms": 0.2573329508304596,
+        "shape": [
+          224
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 401408,
+        "dtype": "f32",
+        "elements": 100352,
+        "maximum": 0.7006055116653442,
+        "minimum": -0.7329252362251282,
+        "name": "model.temporal_decoder.block4.contract.weight",
+        "nonfinite": 0,
+        "rms": 0.23042285442352295,
+        "shape": [
+          224,
+          448
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1792,
+        "dtype": "f32",
+        "elements": 448,
+        "maximum": 0.4810212552547455,
+        "minimum": -0.49435174465179443,
+        "name": "model.temporal_decoder.block4.expand.bias",
+        "nonfinite": 0,
+        "rms": 0.21324625611305237,
+        "shape": [
+          448
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 401408,
+        "dtype": "f32",
+        "elements": 100352,
+        "maximum": 0.7767272591590881,
+        "minimum": -0.8071451783180237,
+        "name": "model.temporal_decoder.block4.expand.weight",
+        "nonfinite": 0,
+        "rms": 0.2180534154176712,
+        "shape": [
+          448,
+          224
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 896,
+        "dtype": "f32",
+        "elements": 224,
+        "maximum": 1.0,
+        "minimum": 1.0,
+        "name": "model.temporal_decoder.block4.norm.weight",
+        "nonfinite": 0,
+        "rms": 1.0,
+        "shape": [
+          224
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 896,
+        "dtype": "f32",
+        "elements": 224,
+        "maximum": 0.5092434287071228,
+        "minimum": -0.5527651309967041,
+        "name": "model.temporal_decoder.block5.contract.bias",
+        "nonfinite": 0,
+        "rms": 0.2573329508304596,
+        "shape": [
+          224
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 401408,
+        "dtype": "f32",
+        "elements": 100352,
+        "maximum": 0.7226732969284058,
+        "minimum": -0.6934800148010254,
+        "name": "model.temporal_decoder.block5.contract.weight",
+        "nonfinite": 0,
+        "rms": 0.22766204178333282,
+        "shape": [
+          224,
+          448
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1792,
+        "dtype": "f32",
+        "elements": 448,
+        "maximum": 0.43260088562965393,
+        "minimum": -0.48519402742385864,
+        "name": "model.temporal_decoder.block5.expand.bias",
+        "nonfinite": 0,
+        "rms": 0.20273588597774506,
+        "shape": [
+          448
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 401408,
+        "dtype": "f32",
+        "elements": 100352,
+        "maximum": 0.7775784134864807,
+        "minimum": -0.8389151096343994,
+        "name": "model.temporal_decoder.block5.expand.weight",
+        "nonfinite": 0,
+        "rms": 0.2176222950220108,
+        "shape": [
+          448,
+          224
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 896,
+        "dtype": "f32",
+        "elements": 224,
+        "maximum": 1.0,
+        "minimum": 1.0,
+        "name": "model.temporal_decoder.block5.norm.weight",
+        "nonfinite": 0,
+        "rms": 1.0,
+        "shape": [
+          224
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 304,
+        "dtype": "f32",
+        "elements": 76,
+        "maximum": 0.5135717391967773,
+        "minimum": -0.37771138548851013,
+        "name": "model.temporal_decoder.control_head.bias",
+        "nonfinite": 0,
+        "rms": 0.1676030308008194,
+        "shape": [
+          76
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.10526315867900848
+      },
+      {
+        "active": true,
+        "bytes": 68096,
+        "dtype": "f32",
+        "elements": 17024,
+        "maximum": 0.7959024906158447,
+        "minimum": -0.8993082642555237,
+        "name": "model.temporal_decoder.control_head.weight",
+        "nonfinite": 0,
+        "rms": 0.19729675352573395,
+        "shape": [
+          76,
+          224
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1024,
+        "dtype": "f32",
+        "elements": 256,
+        "maximum": 0.000588855764362961,
+        "minimum": -0.0005991384387016296,
+        "name": "model.temporal_decoder.key.bias",
+        "nonfinite": 0,
+        "rms": 0.00015218635962810367,
+        "shape": [
+          256
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 262144,
+        "dtype": "f32",
+        "elements": 65536,
+        "maximum": 0.5110338926315308,
+        "minimum": -0.5314038395881653,
+        "name": "model.temporal_decoder.key.weight",
+        "nonfinite": 0,
+        "rms": 0.13749173283576965,
+        "shape": [
+          256,
+          256
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1024,
+        "dtype": "f32",
+        "elements": 256,
+        "maximum": 0.24277979135513306,
+        "minimum": -0.29547202587127686,
+        "name": "model.temporal_decoder.macro_projection.bias",
+        "nonfinite": 0,
+        "rms": 0.1300206333398819,
+        "shape": [
+          256
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 65536,
+        "dtype": "f32",
+        "elements": 16384,
+        "maximum": 0.6205610632896423,
+        "minimum": -0.47712039947509766,
+        "name": "model.temporal_decoder.macro_projection.weight",
+        "nonfinite": 0,
+        "rms": 0.1343209445476532,
+        "shape": [
+          256,
+          64
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1024,
+        "dtype": "f32",
+        "elements": 256,
+        "maximum": 0.20415648818016052,
+        "minimum": -0.2582593262195587,
+        "name": "model.temporal_decoder.micro_projection.bias",
+        "nonfinite": 0,
+        "rms": 0.10409219563007355,
+        "shape": [
+          256
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 65536,
+        "dtype": "f32",
+        "elements": 16384,
+        "maximum": 0.7341950535774231,
+        "minimum": -0.6597383618354797,
+        "name": "model.temporal_decoder.micro_projection.weight",
+        "nonfinite": 0,
+        "rms": 0.16804197430610657,
+        "shape": [
+          256,
+          64
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1024,
+        "dtype": "f32",
+        "elements": 256,
+        "maximum": 0.28094494342803955,
+        "minimum": -0.27235928177833557,
+        "name": "model.temporal_decoder.query.bias",
+        "nonfinite": 0,
+        "rms": 0.09464406222105026,
+        "shape": [
+          256
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 524288,
+        "dtype": "f32",
+        "elements": 131072,
+        "maximum": 0.5554068088531494,
+        "minimum": -0.5609133839607239,
+        "name": "model.temporal_decoder.query.weight",
+        "nonfinite": 0,
+        "rms": 0.12935884296894073,
+        "shape": [
+          256,
+          512
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 28672,
+        "dtype": "f32",
+        "elements": 7168,
+        "maximum": 0.6113840341567993,
+        "minimum": -0.6596195101737976,
+        "name": "model.temporal_decoder.seed.bias",
+        "nonfinite": 0,
+        "rms": 0.18500091135501862,
+        "shape": [
+          7168
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 22020096,
+        "dtype": "f32",
+        "elements": 5505024,
+        "maximum": 1.171702265739441,
+        "minimum": -1.1470216512680054,
+        "name": "model.temporal_decoder.seed.weight",
+        "nonfinite": 0,
+        "rms": 0.21144123375415802,
+        "shape": [
+          7168,
+          768
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 1024,
+        "dtype": "f32",
+        "elements": 256,
+        "maximum": 0.28879258036613464,
+        "minimum": -0.2873373329639435,
+        "name": "model.temporal_decoder.value.bias",
+        "nonfinite": 0,
+        "rms": 0.15268157422542572,
+        "shape": [
+          256
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 262144,
+        "dtype": "f32",
+        "elements": 65536,
+        "maximum": 0.5052670836448669,
+        "minimum": -0.5117021203041077,
+        "name": "model.temporal_decoder.value.weight",
+        "nonfinite": 0,
+        "rms": 0.11954669654369354,
+        "shape": [
+          256,
+          256
+        ],
+        "subsystem": "spatial_temporal_decoder",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 8,
+        "dtype": "f32",
+        "elements": 2,
+        "maximum": 0.058528680354356766,
+        "minimum": -0.08085273951292038,
+        "name": "model.wave_morph_head_0.bias",
+        "nonfinite": 0,
+        "rms": 0.070578932762146,
+        "shape": [
+          2
+        ],
+        "subsystem": "oscillator_synthesis",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 4096,
+        "dtype": "f32",
+        "elements": 1024,
+        "maximum": 0.1660241186618805,
+        "minimum": -0.1253383755683899,
+        "name": "model.wave_morph_head_0.weight",
+        "nonfinite": 0,
+        "rms": 0.06157685071229935,
+        "shape": [
+          2,
+          512
+        ],
+        "subsystem": "oscillator_synthesis",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 32,
+        "dtype": "f32",
+        "elements": 8,
+        "maximum": 0.06503362208604813,
+        "minimum": -0.07526465505361557,
+        "name": "model.wavefolder_l.mod_proj.bias",
+        "nonfinite": 0,
+        "rms": 0.049829740077257156,
+        "shape": [
+          8
+        ],
+        "subsystem": "wavefolders",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 16384,
+        "dtype": "f32",
+        "elements": 4096,
+        "maximum": 0.23520608246326447,
+        "minimum": -0.1440252661705017,
+        "name": "model.wavefolder_l.mod_proj.weight",
+        "nonfinite": 0,
+        "rms": 0.05409767106175423,
+        "shape": [
+          8,
+          512
+        ],
+        "subsystem": "wavefolders",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 32,
+        "dtype": "f32",
+        "elements": 8,
+        "maximum": 0.3283247947692871,
+        "minimum": -0.5580915808677673,
+        "name": "model.wavefolder_l.weights",
+        "nonfinite": 0,
+        "rms": 0.2772241234779358,
+        "shape": [
+          8
+        ],
+        "subsystem": "wavefolders",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 32,
+        "dtype": "f32",
+        "elements": 8,
+        "maximum": 0.007247172296047211,
+        "minimum": -0.09840119630098343,
+        "name": "model.wavefolder_r.mod_proj.bias",
+        "nonfinite": 0,
+        "rms": 0.04379408434033394,
+        "shape": [
+          8
+        ],
+        "subsystem": "wavefolders",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 16384,
+        "dtype": "f32",
+        "elements": 4096,
+        "maximum": 0.1636606901884079,
+        "minimum": -0.1317894458770752,
+        "name": "model.wavefolder_r.mod_proj.weight",
+        "nonfinite": 0,
+        "rms": 0.04785476252436638,
+        "shape": [
+          8,
+          512
+        ],
+        "subsystem": "wavefolders",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 32,
+        "dtype": "f32",
+        "elements": 8,
+        "maximum": 0.5778477191925049,
+        "minimum": -0.03992972522974014,
+        "name": "model.wavefolder_r.weights",
+        "nonfinite": 0,
+        "rms": 0.3520375192165375,
+        "shape": [
+          8
+        ],
+        "subsystem": "wavefolders",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 384,
+        "dtype": "f32",
+        "elements": 96,
+        "maximum": 0.10715409368276596,
+        "minimum": -0.11898887902498245,
+        "name": "monitor_head.fc1.bias",
+        "nonfinite": 0,
+        "rms": 0.04638807848095894,
+        "shape": [
+          96
+        ],
+        "subsystem": "world_model_planner",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 200448,
+        "dtype": "f32",
+        "elements": 50112,
+        "maximum": 0.3201839029788971,
+        "minimum": -0.3107566237449646,
+        "name": "monitor_head.fc1.weight",
+        "nonfinite": 0,
+        "rms": 0.05075901746749878,
+        "shape": [
+          96,
+          522
+        ],
+        "subsystem": "world_model_planner",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 96,
+        "dtype": "f32",
+        "elements": 24,
+        "maximum": 0.0894341841340065,
+        "minimum": -0.1425659954547882,
+        "name": "monitor_head.fc2.bias",
+        "nonfinite": 0,
+        "rms": 0.07081437110900879,
+        "shape": [
+          24
+        ],
+        "subsystem": "world_model_planner",
+        "zero_fraction": 0.0
+      },
+      {
+        "active": true,
+        "bytes": 9216,
+        "dtype": "f32",
+        "elements": 2304,
+        "maximum": 0.7149891257286072,
+        "minimum": -0.7509315609931946,
+        "name": "monitor_head.fc2.weight",
+        "nonfinite": 0,
+        "rms": 0.11160416156053543,
+        "shape": [
+          24,
+          96
+        ],
+        "subsystem": "world_model_planner",
+        "zero_fraction": 0.0
+      }
+    ],
+    "total_allocated": 16988839
+  },
+  "memory_estimate": {
+    "note": "Candle graph temporaries, FFT buffers, audio streams, and allocator overhead are additional and workload-dependent",
+    "one_fp32_analysis_clone_minimum_bytes": 69343039,
+    "serialized_world_payload_bytes": 1387683,
+    "weights_bytes": 67955356,
+    "weights_plus_adam_bytes": 203866068
+  },
+  "model_tensor_inventory_sha256": "ba599057aeeb790ef6d020b5b5fdd3d63327165f2374d5870ed923e0aa556b49",
+  "persistent_non_learned_state": {
+    "episodic": {
+      "capacity": 16,
+      "elements": 8192,
+      "slots": 16
+    },
+    "host_controller_state_serialized_inside_world": true,
+    "macro": {
+      "bytes": 262144,
+      "elements": 65536
+    },
+    "micro": {
+      "bytes": 1048576,
+      "elements": 262144
+    },
+    "model_runtime": {
+      "haas_history_elements": 16,
+      "scan_phase_elements": 64
+    },
+    "monitor_history": {
+      "movement": 20,
+      "spectral": 20,
+      "spectral_bins": 2048
+    },
+    "motifs": {
+      "configured_capacity_not_serialized": true,
+      "occupancy": 134
+    },
+    "novelty": {
+      "capacity": 48,
+      "elements": 4608,
+      "slots": 48
+    },
+    "recurrent": {
+      "bytes": 2048,
+      "elements": 512
+    }
+  }
+}

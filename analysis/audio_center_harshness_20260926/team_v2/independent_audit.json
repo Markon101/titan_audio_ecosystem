@@ -1,0 +1,42 @@
+{
+  "dynamics-agent": {
+    "eligible_for_synthesis": true,
+    "reasons": [],
+    "scope": "completion and factual receipt checks only; scientific claims require independent verification"
+  },
+  "experiment-designer": {
+    "eligible_for_synthesis": true,
+    "reasons": [],
+    "scope": "completion and factual receipt checks only; scientific claims require independent verification"
+  },
+  "falsification-arbiter": {
+    "eligible_for_synthesis": true,
+    "reasons": [],
+    "scope": "completion and factual receipt checks only; scientific claims require independent verification"
+  },
+  "ideation-agent": {
+    "eligible_for_synthesis": true,
+    "reasons": [],
+    "scope": "completion and factual receipt checks only; scientific claims require independent verification"
+  },
+  "independent-investigator": {
+    "eligible_for_synthesis": true,
+    "reasons": [],
+    "scope": "completion and factual receipt checks only; scientific claims require independent verification"
+  },
+  "rust-audit-agent": {
+    "eligible_for_synthesis": true,
+    "reasons": [],
+    "scope": "completion and factual receipt checks only; scientific claims require independent verification"
+  },
+  "skeptical-agent": {
+    "eligible_for_synthesis": true,
+    "reasons": [],
+    "scope": "completion and factual receipt checks only; scientific claims require independent verification"
+  },
+  "statistical-agent": {
+    "eligible_for_synthesis": true,
+    "reasons": [],
+    "scope": "completion and factual receipt checks only; scientific claims require independent verification"
+  }
+}

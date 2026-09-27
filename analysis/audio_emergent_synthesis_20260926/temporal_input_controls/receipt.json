@@ -1,0 +1,71 @@
+{
+  "block_frames": 192000,
+  "block_seconds_requested": 4.0,
+  "exact_copy": "B_original_exact.wav",
+  "exact_copy_sha256": "f8be8ddba43d6a4bdf9b1991d4466c4421c1fba5fbdb27192289e7419f341f01",
+  "fade_frames_each_side": 480,
+  "fade_ms_requested": 10.0,
+  "frames": 2879488,
+  "full_blocks_permuted": 14,
+  "interpretation": "Only order of full blocks was permuted. Both conditions received the same seam-window positions and matched total stereo RMS. Local within-block timing remains, and edit seams remain a possible cue. No downstream output was analyzed.",
+  "output_rms_spread_db": 2.1082074667141586e-05,
+  "outputs": [
+    {
+      "file": "O_ordered_seams.wav",
+      "frames": 2879488,
+      "sample_peak": 0.78515625,
+      "sha256": "4e1c32d22a9ab9dfcc3a990da465ad17d74a70ada6582a8e135d2c7326557124",
+      "stereo_rms": 0.23122630163643984
+    },
+    {
+      "file": "S_shuffled_4s.wav",
+      "frames": 2879488,
+      "sample_peak": 0.78509521484375,
+      "sha256": "696051894f69a4a2d8b73896ba2991494cfc4e312d0b272471f2722e3ac140ba",
+      "stereo_rms": 0.23122686286117045
+    }
+  ],
+  "permutation": [
+    5,
+    4,
+    10,
+    3,
+    1,
+    7,
+    11,
+    8,
+    12,
+    9,
+    0,
+    2,
+    6,
+    13
+  ],
+  "rms_match_gains": {
+    "ordered": 1.0,
+    "shuffled": 0.9999367087410742
+  },
+  "sample_rate": 48000,
+  "schema": "titan_audio_temporal_control_v1",
+  "seam_boundaries_frames": [
+    192000,
+    384000,
+    576000,
+    768000,
+    960000,
+    1152000,
+    1344000,
+    1536000,
+    1728000,
+    1920000,
+    2112000,
+    2304000,
+    2496000,
+    2688000
+  ],
+  "seed": 4242,
+  "shared_peak_guard_gain": 1.0,
+  "source": "/storage/emulated/0/Download/titan_audio_prime_choices_2026-09-26/titan_prime_selected_B_soft.wav",
+  "source_sha256": "f8be8ddba43d6a4bdf9b1991d4466c4421c1fba5fbdb27192289e7419f341f01",
+  "unchanged_tail_frames": 191488
+}

@@ -1,0 +1,62 @@
+{
+  "input_wav": "/storage/emulated/0/Download/titan_prime_60s_v9-long-01_9bcf582d4b13.wav",
+  "input_sha256": "4f8e6a604f5a3f37ec39818f71af6955a0488d4d937491cf1e051162c05ee48d",
+  "input_sha256_after": "4f8e6a604f5a3f37ec39818f71af6955a0488d4d937491cf1e051162c05ee48d",
+  "output_wav": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/audio_center_harshness_20260926/eq_level_matched/latest_eq_mild_1p5.wav",
+  "output_sha256": "727ce43932f8fe9e18d75d930f9ae9c78052ab842845ff3e1259b06701f512ac",
+  "filter_parameters": {
+    "type": "parametric_peaking_bell",
+    "center_frequency_hz": 3500.0,
+    "q_factor": 1.0,
+    "gain_db": -1.5,
+    "target_peak_dbfs": -1.0,
+    "rms_match_gain": 1.059066285085726,
+    "peak_guard_gain": 1.0,
+    "post_gain_applied": 1.059066285085726,
+    "achieved_rms_delta_db": 1.1197617141371242e-07,
+    "rms_match_limited_by_peak": false
+  },
+  "before_metrics": {
+    "rms": 0.231587750718067,
+    "peak": 0.729034423828125,
+    "peak_dbfs": -2.745039290276013,
+    "crest_db": 9.96064901589039,
+    "lr_correlation": 0.990812643061937,
+    "side_over_mid_db": -23.307918199913637,
+    "bands": {
+      "20-200Hz": 0.022685376179627573,
+      "200-2000Hz": 0.4373818324049904,
+      "2000-6000Hz": 0.46632152085369755,
+      "6000-12000Hz": 0.03252523154175792,
+      "12000-20000Hz": 0.02863298766172844,
+      "20000-24000Hz": 0.012092724981835608
+    }
+  },
+  "after_metrics": {
+    "rms": 0.23158775370363452,
+    "peak": 0.756256103515625,
+    "peak_dbfs": -2.426622145302961,
+    "crest_db": 10.27906604888727,
+    "lr_correlation": 0.990754720571123,
+    "side_over_mid_db": -23.276522979289126,
+    "bands": {
+      "20-200Hz": 0.025425681378837682,
+      "200-2000Hz": 0.4871537278188323,
+      "2000-6000Hz": 0.4072708043763875,
+      "6000-12000Hz": 0.034359595623158885,
+      "12000-20000Hz": 0.03183630478071006,
+      "20000-24000Hz": 0.013549880086389904
+    }
+  },
+  "impact_summary": {
+    "band_2k_6k_before": 0.46632152085369755,
+    "band_2k_6k_after": 0.4072708043763875,
+    "band_2k_6k_delta_percent": -5.905071647731003,
+    "peak_dbfs_before": -2.745039290276013,
+    "peak_dbfs_after": -2.426622145302961,
+    "correlation_before": 0.990812643061937,
+    "correlation_after": 0.990754720571123,
+    "side_over_mid_db_before": -23.307918199913637,
+    "side_over_mid_db_after": -23.276522979289126
+  }
+}

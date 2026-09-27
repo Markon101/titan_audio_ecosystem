@@ -1,0 +1,6 @@
+Titan Audio scientific instrumentation v1
+analysis_id=f233c5e8079b9ea6
+frozen_weights=true
+optimizer_steps=0
+backward_passes=0
+direct_reference_input=false

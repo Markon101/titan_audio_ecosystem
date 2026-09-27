@@ -1,0 +1,29 @@
+{
+  "approximate_input_tokens": 26948,
+  "context": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "created_at_utc": "2026-09-26T07:24:44.756682+00:00",
+  "endpoint": "https://openrouter.ai/api/v1",
+  "files": [
+    {
+      "bytes": 102384,
+      "selection": "analysis/audio_center_harshness_20260926/team_v2/context_packet.md",
+      "sha256": "1093a68a5f48929d046cb7195f2138ceb5f707f939eff59d6b9e438b26192fd4"
+    }
+  ],
+  "max_tokens": 16384,
+  "purpose": "Audit source-level causes and confounds in renderer, losses, controls, postprocessing, and prime selection. Cite actual lines and prioritize minimal interventions.",
+  "request": {
+    "bytes": 107790,
+    "sha256": "9127328365eb9e5f6e11d8f79af82d2a03910a2181e6c7131acb467d7b4c8236"
+  },
+  "requested_model": "deepseek/deepseek-v4.1-flash",
+  "role": "code-reviewer",
+  "schema_version": 1,
+  "status": "dry_run",
+  "temperature": 0.1,
+  "token_estimate_method": "serialized UTF-8 bytes / 4; not model tokenization",
+  "usage": null
+}

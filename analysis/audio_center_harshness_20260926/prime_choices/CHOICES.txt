@@ -1,0 +1,4 @@
+Three versions of the same 354.816–414.805 second TITAN prime, 48 kHz stereo PCM16.
+E is the original with the most impact in the first blind panel. B was a close second and slightly softer to listen to. M is a new, untested midpoint EQ.
+Compare at the same playback volume. Note impact, harshness, transient detail, stereo image, and usefulness as an upload reference.
+The run metadata for this 600-second source was not retained; see the repo provenance correction.

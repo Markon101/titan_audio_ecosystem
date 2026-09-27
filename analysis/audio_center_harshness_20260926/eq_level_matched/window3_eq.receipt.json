@@ -1,0 +1,62 @@
+{
+  "input_wav": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/audio_center_harshness_20260926/balanced_primes/prime_window3_180s_to_240s_raw.wav",
+  "input_sha256": "c28947e3c7e51e4da2a39cd8243733b73b1c1cd9c5f24bc8ec00367e511cefb6",
+  "input_sha256_after": "c28947e3c7e51e4da2a39cd8243733b73b1c1cd9c5f24bc8ec00367e511cefb6",
+  "output_wav": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/audio_center_harshness_20260926/eq_level_matched/window3_eq.wav",
+  "output_sha256": "6c524b897c61bc96ad788b37b88b5d4f39080100e8689a4c168f126df9207cf2",
+  "filter_parameters": {
+    "type": "parametric_peaking_bell",
+    "center_frequency_hz": 3500.0,
+    "q_factor": 1.0,
+    "gain_db": -3.0,
+    "target_peak_dbfs": -1.0,
+    "rms_match_gain": 1.1161623391406472,
+    "peak_guard_gain": 0.9783441687964924,
+    "post_gain_applied": 1.0919909159285053,
+    "achieved_rms_delta_db": -0.1901670487502895,
+    "rms_match_limited_by_peak": true
+  },
+  "before_metrics": {
+    "rms": 0.21993100137037608,
+    "peak": 0.8900146484375,
+    "peak_dbfs": -1.0120569079282231,
+    "crest_db": 12.14221405964259,
+    "lr_correlation": 0.7399197853887209,
+    "side_over_mid_db": -7.78986241820907,
+    "bands": {
+      "20-200Hz": 0.02546179783146453,
+      "200-2000Hz": 0.4368518254301331,
+      "2000-6000Hz": 0.4613941398666656,
+      "6000-12000Hz": 0.03444418541086054,
+      "12000-20000Hz": 0.024209167196213147,
+      "20000-24000Hz": 0.01721464283627907
+    }
+  },
+  "after_metrics": {
+    "rms": 0.21516820615209498,
+    "peak": 0.891265869140625,
+    "peak_dbfs": -0.9998544876801003,
+    "crest_db": 12.344583528641005,
+    "lr_correlation": 0.7353860808062214,
+    "side_over_mid_db": -7.762634984788486,
+    "bands": {
+      "20-200Hz": 0.03170035445983906,
+      "200-2000Hz": 0.5367608331872572,
+      "2000-6000Hz": 0.34195247514152005,
+      "6000-12000Hz": 0.03797041551581364,
+      "12000-20000Hz": 0.029659479734618296,
+      "20000-24000Hz": 0.021427957632356383
+    }
+  },
+  "impact_summary": {
+    "band_2k_6k_before": 0.4613941398666656,
+    "band_2k_6k_after": 0.34195247514152005,
+    "band_2k_6k_delta_percent": -11.944166472514556,
+    "peak_dbfs_before": -1.0120569079282231,
+    "peak_dbfs_after": -0.9998544876801003,
+    "correlation_before": 0.7399197853887209,
+    "correlation_after": 0.7353860808062214,
+    "side_over_mid_db_before": -7.78986241820907,
+    "side_over_mid_db_after": -7.762634984788486
+  }
+}

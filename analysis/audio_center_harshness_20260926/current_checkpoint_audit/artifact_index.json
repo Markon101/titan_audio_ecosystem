@@ -1,0 +1,22 @@
+[
+  {
+    "relative_path": "provenance.json",
+    "media_type": "application/json",
+    "sha256": "552913e8d423ac2e3bb6308b0c9c8511f259c647838d190addbec18eb1cd67d2",
+    "bytes": 540303,
+    "condition": null,
+    "start_offset": null,
+    "end_offset": null,
+    "processing": "read-only identity report"
+  },
+  {
+    "relative_path": "model_stats.json",
+    "media_type": "application/json",
+    "sha256": "5c9975ec7a14fb8305a3b751ca32c4599bcf7482c1cc396368eec32db3d4faca",
+    "bytes": 86819,
+    "condition": null,
+    "start_offset": null,
+    "end_offset": null,
+    "processing": "observational tensor and state statistics"
+  }
+]
