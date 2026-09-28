@@ -1,0 +1,28 @@
+{
+  "purpose": "blind selected-prime listening; descriptive, different source intervals and training trajectories",
+  "rms_target": 0.3108003668760495,
+  "files": [
+    {
+      "label": "A",
+      "source_kind": "parent",
+      "source_path": "/sdcard/Download/titan_prime_60s_v9-newcorpus-retain-01_f5e67ef8c236.wav",
+      "source_sha256": "d13f12813a67e13e8dbae8d87574c17c42d011ea2a2df691e12de965e488b344",
+      "output_path": "/sdcard/Download/TITAN_v9_newcorpus_AB_20260928/A.wav",
+      "output_sha256": "d13f12813a67e13e8dbae8d87574c17c42d011ea2a2df691e12de965e488b344",
+      "gain": 1.0,
+      "rms_after": 0.3108003668760495,
+      "frames": 2879488
+    },
+    {
+      "label": "B",
+      "source_kind": "child",
+      "source_path": "/sdcard/Download/titan_prime_60s_v9-newcorpus-retain-02_58056ec807c3.wav",
+      "source_sha256": "518a05c8b4fe3867e8e1fdf0d3de6bb0fc6cc894162c66b9634d15603a867bfd",
+      "output_path": "/sdcard/Download/TITAN_v9_newcorpus_AB_20260928/B.wav",
+      "output_sha256": "fdbe478ceb6fedcaba0c94f8fa3ade12fe31a8398e4dd5aa7732a28b4809ad98",
+      "gain": 0.9732826391942065,
+      "rms_after": 0.31080036150750917,
+      "frames": 2879488
+    }
+  ]
+}

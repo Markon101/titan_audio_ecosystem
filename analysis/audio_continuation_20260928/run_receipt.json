@@ -1,0 +1,136 @@
+{
+  "parent_tag": "v9-newcorpus-retain-01",
+  "new_tag": "v9-newcorpus-retain-02",
+  "git_commit": "73d3a12b8e5a006530104017e597c9f1bc52e79d",
+  "files": [
+    {
+      "path": "/sdcard/Download/titan_model_v9_v9-newcorpus-retain-01.safetensors",
+      "size": 67974972,
+      "sha256": "bb4e6a350763327288ece96101fdf1824f787f7d5d65735481fe441200a09a34"
+    },
+    {
+      "path": "/sdcard/Download/titan_world_v9_v9-newcorpus-retain-01.bin",
+      "size": 1391711,
+      "sha256": "ade5260c7404f15bebe0e74d95c34322c87f40e5be4c394396f48f87f3a2e5d2"
+    },
+    {
+      "path": "/sdcard/Download/titan_optimizer_v9_v9-newcorpus-retain-01.safetensors",
+      "size": 135955352,
+      "sha256": "cf83639d41e3bce002bac714364f530021e085baf7492660232d6ed2f626c173"
+    },
+    {
+      "path": "/sdcard/Download/titan_morph_state_v9_v9-newcorpus-retain-01.json",
+      "size": 148,
+      "sha256": "f82b90ab92e06b05a1d51a3e6c5315f06477bb6a07a2f432b52d262006c7ec4a"
+    },
+    {
+      "path": "/sdcard/Download/titan_corpus_manifest_v7_sml.json",
+      "size": 6973,
+      "sha256": "0708ede659328f928f76db792d091b5b1eaaaed219754fb9820986f4d81f8228"
+    }
+  ],
+  "command": [
+    "./target/release/titan",
+    "--base-dir",
+    "/sdcard/Download",
+    "--import-model",
+    "/sdcard/Download/titan_model_v9_v9-newcorpus-retain-01.safetensors",
+    "--run-tag",
+    "v9-newcorpus-retain-02",
+    "--corpus-manifest",
+    "/sdcard/Download/titan_corpus_manifest_v7_sml.json",
+    "--duration",
+    "600",
+    "--threads",
+    "7",
+    "--lr",
+    "0.0005",
+    "--bptt",
+    "64",
+    "--core-update-every",
+    "4",
+    "--morph-layers",
+    "16",
+    "--morph-width",
+    "512",
+    "--max-morph-depth",
+    "16",
+    "--motif-capacity",
+    "512"
+  ],
+  "binary": {
+    "path": "target/release/titan",
+    "size": 6036496,
+    "sha256": "e7b96f94c608ce6e00c8e777d89dfce241e6ce93b389ac9e6f96708a675023d2",
+    "reported_build": "6b9f680f1241-dirty",
+    "actual_threads_at_start": 4
+  },
+  "start": {
+    "parent_world_step": 144968,
+    "parent_optimizer_updates": 4108,
+    "model_tensors_loaded_exact": 200,
+    "optimizer_moments_loaded_exact": 200,
+    "first_child_checkpoint_step": 145408
+  },
+  "finish": {
+    "exit_code": 0,
+    "start_global_step": 144968,
+    "end_global_step": 151999,
+    "completed_chunks": 7031,
+    "rendered_seconds": 599.9786376953125,
+    "optimizer_updates_run": 110,
+    "optimizer_updates_cumulative": 4218,
+    "actual_threads": 4,
+    "checkpoint_consistency": "consistent",
+    "postflight_optimizer_consistent_with_world": true,
+    "postflight_warnings": [
+      "Audio has no direct reference input; target effects in frozen rollouts use post-forward coarse error feedback only",
+      "fast provenance skipped per-WAV byte hashes; corpus identity is incomplete",
+      "running source commit Some(\"73d3a12b8e5a006530104017e597c9f1bc52e79d\") differs from binary build commit 6b9f680f1241"
+    ]
+  },
+  "outputs": [
+    {
+      "name": "audio",
+      "path": "/sdcard/Download/rust_ecosystem_out_v9-newcorpus-retain-02_58056ec807c3.wav",
+      "bytes": 115195948,
+      "sha256": "256e2265272cc8fec910c5026308cca4e829b76f70a316d8f76e96c42b0550b3"
+    },
+    {
+      "name": "model",
+      "path": "/sdcard/Download/titan_model_v9_v9-newcorpus-retain-02.safetensors",
+      "bytes": 67974972,
+      "sha256": "abfe5e3d5993c7c2f9fc8b3803a3501d0e46ac7b0f0c80c4f8c7aeb648ac657a"
+    },
+    {
+      "name": "morph_state",
+      "path": "/sdcard/Download/titan_morph_state_v9_v9-newcorpus-retain-02.json",
+      "bytes": 150,
+      "sha256": "f0efa0ea21c862b9e6aba5ea286235ab82a9d76700e1b40369285bc48474dbc0"
+    },
+    {
+      "name": "optimizer",
+      "path": "/sdcard/Download/titan_optimizer_v9_v9-newcorpus-retain-02.safetensors",
+      "bytes": 135955352,
+      "sha256": "749a840c695d3ca6b26e3f1930395498078f5101009c8df334267809714c6236"
+    },
+    {
+      "name": "prime",
+      "path": "/sdcard/Download/titan_prime_60s_v9-newcorpus-retain-02_58056ec807c3.wav",
+      "bytes": 11517996,
+      "sha256": "518a05c8b4fe3867e8e1fdf0d3de6bb0fc6cc894162c66b9634d15603a867bfd"
+    },
+    {
+      "name": "prompt",
+      "path": "/sdcard/Download/suno_priming_prompt_v9-newcorpus-retain-02.txt",
+      "bytes": 445,
+      "sha256": "24546f20c73502600721995794485cee63e8a32bc62cd0fbdf1b01239bc4e62b"
+    },
+    {
+      "name": "world",
+      "path": "/sdcard/Download/titan_world_v9_v9-newcorpus-retain-02.bin",
+      "bytes": 1391835,
+      "sha256": "7d5de3c5892efd5a0bef49661efe25bb16b0d6f15ae55d8df2781f12647c7f25"
+    }
+  ]
+}

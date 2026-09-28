@@ -1,0 +1,18 @@
+{
+  "path": "/sdcard/Download/rust_ecosystem_out_v9-newcorpus-retain-02_58056ec807c3.wav",
+  "sha256": "256e2265272cc8fec910c5026308cca4e829b76f70a316d8f76e96c42b0550b3",
+  "wav": {
+    "channels": 2,
+    "sample_rate": 48000,
+    "sample_width_bytes": 2,
+    "frames": 28798976,
+    "duration_seconds": 599.9786666666666
+  },
+  "peak_dbfs": -1.0028291074482363,
+  "rms_stereo_dbfs": -9.854084687238304,
+  "stereo_correlation": 0.9168086892769831,
+  "side_over_mid_db": -12.535376913476002,
+  "clipped_frames": 0,
+  "both_channels_zero_fraction": 0.0,
+  "scope": "PCM integrity and descriptive signal metrics; no perceptual or downstream claim"
+}

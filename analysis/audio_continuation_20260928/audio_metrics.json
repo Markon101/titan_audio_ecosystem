@@ -1,0 +1,60 @@
+{
+  "parent_prime": {
+    "path": "/sdcard/Download/titan_prime_60s_v9-newcorpus-retain-01_f5e67ef8c236.wav",
+    "sha256": "d13f12813a67e13e8dbae8d87574c17c42d011ea2a2df691e12de965e488b344",
+    "frames": 2879488,
+    "seconds": 59.989333333333335,
+    "metrics": {
+      "rms": 0.31080036687604945,
+      "peak": 0.807373046875,
+      "peak_dbfs": -1.8585150610814298,
+      "crest_db": 8.291854483306945,
+      "lr_correlation": 0.9419658448518066,
+      "side_over_mid_db": -14.191681550484372,
+      "bands": {
+        "20-200Hz": 0.07022919730999895,
+        "200-2000Hz": 0.7662744166231076,
+        "2000-6000Hz": 0.13381492026992758,
+        "6000-12000Hz": 0.018171563060764263,
+        "12000-20000Hz": 0.008358010492911242,
+        "20000-24000Hz": 0.002764970732133497
+      }
+    },
+    "clipped_frames": 0,
+    "selected_source_interval": {
+      "start_chunk": 6850,
+      "end_chunk_exclusive": 7553,
+      "start_seconds": 584.5333333333333,
+      "method": "exact 8192-frame PCM anchor at +1 second matched to corresponding full WAV"
+    }
+  },
+  "child_prime": {
+    "path": "/sdcard/Download/titan_prime_60s_v9-newcorpus-retain-02_58056ec807c3.wav",
+    "sha256": "518a05c8b4fe3867e8e1fdf0d3de6bb0fc6cc894162c66b9634d15603a867bfd",
+    "frames": 2879488,
+    "seconds": 59.989333333333335,
+    "metrics": {
+      "rms": 0.3193320771994507,
+      "peak": 0.890960693359375,
+      "peak_dbfs": -1.0028291074482363,
+      "crest_db": 8.912319972373291,
+      "lr_correlation": 0.9148830888899716,
+      "side_over_mid_db": -12.399422937920733,
+      "bands": {
+        "20-200Hz": 0.07073207496975552,
+        "200-2000Hz": 0.7603510754871917,
+        "2000-6000Hz": 0.1380926298466073,
+        "6000-12000Hz": 0.019124568341591576,
+        "12000-20000Hz": 0.007932467764984262,
+        "20000-24000Hz": 0.0033453896289982786
+      }
+    },
+    "clipped_frames": 0,
+    "selected_source_interval": {
+      "start_chunk": 643,
+      "end_chunk_exclusive": 1346,
+      "start_seconds": 54.86933333333333,
+      "method": "exact 8192-frame PCM anchor at +1 second matched to corresponding full WAV"
+    }
+  }
+}

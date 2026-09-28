@@ -1,0 +1,1165 @@
+=== TITAN AUDIO ECOSYSTEM: RUST EDITION v9 (MORPHOGENIC MANIFOLD) ===
+Seed: 42 | Threads: 4 | Gradient horizon: 64 | Autograd tape: 8 | Core cadence: 1/4 tapes | Field: 64ch micro 64x64 macro 32x32 | LR: 5.00e-4 | Duration: 600s
+--> Memory-safe TBPTT: accumulating 8-chunk tape segments across a 64-chunk optimizer horizon.
+NOTE: CA/RNG/renderer and matching AdamW moments resume from v9 checkpoints. A missing or mismatched optimizer uses a 32-update LR warmup. Fresh reproducibility also requires the same --threads value.
+--> Corpus: 30 training files in 23 balanced families (1.08 h), 6 development files / 4 fixed probes, 5 validation files / 4 fixed probes (strict family holdout); coherent 21.8 s episodes.
+--> Trainable parameters: 16988839 (16.99M, 64.8 MiB FP32 weights).
+--> Model migration from /sdcard/Download/titan_model_v9_v9-newcorpus-retain-01.safetensors: 200 exact, 0 resized morphic, 0 new morphic, 0 dropped morphic, 0 incompatible non-morphic.
+--> Import source retained at /sdcard/Download/titan_model_v9_v9-newcorpus-retain-01.safetensors; future checkpoints will be written to /sdcard/Download/titan_model_v9_v9-newcorpus-retain-02.safetensors.
+--> Companion resume sources: world /sdcard/Download/titan_world_v9_v9-newcorpus-retain-01.bin · optimizer /sdcard/Download/titan_optimizer_v9_v9-newcorpus-retain-01.safetensors · morph state /sdcard/Download/titan_morph_state_v9_v9-newcorpus-retain-01.json.
+--> Resumed world /sdcard/Download/titan_world_v9_v9-newcorpus-retain-01.bin at global step 144968 (L16, motifs 185, raw/effective model confidence 0.88/0.53).
+--> Resumed AdamW: 200 exact, 0 resized, 0 new moment pairs, 0 renderer-control moment resets; 4108 cumulative updates.
+--> Morphic stack: L16 active / 16 blocks × 512 width · manifold 4x16 features with 2 spatial rings · rad_amp 0.217 · world resumed
+--> Motif memory: 185/512 entries · growth preserves all; shrink retains newest.
+--> Morph policy: capped at/through L16; growth requires a strict development-probe plateau.
+--> Telemetry run 1790585990169-p25393-s42 · schema v10 · build 6b9f680f1241-dirty · mode resume
+Chunk 0/7031 (global 144968) [SPS: 0.00] | Move: 0.004 | Mimic: 0.237 ↓ | HOLD | L16 rad:0.22 | σ:0.673/0.05 | V:0.756 T:0.61 | LRx:1.46
+  field H:2.16b ·   ▒▓█░   · synergy:0.31 empower:2.57 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.88/0.53 err:0.005
+  drives S:0.00 σ:0.16 C:0.10 G:0.24 M:0.09 | curiosity:0.31 shear-rms:0.27 rad-p:0.004 | field μ:+0.003 rail:0.0101 | grad:0.00 clip:1.00 corr:+0.86
+  stereo width:0.116 side-energy:0.432 pan:+0.10 decoder/target corr:+0.85/+0.51 | dev S/C:0.766/2.103 Δ:+0.00% ready:false plateau:false
+  ecology health:0.66 stagnation:0.39 escape:0.00 | reward:-0.136 μ:-0.127 σr:0.011 | motifs:185/512 candidates:9061 qrej:3405 srej:5418
+  proposals model:RECALL bandit:CONTRACT selected:HOLD | action age:1 usage:0.20
+  v █░▪·█░█░█▒▓░█░█░▓▒▒▓▒▓▒█░█░█░█░█░█░█▒▓▓▒█░█░█░█░█░█░█·█·█░█░█░█▓
+  ∂ ∘∘oo∘∘∘∘∘˙˙·∘···˙  ˙˙˙ ·········∘∘··˙   ····∘∘∘∘∘∘∘∘∘o∘o∘∘∘·∘∘·
+Chunk 50/7031 (global 145018) [SPS: 3.37] | Move: 0.004 | Mimic: 0.287 → | CRYSTALLIZE | L16 rad:0.22 | σ:0.822/0.08 | V:0.641 T:0.53 | LRx:1.36
+  field H:2.22b ·  ·░▓█░   · synergy:0.52 empower:2.57 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.88/0.58 err:0.007
+  drives S:0.00 σ:0.08 C:0.09 G:0.21 M:0.09 | curiosity:0.26 shear-rms:0.22 rad-p:0.004 | field μ:+0.001 rail:0.0109 | grad:0.00 clip:1.00 corr:+0.84
+  stereo width:0.133 side-energy:0.463 pan:+0.10 decoder/target corr:+0.83/+0.99 | dev S/C:0.746/2.069 Δ:+0.00% ready:false plateau:false
+  ecology health:0.72 stagnation:0.34 escape:0.00 | reward:-0.058 μ:-0.071 σr:0.028 | motifs:185/512 candidates:9064 qrej:3405 srej:5421
+  proposals model:RECALL bandit:HOLD selected:CRYSTALLIZE | action age:1 usage:0.10
+  v █░▪░█░█·█▒▓░█░█░▓▒▒▓▒▓▒▓░▓░█░▓░█░█▒█▒▓▓▒█░█░█░█░█░█░█·█·█░█░█░█▓
+  ∂ ∘·o∘∘∘∘o∘˙˙·∘···˙  ˙˙˙ ˙·˙···˙···∘˙·˙   ···∘∘∘∘∘∘∘∘∘∘o∘o∘∘∘·∘∘·
+Chunk 100/7031 (global 145068) [SPS: 2.96] | Move: 0.004 | Mimic: 0.272 → | INHARMONIC | L16 rad:0.22 | σ:0.715/0.07 | V:0.642 T:0.46 | LRx:1.26
+  field H:2.22b ·  ·░▓█░   · synergy:0.60 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.88/0.60 err:0.007
+  drives S:0.00 σ:0.08 C:0.09 G:0.20 M:0.08 | curiosity:0.23 shear-rms:0.20 rad-p:0.003 | field μ:-0.002 rail:0.0117 | grad:20.43 clip:0.24 corr:+0.82
+  stereo width:0.142 side-energy:0.476 pan:+0.10 decoder/target corr:+0.82/+0.96 | dev S/C:0.711/1.985 Δ:+0.00% ready:false plateau:false
+  ecology health:0.74 stagnation:0.32 escape:0.00 | reward:-0.042 μ:-0.037 σr:0.018 | motifs:185/512 candidates:9067 qrej:3405 srej:5424
+  proposals model:TURBULENCE bandit:HOLD selected:INHARMONIC | action age:0 usage:0.08
+  v █░▪·█░█░█▒▓░█░█░▓▒▒▓▒▓▒█░▓░█░▓░█░█▒█░▓▓▒█░█░█░█░█░█·█·█·█░█░█░█▓
+  ∂ ∘·oo∘∘∘∘∘˙˙·∘∘··˙  ˙˙˙˙··˙···˙···∘˙··˙  ···∘·∘∘∘∘∘∘o∘o∘o∘∘∘·∘∘·˙
+Chunk 150/7031 (global 145118) [SPS: 3.17] | Move: 0.004 | Mimic: 0.398 → | WIDEN | L16 rad:0.22 | σ:0.566/0.04 | V:0.702 T:0.53 | LRx:1.36
+  field H:2.24b ·  ·░▓█░   · synergy:0.52 empower:2.57 | energy:0.72 | φ:0.46 PI:0.06 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.16 C:0.09 G:0.21 M:0.09 | curiosity:0.27 shear-rms:0.25 rad-p:0.004 | field μ:-0.002 rail:0.0116 | grad:21.36 clip:0.23 corr:+0.85
+  stereo width:0.119 side-energy:0.437 pan:+0.10 decoder/target corr:+0.85/+0.91 | dev S/C:0.727/2.118 Δ:+0.00% ready:false plateau:false
+  ecology health:0.69 stagnation:0.34 escape:0.00 | reward:-0.105 μ:-0.078 σr:0.023 | motifs:185/512 candidates:9070 qrej:3405 srej:5427
+  proposals model:HOLD bandit:HOLD selected:WIDEN | action age:0 usage:0.28
+  v █░▪·█░█░█▒▓▒█░█▒▓▒▒▓▒▓▒█░█░█░▓░█░█▒█▒▓▓▒█░█░█░█░█·█·█·█·█░█░█░█▓
+  ∂ ∘·oo∘∘∘∘∘˙˙˙···˙˙  ˙˙˙˙······˙···∘˙·˙˙ ˙···∘·∘∘∘∘o∘o∘o∘o∘∘∘∘∘∘∘˙
+Chunk 200/7031 (global 145168) [SPS: 2.87] | Move: 0.004 | Mimic: 0.404 ↑ | RECALL | L16 rad:0.22 | σ:0.591/0.05 | V:0.723 T:0.58 | LRx:1.42
+  field H:2.22b ·  ·░▓█░   · synergy:0.65 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.55 err:0.001
+  drives S:0.00 σ:0.16 C:0.10 G:0.23 M:0.09 | curiosity:0.29 shear-rms:0.25 rad-p:0.003 | field μ:-0.000 rail:0.0109 | grad:24.86 clip:0.20 corr:+0.86
+  stereo width:0.111 side-energy:0.425 pan:+0.10 decoder/target corr:+0.86/+0.97 | dev S/C:0.776/2.101 Δ:-0.23% ready:true plateau:true
+  ecology health:0.69 stagnation:0.37 escape:0.00 | reward:-0.080 μ:-0.107 σr:0.020 | motifs:185/512 candidates:9074 qrej:3405 srej:5431
+  proposals model:RECALL bandit:RECALL selected:RECALL | action age:0 usage:0.19
+  v █░▪·█░█░█▒█▒▓░█▒▓▓▒█▒▓▒█░█░█▒▓░█░█░█▒▓▓▒█░█░█░█░█░█░█·█·█·█░█░█▓
+  ∂ ∘·oo∘∘∘∘∘˙·˙˙··˙˙  ·˙˙˙·····˙˙···∘·· ˙ ˙∘····∘∘∘∘∘∘∘∘o∘o∘o∘∘∘∘∘˙
+Chunk 250/7031 (global 145218) [SPS: 3.25] | Move: 0.004 | Mimic: 0.392 → | WIDEN | L16 rad:0.22 | σ:0.671/0.04 | V:0.675 T:0.55 | LRx:1.39
+  field H:2.24b ·  ·░▓█░   · synergy:0.50 empower:2.58 | energy:0.72 | φ:0.45 PI:0.05 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.13 C:0.10 G:0.22 M:0.08 | curiosity:0.28 shear-rms:0.25 rad-p:0.003 | field μ:+0.000 rail:0.0110 | grad:24.86 clip:0.20 corr:+0.86
+  stereo width:0.113 side-energy:0.425 pan:+0.10 decoder/target corr:+0.86/+0.91 | dev S/C:0.773/2.011 Δ:+0.26% ready:true plateau:true
+  ecology health:0.70 stagnation:0.36 escape:0.00 | reward:-0.093 μ:-0.098 σr:0.015 | motifs:185/512 candidates:9077 qrej:3405 srej:5434
+  proposals model:RECALL bandit:RECALL selected:WIDEN | action age:0 usage:0.08
+  v █▒▪·▪░█░█░█▒▓▒█▒▓▓▒▓▒▓▒█░█░█▒█░█░█░█▒▓▓▒█░█░█░█░█░█░█·█·█░█░█░█▓
+  ∂ ∘˙ooo∘·∘∘·· ˙˙·˙˙  ˙˙˙ ·····˙····∘·· ˙ ˙∘···∘∘∘∘∘∘∘∘∘o∘o∘∘∘∘∘∘∘
+Chunk 300/7031 (global 145268) [SPS: 2.72] | Move: 0.004 | Mimic: 0.249 → | HARMONIC | L16 rad:0.22 | σ:0.601/0.07 | V:0.687 T:0.55 | LRx:1.38
+  field H:2.24b ·  ·░▓█░   · synergy:0.57 empower:2.59 | energy:0.72 | φ:0.45 PI:0.05 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.14 C:0.10 G:0.23 M:0.08 | curiosity:0.28 shear-rms:0.26 rad-p:0.004 | field μ:+0.001 rail:0.0111 | grad:22.59 clip:0.22 corr:+0.87
+  stereo width:0.104 side-energy:0.409 pan:+0.10 decoder/target corr:+0.87/+0.92 | dev S/C:0.751/2.046 Δ:-0.69% ready:true plateau:true
+  ecology health:0.70 stagnation:0.37 escape:0.00 | reward:-0.111 μ:-0.097 σr:0.016 | motifs:185/512 candidates:9080 qrej:3405 srej:5437
+  proposals model:RECALL bandit:HARMONIC selected:HARMONIC | action age:0 usage:0.25
+  v █▒▪·█░█░█░█▒▓▒█▒▓▓▒▓▒▓▒█░█░█▒█░█░█░█▒▓▓▒█░█░█░█░█░█░█░█·█░█░█░█▒
+  ∂ ∘˙oo∘∘∘∘∘·· ˙˙·˙˙  ˙˙˙ ·····˙····∘··˙˙ ˙∘····∘∘∘∘∘∘∘∘∘∘o∘∘∘∘∘∘∘
+Chunk 350/7031 (global 145318) [SPS: 3.30] | Move: 0.004 | Mimic: 0.277 → | HARMONIC | L16 rad:0.21 | σ:0.619/0.05 | V:0.690 T:0.54 | LRx:1.37
+  field H:2.24b ·  ·░▓█░   · synergy:0.57 empower:2.59 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.57 err:0.001
+  drives S:0.00 σ:0.15 C:0.09 G:0.22 M:0.08 | curiosity:0.26 shear-rms:0.27 rad-p:0.004 | field μ:+0.000 rail:0.0107 | grad:32.82 clip:0.15 corr:+0.89
+  stereo width:0.091 side-energy:0.382 pan:+0.10 decoder/target corr:+0.89/+0.86 | dev S/C:0.658/1.949 Δ:-0.08% ready:true plateau:true
+  ecology health:0.71 stagnation:0.35 escape:0.00 | reward:-0.101 μ:-0.088 σr:0.018 | motifs:185/512 candidates:9083 qrej:3405 srej:5440
+  proposals model:RECALL bandit:HARMONIC selected:HARMONIC | action age:1 usage:0.32
+  v █▒▪·█░█░█░█▒▓▒▓▒▓▒▓▓▒▓▒█░█░█░█░█░█░█▒█▓▒█░█░█░█░█░█░█░█░█░█░█░█▒
+  ∂ ∘˙oo∘∘∘····  ˙˙˙˙  ˙˙˙ ·······∘··∘∘∘˙· ˙·····∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘
+Chunk 400/7031 (global 145368) [SPS: 2.67] | Move: 0.004 | Mimic: 0.256 → | RECALL | L16 rad:0.21 | σ:0.576/0.03 | V:0.696 T:0.55 | LRx:1.39
+  field H:2.24b ·  ·░▓█░   · synergy:0.52 empower:2.58 | energy:0.72 | φ:0.46 PI:0.06 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.15 C:0.10 G:0.22 M:0.09 | curiosity:0.28 shear-rms:0.26 rad-p:0.003 | field μ:+0.000 rail:0.0108 | grad:21.96 clip:0.23 corr:+0.89
+  stereo width:0.088 side-energy:0.377 pan:+0.10 decoder/target corr:+0.89/+0.96 | dev S/C:0.698/2.074 Δ:+0.26% ready:true plateau:true
+  ecology health:0.70 stagnation:0.36 escape:0.00 | reward:-0.107 μ:-0.098 σr:0.014 | motifs:185/512 candidates:9086 qrej:3405 srej:5443
+  proposals model:RECALL bandit:RESONATE selected:RECALL | action age:0 usage:0.27
+  v █░▪·█░█░█░█▒▓▒▓▒▓▓▓▓▒█▒█░█░█░█░█░█░█▒█▓▒█░█░█░█░█░█░█░█·█░█░█░█▒
+  ∂ ∘·oo∘∘·····  ˙˙    ˙˙·˙·······∘··∘∘∘˙· ˙···∘·∘∘∘∘∘∘·∘∘∘o∘∘∘∘∘∘∘˙
+--> Model + organism checkpoint saved at global step 145408 (L16, motifs 185, conf 0.89)
+Chunk 450/7031 (global 145418) [SPS: 2.70] | Move: 0.004 | Mimic: 0.254 → | INHARMONIC | L16 rad:0.21 | σ:0.582/0.03 | V:0.711 T:0.58 | LRx:1.42
+  field H:2.24b ·  ·░▓█░   · synergy:0.59 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.16 C:0.10 G:0.23 M:0.08 | curiosity:0.28 shear-rms:0.25 rad-p:0.003 | field μ:-0.000 rail:0.0110 | grad:36.84 clip:0.14 corr:+0.90
+  stereo width:0.081 side-energy:0.362 pan:+0.10 decoder/target corr:+0.90/+0.95 | dev S/C:0.739/2.029 Δ:+0.33% ready:true plateau:true
+  ecology health:0.70 stagnation:0.37 escape:0.00 | reward:-0.128 μ:-0.112 σr:0.016 | motifs:185/512 candidates:9089 qrej:3405 srej:5446
+  proposals model:RECALL bandit:INHARMONIC selected:INHARMONIC | action age:3 usage:0.33
+  v █░▪·█░█░█░█▒▓▒▓▓▓▓▓▓▒▓▒█░█░█░█░█░█░█▒█▓▒█░█░█░█░█░█░█░█░█·█░█░█▒
+  ∂ ∘∘oo∘······  ˙˙    ˙˙˙˙·······∘··∘∘∘˙·  ··∘∘·∘∘∘∘∘∘·∘∘∘∘∘o∘∘∘∘∘˙
+Chunk 500/7031 (global 145468) [SPS: 3.08] | Move: 0.004 | Mimic: 0.285 → | RESONATE | L16 rad:0.21 | σ:0.621/0.03 | V:0.696 T:0.56 | LRx:1.39
+  field H:2.22b ·  ·░▓█░   · synergy:0.60 empower:2.59 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.15 C:0.10 G:0.22 M:0.08 | curiosity:0.28 shear-rms:0.25 rad-p:0.003 | field μ:-0.000 rail:0.0110 | grad:36.84 clip:0.14 corr:+0.90
+  stereo width:0.082 side-energy:0.362 pan:+0.10 decoder/target corr:+0.90/+0.89 | dev S/C:0.707/1.898 Δ:+0.16% ready:true plateau:true
+  ecology health:0.70 stagnation:0.35 escape:0.00 | reward:-0.043 μ:-0.097 σr:0.018 | motifs:185/512 candidates:9092 qrej:3405 srej:5449
+  proposals model:RECALL bandit:INHARMONIC selected:RESONATE | action age:0 usage:0.20
+  v █░▪░█░█▒█░▓▒▓▒▓▓▓▓▒▓▒▓▒█░█▒█░█░█░█░█░█▓▒█░█░█░█░█░█░█·█·█░█░█░█░
+  ∂ ∘∘o∘∘··˙··˙      ˙ ˙˙˙˙···˙···∘·∘∘∘∘··  ··∘·∘∘·∘∘∘∘∘∘o∘o∘∘∘∘∘∘∘·
+Chunk 550/7031 (global 145518) [SPS: 2.92] | Move: 0.004 | Mimic: 0.249 ↓ | INHARMONIC | L16 rad:0.21 | σ:0.446/0.01 | V:0.744 T:0.58 | LRx:1.42
+  field H:2.20b ·  ·░▓█░   · synergy:0.46 empower:2.58 | energy:0.72 | φ:0.45 PI:0.05 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.19 C:0.10 G:0.22 M:0.08 | curiosity:0.28 shear-rms:0.29 rad-p:0.004 | field μ:+0.000 rail:0.0109 | grad:33.97 clip:0.15 corr:+0.89
+  stereo width:0.091 side-energy:0.382 pan:+0.10 decoder/target corr:+0.89/+0.94 | dev S/C:0.748/2.019 Δ:-0.94% ready:true plateau:true
+  ecology health:0.69 stagnation:0.36 escape:0.00 | reward:-0.121 μ:-0.109 σr:0.014 | motifs:185/512 candidates:9095 qrej:3405 srej:5452
+  proposals model:RECALL bandit:RESONATE selected:INHARMONIC | action age:0 usage:0.37
+  v █░▪░█░█▒▓░▓▓▓▒▓▓▒█▒█▒▓▒█░█▒█▒█░█░█░█░█▒▒█░█░█░█░█░█░█·█░█░█░█░█░
+  ∂ ∘∘o∘∘··˙˙·˙      · ·˙˙˙···˙·˙·∘·∘∘∘∘·· ˙····∘∘∘∘·∘∘∘∘o∘∘∘∘∘∘∘∘∘·
+Chunk 600/7031 (global 145568) [SPS: 2.99] | Move: 0.004 | Mimic: 0.354 → | WIDEN | L16 rad:0.22 | σ:0.540/0.03 | V:0.769 T:0.64 | LRx:1.49
+  field H:2.18b ·   ▒▓█░   · synergy:0.63 empower:2.60 | energy:0.72 | φ:0.45 PI:0.05 | model raw/eff:0.89/0.54 err:0.001
+  drives S:0.00 σ:0.20 C:0.11 G:0.24 M:0.07 | curiosity:0.30 shear-rms:0.28 rad-p:0.003 | field μ:+0.002 rail:0.0100 | grad:18.50 clip:0.27 corr:+0.89
+  stereo width:0.085 side-energy:0.370 pan:+0.10 decoder/target corr:+0.89/+0.73 | dev S/C:0.705/2.102 Δ:-0.38% ready:true plateau:true
+  ecology health:0.68 stagnation:0.39 escape:0.00 | reward:-0.097 μ:-0.138 σr:0.021 | motifs:185/512 candidates:9099 qrej:3405 srej:5456
+  proposals model:RECALL bandit:WIDEN selected:WIDEN | action age:0 usage:0.15
+  v █░█░█░█▒▓▒▓▓▓▓▓▓▒█▒█▒▓▒█░█▒▓▒█░█░█░█░█▒▒█░█░█░█░█░█·█░█░█░█░█░█░
+  ∂ ∘·∘∘∘··˙˙˙˙    ˙ · ·˙˙ ···˙˙˙·∘·∘∘·∘··  ··∘∘∘∘∘∘·∘∘o∘∘∘∘∘∘∘∘∘∘∘·
+Chunk 650/7031 (global 145618) [SPS: 2.67] | Move: 0.004 | Mimic: 0.336 → | WIDEN | L16 rad:0.22 | σ:0.778/0.05 | V:0.651 T:0.55 | LRx:1.38
+  field H:2.20b ·  ·░▓█░   · synergy:0.55 empower:2.58 | energy:0.72 | φ:0.45 PI:0.05 | model raw/eff:0.88/0.59 err:0.004
+  drives S:0.00 σ:0.10 C:0.09 G:0.21 M:0.08 | curiosity:0.25 shear-rms:0.24 rad-p:0.003 | field μ:+0.001 rail:0.0107 | grad:3.72 clip:1.00 corr:+0.88
+  stereo width:0.099 side-energy:0.400 pan:+0.10 decoder/target corr:+0.88/+0.83 | dev S/C:0.771/2.034 Δ:+0.02% ready:true plateau:true
+  ecology health:0.73 stagnation:0.34 escape:0.00 | reward:-0.056 μ:-0.077 σr:0.031 | motifs:185/512 candidates:9102 qrej:3405 srej:5459
+  proposals model:RECALL bandit:WIDEN selected:WIDEN | action age:1 usage:0.56
+  v █▒█░█░█▒▓▒▓▓▒▓▓▓▒█▒█▒▓▒█░█▒▓▒█░█░█░█░█▓▒█▒█░█░█░█░█·█░█░█░█░█░█░
+  ∂ ∘˙∘∘···˙ ˙˙    ˙ ·˙·˙˙ ···˙˙˙·∘·∘∘·∘··  ∘˙∘∘∘∘∘∘∘∘∘o∘∘∘∘·∘∘∘∘∘∘·
+Chunk 700/7031 (global 145668) [SPS: 3.69] | Move: 0.004 | Mimic: 0.334 → | INHARMONIC | L16 rad:0.22 | σ:0.719/0.03 | V:0.652 T:0.48 | LRx:1.28
+  field H:2.22b ·  ·░▓█░   · synergy:0.52 empower:2.57 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.88/0.59 err:0.002
+  drives S:0.00 σ:0.10 C:0.08 G:0.19 M:0.09 | curiosity:0.24 shear-rms:0.21 rad-p:0.003 | field μ:-0.001 rail:0.0114 | grad:3.72 clip:1.00 corr:+0.88
+  stereo width:0.100 side-energy:0.401 pan:+0.10 decoder/target corr:+0.87/+0.72 | dev S/C:0.679/1.971 Δ:+0.59% ready:true plateau:true
+  ecology health:0.73 stagnation:0.31 escape:0.00 | reward:-0.047 μ:-0.045 σr:0.019 | motifs:185/512 candidates:9105 qrej:3405 srej:5462
+  proposals model:RECALL bandit:WIDEN selected:INHARMONIC | action age:0 usage:0.22
+  v █░█░█░█▒▓▒▓▓▒▓▒▓▒█▒█▒▓▒█░█▒█░█░█░█░█░█▒▒█▒█░█░█░█░█░█░█░█░█░█░█░
+  ∂ ∘·∘····˙  ˙    ˙ ·˙·˙˙˙·∘·˙···∘·∘∘·∘··  ∘˙∘∘·∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘·
+Chunk 750/7031 (global 145718) [SPS: 2.94] | Move: 0.004 | Mimic: 0.293 ↓ | HOLD | L16 rad:0.21 | σ:0.592/0.03 | V:0.683 T:0.52 | LRx:1.34
+  field H:2.20b ·  ·░▓█░   · synergy:0.48 empower:2.58 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.89/0.57 err:0.001
+  drives S:0.00 σ:0.14 C:0.09 G:0.21 M:0.08 | curiosity:0.27 shear-rms:0.24 rad-p:0.003 | field μ:-0.000 rail:0.0109 | grad:11.24 clip:0.44 corr:+0.89
+  stereo width:0.088 side-energy:0.376 pan:+0.10 decoder/target corr:+0.89/+0.77 | dev S/C:0.687/2.068 Δ:+0.20% ready:true plateau:true
+  ecology health:0.70 stagnation:0.34 escape:0.00 | reward:-0.093 μ:-0.076 σr:0.017 | motifs:185/512 candidates:9108 qrej:3405 srej:5465
+  proposals model:RECALL bandit:CONTRACT selected:HOLD | action age:0 usage:0.06
+  v █░█░█▒█▒▓▒▓▓▒▓▒▓▒█▒█▒▓▒█░█▒▓░█░█░█░█░█▒▒█░█░█░█░█░█░█░█░█░█░█░█░
+  ∂ ∘·∘··˙·˙       ˙˙·˙·˙˙˙···˙˙··∘·∘∘·∘··˙ ∘·∘∘·∘∘∘∘∘∘∘∘·∘∘∘∘∘∘∘∘∘·
+Chunk 800/7031 (global 145768) [SPS: 2.74] | Move: 0.004 | Mimic: 0.311 ↓ | INHARMONIC | L16 rad:0.21 | σ:0.610/0.03 | V:0.705 T:0.56 | LRx:1.40
+  field H:2.20b ·  ·░▓█░   · synergy:0.59 empower:2.59 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.55 err:0.001
+  drives S:0.00 σ:0.16 C:0.10 G:0.22 M:0.08 | curiosity:0.29 shear-rms:0.25 rad-p:0.003 | field μ:+0.001 rail:0.0109 | grad:19.33 clip:0.26 corr:+0.92
+  stereo width:0.062 side-energy:0.315 pan:+0.10 decoder/target corr:+0.92/+0.90 | dev S/C:0.738/1.999 Δ:-0.21% ready:true plateau:true
+  ecology health:0.69 stagnation:0.36 escape:0.00 | reward:-0.057 μ:-0.098 σr:0.016 | motifs:185/512 candidates:9111 qrej:3405 srej:5468
+  proposals model:RECALL bandit:INHARMONIC selected:INHARMONIC | action age:0 usage:0.29
+  v █░█░█▒▓▒▓▓▓▓▒▒▒▓▒█░█░█▒█░█▒█░█░█░█░█░▓▒▒█░█░█░█░█░█░█░█░█░█░█░▪░
+  ∂ ∘·∘··˙˙˙       ˙˙·····˙··∘˙···∘·∘∘∘∘·˙˙˙∘·∘∘∘∘∘∘∘∘∘∘∘·∘∘∘∘∘∘∘∘o·
+Chunk 850/7031 (global 145818) [SPS: 3.13] | Move: 0.004 | Mimic: 0.379 ↓ | CONTRACT | L16 rad:0.21 | σ:0.645/0.04 | V:0.683 T:0.55 | LRx:1.39
+  field H:2.22b ·  ·░▓█░   · synergy:0.51 empower:2.58 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.89/0.55 err:0.000
+  drives S:0.00 σ:0.14 C:0.10 G:0.23 M:0.08 | curiosity:0.29 shear-rms:0.25 rad-p:0.003 | field μ:+0.000 rail:0.0109 | grad:3.26 clip:1.00 corr:+0.95
+  stereo width:0.041 side-energy:0.254 pan:+0.10 decoder/target corr:+0.95/+0.90 | dev S/C:0.682/2.001 Δ:-0.44% ready:true plateau:true
+  ecology health:0.69 stagnation:0.36 escape:0.00 | reward:-0.102 μ:-0.101 σr:0.011 | motifs:185/512 candidates:9114 qrej:3405 srej:5471
+  proposals model:RECALL bandit:CONTRACT selected:CONTRACT | action age:1 usage:0.35
+  v █░█▒█░▓▒▒▓▓▓▒▒▒█▒█░█░█▒█░█▒█░█░█░█░█▒▓▒▒█░█░█░█░█░█░█░█░█░█░█░▪▒
+  ∂ ∘·∘˙··˙˙   ˙   ·˙·····˙··∘˙···∘·∘∘∘∘˙˙˙˙∘·∘∘∘∘∘∘∘∘∘∘∘·∘∘∘∘∘∘∘∘o˙
+Chunk 900/7031 (global 145868) [SPS: 2.61] | Move: 0.004 | Mimic: 0.324 → | RECALL | L16 rad:0.21 | σ:0.695/0.04 | V:0.666 T:0.52 | LRx:1.34
+  field H:2.22b ·  ·░▓█░   · synergy:0.52 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.58 err:0.001
+  drives S:0.00 σ:0.12 C:0.09 G:0.21 M:0.08 | curiosity:0.26 shear-rms:0.24 rad-p:0.003 | field μ:+0.000 rail:0.0112 | grad:10.01 clip:0.50 corr:+0.91
+  stereo width:0.070 side-energy:0.335 pan:+0.10 decoder/target corr:+0.91/+0.97 | dev S/C:0.694/1.955 Δ:-0.38% ready:true plateau:true
+  ecology health:0.72 stagnation:0.33 escape:0.00 | reward:-0.079 μ:-0.076 σr:0.015 | motifs:185/512 candidates:9117 qrej:3405 srej:5474
+  proposals model:RECALL bandit:RECALL selected:RECALL | action age:2 usage:0.52
+  v █▒█▒█▒▓▒▒▓▓▓▒▓▒█▒█░█▒█▒█░█▒█░█░█░█░█░▓▒▒█░█░█░█░█░█░█░█░█░█░█·▪░
+  ∂ ∘˙∘˙·˙˙˙˙˙     ·˙···˙·˙···˙···∘·∘∘·∘·˙˙ ∘·∘∘∘·∘∘∘·∘∘∘·∘∘∘∘∘∘∘oo·
+Chunk 950/7031 (global 145918) [SPS: 3.34] | Move: 0.004 | Mimic: 0.255 → | RECALL | L16 rad:0.21 | σ:0.637/0.04 | V:0.672 T:0.50 | LRx:1.32
+  field H:2.22b ·  ·░▓█░   · synergy:0.52 empower:2.58 | energy:0.72 | φ:0.46 PI:0.08 | model raw/eff:0.89/0.59 err:0.001
+  drives S:0.00 σ:0.13 C:0.09 G:0.20 M:0.09 | curiosity:0.25 shear-rms:0.23 rad-p:0.003 | field μ:-0.000 rail:0.0113 | grad:10.01 clip:0.50 corr:+0.90
+  stereo width:0.077 side-energy:0.352 pan:+0.10 decoder/target corr:+0.90/+0.91 | dev S/C:0.658/1.977 Δ:+0.07% ready:true plateau:true
+  ecology health:0.72 stagnation:0.33 escape:0.00 | reward:-0.077 μ:-0.067 σr:0.014 | motifs:185/512 candidates:9120 qrej:3405 srej:5477
+  proposals model:RECALL bandit:RECALL selected:RECALL | action age:2 usage:0.56
+  v █▒█▒█▒▓░▒▓▓▓▒▓▒█▒█▒█░█▒█░█▒█░█·█░█░█░█▒▒█░█░█░█░█░█░█░█░█░█░█·▪░
+  ∂ ∘˙∘˙·˙˙·˙˙ ˙   ·˙·˙···˙···˙···o·∘∘·∘··˙ ∘·∘∘∘∘∘∘∘·∘∘∘·∘∘∘∘∘∘∘oo·
+Chunk 1000/7031 (global 145968) [SPS: 2.80] | Move: 0.004 | Mimic: 0.349 → | RECALL | L16 rad:0.21 | σ:0.535/0.03 | V:0.709 T:0.53 | LRx:1.36
+  field H:2.22b ·  ·░▓█░   · synergy:0.50 empower:2.58 | energy:0.72 | φ:0.46 PI:0.06 | model raw/eff:0.89/0.58 err:0.001
+  drives S:0.00 σ:0.16 C:0.09 G:0.20 M:0.08 | curiosity:0.26 shear-rms:0.23 rad-p:0.003 | field μ:+0.000 rail:0.0113 | grad:13.24 clip:0.38 corr:+0.90
+  stereo width:0.079 side-energy:0.357 pan:+0.10 decoder/target corr:+0.90/+0.97 | dev S/C:0.774/2.152 Δ:-0.10% ready:true plateau:true
+  ecology health:0.71 stagnation:0.33 escape:0.00 | reward:-0.099 μ:-0.082 σr:0.016 | motifs:185/512 candidates:9124 qrej:3405 srej:5481
+  proposals model:RECALL bandit:CONTRACT selected:RECALL | action age:0 usage:0.32
+  v ▪▒█▒▓▒▓▒▒▓▒█▒▓▒█▒█▒█░█░█░█░█░█░█░█░█▒█▒▒█░█░█░█░█░█░█░█░█░█░█·▪░
+  ∂ o˙∘ ˙ ˙˙ ˙ · ˙˙·˙·˙···········∘··∘·∘˙·˙ ··∘∘∘∘∘∘∘∘∘∘∘·∘∘∘∘∘∘∘oo∘
+Chunk 1050/7031 (global 146018) [SPS: 3.37] | Move: 0.004 | Mimic: 0.266 → | TURBULENCE | L16 rad:0.21 | σ:0.559/0.04 | V:0.719 T:0.58 | LRx:1.43
+  field H:2.20b ·  ·░▓█░   · synergy:0.47 empower:2.58 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.89/0.54 err:0.001
+  drives S:0.00 σ:0.17 C:0.10 G:0.23 M:0.09 | curiosity:0.30 shear-rms:0.31 rad-p:0.004 | field μ:+0.002 rail:0.0106 | grad:11.05 clip:0.45 corr:+0.92
+  stereo width:0.067 side-energy:0.327 pan:+0.10 decoder/target corr:+0.92/+1.00 | dev S/C:0.748/2.101 Δ:-0.26% ready:true plateau:true
+  ecology health:0.67 stagnation:0.38 escape:0.00 | reward:-0.131 μ:-0.115 σr:0.017 | motifs:185/512 candidates:9127 qrej:3405 srej:5484
+  proposals model:WIDEN bandit:CRYSTALLIZE selected:TURBULENCE | action age:1 usage:0.14
+  v █▒█▒▓▒▓▒▒▓▒█▒█▒█▒█▒█▒█░█░█░█░█░█░█░█▒█▒▒█░█░█░█░█░█░█░█░█░█░█·▪░
+  ∂ ∘˙· ˙ ˙  ˙ ·˙·˙·˙·˙·˙·········∘·∘∘··˙·  ··∘∘∘·∘∘∘∘·∘∘·∘∘∘∘∘∘∘oo∘
+Chunk 1100/7031 (global 146068) [SPS: 2.90] | Move: 0.004 | Mimic: 0.434 ↑ | TURBULENCE | L16 rad:0.21 | σ:0.637/0.05 | V:0.773 T:0.58 | LRx:1.42
+  field H:2.16b ·   ▒▓█░   · synergy:0.23 empower:2.58 | energy:0.71 | φ:0.46 PI:0.07 | model raw/eff:0.88/0.56 err:0.004
+  drives S:0.01 σ:0.16 C:0.10 G:0.22 M:0.09 | curiosity:0.28 shear-rms:0.38 rad-p:0.005 | field μ:+0.003 rail:0.0100 | grad:14.51 clip:0.34 corr:+0.92
+  stereo width:0.064 side-energy:0.320 pan:+0.10 decoder/target corr:+0.92/+0.99 | dev S/C:0.771/2.135 Δ:-0.88% ready:true plateau:true
+  ecology health:0.69 stagnation:0.36 escape:0.00 | reward:-0.112 μ:-0.108 σr:0.014 | motifs:185/512 candidates:9130 qrej:3405 srej:5487
+  proposals model:RECALL bandit:TURBULENCE selected:TURBULENCE | action age:0 usage:0.56
+  v █░█▒▓▒▓▒▒▓▒█▒█▒█▒█▒█▒█░█░█░█░█░█░█░█▒▓▒▒█░█░█░█░█░█░█░█░█░█░█░█░
+  ∂ ∘·∘   ˙  ˙ ·˙·˙·˙·˙·˙·········∘·∘···˙˙  ···∘·∘·∘∘∘∘∘∘·∘∘·∘∘∘∘∘∘∘
+Chunk 1150/7031 (global 146118) [SPS: 3.49] | Move: 0.004 | Mimic: 0.260 → | WIDEN | L16 rad:0.22 | σ:0.815/0.06 | V:0.667 T:0.53 | LRx:1.35
+  field H:2.20b ·   ▒▓█░   · synergy:0.32 empower:2.58 | energy:0.70 | φ:0.46 PI:0.07 | model raw/eff:0.88/0.57 err:0.009
+  drives S:0.00 σ:0.08 C:0.09 G:0.22 M:0.09 | curiosity:0.25 shear-rms:0.34 rad-p:0.005 | field μ:+0.005 rail:0.0094 | grad:14.51 clip:0.34 corr:+0.91
+  stereo width:0.073 side-energy:0.342 pan:+0.10 decoder/target corr:+0.91/+0.91 | dev S/C:0.737/2.040 Δ:-4.22% ready:true plateau:true
+  ecology health:0.72 stagnation:0.35 escape:0.00 | reward:-0.059 μ:-0.062 σr:0.035 | motifs:185/512 candidates:9133 qrej:3405 srej:5490
+  proposals model:RECALL bandit:TURBULENCE selected:WIDEN | action age:0 usage:0.08
+  v █░█▒▓▓▓▓▒▓▒█▒█▒█▒█▒█▒█░█░█▒█░█░█░█░█▒▓▒▒█░█░█░█░█░█░█░█░█░█░█░█░
+  ∂ ∘·∘˙  ˙  ˙ ·˙·˙·˙·˙·˙·····˙···∘·∘∘∘·˙   ··∘∘···∘∘∘····∘·∘∘∘∘∘∘∘·
+Chunk 1200/7031 (global 146168) [SPS: 2.91] | Move: 0.004 | Mimic: 0.452 → | CRYSTALLIZE | L16 rad:0.22 | σ:0.742/0.08 | V:0.643 T:0.47 | LRx:1.28
+  field H:2.20b ·   ▒▓█░   · synergy:0.52 empower:2.58 | energy:0.70 | φ:0.46 PI:0.07 | model raw/eff:0.88/0.58 err:0.005
+  drives S:0.00 σ:0.09 C:0.09 G:0.20 M:0.09 | curiosity:0.25 shear-rms:0.31 rad-p:0.005 | field μ:+0.003 rail:0.0098 | grad:16.08 clip:0.31 corr:+0.93
+  stereo width:0.059 side-energy:0.309 pan:+0.10 decoder/target corr:+0.93/+0.96 | dev S/C:0.800/2.138 Δ:-2.45% ready:true plateau:true
+  ecology health:0.72 stagnation:0.32 escape:0.00 | reward:+0.057 μ:-0.038 σr:0.030 | motifs:185/512 candidates:9136 qrej:3405 srej:5493
+  proposals model:RECALL bandit:TURBULENCE selected:CRYSTALLIZE | action age:0 usage:0.05
+  v █▒█▒▓▒▓▓▒█▒█░█▒█▒█░█░█░█░█▒█░█░█░█░█▒▓▓▒▓░█░█░█░█·█░█░█░█░█░█░█░
+  ∂ ·˙· ˙    · ∘··˙·˙·········˙···∘·∘·∘·˙   ˙·∘∘··∘·∘o····∘∘∘·∘∘∘∘∘·
+Chunk 1250/7031 (global 146218) [SPS: 2.89] | Move: 0.004 | Mimic: 0.317 → | EXPLORE | L16 rad:0.22 | σ:0.752/0.08 | V:0.645 T:0.47 | LRx:1.28
+  field H:2.19b ·   ▒██░   · synergy:0.48 empower:2.58 | energy:0.71 | φ:0.44 PI:0.05 | model raw/eff:0.88/0.58 err:0.003
+  drives S:0.00 σ:0.10 C:0.09 G:0.20 M:0.09 | curiosity:0.23 shear-rms:0.27 rad-p:0.004 | field μ:+0.002 rail:0.0104 | grad:8.01 clip:0.62 corr:+0.94
+  stereo width:0.050 side-energy:0.283 pan:+0.10 decoder/target corr:+0.94/+0.87 | dev S/C:0.698/1.919 Δ:-1.82% ready:true plateau:true
+  ecology health:0.72 stagnation:0.32 escape:0.00 | reward:-0.050 μ:-0.044 σr:0.023 | motifs:185/512 candidates:9139 qrej:3405 srej:5496
+  proposals model:RECALL bandit:EXPLORE selected:EXPLORE | action age:0 usage:0.35
+  v █▒█▒▓▓▓▓▒█▒█░█░█▒█░█▒█░█░█░█░█░█░█·█▒▓▓▒█░█░█░█░█·█░█░█░█░█░█░█░
+  ∂ · · ˙  ˙ · ∘····˙···˙···∘·····∘·∘·o·    ···∘·∘∘∘∘o∘·∘∘∘∘∘·∘∘∘∘∘·
+Chunk 1300/7031 (global 146268) [SPS: 3.23] | Move: 0.004 | Mimic: 0.288 ↑ | EXPLORE | L16 rad:0.22 | σ:0.768/0.04 | V:0.648 T:0.46 | LRx:1.27
+  field H:2.15b ·   ▒██░   · synergy:0.61 empower:2.59 | energy:0.71 | φ:0.45 PI:0.06 | model raw/eff:0.88/0.59 err:0.003
+  drives S:0.00 σ:0.08 C:0.09 G:0.20 M:0.08 | curiosity:0.25 shear-rms:0.24 rad-p:0.004 | field μ:+0.001 rail:0.0106 | grad:8.55 clip:0.58 corr:+0.93
+  stereo width:0.052 side-energy:0.288 pan:+0.10 decoder/target corr:+0.93/+1.00 | dev S/C:0.786/2.144 Δ:+0.68% ready:true plateau:true
+  ecology health:0.72 stagnation:0.33 escape:0.00 | reward:-0.007 μ:-0.043 σr:0.019 | motifs:185/512 candidates:9142 qrej:3405 srej:5499
+  proposals model:RECALL bandit:EXPLORE selected:EXPLORE | action age:0 usage:0.51
+  v █▒█▒▓▓▒█▒█▒█░█░█▒█░█░█▒█░█░█░█░█░█·█▒▓▓▒█▒█░█░█░█·█░█░█░█░█░█░█░
+  ∂ · · ˙  ·˙· ∘····˙·····˙·······∘∘∘∘o·  ˙ ·˙·∘··∘∘∘o∘∘∘∘∘∘∘∘∘∘∘∘∘·
+Chunk 1350/7031 (global 146318) [SPS: 2.78] | Move: 0.004 | Mimic: 0.244 ↓ | RESONATE | L16 rad:0.21 | σ:0.536/0.02 | V:0.688 T:0.50 | LRx:1.32
+  field H:2.21b ·   ▒▓▓░   · synergy:0.57 empower:2.59 | energy:0.71 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.57 err:0.001
+  drives S:0.00 σ:0.14 C:0.09 G:0.21 M:0.08 | curiosity:0.25 shear-rms:0.23 rad-p:0.003 | field μ:-0.000 rail:0.0111 | grad:17.05 clip:0.29 corr:+0.93
+  stereo width:0.054 side-energy:0.291 pan:+0.10 decoder/target corr:+0.93/+1.00 | dev S/C:0.660/1.963 Δ:+3.98% ready:true plateau:false
+  ecology health:0.71 stagnation:0.33 escape:0.00 | reward:-0.085 μ:-0.063 σr:0.019 | motifs:185/512 candidates:9145 qrej:3405 srej:5502
+  proposals model:RECALL bandit:CRYSTALLIZE selected:RESONATE | action age:0 usage:0.14
+  v ▓▒█▒▓▓▒█░█▒█░█░█░█░█░█▒█░█░█░█░█░█·█▒▓▓▒█▒█░█░█·█·█░█░█░█░█░█░█░
+  ∂ ˙ · ˙  ···˙∘······∘···˙·∘·····∘∘∘∘o·˙ ˙ ·˙·∘··∘o∘o∘∘∘∘∘∘∘·∘∘∘∘∘·
+Chunk 1400/7031 (global 146368) [SPS: 3.20] | Move: 0.004 | Mimic: 0.237 → | CRYSTALLIZE | L16 rad:0.21 | σ:0.522/0.05 | V:0.755 T:0.59 | LRx:1.43
+  field H:2.20b ·   ▒▓█░   · synergy:0.66 empower:2.59 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.55 err:0.002
+  drives S:0.00 σ:0.19 C:0.10 G:0.23 M:0.08 | curiosity:0.26 shear-rms:0.26 rad-p:0.003 | field μ:-0.001 rail:0.0111 | grad:17.05 clip:0.29 corr:+0.92
+  stereo width:0.061 side-energy:0.312 pan:+0.10 decoder/target corr:+0.92/+1.00 | dev S/C:0.715/1.897 Δ:+2.89% ready:true plateau:false
+  ecology health:0.69 stagnation:0.37 escape:0.00 | reward:-0.094 μ:-0.108 σr:0.023 | motifs:185/512 candidates:9149 qrej:3405 srej:5506
+  proposals model:RECALL bandit:CRYSTALLIZE selected:CRYSTALLIZE | action age:0 usage:0.12
+  v ▓▒█▓▓▓▒█░█░█░█░█░█░█░█▒█░█░█░█░█░█·█▒▓▓▒█▒█░█░█·█·█░█░█░█░█░█░█░
+  ∂   ·    ··∘·∘·∘····∘···˙·∘·····∘∘∘∘o·˙ ˙ ·˙·∘·∘∘o∘o∘∘∘·∘∘∘·∘∘∘∘··
+Chunk 1450/7031 (global 146418) [SPS: 3.39] | Move: 0.004 | Mimic: 0.189 ↓ | HOLD | L16 rad:0.22 | σ:0.538/0.05 | V:0.729 T:0.59 | LRx:1.44
+  field H:2.20b ·   ▒▓█░   · synergy:0.48 empower:2.58 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.89/0.54 err:0.001
+  drives S:0.00 σ:0.18 C:0.10 G:0.23 M:0.08 | curiosity:0.29 shear-rms:0.27 rad-p:0.003 | field μ:+0.000 rail:0.0107 | grad:19.89 clip:0.25 corr:+0.93
+  stereo width:0.055 side-energy:0.297 pan:+0.10 decoder/target corr:+0.93/+1.00 | dev S/C:0.768/2.154 Δ:+2.63% ready:true plateau:false
+  ecology health:0.67 stagnation:0.38 escape:0.00 | reward:-0.130 μ:-0.121 σr:0.014 | motifs:185/512 candidates:9152 qrej:3405 srej:5509
+  proposals model:RECALL bandit:CRYSTALLIZE selected:HOLD | action age:0 usage:0.06
+  v ▓▒█▓▓▓▒█░█░█░█░█░█░█░█░█░█░█░█░█░█░█▒▓█▒█▒█░█░█░█·█░█░█░█░█░█░█░
+  ∂   ·  ˙ ··∘·∘·∘···∘·∘····∘·····∘·∘∘∘·˙˙·˙·˙·∘·∘∘∘∘o∘∘∘·∘∘∘·∘∘∘··∘
+Chunk 1500/7031 (global 146468) [SPS: 3.79] | Move: 0.004 | Mimic: 0.336 → | HARMONIC | L16 rad:0.22 | σ:0.540/0.04 | V:0.715 T:0.59 | LRx:1.44
+  field H:2.20b ·   ▒▓█░   · synergy:0.49 empower:2.59 | energy:0.71 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.55 err:0.002
+  drives S:0.00 σ:0.17 C:0.10 G:0.23 M:0.08 | curiosity:0.28 shear-rms:0.33 rad-p:0.004 | field μ:+0.002 rail:0.0098 | grad:18.14 clip:0.28 corr:+0.94
+  stereo width:0.049 side-energy:0.278 pan:+0.10 decoder/target corr:+0.94/+1.00 | dev S/C:0.731/2.059 Δ:+0.51% ready:true plateau:true
+  ecology health:0.69 stagnation:0.37 escape:0.00 | reward:-0.133 μ:-0.121 σr:0.020 | motifs:185/512 candidates:9155 qrej:3405 srej:5512
+  proposals model:HOLD bandit:EXPLORE selected:HARMONIC | action age:1 usage:0.18
+  v ▒▒▓▓▓▓▒█░█░█░█░█░█░█░█░█░█░█░█·█░█░█▒▓▓▒█▒█░█░█·█░█░█░█░█░█░█░█░
+  ∂   ˙˙ ˙ ··∘·∘·∘··········∘·∘···o··∘∘∘  ˙˙·˙···∘∘o∘∘∘∘∘·∘∘∘·∘∘∘··∘
+Chunk 1550/7031 (global 146518) [SPS: 3.13] | Move: 0.004 | Mimic: 0.259 → | EXPLORE | L16 rad:0.22 | σ:0.555/0.06 | V:0.744 T:0.59 | LRx:1.44
+  field H:2.16b ·   ▒▓█░   · synergy:0.34 empower:2.59 | energy:0.71 | φ:0.45 PI:0.06 | model raw/eff:0.88/0.54 err:0.002
+  drives S:0.00 σ:0.17 C:0.10 G:0.23 M:0.08 | curiosity:0.29 shear-rms:0.35 rad-p:0.004 | field μ:+0.003 rail:0.0094 | grad:22.97 clip:0.22 corr:+0.93
+  stereo width:0.053 side-energy:0.288 pan:+0.10 decoder/target corr:+0.93/+0.86 | dev S/C:0.721/1.951 Δ:-1.64% ready:true plateau:true
+  ecology health:0.68 stagnation:0.38 escape:0.00 | reward:-0.132 μ:-0.121 σr:0.021 | motifs:185/512 candidates:9158 qrej:3405 srej:5515
+  proposals model:RECALL bandit:EXPLORE selected:EXPLORE | action age:1 usage:0.64
+  v ▒▓▓▓▓▓▒▓░█░█░█░█░█░█░█░█░█░█▒█░█░█░█▒▓▓▒█▒█░█░█░█░█░█░█░█░█░█░█░
+  ∂    ˙ ˙ ˙·∘·∘·∘··········∘·∘·˙·∘··∘∘∘  ˙˙∘˙····∘∘∘∘∘∘∘·∘∘∘·∘∘∘···
+Chunk 1600/7031 (global 146568) [SPS: 2.43] | Move: 0.004 | Mimic: 0.353 ↑ | INHARMONIC | L16 rad:0.22 | σ:0.638/0.07 | V:0.726 T:0.58 | LRx:1.43
+  field H:2.20b ·   ▒▓█░   · synergy:0.67 empower:2.61 | energy:0.72 | φ:0.46 PI:0.06 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.16 C:0.10 G:0.23 M:0.07 | curiosity:0.28 shear-rms:0.26 rad-p:0.003 | field μ:+0.001 rail:0.0101 | grad:6.23 clip:0.80 corr:+0.94
+  stereo width:0.044 side-energy:0.264 pan:+0.10 decoder/target corr:+0.94/+0.82 | dev S/C:0.686/2.038 Δ:-1.05% ready:true plateau:true
+  ecology health:0.70 stagnation:0.37 escape:0.00 | reward:-0.076 μ:-0.110 σr:0.023 | motifs:185/512 candidates:9161 qrej:3405 srej:5518
+  proposals model:RECALL bandit:INHARMONIC selected:INHARMONIC | action age:0 usage:0.47
+  v ▒▓▓█▒▓▒▓░█░█░█▒█░█░█░█░█░█░█▒█░█░█░█▒▓▓▒█▒█░█░█·█·█░█░█░█░█░█░█░
+  ∂    · ˙˙˙·∘·∘·∘˙·········∘···˙····∘∘∘ ˙˙˙·˙·∘∘·∘o∘o·∘∘·∘∘∘·∘∘∘···
+Chunk 1650/7031 (global 146618) [SPS: 3.00] | Move: 0.004 | Mimic: 0.241 → | INHARMONIC | L16 rad:0.22 | σ:0.751/0.08 | V:0.652 T:0.53 | LRx:1.36
+  field H:2.20b ·   ▒▓█░   · synergy:0.51 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.10 C:0.10 G:0.22 M:0.08 | curiosity:0.28 shear-rms:0.23 rad-p:0.003 | field μ:-0.001 rail:0.0108 | grad:6.23 clip:0.80 corr:+0.94
+  stereo width:0.046 side-energy:0.270 pan:+0.10 decoder/target corr:+0.94/+0.63 | dev S/C:0.745/2.124 Δ:-0.79% ready:true plateau:true
+  ecology health:0.70 stagnation:0.36 escape:0.00 | reward:-0.079 μ:-0.083 σr:0.017 | motifs:185/512 candidates:9164 qrej:3405 srej:5521
+  proposals model:RECALL bandit:INHARMONIC selected:INHARMONIC | action age:0 usage:0.64
+  v ▒▓▓█▒▓▒█░█░█░█░█░█▒█░█░█░█░█░█░█░█░█▒▓▓▒█░█░█░█·█·█·█░█░█░█░█░█░
+  ∂  ˙ ·˙˙˙··∘·∘·∘·∘·∘˙·····∘·∘·····∘∘∘∘˙˙ ˙∘··∘··∘o∘o·o∘∘∘∘∘∘∘∘∘···
+Chunk 1700/7031 (global 146668) [SPS: 2.67] | Move: 0.004 | Mimic: 0.298 → | TURBULENCE | L16 rad:0.21 | σ:0.713/0.06 | V:0.654 T:0.49 | LRx:1.31
+  field H:2.20b ·   ▒▓█░   · synergy:0.52 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.59 err:0.001
+  drives S:0.00 σ:0.10 C:0.09 G:0.20 M:0.08 | curiosity:0.25 shear-rms:0.23 rad-p:0.004 | field μ:-0.002 rail:0.0116 | grad:8.64 clip:0.58 corr:+0.95
+  stereo width:0.039 side-energy:0.247 pan:+0.10 decoder/target corr:+0.95/+0.88 | dev S/C:0.717/1.932 Δ:-0.01% ready:true plateau:true
+  ecology health:0.72 stagnation:0.33 escape:0.00 | reward:-0.056 μ:-0.060 σr:0.015 | motifs:185/512 candidates:9167 qrej:3405 srej:5524
+  proposals model:HOLD bandit:RECALL selected:TURBULENCE | action age:0 usage:0.04
+  v ▒▓▒█▒█▒█░█░█░█░█░█▒█░█░█░█░█░█░█░█░█▒█▓▒█░█░█░█·█·█·█░█░█░█░█░█░
+  ∂  ˙ ·˙·˙··∘·∘·∘·∘·∘˙·····∘·∘·····∘∘∘∘˙· ˙∘·∘∘··∘o∘o∘o∘∘∘∘∘∘∘∘∘∘·∘
+Chunk 1750/7031 (global 146718) [SPS: 3.29] | Move: 0.004 | Mimic: 0.313 → | RESONATE | L16 rad:0.21 | σ:0.492/0.03 | V:0.720 T:0.54 | LRx:1.38
+  field H:2.22b ·  ·░▓█░   · synergy:0.58 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.88/0.56 err:0.002
+  drives S:0.00 σ:0.17 C:0.09 G:0.22 M:0.08 | curiosity:0.27 shear-rms:0.26 rad-p:0.003 | field μ:-0.002 rail:0.0115 | grad:10.30 clip:0.49 corr:+0.95
+  stereo width:0.040 side-energy:0.252 pan:+0.10 decoder/target corr:+0.95/+0.92 | dev S/C:0.722/2.057 Δ:+1.49% ready:true plateau:false
+  ecology health:0.69 stagnation:0.35 escape:0.00 | reward:-0.107 μ:-0.086 σr:0.021 | motifs:185/512 candidates:9170 qrej:3405 srej:5527
+  proposals model:HOLD bandit:INHARMONIC selected:RESONATE | action age:2 usage:0.14
+  v ▒▓▒█░█▒█░█░█░█▒█░█░█░█░█░█░█░█░█░█░█▒▓▓▒█░█░█░█·█·█·█░█░█░█░█░█░
+  ∂  ˙˙∘··˙··∘·∘·∘˙∘∘∘········∘···∘∘∘∘∘∘˙˙ ˙∘·∘∘∘∘∘o∘o·o∘∘∘∘∘∘∘∘∘∘·∘
+Chunk 1800/7031 (global 146768) [SPS: 2.69] | Move: 0.004 | Mimic: 0.370 ↑ | RECALL | L16 rad:0.22 | σ:0.500/0.03 | V:0.741 T:0.59 | LRx:1.42
+  field H:2.20b ·  ·░▓█░   · synergy:0.57 empower:2.58 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.88/0.56 err:0.002
+  drives S:0.00 σ:0.19 C:0.10 G:0.22 M:0.08 | curiosity:0.28 shear-rms:0.26 rad-p:0.003 | field μ:-0.001 rail:0.0109 | grad:11.45 clip:0.44 corr:+0.94
+  stereo width:0.049 side-energy:0.281 pan:+0.10 decoder/target corr:+0.94/+0.85 | dev S/C:0.740/2.143 Δ:+0.86% ready:true plateau:true
+  ecology health:0.69 stagnation:0.36 escape:0.00 | reward:-0.122 μ:-0.111 σr:0.019 | motifs:185/512 candidates:9174 qrej:3405 srej:5531
+  proposals model:RECALL bandit:RECALL selected:RECALL | action age:0 usage:0.30
+  v ▒▓▒█░█░█░█░█░█▒█░█░█░█░█░█░█░█░█░█░█▒▓▓▒█░█░█░█░█░█░█░█░█░█░█░█░
+  ∂  ˙˙∘·∘···∘·∘·∘˙∘∘∘·∘······∘···∘∘∘∘∘·˙˙ ˙∘·∘∘·∘∘∘∘∘·∘∘·∘∘∘∘∘∘∘∘∘∘
+Chunk 1850/7031 (global 146818) [SPS: 3.60] | Move: 0.004 | Mimic: 0.345 → | HOLD | L16 rad:0.22 | σ:0.535/0.04 | V:0.730 T:0.60 | LRx:1.44
+  field H:2.22b ·  ·░▓█░   · synergy:0.52 empower:2.58 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.89/0.56 err:0.002
+  drives S:0.00 σ:0.18 C:0.10 G:0.23 M:0.08 | curiosity:0.28 shear-rms:0.26 rad-p:0.003 | field μ:-0.000 rail:0.0107 | grad:11.45 clip:0.44 corr:+0.93
+  stereo width:0.055 side-energy:0.296 pan:+0.10 decoder/target corr:+0.93/+0.94 | dev S/C:0.750/2.100 Δ:-0.04% ready:true plateau:true
+  ecology health:0.69 stagnation:0.37 escape:0.00 | reward:-0.118 μ:-0.119 σr:0.017 | motifs:185/512 candidates:9177 qrej:3405 srej:5534
+  proposals model:RECALL bandit:WIDEN selected:HOLD | action age:0 usage:0.18
+  v ▒▓░█░█░█░█░█░█▒█░█░█░█░█░█·█▒█░█░█░█▒▓▓▒█░█░█░█░█░█░█░█░█░█░█░█░
+  ∂  ˙·∘·∘·∘·∘·∘··˙∘∘∘·∘····∘·o·˙·∘∘∘∘∘· ˙˙˙∘·∘∘·∘∘∘∘∘∘∘∘∘·∘∘∘∘∘∘∘∘∘
+Chunk 1900/7031 (global 146868) [SPS: 2.88] | Move: 0.004 | Mimic: 0.432 → | RECALL | L16 rad:0.22 | σ:0.539/0.05 | V:0.732 T:0.59 | LRx:1.45
+  field H:2.20b ·   ▒▓█░   · synergy:0.60 empower:2.59 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.89/0.54 err:0.001
+  drives S:0.00 σ:0.18 C:0.10 G:0.23 M:0.08 | curiosity:0.29 shear-rms:0.28 rad-p:0.004 | field μ:+0.001 rail:0.0102 | grad:13.27 clip:0.38 corr:+0.93
+  stereo width:0.054 side-energy:0.292 pan:+0.10 decoder/target corr:+0.93/+0.89 | dev S/C:0.749/2.087 Δ:-0.39% ready:true plateau:true
+  ecology health:0.68 stagnation:0.38 escape:0.00 | reward:-0.080 μ:-0.119 σr:0.020 | motifs:185/512 candidates:9180 qrej:3405 srej:5537
+  proposals model:RECALL bandit:RECALL selected:RECALL | action age:0 usage:0.22
+  v ▒█░█░█░█░█▒█░█▒█░█░█░█░█░█·█░█░█░█░█▒▓▓▒█░█░█░█░█░█░█░█░█░█░█░█░
+  ∂  ··∘·∘·∘·∘˙∘··˙∘∘··∘····∘·o···∘∘·∘∘· ˙˙˙∘··∘·∘∘∘∘∘∘∘∘∘∘∘·∘∘∘∘∘∘∘
+Chunk 1950/7031 (global 146918) [SPS: 3.09] | Move: 0.004 | Mimic: 0.393 → | RECALL | L16 rad:0.22 | σ:0.572/0.05 | V:0.709 T:0.59 | LRx:1.42
+  field H:2.20b ·   ▒▓█░   · synergy:0.53 empower:2.59 | energy:0.71 | φ:0.45 PI:0.05 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.17 C:0.10 G:0.23 M:0.08 | curiosity:0.27 shear-rms:0.29 rad-p:0.004 | field μ:+0.002 rail:0.0099 | grad:5.22 clip:0.96 corr:+0.94
+  stereo width:0.044 side-energy:0.263 pan:+0.10 decoder/target corr:+0.94/+0.91 | dev S/C:0.766/2.175 Δ:-0.70% ready:true plateau:true
+  ecology health:0.70 stagnation:0.37 escape:0.00 | reward:-0.128 μ:-0.114 σr:0.022 | motifs:185/512 candidates:9183 qrej:3405 srej:5540
+  proposals model:RECALL bandit:EXPLORE selected:RECALL | action age:2 usage:0.22
+  v ▒█░█░█░█░█▒█░█▒█░█░█░█░█░█░█░█░█░█░█▒▓▓▒█░█░█░█░█·█░█░█░█░█░█░█░
+  ∂ ˙··∘·∘·∘·∘˙∘··˙·∘··∘····∘·∘····∘··∘· ˙˙˙∘·∘∘·∘∘∘∘o∘∘∘∘∘∘·∘∘∘∘∘∘∘
+Chunk 2000/7031 (global 146968) [SPS: 2.40] | Move: 0.004 | Mimic: 0.372 → | EXPLORE | L16 rad:0.22 | σ:0.623/0.05 | V:0.710 T:0.56 | LRx:1.40
+  field H:2.20b ·   ▒▓█░   · synergy:0.39 empower:2.58 | energy:0.71 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.15 C:0.10 G:0.22 M:0.08 | curiosity:0.28 shear-rms:0.30 rad-p:0.004 | field μ:+0.002 rail:0.0098 | grad:10.64 clip:0.47 corr:+0.95
+  stereo width:0.039 side-energy:0.248 pan:+0.10 decoder/target corr:+0.95/+0.85 | dev S/C:0.704/2.059 Δ:-0.27% ready:true plateau:true
+  ecology health:0.69 stagnation:0.35 escape:0.00 | reward:-0.103 μ:-0.101 σr:0.014 | motifs:185/512 candidates:9186 qrej:3405 srej:5543
+  proposals model:RECALL bandit:RECALL selected:EXPLORE | action age:0 usage:0.34
+  v ▒█░█░█░█░█▒█░█░█░█░█░█░█░█·█░█░█░█░█▒▓▓▒█░█░█░█░█░█░█░█░█░█░█░█░
+  ∂ ˙··∘·∘∘∘·∘˙∘·∘·····∘··∘·∘·o····∘····   ˙∘·∘∘∘∘∘∘∘∘∘∘∘∘∘∘·∘∘∘∘∘∘∘
+Chunk 2050/7031 (global 147018) [SPS: 3.20] | Move: 0.004 | Mimic: 0.431 → | RECALL | L16 rad:0.22 | σ:0.798/0.07 | V:0.645 T:0.53 | LRx:1.35
+  field H:2.20b ·   ▒▓█░   · synergy:0.56 empower:2.59 | energy:0.71 | φ:0.46 PI:0.06 | model raw/eff:0.88/0.58 err:0.003
+  drives S:0.00 σ:0.09 C:0.09 G:0.22 M:0.08 | curiosity:0.25 shear-rms:0.25 rad-p:0.004 | field μ:+0.001 rail:0.0102 | grad:14.61 clip:0.34 corr:+0.94
+  stereo width:0.044 side-energy:0.264 pan:+0.10 decoder/target corr:+0.94/+0.92 | dev S/C:0.732/2.020 Δ:-0.91% ready:true plateau:true
+  ecology health:0.73 stagnation:0.35 escape:0.00 | reward:-0.071 μ:-0.071 σr:0.027 | motifs:185/512 candidates:9189 qrej:3405 srej:5546
+  proposals model:RECALL bandit:RECALL selected:RECALL | action age:2 usage:0.38
+  v ▒█░█░█░█░█░█░█░█░█░█░█░█░█·█░█░█░█▒█▒▓▓▒█░█░█░█░█░█░█░█░█░█░█░█░
+  ∂  ∘·∘·∘∘∘∘∘·∘∘∘···∘···∘∘·∘·o····∘··˙·˙ ˙˙··∘∘∘∘∘∘∘∘∘∘∘∘∘∘··∘∘∘∘∘∘
+Chunk 2100/7031 (global 147068) [SPS: 3.02] | Move: 0.004 | Mimic: 0.439 → | RECALL | L16 rad:0.22 | σ:0.799/0.08 | V:0.636 T:0.46 | LRx:1.27
+  field H:2.22b ·  ·░▓█░   · synergy:0.53 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.88/0.59 err:0.005
+  drives S:0.00 σ:0.08 C:0.08 G:0.19 M:0.09 | curiosity:0.24 shear-rms:0.23 rad-p:0.004 | field μ:-0.001 rail:0.0110 | grad:14.61 clip:0.34 corr:+0.95
+  stereo width:0.042 side-energy:0.256 pan:+0.10 decoder/target corr:+0.95/+0.89 | dev S/C:0.768/2.182 Δ:+0.57% ready:true plateau:true
+  ecology health:0.73 stagnation:0.31 escape:0.00 | reward:-0.026 μ:-0.034 σr:0.019 | motifs:185/512 candidates:9192 qrej:3405 srej:5549
+  proposals model:RECALL bandit:RECALL selected:RECALL | action age:0 usage:0.43
+  v ▒█░█░█░█░█░█░█░█░█░█░█░█░█·█░█░█░█▒█▒▓▓▒█░█░█░█░█░█░█░█░█░█░█░█░
+  ∂ ˙··∘·∘∘∘∘∘·∘·∘∘··∘···∘∘·∘·o····∘··˙·˙  ˙···∘∘∘∘∘∘∘∘∘∘∘∘∘∘·∘∘∘∘∘∘
+Chunk 2150/7031 (global 147118) [SPS: 2.76] | Move: 0.004 | Mimic: 0.430 → | RECALL | L16 rad:0.21 | σ:0.654/0.04 | V:0.656 T:0.47 | LRx:1.28
+  field H:2.22b ·  ·░▓█░   · synergy:0.50 empower:2.58 | energy:0.71 | φ:0.46 PI:0.06 | model raw/eff:0.89/0.59 err:0.001
+  drives S:0.00 σ:0.11 C:0.09 G:0.20 M:0.08 | curiosity:0.25 shear-rms:0.25 rad-p:0.004 | field μ:+0.000 rail:0.0104 | grad:10.19 clip:0.49 corr:+0.94
+  stereo width:0.046 side-energy:0.271 pan:+0.10 decoder/target corr:+0.94/+0.96 | dev S/C:0.741/2.098 Δ:+0.66% ready:true plateau:true
+  ecology health:0.73 stagnation:0.32 escape:0.00 | reward:-0.063 μ:-0.048 σr:0.015 | motifs:185/512 candidates:9195 qrej:3405 srej:5552
+  proposals model:RECALL bandit:EXPLORE selected:RECALL | action age:0 usage:0.31
+  v ▒█░█░█░█░█░█░█░█░█░█░█░█░█░█░█░█░█▒█▒▓▓▒█░█░█░█░█░█░█░█░█░█░█░█░
+  ∂ ˙··∘·∘∘∘∘∘·∘∘∘∘·∘·····∘·∘·∘····∘··˙·   ˙∘·····∘∘∘∘∘∘∘∘∘∘··∘∘∘∘∘∘
+Chunk 2200/7031 (global 147168) [SPS: 2.86] | Move: 0.004 | Mimic: 0.230 → | HARMONIC | L16 rad:0.21 | σ:0.540/0.03 | V:0.705 T:0.55 | LRx:1.38
+  field H:2.24b ·  ·░▓█░   · synergy:0.50 empower:2.57 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.16 C:0.10 G:0.22 M:0.09 | curiosity:0.28 shear-rms:0.28 rad-p:0.004 | field μ:+0.001 rail:0.0107 | grad:3.91 clip:1.00 corr:+0.94
+  stereo width:0.045 side-energy:0.267 pan:+0.10 decoder/target corr:+0.94/+0.98 | dev S/C:0.788/2.089 Δ:+0.09% ready:true plateau:true
+  ecology health:0.69 stagnation:0.35 escape:0.00 | reward:-0.108 μ:-0.090 σr:0.022 | motifs:185/512 candidates:9199 qrej:3405 srej:5556
+  proposals model:RECALL bandit:CRYSTALLIZE selected:HARMONIC | action age:0 usage:0.18
+  v ▒█░█░█░█░█░█░█░█░█░█░█░█░█░█░█░█░█▒█▒▓▓▒█░█░█░█░█░█░█░█░█░█░█░█░
+  ∂ ˙··∘·∘∘∘∘∘·∘·∘∘··∘······∘·∘····∘··˙· ˙ ˙·····∘∘∘∘∘∘∘∘∘∘∘··∘∘∘∘∘∘
+Chunk 2250/7031 (global 147218) [SPS: 2.46] | Move: 0.004 | Mimic: 0.220 ↑ | RECALL | L16 rad:0.21 | σ:0.528/0.04 | V:0.715 T:0.58 | LRx:1.42
+  field H:2.24b ·  ·░▓█░   · synergy:0.55 empower:2.57 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.57 err:0.001
+  drives S:0.00 σ:0.17 C:0.10 G:0.22 M:0.09 | curiosity:0.27 shear-rms:0.27 rad-p:0.003 | field μ:+0.000 rail:0.0105 | grad:17.41 clip:0.29 corr:+0.95
+  stereo width:0.044 side-energy:0.263 pan:+0.10 decoder/target corr:+0.94/+0.96 | dev S/C:0.700/2.011 Δ:+1.19% ready:true plateau:false
+  ecology health:0.71 stagnation:0.36 escape:0.00 | reward:-0.113 μ:-0.106 σr:0.019 | motifs:185/512 candidates:9202 qrej:3405 srej:5559
+  proposals model:RECALL bandit:RESONATE selected:RECALL | action age:0 usage:0.30
+  v ▒█░█░█░█░█░█░█·█░█░█░█░█░█░█░█░█░█▒▓▒▓▓▒█░█░█░█░█░█░█░█░█░█░█░█░
+  ∂ ˙∘·∘·∘∘∘∘∘·∘∘∘o··∘∘·····∘·∘···∘∘··˙˙˙˙ ˙∘····∘∘∘∘∘∘∘∘∘∘∘··∘∘∘∘∘∘
+Chunk 2300/7031 (global 147268) [SPS: 3.10] | Move: 0.004 | Mimic: 0.291 → | RECALL | L16 rad:0.21 | σ:0.496/0.04 | V:0.744 T:0.58 | LRx:1.41
+  field H:2.24b ·  ·░▓█░   · synergy:0.61 empower:2.59 | energy:0.71 | φ:0.46 PI:0.07 | model raw/eff:0.89/0.57 err:0.001
+  drives S:0.00 σ:0.19 C:0.09 G:0.22 M:0.08 | curiosity:0.26 shear-rms:0.30 rad-p:0.004 | field μ:+0.001 rail:0.0100 | grad:17.41 clip:0.29 corr:+0.95
+  stereo width:0.043 side-energy:0.261 pan:+0.10 decoder/target corr:+0.94/+0.75 | dev S/C:0.702/2.096 Δ:-0.15% ready:true plateau:true
+  ecology health:0.71 stagnation:0.35 escape:0.00 | reward:-0.085 μ:-0.104 σr:0.020 | motifs:185/512 candidates:9205 qrej:3405 srej:5562
+  proposals model:RECALL bandit:RECALL selected:RECALL | action age:0 usage:0.24
+  v ░█░█░█░█░█░█░█·█░█░█░█░█░█░█░█░█▒█▒▓▒▓▓▒█░█░█░█░█░█░█░█░█░█░█░█░
+  ∂ ·∘·∘·∘∘∘∘∘·∘∘·o·∘∘···∘∘·∘·∘···∘∘˙·˙˙˙  ˙∘··∘··∘∘∘∘∘∘∘∘∘∘··∘·∘∘∘∘
+Chunk 2350/7031 (global 147318) [SPS: 2.63] | Move: 0.004 | Mimic: 0.398 ↑ | CONTRACT | L16 rad:0.22 | σ:0.546/0.05 | V:0.728 T:0.61 | LRx:1.46
+  field H:2.20b ·   ▒▓█░   · synergy:0.45 empower:2.58 | energy:0.71 | φ:0.46 PI:0.07 | model raw/eff:0.89/0.54 err:0.001
+  drives S:0.00 σ:0.18 C:0.10 G:0.24 M:0.09 | curiosity:0.30 shear-rms:0.30 rad-p:0.004 | field μ:+0.002 rail:0.0098 | grad:3.10 clip:1.00 corr:+0.95
+  stereo width:0.041 side-energy:0.254 pan:+0.10 decoder/target corr:+0.95/+0.82 | dev S/C:0.678/2.005 Δ:-0.23% ready:true plateau:true
+  ecology health:0.67 stagnation:0.39 escape:0.00 | reward:-0.132 μ:-0.124 σr:0.020 | motifs:185/512 candidates:9208 qrej:3405 srej:5565
+  proposals model:RECALL bandit:RESONATE selected:CONTRACT | action age:0 usage:0.04
+  v ░█░█░▪░█░█░█░█·█░█░█░█░█░█░█░█░█▒▓▒▓▒▓▓▒█░█░█░█░█░█░█░█░█░█░█░█░
+  ∂ ·∘·∘·o∘∘∘∘·∘∘∘o∘∘∘····∘·∘·∘····∘˙˙˙˙  ˙˙······∘∘∘∘∘∘∘∘∘∘··∘·∘∘∘·
+Chunk 2400/7031 (global 147368) [SPS: 2.53] | Move: 0.004 | Mimic: 0.434 ↑ | HARMONIC | L16 rad:0.22 | σ:0.619/0.04 | V:0.697 T:0.58 | LRx:1.42
+  field H:2.24b ·  ·░▓█░   · synergy:0.58 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.57 err:0.000
+  drives S:0.00 σ:0.15 C:0.10 G:0.22 M:0.08 | curiosity:0.27 shear-rms:0.28 rad-p:0.003 | field μ:+0.000 rail:0.0106 | grad:15.07 clip:0.33 corr:+0.95
+  stereo width:0.042 side-energy:0.256 pan:+0.10 decoder/target corr:+0.95/+0.71 | dev S/C:0.696/2.081 Δ:+0.47% ready:true plateau:true
+  ecology health:0.71 stagnation:0.36 escape:0.00 | reward:-0.102 μ:-0.106 σr:0.021 | motifs:185/512 candidates:9211 qrej:3405 srej:5568
+  proposals model:RECALL bandit:RESONATE selected:HARMONIC | action age:0 usage:0.09
+  v ░█░█░▪░█░█░█·█·█░█░█░█░█░█░█░█░█▒█▒▓▒▓▓▒█░█░█░█░█░█░█░█░█░█░█░█░
+  ∂ ·∘·∘∘o·∘∘∘·∘o∘o∘∘∘··∘∘∘·∘·∘···∘∘˙·˙˙˙ ˙˙·····∘∘∘∘∘∘∘∘∘∘∘∘·∘∘∘∘∘∘
+Chunk 2450/7031 (global 147418) [SPS: 3.23] | Move: 0.004 | Mimic: 0.228 → | RESONATE | L16 rad:0.21 | σ:0.505/0.04 | V:0.724 T:0.57 | LRx:1.40
+  field H:2.24b ·  ·░▓█░   · synergy:0.58 empower:2.58 | energy:0.72 | φ:0.45 PI:0.05 | model raw/eff:0.89/0.57 err:0.001
+  drives S:0.00 σ:0.17 C:0.09 G:0.22 M:0.08 | curiosity:0.26 shear-rms:0.27 rad-p:0.003 | field μ:-0.001 rail:0.0109 | grad:15.48 clip:0.32 corr:+0.94
+  stereo width:0.047 side-energy:0.274 pan:+0.10 decoder/target corr:+0.94/+0.72 | dev S/C:0.731/1.973 Δ:-0.14% ready:true plateau:true
+  ecology health:0.71 stagnation:0.35 escape:0.00 | reward:-0.110 μ:-0.096 σr:0.017 | motifs:185/512 candidates:9214 qrej:3405 srej:5571
+  proposals model:RECALL bandit:RESONATE selected:RESONATE | action age:2 usage:0.45
+  v ░█░█░▪░█·█░█·█·█·█░█░█░█░█░█░█░█▒█▒▓▒▓▓▒█░█░█░█░█·█░█░█░█░█░█·█░
+  ∂ ·∘·∘∘o∘∘o∘··o·o∘o·∘·∘·∘·∘·∘····∘˙·˙   ˙˙···∘·∘∘∘∘o∘∘∘∘∘∘∘∘∘∘∘o∘∘
+--> Model + organism checkpoint saved at global step 147456 (L16, motifs 185, conf 0.89)
+Chunk 2500/7031 (global 147468) [SPS: 2.78] | Move: 0.004 | Mimic: 0.410 → | HARMONIC | L16 rad:0.21 | σ:0.539/0.04 | V:0.745 T:0.60 | LRx:1.45
+  field H:2.24b ·  ·░▓█░   · synergy:0.63 empower:2.59 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.54 err:0.001
+  drives S:0.00 σ:0.18 C:0.10 G:0.23 M:0.08 | curiosity:0.30 shear-rms:0.26 rad-p:0.003 | field μ:-0.000 rail:0.0108 | grad:19.51 clip:0.26 corr:+0.94
+  stereo width:0.050 side-energy:0.282 pan:+0.10 decoder/target corr:+0.94/+0.76 | dev S/C:0.711/2.025 Δ:-0.06% ready:true plateau:true
+  ecology health:0.67 stagnation:0.38 escape:0.00 | reward:-0.083 μ:-0.116 σr:0.018 | motifs:185/512 candidates:9217 qrej:3405 srej:5574
+  proposals model:RECALL bandit:HARMONIC selected:HARMONIC | action age:1 usage:0.20
+  v ░█░█░▪░█░█░█░█·█·█░█░█░█░█░█░█░█▒▓▒▓▒▓▓▒█░█░█░█·█·█░█░█░█░█░█·█░
+  ∂ ·∘∘∘∘o∘∘∘∘··∘·o∘o·∘·∘·∘·∘·······˙˙˙˙   ˙···∘·∘∘o∘o∘∘∘∘∘∘∘∘∘∘∘o∘∘
+Chunk 2550/7031 (global 147518) [SPS: 3.22] | Move: 0.004 | Mimic: 0.324 ↓ | HARMONIC | L16 rad:0.21 | σ:0.569/0.04 | V:0.710 T:0.59 | LRx:1.42
+  field H:2.24b ·  ·░▓█░   · synergy:0.56 empower:2.57 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.57 err:0.000
+  drives S:0.00 σ:0.17 C:0.10 G:0.22 M:0.09 | curiosity:0.27 shear-rms:0.28 rad-p:0.004 | field μ:-0.001 rail:0.0104 | grad:19.51 clip:0.26 corr:+0.94
+  stereo width:0.045 side-energy:0.268 pan:+0.10 decoder/target corr:+0.94/+0.75 | dev S/C:0.672/1.957 Δ:+0.32% ready:true plateau:true
+  ecology health:0.71 stagnation:0.36 escape:0.00 | reward:-0.116 μ:-0.108 σr:0.020 | motifs:185/512 candidates:9220 qrej:3405 srej:5577
+  proposals model:RECALL bandit:HARMONIC selected:HARMONIC | action age:1 usage:0.57
+  v ▒█░█░█░█░█░█░█·█·█░█░█░█░█░█░█░█▒▓▒▓▒▓▓▒█░█░█░█░█░█░█░█░█░█░█·█░
+  ∂ ˙∘∘∘∘∘∘·∘∘∘·∘·o∘o·∘·∘·∘·∘·∘·····˙˙˙˙   ˙···∘·∘∘∘∘∘∘∘∘∘·∘∘∘∘∘∘o∘∘
+Chunk 2600/7031 (global 147568) [SPS: 2.54] | Move: 0.004 | Mimic: 0.335 → | HOLD | L16 rad:0.21 | σ:0.526/0.03 | V:0.724 T:0.58 | LRx:1.42
+  field H:2.22b ·  ·░▓█░   · synergy:0.48 empower:2.57 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.55 err:0.000
+  drives S:0.00 σ:0.17 C:0.10 G:0.23 M:0.09 | curiosity:0.29 shear-rms:0.26 rad-p:0.003 | field μ:-0.000 rail:0.0106 | grad:9.05 clip:0.55 corr:+0.94
+  stereo width:0.047 side-energy:0.274 pan:+0.10 decoder/target corr:+0.94/+0.95 | dev S/C:0.700/1.970 Δ:-0.17% ready:true plateau:true
+  ecology health:0.69 stagnation:0.37 escape:0.00 | reward:-0.116 μ:-0.111 σr:0.013 | motifs:185/512 candidates:9224 qrej:3405 srej:5581
+  proposals model:RECALL bandit:RECALL selected:HOLD | action age:0 usage:0.09
+  v ▒█░█░█░█░█░█░█·█·█░█·█░█░█░█░█░█░▓▒▓▒▒▓▒█░█░█░█·█░█░█░█░█░█░█·█░
+  ∂  ∘∘∘∘∘∘·∘∘∘·∘·o∘o··∘o·∘·∘········˙˙˙   ˙···∘·∘∘o∘∘∘∘∘∘·∘∘∘∘∘∘o∘∘
+Chunk 2650/7031 (global 147618) [SPS: 3.16] | Move: 0.004 | Mimic: 0.390 ↑ | RESONATE | L16 rad:0.21 | σ:0.555/0.05 | V:0.735 T:0.61 | LRx:1.46
+  field H:2.20b ·   ▒▓█░   · synergy:0.47 empower:2.58 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.89/0.54 err:0.001
+  drives S:0.00 σ:0.18 C:0.10 G:0.24 M:0.09 | curiosity:0.30 shear-rms:0.29 rad-p:0.004 | field μ:+0.000 rail:0.0104 | grad:9.87 clip:0.51 corr:+0.94
+  stereo width:0.049 side-energy:0.280 pan:+0.10 decoder/target corr:+0.94/+0.96 | dev S/C:0.703/1.951 Δ:-0.32% ready:true plateau:true
+  ecology health:0.68 stagnation:0.38 escape:0.00 | reward:-0.131 μ:-0.128 σr:0.014 | motifs:185/512 candidates:9227 qrej:3405 srej:5584
+  proposals model:RECALL bandit:CONTRACT selected:RESONATE | action age:0 usage:0.04
+  v ▒█░█░█░█░█░█░█·█░█░█░█░█░█░█░█░█░▓▒▓▒▒▓▒█░█░█░█·█░█░█░█░█░█░█░█░
+  ∂  ∘·∘·∘∘·∘∘∘·∘·o∘∘···∘·∘·∘········˙˙˙    ······∘o∘∘∘∘∘∘·∘∘∘∘∘∘∘∘∘
+Chunk 2700/7031 (global 147668) [SPS: 2.61] | Move: 0.004 | Mimic: 0.367 → | RESONATE | L16 rad:0.21 | σ:0.591/0.06 | V:0.701 T:0.59 | LRx:1.43
+  field H:2.22b ·  ·░▓█░   · synergy:0.54 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.57 err:0.000
+  drives S:0.00 σ:0.16 C:0.10 G:0.22 M:0.08 | curiosity:0.27 shear-rms:0.27 rad-p:0.003 | field μ:-0.000 rail:0.0104 | grad:19.54 clip:0.26 corr:+0.94
+  stereo width:0.050 side-energy:0.282 pan:+0.10 decoder/target corr:+0.94/+0.91 | dev S/C:0.769/2.106 Δ:+0.10% ready:true plateau:true
+  ecology health:0.71 stagnation:0.36 escape:0.00 | reward:-0.104 μ:-0.109 σr:0.018 | motifs:185/512 candidates:9230 qrej:3405 srej:5587
+  proposals model:RECALL bandit:HARMONIC selected:RESONATE | action age:0 usage:0.06
+  v ▓█░█░█░█░█░█░█·█░█░█░█░█░█░█░█░█░▓▒▓▒▒▓▒█░█░█░█·█░█░█░█░█░█░█░█░
+  ∂  ∘·∘∘∘∘∘∘∘∘·∘·o∘∘···∘·∘·∘···∘····˙˙  ˙˙˙···∘··∘o∘∘∘∘∘∘·∘∘∘∘·∘∘∘∘
+Chunk 2750/7031 (global 147718) [SPS: 3.27] | Move: 0.004 | Mimic: 0.375 → | HARMONIC | L16 rad:0.21 | σ:0.521/0.05 | V:0.720 T:0.57 | LRx:1.41
+  field H:2.20b ·  ·░▓█░   · synergy:0.49 empower:2.57 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.57 err:0.001
+  drives S:0.00 σ:0.17 C:0.09 G:0.22 M:0.09 | curiosity:0.27 shear-rms:0.28 rad-p:0.004 | field μ:-0.000 rail:0.0106 | grad:19.54 clip:0.26 corr:+0.94
+  stereo width:0.051 side-energy:0.283 pan:+0.10 decoder/target corr:+0.93/+0.93 | dev S/C:0.743/2.033 Δ:+0.11% ready:true plateau:true
+  ecology health:0.70 stagnation:0.35 escape:0.00 | reward:-0.110 μ:-0.100 σr:0.014 | motifs:185/512 candidates:9233 qrej:3405 srej:5590
+  proposals model:RECALL bandit:HARMONIC selected:HARMONIC | action age:0 usage:0.52
+  v ▓█░█░█░█░█░█░█·█░█░█░█░█░█░█░█░█░▓▒▓▒▒▓▒█░█░█░█░█░█░█░█·█░█░█░█░
+  ∂  ··∘∘∘·∘∘∘∘·∘∘o∘∘··∘∘∘··∘···∘····˙˙  ˙˙˙······∘∘∘∘∘∘∘∘·o∘∘∘·∘∘·∘
+Chunk 2800/7031 (global 147768) [SPS: 2.51] | Move: 0.004 | Mimic: 0.328 → | CONTRACT | L16 rad:0.21 | σ:0.600/0.03 | V:0.703 T:0.58 | LRx:1.42
+  field H:2.22b ·  ·░▓█░   · synergy:0.57 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.56 err:0.000
+  drives S:0.00 σ:0.16 C:0.10 G:0.23 M:0.09 | curiosity:0.28 shear-rms:0.26 rad-p:0.003 | field μ:-0.001 rail:0.0108 | grad:5.65 clip:0.88 corr:+0.95
+  stereo width:0.038 side-energy:0.243 pan:+0.10 decoder/target corr:+0.95/+0.84 | dev S/C:0.753/2.182 Δ:-0.35% ready:true plateau:true
+  ecology health:0.70 stagnation:0.37 escape:0.00 | reward:-0.112 μ:-0.110 σr:0.016 | motifs:185/512 candidates:9236 qrej:3405 srej:5593
+  proposals model:RECALL bandit:CONTRACT selected:CONTRACT | action age:0 usage:0.24
+  v ▓█░█░▪░█░█░█░█·█░█░█░█░█░█░█░█░█░▓░▓▒▒▓▒█░█░█░█·█·█░█░█·█░█░█░█░
+  ∂  ··∘∘o·∘·∘∘·∘·o∘∘∘·∘∘∘··∘···∘····˙·  ˙˙˙∘·····∘o∘o∘∘∘∘∘o∘∘∘·∘∘∘∘
+Chunk 2850/7031 (global 147818) [SPS: 3.03] | Move: 0.004 | Mimic: 0.242 → | RECALL | L16 rad:0.21 | σ:0.570/0.02 | V:0.702 T:0.56 | LRx:1.40
+  field H:2.20b ·  ·░▓█░   · synergy:0.51 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.16 C:0.09 G:0.22 M:0.09 | curiosity:0.27 shear-rms:0.32 rad-p:0.004 | field μ:-0.000 rail:0.0101 | grad:12.84 clip:0.39 corr:+0.93
+  stereo width:0.053 side-energy:0.290 pan:+0.10 decoder/target corr:+0.93/+0.69 | dev S/C:0.782/2.192 Δ:-0.16% ready:true plateau:true
+  ecology health:0.70 stagnation:0.35 escape:0.00 | reward:-0.108 μ:-0.098 σr:0.019 | motifs:185/512 candidates:9239 qrej:3405 srej:5596
+  proposals model:RECALL bandit:TURBULENCE selected:RECALL | action age:0 usage:0.04
+  v ▓█░█░█░█░█░█░█·█░█░█░█░█░█░█░█░█░▓░▓▒▒█▒█░█░█░█·█░█░█░█·█░█░█░█░
+  ∂  ··∘∘∘·∘·∘∘·∘·o∘∘∘·∘·∘···········˙·˙ ˙·˙∘··∘··∘o∘∘∘∘∘∘·o∘·∘·∘·∘∘
+Chunk 2900/7031 (global 147868) [SPS: 3.34] | Move: 0.004 | Mimic: 0.256 → | TURBULENCE | L16 rad:0.21 | σ:0.600/0.04 | V:0.704 T:0.56 | LRx:1.40
+  field H:2.20b ·   ▒▓█░   · synergy:0.42 empower:2.58 | energy:0.71 | φ:0.45 PI:0.05 | model raw/eff:0.89/0.57 err:0.001
+  drives S:0.00 σ:0.16 C:0.10 G:0.22 M:0.09 | curiosity:0.27 shear-rms:0.34 rad-p:0.004 | field μ:+0.001 rail:0.0097 | grad:13.47 clip:0.37 corr:+0.93
+  stereo width:0.053 side-energy:0.289 pan:+0.10 decoder/target corr:+0.93/+0.55 | dev S/C:0.706/2.045 Δ:-0.16% ready:true plateau:true
+  ecology health:0.70 stagnation:0.35 escape:0.00 | reward:-0.109 μ:-0.096 σr:0.021 | motifs:185/512 candidates:9242 qrej:3405 srej:5599
+  proposals model:HOLD bandit:TURBULENCE selected:TURBULENCE | action age:2 usage:0.35
+  v ▓█░█░█░█░█░█░█·█░█░█░█░█░█░█░█░█▒▓░▓▒▒█▒█░█░█░█·█░█░█░█░█░█░█░█░
+  ∂  ·∘∘∘∘·∘∘·∘·∘∘o∘∘··∘·∘··········˙˙·˙  ·˙∘··∘··∘o∘∘∘·∘∘·∘∘·∘·∘·∘∘
+Chunk 2950/7031 (global 147918) [SPS: 2.75] | Move: 0.004 | Mimic: 0.237 → | HOLD | L16 rad:0.21 | σ:0.614/0.06 | V:0.690 T:0.55 | LRx:1.37
+  field H:2.16b ·   ▒▓█░   · synergy:0.44 empower:2.58 | energy:0.70 | φ:0.45 PI:0.05 | model raw/eff:0.89/0.58 err:0.002
+  drives S:0.00 σ:0.15 C:0.09 G:0.21 M:0.09 | curiosity:0.24 shear-rms:0.35 rad-p:0.004 | field μ:+0.002 rail:0.0093 | grad:13.61 clip:0.37 corr:+0.93
+  stereo width:0.056 side-energy:0.300 pan:+0.10 decoder/target corr:+0.93/+0.88 | dev S/C:0.742/1.994 Δ:-0.70% ready:true plateau:true
+  ecology health:0.72 stagnation:0.34 escape:0.00 | reward:-0.089 μ:-0.081 σr:0.026 | motifs:185/512 candidates:9245 qrej:3405 srej:5602
+  proposals model:RECALL bandit:TURBULENCE selected:HOLD | action age:0 usage:0.10
+  v ▓█░█░█░█░█░█░█·█·█░█░█░█░█░█░█░█▒▓░▓▒▒█▒█░█░█░█·█░█░█░█·█░█░█░█░
+  ∂  ··∘∘∘·∘∘·∘·∘·o∘o··∘············˙˙·˙  ·˙··∘∘∘·∘o∘·∘·∘∘·o∘∘∘·∘∘∘∘
+Chunk 3000/7031 (global 147968) [SPS: 3.14] | Move: 0.004 | Mimic: 0.232 → | HOLD | L16 rad:0.22 | σ:0.648/0.07 | V:0.682 T:0.54 | LRx:1.37
+  field H:2.16b ·   ▒▓█░   · synergy:0.50 empower:2.59 | energy:0.71 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.57 err:0.001
+  drives S:0.00 σ:0.14 C:0.09 G:0.22 M:0.08 | curiosity:0.26 shear-rms:0.32 rad-p:0.004 | field μ:+0.003 rail:0.0094 | grad:13.61 clip:0.37 corr:+0.93
+  stereo width:0.059 side-energy:0.307 pan:+0.10 decoder/target corr:+0.93/+0.83 | dev S/C:0.757/2.036 Δ:-1.54% ready:true plateau:true
+  ecology health:0.71 stagnation:0.35 escape:0.00 | reward:-0.090 μ:-0.082 σr:0.022 | motifs:185/512 candidates:9249 qrej:3405 srej:5606
+  proposals model:RECALL bandit:TURBULENCE selected:HOLD | action age:0 usage:0.18
+  v ▓█▒█░▪░█░█░█·█░█░█░█░█░█░█░█░█░█▒▓▒▓▒▒█▒█░█·█░█░█░█░█░█·█░█░█░█░
+  ∂  ·˙∘·o·∘∘·∘·o∘∘∘∘··∘···∘∘·······˙˙˙˙˙ ·˙∘·∘o∘·∘∘∘·∘·∘∘∘o∘·∘·∘∘∘∘
+Chunk 3050/7031 (global 148018) [SPS: 2.98] | Move: 0.004 | Mimic: 0.217 → | TURBULENCE | L16 rad:0.22 | σ:0.725/0.07 | V:0.661 T:0.52 | LRx:1.32
+  field H:2.15b ·   ▒██░   · synergy:0.41 empower:2.58 | energy:0.71 | φ:0.45 PI:0.06 | model raw/eff:0.88/0.59 err:0.003
+  drives S:0.00 σ:0.11 C:0.09 G:0.21 M:0.09 | curiosity:0.23 shear-rms:0.33 rad-p:0.004 | field μ:+0.003 rail:0.0096 | grad:11.07 clip:0.45 corr:+0.93
+  stereo width:0.059 side-energy:0.307 pan:+0.10 decoder/target corr:+0.92/+0.87 | dev S/C:0.765/2.153 Δ:-2.17% ready:true plateau:true
+  ecology health:0.73 stagnation:0.33 escape:0.00 | reward:-0.066 μ:-0.064 σr:0.027 | motifs:185/512 candidates:9252 qrej:3405 srej:5609
+  proposals model:RECALL bandit:TURBULENCE selected:TURBULENCE | action age:0 usage:0.50
+  v ▓█▒█░█░█░█·█░█·█░█░█░█░█░█░█░█░█░█░▓▒▒█░█░█·█░█░█░█░█░█·█░█░█░█░
+  ∂  ·˙∘·∘∘∘∘·o∘∘∘o∘∘··∘···∘∘·∘········˙  ····∘o∘·∘∘∘·∘·∘∘∘o∘·∘·∘∘∘∘
+Chunk 3100/7031 (global 148068) [SPS: 3.35] | Move: 0.004 | Mimic: 0.277 → | TURBULENCE | L16 rad:0.22 | σ:0.658/0.06 | V:0.666 T:0.49 | LRx:1.30
+  field H:2.15b ·   ▒██░   · synergy:0.58 empower:2.58 | energy:0.71 | φ:0.45 PI:0.06 | model raw/eff:0.88/0.59 err:0.002
+  drives S:0.00 σ:0.12 C:0.09 G:0.20 M:0.08 | curiosity:0.24 shear-rms:0.27 rad-p:0.004 | field μ:+0.002 rail:0.0098 | grad:13.21 clip:0.38 corr:+0.92
+  stereo width:0.061 side-energy:0.311 pan:+0.10 decoder/target corr:+0.92/+0.85 | dev S/C:0.755/2.029 Δ:-0.58% ready:true plateau:true
+  ecology health:0.73 stagnation:0.32 escape:0.00 | reward:-0.030 μ:-0.050 σr:0.024 | motifs:185/512 candidates:9255 qrej:3405 srej:5612
+  proposals model:HOLD bandit:TURBULENCE selected:TURBULENCE | action age:0 usage:0.39
+  v ▓█▒█▒█░█░█·█░█·█░█░█░█░█░█░█░█▒█░█▒▓▒▒█░█░█·█░█░█░█░█░█░█░█░█░█░
+  ∂  ·˙∘˙∘·∘∘·o∘∘∘o∘∘··∘·∘·∘∘·∘·∘·˙···˙˙  ····∘o∘∘∘∘∘∘∘·∘∘∘∘∘∘∘∘∘·∘∘
+Chunk 3150/7031 (global 148118) [SPS: 2.79] | Move: 0.004 | Mimic: 0.317 → | CRYSTALLIZE | L16 rad:0.21 | σ:0.588/0.05 | V:0.696 T:0.52 | LRx:1.34
+  field H:2.15b ·   ▒██░   · synergy:0.41 empower:2.57 | energy:0.71 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.57 err:0.001
+  drives S:0.00 σ:0.15 C:0.09 G:0.21 M:0.09 | curiosity:0.26 shear-rms:0.28 rad-p:0.004 | field μ:+0.002 rail:0.0099 | grad:11.91 clip:0.42 corr:+0.93
+  stereo width:0.059 side-energy:0.306 pan:+0.10 decoder/target corr:+0.93/+0.91 | dev S/C:0.668/1.991 Δ:+0.84% ready:true plateau:true
+  ecology health:0.70 stagnation:0.33 escape:0.00 | reward:-0.095 μ:-0.073 σr:0.020 | motifs:185/512 candidates:9258 qrej:3405 srej:5615
+  proposals model:HOLD bandit:TURBULENCE selected:CRYSTALLIZE | action age:0 usage:0.06
+  v ▓█▒█▒█░█░█·█░█·█░█░█░█░█░█░█░█░█▒█▒▓▒▒█▒█░█░█░█░█░█░█░█·█░█░█░█░
+  ∂  · ∘˙∘·∘∘∘o∘∘∘o∘∘··∘·∘·∘∘·∘·∘···˙·˙˙ ˙·˙··∘∘∘∘∘∘∘∘∘∘∘∘·o··∘∘·∘∘·
+Chunk 3200/7031 (global 148168) [SPS: 2.63] | Move: 0.004 | Mimic: 0.266 → | HARMONIC | L16 rad:0.22 | σ:0.769/0.05 | V:0.668 T:0.55 | LRx:1.38
+  field H:2.15b ·   ▒██░   · synergy:0.63 empower:2.59 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.88/0.55 err:0.004
+  drives S:0.00 σ:0.11 C:0.10 G:0.23 M:0.08 | curiosity:0.29 shear-rms:0.30 rad-p:0.004 | field μ:+0.001 rail:0.0106 | grad:8.67 clip:0.58 corr:+0.92
+  stereo width:0.064 side-energy:0.319 pan:+0.10 decoder/target corr:+0.92/+0.57 | dev S/C:0.761/2.100 Δ:+0.78% ready:true plateau:true
+  ecology health:0.69 stagnation:0.38 escape:0.00 | reward:-0.054 μ:-0.092 σr:0.022 | motifs:185/512 candidates:9261 qrej:3405 srej:5618
+  proposals model:RECALL bandit:HARMONIC selected:HARMONIC | action age:0 usage:0.24
+  v ▓█▒█▒█░█·█·█░█·█░█░█░█░█░█░█░█░█░█▒▓▒▒█░█░█░█░█░█░█░█░█·█░█░█░█░
+  ∂  ·˙· ∘∘∘o∘o∘∘∘o∘∘··∘·∘·∘··∘······∘˙˙ ˙∘···∘∘∘∘∘∘·∘·∘∘∘·o··∘∘∘·∘·
+Chunk 3250/7031 (global 148218) [SPS: 3.32] | Move: 0.004 | Mimic: 0.275 → | HARMONIC | L16 rad:0.22 | σ:0.813/0.05 | V:0.640 T:0.49 | LRx:1.30
+  field H:2.16b ·   ▒▓█░   · synergy:0.58 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.88/0.59 err:0.007
+  drives S:0.00 σ:0.08 C:0.09 G:0.20 M:0.08 | curiosity:0.25 shear-rms:0.21 rad-p:0.003 | field μ:-0.001 rail:0.0111 | grad:8.67 clip:0.58 corr:+0.92
+  stereo width:0.062 side-energy:0.315 pan:+0.10 decoder/target corr:+0.92/+0.79 | dev S/C:0.684/2.037 Δ:+1.21% ready:true plateau:false
+  ecology health:0.73 stagnation:0.33 escape:0.00 | reward:-0.039 μ:-0.051 σr:0.024 | motifs:185/512 candidates:9264 qrej:3405 srej:5621
+  proposals model:RECALL bandit:HARMONIC selected:HARMONIC | action age:0 usage:0.43
+  v ▓█▒█▒█░█·█·█·█·█░█░█░█░█░█░█░█░█▒█▒▓▒▒█░█░█░█░█·█░█░█░█·█░█░█░█░
+  ∂  ·˙· ·∘∘o∘o·o∘o∘∘··∘·∘·∘··∘∘····˙·˙˙ ˙··∘···∘∘∘o∘∘·∘∘∘·o·∘∘∘∘·∘·
+Chunk 3300/7031 (global 148268) [SPS: 2.77] | Move: 0.004 | Mimic: 0.283 → | CONTRACT | L16 rad:0.22 | σ:0.605/0.05 | V:0.690 T:0.48 | LRx:1.29
+  field H:2.14b ·   ▒▓█░   · synergy:0.67 empower:2.59 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.88/0.59 err:0.002
+  drives S:0.00 σ:0.12 C:0.09 G:0.20 M:0.08 | curiosity:0.24 shear-rms:0.22 rad-p:0.003 | field μ:-0.002 rail:0.0114 | grad:11.68 clip:0.43 corr:+0.93
+  stereo width:0.055 side-energy:0.298 pan:+0.10 decoder/target corr:+0.93/+0.50 | dev S/C:0.699/2.080 Δ:+1.18% ready:true plateau:false
+  ecology health:0.72 stagnation:0.32 escape:0.00 | reward:-0.029 μ:-0.051 σr:0.016 | motifs:185/512 candidates:9267 qrej:3405 srej:5624
+  proposals model:RECALL bandit:INHARMONIC selected:CONTRACT | action age:0 usage:0.07
+  v ▓▓▒█▒█░█·█░█·█·█░█░█░█▒█░█░█░█░█▒▓░▓▓▒█░█░█░█░█·█░█░█░█░█░█░█░█░
+  ∂ ˙˙ · ·∘∘o∘∘∘o∘o∘∘∘∘∘··˙∘∘·∘∘∘···˙˙·˙ ˙··∘·∘·∘∘∘o∘∘∘∘∘∘·∘∘∘∘∘∘∘∘·
+Chunk 3350/7031 (global 148318) [SPS: 3.24] | Move: 0.004 | Mimic: 0.285 → | EXPLORE | L16 rad:0.22 | σ:0.448/0.05 | V:0.753 T:0.58 | LRx:1.42
+  field H:2.16b ·   ▒▓█░   · synergy:0.48 empower:2.58 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.89/0.55 err:0.001
+  drives S:0.00 σ:0.20 C:0.10 G:0.22 M:0.08 | curiosity:0.28 shear-rms:0.28 rad-p:0.004 | field μ:-0.001 rail:0.0106 | grad:10.43 clip:0.48 corr:+0.90
+  stereo width:0.077 side-energy:0.352 pan:+0.10 decoder/target corr:+0.90/+0.94 | dev S/C:0.707/2.072 Δ:+0.67% ready:true plateau:true
+  ecology health:0.68 stagnation:0.36 escape:0.00 | reward:-0.131 μ:-0.101 σr:0.026 | motifs:185/512 candidates:9270 qrej:3405 srej:5627
+  proposals model:RECALL bandit:CONTRACT selected:EXPLORE | action age:0 usage:0.08
+  v ▓▓▒█▒▓░█·█░█·█·█░█░█░█▒█░█░█░█░█▒▓░▓▓▒█░█░█░█░█░█·█░█░█░█░█░█░█░
+  ∂ ˙˙ · ˙·∘o∘∘∘o∘o∘··∘∘··˙∘········˙˙·˙ ˙∘·∘·∘··∘∘∘∘o∘∘∘∘·∘·∘∘∘∘∘∘∘
+Chunk 3400/7031 (global 148368) [SPS: 2.68] | Move: 0.004 | Mimic: 0.282 → | CRYSTALLIZE | L16 rad:0.22 | σ:0.569/0.04 | V:0.717 T:0.60 | LRx:1.44
+  field H:2.20b ·  ·░▓█░   · synergy:0.55 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.17 C:0.10 G:0.22 M:0.08 | curiosity:0.28 shear-rms:0.25 rad-p:0.003 | field μ:-0.001 rail:0.0108 | grad:11.33 clip:0.44 corr:+0.92
+  stereo width:0.066 side-energy:0.326 pan:+0.10 decoder/target corr:+0.92/+0.47 | dev S/C:0.746/2.048 Δ:+1.23% ready:true plateau:false
+  ecology health:0.70 stagnation:0.36 escape:0.00 | reward:-0.116 μ:-0.114 σr:0.017 | motifs:185/512 candidates:9274 qrej:3405 srej:5631
+  proposals model:RECALL bandit:CRYSTALLIZE selected:CRYSTALLIZE | action age:0 usage:0.26
+  v ▓▓▒█▒█░█·█░█·█·█░█░█░█▒█░█░█░█░█▒▓░▓▓▒█░█░█░█░█░█·█░█░█░█░█░█░█░
+  ∂ ˙  · ··∘o∘·∘o∘o∘··∘∘∘·˙·········˙˙·˙ ˙∘·∘·∘··∘∘∘∘o∘∘∘∘∘∘·∘∘∘∘∘∘∘
+Chunk 3450/7031 (global 148418) [SPS: 3.04] | Move: 0.004 | Mimic: 0.407 → | RECALL | L16 rad:0.22 | σ:0.631/0.03 | V:0.709 T:0.58 | LRx:1.43
+  field H:2.14b ·   ▒▓█░   · synergy:0.41 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.54 err:0.001
+  drives S:0.00 σ:0.15 C:0.10 G:0.24 M:0.09 | curiosity:0.30 shear-rms:0.28 rad-p:0.004 | field μ:+0.001 rail:0.0104 | grad:11.33 clip:0.44 corr:+0.90
+  stereo width:0.083 side-energy:0.365 pan:+0.10 decoder/target corr:+0.90/+0.96 | dev S/C:0.766/2.165 Δ:-0.07% ready:true plateau:true
+  ecology health:0.67 stagnation:0.38 escape:0.00 | reward:-0.125 μ:-0.116 σr:0.010 | motifs:185/512 candidates:9277 qrej:3405 srej:5634
+  proposals model:RECALL bandit:CRYSTALLIZE selected:RECALL | action age:0 usage:0.43
+  v ▓▓▓█▒█░█·█░█·█·█░█░█░█▒█░█░█░█░█▒▓▒▓▓▒█░█░█░█░█░█░█░█░█░█░█░█░█░
+  ∂ ˙  · ··∘o∘··o∘o∘·∘∘∘··˙·········˙˙˙˙˙˙∘·∘····∘∘∘∘∘∘∘∘∘∘∘·∘∘∘∘∘∘∘
+Chunk 3500/7031 (global 148468) [SPS: 2.55] | Move: 0.004 | Mimic: 0.344 ↑ | RECALL | L16 rad:0.22 | σ:0.740/0.05 | V:0.674 T:0.54 | LRx:1.38
+  field H:2.14b ·   ▒▓█░   · synergy:0.64 empower:2.59 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.88/0.56 err:0.002
+  drives S:0.00 σ:0.11 C:0.10 G:0.22 M:0.08 | curiosity:0.28 shear-rms:0.27 rad-p:0.004 | field μ:+0.001 rail:0.0107 | grad:9.01 clip:0.56 corr:+0.91
+  stereo width:0.071 side-energy:0.338 pan:+0.10 decoder/target corr:+0.91/+0.92 | dev S/C:0.735/2.168 Δ:-0.44% ready:true plateau:true
+  ecology health:0.70 stagnation:0.36 escape:0.00 | reward:-0.048 μ:-0.086 σr:0.023 | motifs:185/512 candidates:9280 qrej:3405 srej:5637
+  proposals model:RECALL bandit:RECALL selected:RECALL | action age:0 usage:0.40
+  v ▓▓▓█▒█░█·█░█·█·█░█░█░█▒█░█░█░█▒▓▒▓▒▓▓▒█░█░█░█░█░█░█░█░█░█░█░█░█░
+  ∂ ˙  ·˙∘·∘o··∘o∘o∘∘∘∘∘··˙·······˙˙˙˙  ˙˙∘·∘····∘∘∘∘∘∘∘∘∘∘∘·∘∘∘∘∘∘∘
+Chunk 3550/7031 (global 148518) [SPS: 3.15] | Move: 0.004 | Mimic: 0.316 ↓ | RECALL | L16 rad:0.22 | σ:0.725/0.05 | V:0.651 T:0.49 | LRx:1.30
+  field H:2.18b ·   ▒▓█░   · synergy:0.50 empower:2.57 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.88/0.59 err:0.003
+  drives S:0.00 σ:0.10 C:0.09 G:0.20 M:0.09 | curiosity:0.25 shear-rms:0.23 rad-p:0.003 | field μ:+0.001 rail:0.0110 | grad:17.67 clip:0.28 corr:+0.91
+  stereo width:0.073 side-energy:0.341 pan:+0.10 decoder/target corr:+0.91/+0.92 | dev S/C:0.735/2.125 Δ:-0.57% ready:true plateau:true
+  ecology health:0.73 stagnation:0.32 escape:0.00 | reward:-0.053 μ:-0.055 σr:0.019 | motifs:185/512 candidates:9283 qrej:3405 srej:5640
+  proposals model:RECALL bandit:RECALL selected:RECALL | action age:1 usage:0.48
+  v ▓▓▓█▒█░█·█░█░█░█░█░█░█░█░█░█░█░▓▒▓▒▓▓▒█░█░█░█░█░█░█░█░█░█░█░█░█░
+  ∂ ˙  ·˙∘·∘o·∘·∘·∘∘∘∘∘∘···········˙˙˙  ˙ ··∘···∘∘∘∘∘∘∘∘∘∘∘∘·∘∘∘∘∘∘∘
+Chunk 3600/7031 (global 148568) [SPS: 2.72] | Move: 0.004 | Mimic: 0.313 ↓ | CRYSTALLIZE | L16 rad:0.21 | σ:0.621/0.05 | V:0.673 T:0.50 | LRx:1.32
+  field H:2.22b ·  ·░▓█░   · synergy:0.51 empower:2.57 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.58 err:0.001
+  drives S:0.00 σ:0.13 C:0.09 G:0.20 M:0.09 | curiosity:0.26 shear-rms:0.23 rad-p:0.003 | field μ:+0.001 rail:0.0111 | grad:19.38 clip:0.26 corr:+0.92
+  stereo width:0.067 side-energy:0.328 pan:+0.10 decoder/target corr:+0.92/+0.76 | dev S/C:0.749/2.074 Δ:+0.20% ready:true plateau:true
+  ecology health:0.71 stagnation:0.33 escape:0.00 | reward:-0.083 μ:-0.061 σr:0.016 | motifs:185/512 candidates:9286 qrej:3405 srej:5643
+  proposals model:RECALL bandit:RECALL selected:CRYSTALLIZE | action age:1 usage:0.07
+  v ▓▓▒█▒█░█·█░█░█·█░█░█░█▒█░█░█░▓░█▒▓▓▓▓▒█░█░█░█░█░█░█░█░█░█░█░█░█░
+  ∂ ˙  ·˙··∘o·∘·∘·o∘∘∘∘∘··˙······˙··˙˙    ··∘∘··∘∘∘∘∘∘∘∘∘∘∘∘·∘∘∘∘∘∘∘
+Chunk 3650/7031 (global 148618) [SPS: 2.70] | Move: 0.004 | Mimic: 0.336 ↓ | EXPLORE | L16 rad:0.21 | σ:0.565/0.05 | V:0.697 T:0.54 | LRx:1.37
+  field H:2.22b ·  ·░▓█░   · synergy:0.49 empower:2.57 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.89/0.57 err:0.001
+  drives S:0.00 σ:0.15 C:0.09 G:0.21 M:0.09 | curiosity:0.27 shear-rms:0.27 rad-p:0.004 | field μ:-0.000 rail:0.0108 | grad:10.29 clip:0.49 corr:+0.91
+  stereo width:0.075 side-energy:0.347 pan:+0.10 decoder/target corr:+0.91/+0.93 | dev S/C:0.780/2.138 Δ:-0.09% ready:true plateau:true
+  ecology health:0.71 stagnation:0.34 escape:0.00 | reward:-0.087 μ:-0.086 σr:0.017 | motifs:185/512 candidates:9289 qrej:3405 srej:5646
+  proposals model:CONTRACT bandit:CRYSTALLIZE selected:EXPLORE | action age:0 usage:0.11
+  v █▓▓█▒█▒█·█·█░█·█░█░█░█▒█░█░█░▓░█░▓▒▓▓▒█░█░█░█░█░█░█·█░█░█░█░█░█░
+  ∂ ·  ∘˙·˙∘o∘o∘∘·o∘∘∘∘∘··˙······˙···˙  ˙˙······∘∘∘∘∘∘∘o∘∘∘∘∘·∘∘∘∘∘∘
+Chunk 3700/7031 (global 148668) [SPS: 3.29] | Move: 0.004 | Mimic: 0.417 → | CONTRACT | L16 rad:0.21 | σ:0.620/0.05 | V:0.701 T:0.58 | LRx:1.44
+  field H:2.20b ·  ·░▓█░   · synergy:0.48 empower:2.57 | energy:0.72 | φ:0.45 PI:0.05 | model raw/eff:0.89/0.54 err:0.001
+  drives S:0.00 σ:0.16 C:0.10 G:0.24 M:0.09 | curiosity:0.30 shear-rms:0.26 rad-p:0.003 | field μ:+0.001 rail:0.0107 | grad:10.29 clip:0.49 corr:+0.91
+  stereo width:0.071 side-energy:0.339 pan:+0.10 decoder/target corr:+0.91/+0.84 | dev S/C:0.788/2.155 Δ:-0.23% ready:true plateau:true
+  ecology health:0.67 stagnation:0.39 escape:0.00 | reward:-0.128 μ:-0.118 σr:0.017 | motifs:185/512 candidates:9292 qrej:3405 srej:5649
+  proposals model:RECALL bandit:CRYSTALLIZE selected:CONTRACT | action age:0 usage:0.10
+  v █▓▒█▒█▒█·█·█░█·█░█░█░█▒█░█░█▒▓░█░▓▒▓▓▒█░█░█░█░█░█░█·█░█░█░█░█░█░
+  ∂ ·  ∘˙·˙·o∘o∘∘·o∘∘∘∘∘··˙·····˙˙···˙  ˙˙······∘∘∘∘∘∘∘o∘∘∘∘∘∘∘∘∘∘∘∘
+Chunk 3750/7031 (global 148718) [SPS: 2.69] | Move: 0.004 | Mimic: 0.397 → | WIDEN | L16 rad:0.21 | σ:0.757/0.05 | V:0.660 T:0.56 | LRx:1.39
+  field H:2.20b ·  ·░▓█░   · synergy:0.50 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.88/0.57 err:0.002
+  drives S:0.00 σ:0.11 C:0.10 G:0.22 M:0.08 | curiosity:0.27 shear-rms:0.25 rad-p:0.003 | field μ:+0.000 rail:0.0109 | grad:11.21 clip:0.45 corr:+0.87
+  stereo width:0.101 side-energy:0.403 pan:+0.10 decoder/target corr:+0.87/+0.94 | dev S/C:0.736/2.036 Δ:-0.29% ready:true plateau:true
+  ecology health:0.71 stagnation:0.36 escape:0.00 | reward:-0.084 μ:-0.098 σr:0.019 | motifs:185/512 candidates:9295 qrej:3405 srej:5652
+  proposals model:RECALL bandit:WIDEN selected:WIDEN | action age:1 usage:0.55
+  v █▓▒█▒█▒█·█·█░█░█░█░█░█░█░█░█▒▓▒█▒▓▒▓▓▒█░█░█░█░█░█░█·█░█░█░█░█░█░
+  ∂ ·  ∘˙·˙·o∘o∘∘·∘∘∘∘∘∘·∘····∘·˙˙˙·˙˙   ˙·····∘∘∘∘∘∘∘∘o∘∘∘∘∘∘∘∘∘∘∘∘
+Chunk 3800/7031 (global 148768) [SPS: 3.00] | Move: 0.004 | Mimic: 0.398 ↑ | CONTRACT | L16 rad:0.22 | σ:0.656/0.04 | V:0.666 T:0.50 | LRx:1.31
+  field H:2.22b ·  ·░▓█░   · synergy:0.60 empower:2.58 | energy:0.72 | φ:0.45 PI:0.07 | model raw/eff:0.88/0.60 err:0.002
+  drives S:0.00 σ:0.11 C:0.09 G:0.20 M:0.08 | curiosity:0.24 shear-rms:0.24 rad-p:0.004 | field μ:-0.001 rail:0.0110 | grad:13.54 clip:0.37 corr:+0.88
+  stereo width:0.097 side-energy:0.396 pan:+0.10 decoder/target corr:+0.88/+0.96 | dev S/C:0.721/2.004 Δ:+0.26% ready:true plateau:true
+  ecology health:0.75 stagnation:0.32 escape:0.00 | reward:-0.062 μ:-0.061 σr:0.021 | motifs:185/512 candidates:9299 qrej:3405 srej:5656
+  proposals model:RECALL bandit:WIDEN selected:CONTRACT | action age:0 usage:0.08
+  v █▒▒█▒█▒█·█·█░█·█░█░█░█▒█░█░█▒█▒█▒▓▒▓▓▒█░█░█░█░█░█·█░█░█░█░█░█░█░
+  ∂ ·  ∘˙·˙·o∘o∘∘·o∘∘∘∘∘··˙···∘·˙·˙·˙˙   ˙∘····∘∘∘∘∘∘o∘∘∘∘∘∘∘∘∘∘∘·∘∘
+Chunk 3850/7031 (global 148818) [SPS: 2.82] | Move: 0.004 | Mimic: 0.357 ↓ | RECALL | L16 rad:0.21 | σ:0.618/0.02 | V:0.691 T:0.52 | LRx:1.34
+  field H:2.22b ·  ·░▓█░   · synergy:0.49 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.14 C:0.09 G:0.21 M:0.08 | curiosity:0.27 shear-rms:0.26 rad-p:0.004 | field μ:-0.001 rail:0.0110 | grad:13.75 clip:0.36 corr:+0.90
+  stereo width:0.081 side-energy:0.361 pan:+0.10 decoder/target corr:+0.90/+0.77 | dev S/C:0.734/2.078 Δ:+0.15% ready:true plateau:true
+  ecology health:0.69 stagnation:0.34 escape:0.00 | reward:-0.095 μ:-0.074 σr:0.016 | motifs:185/512 candidates:9302 qrej:3405 srej:5659
+  proposals model:RECALL bandit:WIDEN selected:RECALL | action age:0 usage:0.05
+  v █▒▒█░█▒█·█·█░█·█░█░█░█▒█░█░█░█▒█▒▓▒▓▓▒█░█░█░█░█░█░█·█░█░█░█░█░█░
+  ∂ ·  ∘··˙·o∘o∘∘·o∘∘∘∘∘∘·˙···∘···˙· ˙   ˙·····∘∘∘∘∘∘∘∘o∘∘∘∘∘∘∘∘∘·∘∘
+Chunk 3900/7031 (global 148868) [SPS: 3.11] | Move: 0.004 | Mimic: 0.292 → | RECALL | L16 rad:0.21 | σ:0.620/0.03 | V:0.688 T:0.54 | LRx:1.37
+  field H:2.22b ·  ·░▓█░   · synergy:0.53 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.57 err:0.001
+  drives S:0.00 σ:0.15 C:0.09 G:0.22 M:0.08 | curiosity:0.27 shear-rms:0.25 rad-p:0.003 | field μ:-0.001 rail:0.0109 | grad:13.75 clip:0.36 corr:+0.92
+  stereo width:0.060 side-energy:0.310 pan:+0.10 decoder/target corr:+0.92/+0.81 | dev S/C:0.675/2.014 Δ:+0.74% ready:true plateau:true
+  ecology health:0.71 stagnation:0.35 escape:0.00 | reward:-0.102 μ:-0.088 σr:0.015 | motifs:185/512 candidates:9305 qrej:3405 srej:5662
+  proposals model:RECALL bandit:CONTRACT selected:RECALL | action age:1 usage:0.32
+  v █▓▒█░█▒█░█·█·█·█░█░█░█▒█░█░█░█▒█▒▓▒▓▓▒█░█░█░█░█░█░█·█░█░█░█░█░█░
+  ∂ ·  ∘··˙·∘∘o∘o·o∘∘∘∘∘∘·˙···∘··· · ˙˙  ˙·····∘·∘∘∘∘∘∘o∘∘∘∘∘∘∘∘∘·∘·
+Chunk 3950/7031 (global 148918) [SPS: 2.52] | Move: 0.004 | Mimic: 0.364 ↓ | RESONATE | L16 rad:0.21 | σ:0.643/0.05 | V:0.679 T:0.54 | LRx:1.38
+  field H:2.22b ·  ·░▓█░   · synergy:0.51 empower:2.57 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.57 err:0.001
+  drives S:0.00 σ:0.14 C:0.10 G:0.22 M:0.08 | curiosity:0.28 shear-rms:0.23 rad-p:0.003 | field μ:-0.001 rail:0.0113 | grad:15.70 clip:0.32 corr:+0.91
+  stereo width:0.074 side-energy:0.346 pan:+0.10 decoder/target corr:+0.91/+0.91 | dev S/C:0.754/2.122 Δ:+0.43% ready:true plateau:true
+  ecology health:0.70 stagnation:0.36 escape:0.00 | reward:-0.101 μ:-0.091 σr:0.014 | motifs:185/512 candidates:9308 qrej:3405 srej:5665
+  proposals model:RECALL bandit:CRYSTALLIZE selected:RESONATE | action age:1 usage:0.21
+  v ▓▓▒█░█▒█░█░█·█·█·█░█░█▒█░█░█░█▒█▓▓▒▓▓▒█░█░█░█░█░█░█·█░█░█░█░█░█░
+  ∂ ˙  ∘··˙·∘∘∘∘o∘o∘o∘∘∘∘∘˙∘··∘···˙· ˙  ˙˙·····∘·∘∘∘∘∘∘o∘∘∘∘∘·∘∘∘·∘·
+Chunk 4000/7031 (global 148968) [SPS: 2.61] | Move: 0.004 | Mimic: 0.379 → | HOLD | L16 rad:0.21 | σ:0.636/0.05 | V:0.701 T:0.54 | LRx:1.38
+  field H:2.22b ·  ·░▓█░   · synergy:0.66 empower:2.59 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.14 C:0.10 G:0.23 M:0.08 | curiosity:0.28 shear-rms:0.25 rad-p:0.003 | field μ:-0.000 rail:0.0113 | grad:16.04 clip:0.31 corr:+0.88
+  stereo width:0.095 side-energy:0.390 pan:+0.10 decoder/target corr:+0.88/+0.82 | dev S/C:0.750/1.988 Δ:-0.17% ready:true plateau:true
+  ecology health:0.70 stagnation:0.36 escape:0.00 | reward:-0.064 μ:-0.094 σr:0.016 | motifs:185/512 candidates:9311 qrej:3405 srej:5668
+  proposals model:TURBULENCE bandit:WIDEN selected:HOLD | action age:0 usage:0.08
+  v ▓▓▒█░█▒█░█░█·█·█·█░█░█░█░█░█░█▒▓▓▓▒▓▓▒█░█░█░█░█░█░█·█░█░█░█░█░█░
+  ∂    ∘··˙∘∘∘∘∘o∘o∘o∘∘∘∘∘····∘···˙˙ ˙  ˙˙··∘··∘·∘∘∘∘∘∘o∘∘∘∘·∘∘∘∘·∘·
+Chunk 4050/7031 (global 149018) [SPS: 3.13] | Move: 0.004 | Mimic: 0.236 → | RECALL | L16 rad:0.21 | σ:0.598/0.03 | V:0.689 T:0.53 | LRx:1.35
+  field H:2.22b ·  ·░▓█░   · synergy:0.54 empower:2.58 | energy:0.72 | φ:0.45 PI:0.05 | model raw/eff:0.89/0.57 err:0.001
+  drives S:0.00 σ:0.15 C:0.09 G:0.21 M:0.08 | curiosity:0.26 shear-rms:0.24 rad-p:0.003 | field μ:-0.001 rail:0.0110 | grad:21.64 clip:0.23 corr:+0.88
+  stereo width:0.094 side-energy:0.390 pan:+0.10 decoder/target corr:+0.88/+0.78 | dev S/C:0.776/2.068 Δ:-0.04% ready:true plateau:true
+  ecology health:0.71 stagnation:0.34 escape:0.00 | reward:-0.090 μ:-0.082 σr:0.015 | motifs:185/512 candidates:9314 qrej:3405 srej:5671
+  proposals model:HOLD bandit:WIDEN selected:RECALL | action age:0 usage:0.22
+  v ▒▓▒█▒█▒█░█░█·█·█·█░█░█░█░█░█░▓▒▓▓▓▓▓▓▒█░█░█░█░█░█░█·█░█░█░█░█░█░
+  ∂   ˙∘˙∘˙∘∘∘∘∘o∘o∘o∘·∘∘∘·······˙˙˙ ˙  ˙˙··∘∘·∘·∘∘∘∘∘∘o∘∘∘∘∘∘∘∘∘·∘·
+Chunk 4100/7031 (global 149068) [SPS: 2.80] | Move: 0.004 | Mimic: 0.324 ↓ | TURBULENCE | L16 rad:0.21 | σ:0.560/0.03 | V:0.712 T:0.55 | LRx:1.39
+  field H:2.22b ·  ·░▓█░   · synergy:0.49 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.16 C:0.10 G:0.22 M:0.08 | curiosity:0.28 shear-rms:0.27 rad-p:0.004 | field μ:-0.001 rail:0.0108 | grad:15.22 clip:0.33 corr:+0.91
+  stereo width:0.076 side-energy:0.348 pan:+0.10 decoder/target corr:+0.90/+0.99 | dev S/C:0.709/1.979 Δ:-0.04% ready:true plateau:true
+  ecology health:0.69 stagnation:0.36 escape:0.00 | reward:-0.116 μ:-0.099 σr:0.016 | motifs:185/512 candidates:9317 qrej:3405 srej:5674
+  proposals model:RECALL bandit:CRYSTALLIZE selected:TURBULENCE | action age:0 usage:0.08
+  v ▒▓▒█░█▒█░█·█·█·█·█░█░█░█░█░█░▓▒▓▓▓▓▒▓▒█░█░█░█░█░█░█·█░█░█░█░█░█░
+  ∂   ˙∘·∘˙∘∘∘o∘o∘o∘o∘∘∘∘∘·······˙˙˙    ˙˙∘·∘∘·∘·∘∘∘∘∘∘o∘∘∘∘∘∘∘∘∘·∘·
+Chunk 4150/7031 (global 149118) [SPS: 3.12] | Move: 0.004 | Mimic: 0.355 → | EXPLORE | L16 rad:0.21 | σ:0.560/0.03 | V:0.710 T:0.58 | LRx:1.42
+  field H:2.20b ·  ·░▓█░   · synergy:0.53 empower:2.58 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.17 C:0.10 G:0.23 M:0.09 | curiosity:0.28 shear-rms:0.29 rad-p:0.004 | field μ:-0.000 rail:0.0106 | grad:15.22 clip:0.33 corr:+0.91
+  stereo width:0.074 side-energy:0.346 pan:+0.10 decoder/target corr:+0.91/+0.97 | dev S/C:0.696/2.055 Δ:-0.23% ready:true plateau:true
+  ecology health:0.70 stagnation:0.37 escape:0.00 | reward:-0.116 μ:-0.111 σr:0.017 | motifs:185/512 candidates:9320 qrej:3405 srej:5677
+  proposals model:HOLD bandit:CRYSTALLIZE selected:EXPLORE | action age:0 usage:0.19
+  v ▒▓▒█░█░█░█·█░█·█·█░█░█░█░█░█░█▒█▓▓▓▒█▒█░█░█░█░█░█░█·█░█░█░█░█░█░
+  ∂  ˙˙∘····∘∘o∘∘∘o∘o∘·∘∘∘········˙·  ˙ ·˙∘·∘··∘·∘∘∘∘∘∘o∘∘∘∘∘∘∘∘∘·∘·
+Chunk 4200/7031 (global 149168) [SPS: 2.69] | Move: 0.004 | Mimic: 0.313 → | RECALL | L16 rad:0.21 | σ:0.633/0.04 | V:0.694 T:0.57 | LRx:1.41
+  field H:2.14b ·   ▒▓█░   · synergy:0.46 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.55 err:0.001
+  drives S:0.00 σ:0.15 C:0.10 G:0.23 M:0.08 | curiosity:0.30 shear-rms:0.26 rad-p:0.003 | field μ:+0.001 rail:0.0106 | grad:27.34 clip:0.18 corr:+0.91
+  stereo width:0.073 side-energy:0.344 pan:+0.10 decoder/target corr:+0.91/+0.99 | dev S/C:0.729/2.073 Δ:-0.29% ready:true plateau:true
+  ecology health:0.68 stagnation:0.37 escape:0.00 | reward:-0.109 μ:-0.111 σr:0.010 | motifs:185/512 candidates:9324 qrej:3405 srej:5681
+  proposals model:RECALL bandit:CRYSTALLIZE selected:RECALL | action age:1 usage:0.35
+  v ▒▓▒█░█░█·█·█░█·█·█░█░█░█░█░█░█▒█▓▓▓▒█▒█░█░█░█░█░█░█·█░█░█░█░█░█░
+  ∂  ˙˙∘·∘··o∘o∘∘∘o∘o∘∘∘∘∘········˙·  ˙˙·˙∘·∘·∘∘·∘∘∘∘∘∘o∘∘∘∘∘∘∘∘∘∘∘·
+Chunk 4250/7031 (global 149218) [SPS: 3.23] | Move: 0.004 | Mimic: 0.358 → | WIDEN | L16 rad:0.21 | σ:0.704/0.05 | V:0.665 T:0.54 | LRx:1.37
+  field H:2.20b ·  ·░▓█░   · synergy:0.54 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.12 C:0.10 G:0.22 M:0.08 | curiosity:0.27 shear-rms:0.25 rad-p:0.004 | field μ:+0.001 rail:0.0107 | grad:25.70 clip:0.19 corr:+0.89
+  stereo width:0.091 side-energy:0.383 pan:+0.10 decoder/target corr:+0.89/+0.99 | dev S/C:0.741/2.115 Δ:-0.14% ready:true plateau:true
+  ecology health:0.70 stagnation:0.35 escape:0.00 | reward:-0.091 μ:-0.089 σr:0.017 | motifs:185/512 candidates:9327 qrej:3405 srej:5684
+  proposals model:RECALL bandit:RECALL selected:WIDEN | action age:2 usage:0.19
+  v ▓█▒█░█░█░█·█░█·█·█░█░█░█░█░█░█▒▓▒▓█▒█▒█░█░█░█░█░█░█░█░█░█░█░█░█░
+  ∂  ·˙∘·∘··∘∘o∘∘∘o∘o∘∘∘∘··∘··∘··· ˙  ·˙·˙∘·∘·∘∘·∘·∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘·
+Chunk 4300/7031 (global 149268) [SPS: 2.72] | Move: 0.004 | Mimic: 0.372 → | WIDEN | L16 rad:0.21 | σ:0.642/0.06 | V:0.675 T:0.52 | LRx:1.35
+  field H:2.22b ·  ·░▓█░   · synergy:0.52 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.58 err:0.001
+  drives S:0.00 σ:0.13 C:0.09 G:0.21 M:0.08 | curiosity:0.26 shear-rms:0.23 rad-p:0.003 | field μ:+0.000 rail:0.0107 | grad:27.53 clip:0.18 corr:+0.88
+  stereo width:0.094 side-energy:0.388 pan:+0.10 decoder/target corr:+0.88/+0.92 | dev S/C:0.749/2.008 Δ:+0.01% ready:true plateau:true
+  ecology health:0.71 stagnation:0.34 escape:0.00 | reward:-0.079 μ:-0.078 σr:0.014 | motifs:185/512 candidates:9330 qrej:3405 srej:5687
+  proposals model:RECALL bandit:WIDEN selected:WIDEN | action age:0 usage:0.39
+  v ▒█░▪░█░█░█·█·█·█·█░█░█░█░█░█░█▒▓▒▓▓▒█▒█░█░█░█░█░█░█░█░█░█░█░█░█░
+  ∂  ··o·∘··∘∘o∘o∘o∘o∘∘∘∘····∘···· ˙  ˙˙·˙∘···∘∘·∘·∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘∘·
+Chunk 4350/7031 (global 149318) [SPS: 3.23] | Move: 0.004 | Mimic: 0.241 ↓ | RESONATE | L16 rad:0.21 | σ:0.494/0.04 | V:0.721 T:0.57 | LRx:1.41
+  field H:2.20b ·  ·░▓█░   · synergy:0.53 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.88/0.55 err:0.002
+  drives S:0.00 σ:0.18 C:0.10 G:0.22 M:0.08 | curiosity:0.28 shear-rms:0.27 rad-p:0.004 | field μ:+0.000 rail:0.0107 | grad:27.53 clip:0.18 corr:+0.90
+  stereo width:0.082 side-energy:0.363 pan:+0.10 decoder/target corr:+0.90/+0.85 | dev S/C:0.777/2.168 Δ:+0.17% ready:true plateau:true
+  ecology health:0.69 stagnation:0.36 escape:0.00 | reward:-0.121 μ:-0.103 σr:0.019 | motifs:185/512 candidates:9333 qrej:3405 srej:5690
+  proposals model:RECALL bandit:CONTRACT selected:RESONATE | action age:0 usage:0.16
+  v ▒█░▪░█░█·█·█·█·█░█░█░█░█░█░█░█▒▓▒▓▓▒█▒█░█░█░█░█░█░█·█░█░█░█░█░█░
+  ∂  ··o∘∘··o∘o∘o∘o∘∘∘∘∘∘········· ˙  ˙˙·˙∘···∘∘·∘∘∘∘∘∘o∘∘∘∘∘∘∘∘∘∘··
+Chunk 4400/7031 (global 149368) [SPS: 2.70] | Move: 0.004 | Mimic: 0.248 → | WIDEN | L16 rad:0.22 | σ:0.506/0.05 | V:0.751 T:0.61 | LRx:1.46
+  field H:2.18b ·   ▒▓█░   · synergy:0.44 empower:2.57 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.88/0.54 err:0.002
+  drives S:0.00 σ:0.19 C:0.10 G:0.23 M:0.09 | curiosity:0.29 shear-rms:0.28 rad-p:0.004 | field μ:+0.001 rail:0.0101 | grad:33.58 clip:0.15 corr:+0.88
+  stereo width:0.094 side-energy:0.388 pan:+0.10 decoder/target corr:+0.88/+0.65 | dev S/C:0.734/2.045 Δ:+0.65% ready:true plateau:true
+  ecology health:0.68 stagnation:0.38 escape:0.00 | reward:-0.132 μ:-0.125 σr:0.016 | motifs:185/512 candidates:9336 qrej:3405 srej:5693
+  proposals model:RECALL bandit:CONTRACT selected:WIDEN | action age:0 usage:0.29
+  v ▒█░▪░█░█·█░█·█·█·█░█░█░█░█░█░█▒▓▒▓▓▒█▒█░█░█░█░█░█·█·█░█░█░█░█░█░
+  ∂  ··o∘∘··o·∘∘o∘o∘o∘∘∘∘·······∘·˙˙ ˙˙˙·˙∘····∘·∘∘∘∘o∘o∘∘∘∘∘·∘∘∘∘··
+Chunk 4450/7031 (global 149418) [SPS: 3.12] | Move: 0.004 | Mimic: 0.245 → | RESONATE | L16 rad:0.22 | σ:0.648/0.06 | V:0.688 T:0.59 | LRx:1.44
+  field H:2.14b ·   ▒▓█░   · synergy:0.48 empower:2.57 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.15 C:0.10 G:0.23 M:0.09 | curiosity:0.28 shear-rms:0.32 rad-p:0.004 | field μ:+0.000 rail:0.0101 | grad:7.54 clip:0.66 corr:+0.91
+  stereo width:0.069 side-energy:0.333 pan:+0.10 decoder/target corr:+0.91/+0.72 | dev S/C:0.779/2.138 Δ:-0.13% ready:true plateau:true
+  ecology health:0.70 stagnation:0.37 escape:0.00 | reward:-0.100 μ:-0.116 σr:0.023 | motifs:185/512 candidates:9339 qrej:3405 srej:5696
+  proposals model:INHARMONIC bandit:RESONATE selected:RESONATE | action age:0 usage:0.42
+  v ▒█░▪░█░█·█·█·█·█·█░█░█░█░█░█░█▒▓▒▓▓▒█░█░█░█░█░█░█·█·█░█░█░█░█░█░
+  ∂ ˙··o∘∘∘·o∘o∘o∘o∘o∘∘∘∘·······∘·˙˙ ˙˙ ··∘····∘·∘∘∘∘o∘o∘∘∘∘∘∘∘∘∘∘∘∘
+Chunk 4500/7031 (global 149468) [SPS: 3.54] | Move: 0.004 | Mimic: 0.305 → | RESONATE | L16 rad:0.22 | σ:0.658/0.05 | V:0.671 T:0.54 | LRx:1.38
+  field H:2.22b ·  ·░▓█░   · synergy:0.54 empower:2.58 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.89/0.57 err:0.001
+  drives S:0.00 σ:0.13 C:0.09 G:0.22 M:0.08 | curiosity:0.27 shear-rms:0.28 rad-p:0.004 | field μ:+0.000 rail:0.0106 | grad:6.08 clip:0.82 corr:+0.92
+  stereo width:0.067 side-energy:0.328 pan:+0.10 decoder/target corr:+0.92/+0.63 | dev S/C:0.761/2.082 Δ:-0.48% ready:true plateau:true
+  ecology health:0.71 stagnation:0.35 escape:0.00 | reward:-0.076 μ:-0.086 σr:0.021 | motifs:185/512 candidates:9342 qrej:3405 srej:5699
+  proposals model:HOLD bandit:RESONATE selected:RESONATE | action age:0 usage:0.63
+  v ▒█░▪░█░█·█·█·█·█·█░█░█░█▒█░█░█▒▓▒▓▓▒█░█░█░█░█░█░█·█·█░█░█░█░█░█░
+  ∂ ˙··o∘·∘·o∘o∘o∘o∘o∘∘∘∘∘··˙···∘·˙     ··∘∘··∘∘·∘∘∘∘o∘o∘∘∘∘∘∘∘∘∘∘∘∘
+--> Model + organism checkpoint saved at global step 149504 (L16, motifs 185, conf 0.89)
+Chunk 4550/7031 (global 149518) [SPS: 2.81] | Move: 0.004 | Mimic: 0.383 ↑ | CRYSTALLIZE | L16 rad:0.21 | σ:0.625/0.03 | V:0.681 T:0.53 | LRx:1.35
+  field H:2.22b ·  ·░▓█░   · synergy:0.55 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.57 err:0.001
+  drives S:0.00 σ:0.14 C:0.09 G:0.21 M:0.08 | curiosity:0.26 shear-rms:0.25 rad-p:0.003 | field μ:-0.000 rail:0.0109 | grad:13.86 clip:0.36 corr:+0.92
+  stereo width:0.063 side-energy:0.318 pan:+0.10 decoder/target corr:+0.92/+0.67 | dev S/C:0.733/2.073 Δ:+0.02% ready:true plateau:true
+  ecology health:0.71 stagnation:0.34 escape:0.00 | reward:-0.092 μ:-0.080 σr:0.016 | motifs:185/512 candidates:9345 qrej:3405 srej:5702
+  proposals model:RECALL bandit:RESONATE selected:CRYSTALLIZE | action age:0 usage:0.12
+  v ▒█░▪░█░█·█·█·█·█░█░█░█░█▒█░█░█▒▓▒▓▓▒█░█░█░█░█·█░█·█·█░█░█░█░█░█░
+  ∂ ˙··o∘·∘·o∘o∘o∘o∘∘∘∘∘∘···˙·····˙     ··∘∘··∘∘∘o∘∘∘o∘o∘∘∘∘∘∘∘∘∘·∘∘
+Chunk 4600/7031 (global 149568) [SPS: 3.10] | Move: 0.004 | Mimic: 0.372 → | RESONATE | L16 rad:0.21 | σ:0.583/0.03 | V:0.700 T:0.54 | LRx:1.36
+  field H:2.20b ·  ·░▓█░   · synergy:0.55 empower:2.58 | energy:0.72 | φ:0.44 PI:0.04 | model raw/eff:0.89/0.58 err:0.001
+  drives S:0.00 σ:0.16 C:0.09 G:0.21 M:0.08 | curiosity:0.26 shear-rms:0.30 rad-p:0.004 | field μ:-0.001 rail:0.0104 | grad:13.86 clip:0.36 corr:+0.92
+  stereo width:0.065 side-energy:0.323 pan:+0.10 decoder/target corr:+0.92/+0.82 | dev S/C:0.767/1.987 Δ:+0.10% ready:true plateau:true
+  ecology health:0.72 stagnation:0.34 escape:0.00 | reward:-0.093 μ:-0.084 σr:0.018 | motifs:185/512 candidates:9349 qrej:3405 srej:5706
+  proposals model:RECALL bandit:RESONATE selected:RESONATE | action age:1 usage:0.56
+  v ▒█░▪░█░█·█·█·█·█░█░█░█░█▒█░█░█▒▓▒▓▓▒█░█░█░█░█·█░█·█·█░█░█░█░█░█░
+  ∂ ˙∘·o∘∘∘·o∘o∘o∘o∘∘∘∘∘∘···˙·····˙˙    ··∘····∘∘o∘∘∘o∘o∘∘∘∘∘∘∘∘∘∘∘∘
+Chunk 4650/7031 (global 149618) [SPS: 2.79] | Move: 0.004 | Mimic: 0.380 → | RESONATE | L16 rad:0.21 | σ:0.532/0.06 | V:0.715 T:0.57 | LRx:1.40
+  field H:2.22b ·  ·░▓█░   · synergy:0.50 empower:2.58 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.17 C:0.10 G:0.22 M:0.08 | curiosity:0.28 shear-rms:0.29 rad-p:0.004 | field μ:+0.001 rail:0.0105 | grad:12.14 clip:0.41 corr:+0.92
+  stereo width:0.067 side-energy:0.327 pan:+0.10 decoder/target corr:+0.91/+0.76 | dev S/C:0.765/2.214 Δ:+0.55% ready:true plateau:true
+  ecology health:0.69 stagnation:0.36 escape:0.00 | reward:-0.124 μ:-0.102 σr:0.017 | motifs:185/512 candidates:9352 qrej:3405 srej:5709
+  proposals model:HARMONIC bandit:CRYSTALLIZE selected:RESONATE | action age:0 usage:0.36
+  v ▒█░█·█░█░█·█·█·█░█░█░█░█▒█░█░█▒▓▒▓▓▒█░█░█░█░█·█·█·█·█░█░█░█░█░█░
+  ∂ ˙∘·∘o∘∘·∘∘o∘o∘o∘∘∘∘∘∘∘··˙·····˙˙˙   ··∘·∘∘···o∘o∘o·o∘∘∘∘∘∘∘∘∘∘∘∘
+Chunk 4700/7031 (global 149668) [SPS: 3.40] | Move: 0.004 | Mimic: 0.320 → | HOLD | L16 rad:0.22 | σ:0.467/0.04 | V:0.753 T:0.61 | LRx:1.45
+  field H:2.20b ·  ·░▓█░   · synergy:0.57 empower:2.58 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.88/0.56 err:0.002
+  drives S:0.00 σ:0.20 C:0.10 G:0.23 M:0.08 | curiosity:0.28 shear-rms:0.28 rad-p:0.004 | field μ:-0.000 rail:0.0104 | grad:14.08 clip:0.36 corr:+0.94
+  stereo width:0.051 side-energy:0.284 pan:+0.10 decoder/target corr:+0.94/+0.74 | dev S/C:0.708/2.083 Δ:+0.39% ready:true plateau:true
+  ecology health:0.70 stagnation:0.37 escape:0.00 | reward:-0.121 μ:-0.118 σr:0.018 | motifs:185/512 candidates:9355 qrej:3405 srej:5712
+  proposals model:RECALL bandit:CONTRACT selected:HOLD | action age:0 usage:0.17
+  v ▒█░█░█░█░█·█·█·█░█░█░█░█▒█░█░▓▒▓▒▒▓▒█░█░█░█░█·█·█·█·█░█░█░█·█░█░
+  ∂ ˙∘·∘∘·∘·∘∘o∘o∘o∘∘∘∘∘∘···˙····˙˙˙˙  ˙··∘·∘∘···o∘o∘O·o∘∘∘∘∘∘∘o∘·∘∘
+Chunk 4750/7031 (global 149718) [SPS: 2.74] | Move: 0.004 | Mimic: 0.375 → | CONTRACT | L16 rad:0.22 | σ:0.514/0.03 | V:0.743 T:0.62 | LRx:1.48
+  field H:2.18b ·   ▒▓█░   · synergy:0.55 empower:2.57 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.53 err:0.001
+  drives S:0.00 σ:0.19 C:0.11 G:0.24 M:0.09 | curiosity:0.30 shear-rms:0.27 rad-p:0.003 | field μ:+0.001 rail:0.0104 | grad:17.31 clip:0.29 corr:+0.94
+  stereo width:0.048 side-energy:0.276 pan:+0.10 decoder/target corr:+0.94/+0.77 | dev S/C:0.709/2.019 Δ:-0.39% ready:true plateau:true
+  ecology health:0.66 stagnation:0.39 escape:0.00 | reward:-0.155 μ:-0.136 σr:0.016 | motifs:185/512 candidates:9358 qrej:3405 srej:5715
+  proposals model:RECALL bandit:CONTRACT selected:CONTRACT | action age:2 usage:0.30
+  v ▒█░█░█░█░█░█·█·█░█░█░█░█▒█░█░▓▒▓░▒▓▒█░█░█░█░█·█·█·█·█·█░█░█·█░█░
+  ∂ ˙∘·∘∘·∘·∘·∘∘o∘o∘∘∘·∘∘···˙····˙˙˙·  ˙····∘∘·∘·o∘o∘O·o∘o∘∘·∘·o∘·∘∘
+Chunk 4800/7031 (global 149768) [SPS: 2.94] | Move: 0.004 | Mimic: 0.388 → | CONTRACT | L16 rad:0.22 | σ:0.549/0.05 | V:0.726 T:0.63 | LRx:1.47
+  field H:2.20b ·  ·░▓█░   · synergy:0.50 empower:2.58 | energy:0.72 | φ:0.45 PI:0.05 | model raw/eff:0.89/0.54 err:0.001
+  drives S:0.00 σ:0.18 C:0.11 G:0.25 M:0.08 | curiosity:0.31 shear-rms:0.31 rad-p:0.004 | field μ:+0.001 rail:0.0101 | grad:16.21 clip:0.31 corr:+0.94
+  stereo width:0.050 side-energy:0.281 pan:+0.10 decoder/target corr:+0.94/+0.59 | dev S/C:0.790/2.083 Δ:-0.38% ready:true plateau:true
+  ecology health:0.68 stagnation:0.40 escape:0.00 | reward:-0.135 μ:-0.142 σr:0.015 | motifs:185/512 candidates:9361 qrej:3405 srej:5718
+  proposals model:HOLD bandit:CONTRACT selected:CONTRACT | action age:0 usage:0.41
+  v ▒█░█░█░█░█░█·█·█░█░█░█░█░█░█▒▓▒▓▒▓▓░█░█░█░█░█·█·█·█·█·█·█░█·█░█░
+  ∂ ˙∘·∘∘·∘·∘∘∘∘o∘o∘∘∘∘∘∘······∘˙˙˙˙˙ ˙·····∘∘·∘·o∘o∘O·o∘o∘o·∘·o∘·∘∘
+Chunk 4850/7031 (global 149818) [SPS: 3.22] | Move: 0.004 | Mimic: 0.383 → | WIDEN | L16 rad:0.22 | σ:0.546/0.04 | V:0.715 T:0.60 | LRx:1.44
+  field H:2.20b ·  ·░▓█░   · synergy:0.53 empower:2.57 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.17 C:0.10 G:0.23 M:0.09 | curiosity:0.28 shear-rms:0.26 rad-p:0.003 | field μ:+0.001 rail:0.0104 | grad:16.21 clip:0.31 corr:+0.91
+  stereo width:0.075 side-energy:0.347 pan:+0.10 decoder/target corr:+0.91/+0.86 | dev S/C:0.733/2.062 Δ:+0.46% ready:true plateau:true
+  ecology health:0.70 stagnation:0.37 escape:0.00 | reward:-0.121 μ:-0.120 σr:0.017 | motifs:185/512 candidates:9364 qrej:3405 srej:5721
+  proposals model:RECALL bandit:RECALL selected:WIDEN | action age:0 usage:0.21
+  v ▒█░█░█░█░█░█·█·█░█░█░█░█░█░█▒▓▒▓▒▓▓░█░█░█░█░█·█·█·█·█·█·█░█░█░█░
+  ∂ ˙∘·∘∘··∘∘∘∘∘o∘o∘∘∘·∘∘······∘˙˙˙˙˙ ˙·····∘∘·∘·o∘o∘O∘o∘o∘o∘∘·∘∘·∘∘
+Chunk 4900/7031 (global 149868) [SPS: 2.58] | Move: 0.004 | Mimic: 0.402 ↑ | WIDEN | L16 rad:0.22 | σ:0.595/0.03 | V:0.716 T:0.59 | LRx:1.44
+  field H:2.20b ·  ·░▓█░   · synergy:0.49 empower:2.57 | energy:0.72 | φ:0.46 PI:0.06 | model raw/eff:0.89/0.54 err:0.001
+  drives S:0.00 σ:0.17 C:0.10 G:0.23 M:0.09 | curiosity:0.30 shear-rms:0.27 rad-p:0.003 | field μ:+0.001 rail:0.0106 | grad:16.73 clip:0.30 corr:+0.90
+  stereo width:0.078 side-energy:0.354 pan:+0.10 decoder/target corr:+0.90/+0.98 | dev S/C:0.679/2.005 Δ:-0.14% ready:true plateau:true
+  ecology health:0.67 stagnation:0.37 escape:0.00 | reward:-0.121 μ:-0.118 σr:0.011 | motifs:185/512 candidates:9367 qrej:3405 srej:5724
+  proposals model:RECALL bandit:CONTRACT selected:WIDEN | action age:0 usage:0.18
+  v ▒█░█░█░█░█░█·█·█░█░█░█░█░█░█░▓▒▓▒▓▓░█░█░█░█░█·█·█·█·█·█·█·█░█░█░
+  ∂  ∘·∘∘··∘∘∘∘∘o∘o∘∘∘·∘·········˙  ˙ ˙···∘··∘·∘∘O∘o∘O∘o∘o∘o∘o·∘∘∘∘∘
+Chunk 4950/7031 (global 149918) [SPS: 3.16] | Move: 0.004 | Mimic: 0.279 ↓ | RECALL | L16 rad:0.22 | σ:0.577/0.03 | V:0.700 T:0.58 | LRx:1.41
+  field H:2.20b ·  ·░▓█░   · synergy:0.58 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.16 C:0.10 G:0.23 M:0.08 | curiosity:0.28 shear-rms:0.27 rad-p:0.004 | field μ:+0.001 rail:0.0105 | grad:14.04 clip:0.36 corr:+0.91
+  stereo width:0.070 side-energy:0.335 pan:+0.10 decoder/target corr:+0.91/+0.92 | dev S/C:0.769/2.184 Δ:+0.38% ready:true plateau:true
+  ecology health:0.70 stagnation:0.37 escape:0.00 | reward:-0.117 μ:-0.109 σr:0.017 | motifs:185/512 candidates:9370 qrej:3405 srej:5727
+  proposals model:RECALL bandit:RECALL selected:RECALL | action age:2 usage:0.55
+  v ▒█░█░█░█░█·█·█·█░█░█░█░█░█░█░▓▒▓▒▓▓░█░█░█░█░█·█·█·█·█·█·█·█░█░█░
+  ∂  ∘·∘∘··∘∘∘o∘o∘o∘∘∘∘∘·········˙  ˙ ˙······∘·∘∘O∘o∘O∘o∘o∘o∘o·∘∘∘∘∘
+Chunk 5000/7031 (global 149968) [SPS: 2.94] | Move: 0.004 | Mimic: 0.382 ↑ | RECALL | L16 rad:0.21 | σ:0.452/0.01 | V:0.729 T:0.57 | LRx:1.39
+  field H:2.22b ·  ·░▓█░   · synergy:0.54 empower:2.57 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.58 err:0.001
+  drives S:0.00 σ:0.18 C:0.09 G:0.21 M:0.09 | curiosity:0.26 shear-rms:0.24 rad-p:0.003 | field μ:-0.001 rail:0.0109 | grad:8.75 clip:0.57 corr:+0.89
+  stereo width:0.087 side-energy:0.374 pan:+0.10 decoder/target corr:+0.89/+0.85 | dev S/C:0.736/2.071 Δ:+0.81% ready:true plateau:true
+  ecology health:0.72 stagnation:0.34 escape:0.00 | reward:-0.104 μ:-0.098 σr:0.016 | motifs:185/512 candidates:9374 qrej:3405 srej:5731
+  proposals model:RECALL bandit:CONTRACT selected:RECALL | action age:0 usage:0.51
+  v ▒█░█░█░█░█·█·█░█·█░█░█░█░█░█░▓▒▓▒▓▓░█░█░█░█░█·█·█·█·█·█·█·█░█░█░
+  ∂  ··∘···∘∘∘o∘o∘∘∘o∘∘∘·········˙    ˙·∘······∘∘O∘o∘O∘o∘o∘o∘o·∘∘∘∘∘
+Chunk 5050/7031 (global 150018) [SPS: 3.33] | Move: 0.004 | Mimic: 0.440 ↑ | RECALL | L16 rad:0.22 | σ:0.627/0.04 | V:0.706 T:0.59 | LRx:1.44
+  field H:2.20b ·  ·░▓█░   · synergy:0.51 empower:2.58 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.89/0.54 err:0.001
+  drives S:0.00 σ:0.16 C:0.10 G:0.24 M:0.09 | curiosity:0.30 shear-rms:0.27 rad-p:0.003 | field μ:+0.000 rail:0.0107 | grad:8.75 clip:0.57 corr:+0.92
+  stereo width:0.068 side-energy:0.330 pan:+0.10 decoder/target corr:+0.91/+0.91 | dev S/C:0.730/2.065 Δ:-0.26% ready:true plateau:true
+  ecology health:0.68 stagnation:0.38 escape:0.00 | reward:-0.125 μ:-0.118 σr:0.017 | motifs:185/512 candidates:9377 qrej:3405 srej:5734
+  proposals model:RECALL bandit:RECALL selected:RECALL | action age:1 usage:0.48
+  v ▒█░█░█░█░█·█·█░█·█░█░█░█░█░█▒▓▒▓▒▓▓░█░█░█░█░█·█·█·█·▪·█░█·█░█░█░
+  ∂  ··∘····∘∘o∘o∘∘∘o∘∘∘········˙˙    ˙········∘∘O∘o∘O∘ooo∘∘∘o·∘∘∘∘∘
+Chunk 5100/7031 (global 150068) [SPS: 2.70] | Move: 0.004 | Mimic: 0.336 ↓ | CONTRACT | L16 rad:0.21 | σ:0.599/0.04 | V:0.706 T:0.56 | LRx:1.40
+  field H:2.22b ·  ·░▓█░   · synergy:0.65 empower:2.58 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.89/0.57 err:0.001
+  drives S:0.00 σ:0.14 C:0.09 G:0.22 M:0.08 | curiosity:0.27 shear-rms:0.26 rad-p:0.004 | field μ:+0.000 rail:0.0107 | grad:11.83 clip:0.42 corr:+0.92
+  stereo width:0.064 side-energy:0.321 pan:+0.10 decoder/target corr:+0.92/+0.90 | dev S/C:0.697/1.995 Δ:+0.32% ready:true plateau:true
+  ecology health:0.71 stagnation:0.35 escape:0.00 | reward:-0.045 μ:-0.093 σr:0.021 | motifs:185/512 candidates:9380 qrej:3405 srej:5737
+  proposals model:RECALL bandit:CRYSTALLIZE selected:CONTRACT | action age:0 usage:0.12
+  v ▒█░█░█░█░█·█·█░█░█░█░█░█▒█░█▒▓▒▓▒▓▓▒█░█░█░█·█·█·█·█·█·█░█·█░█░█░
+  ∂  ··∘····∘∘o·o∘∘∘∘∘∘∘····˙···˙˙    ˙˙·∘∘∘∘··o∘O∘o·O∘o∘o∘∘∘o∘∘∘∘∘∘
+Chunk 5150/7031 (global 150118) [SPS: 3.15] | Move: 0.004 | Mimic: 0.372 ↑ | WIDEN | L16 rad:0.21 | σ:0.578/0.05 | V:0.704 T:0.56 | LRx:1.39
+  field H:2.22b ·  ·░▓█░   · synergy:0.58 empower:2.58 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.89/0.57 err:0.001
+  drives S:0.00 σ:0.16 C:0.09 G:0.22 M:0.09 | curiosity:0.26 shear-rms:0.25 rad-p:0.003 | field μ:+0.000 rail:0.0109 | grad:12.46 clip:0.40 corr:+0.89
+  stereo width:0.088 side-energy:0.375 pan:+0.10 decoder/target corr:+0.89/+0.92 | dev S/C:0.675/1.961 Δ:+0.14% ready:true plateau:true
+  ecology health:0.71 stagnation:0.35 escape:0.00 | reward:-0.114 μ:-0.092 σr:0.018 | motifs:185/512 candidates:9383 qrej:3405 srej:5740
+  proposals model:RECALL bandit:CRYSTALLIZE selected:WIDEN | action age:2 usage:0.12
+  v ▒█░█░█▒█░█·█·█·█░█░█░█░█▒█▒█▒▓▒▓▒▓▓▒█░█░█░█·█·█·█·█·▪·█░█░█░█·█░
+  ∂  ··∘·∘˙·∘·o·o∘o∘∘·∘∘····˙·˙·˙˙ ˙  ˙˙··∘∘∘·∘o∘O∘o∘O∘ooo∘∘∘∘∘∘∘o∘∘
+Chunk 5200/7031 (global 150168) [SPS: 2.68] | Move: 0.004 | Mimic: 0.478 ↑ | CRYSTALLIZE | L16 rad:0.21 | σ:0.606/0.05 | V:0.696 T:0.56 | LRx:1.39
+  field H:2.22b ·  ·░▓█░   · synergy:0.50 empower:2.57 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.15 C:0.10 G:0.22 M:0.09 | curiosity:0.28 shear-rms:0.23 rad-p:0.003 | field μ:+0.001 rail:0.0110 | grad:11.98 clip:0.42 corr:+0.90
+  stereo width:0.077 side-energy:0.350 pan:+0.10 decoder/target corr:+0.90/+0.97 | dev S/C:0.705/2.001 Δ:-0.66% ready:true plateau:true
+  ecology health:0.70 stagnation:0.36 escape:0.00 | reward:-0.101 μ:-0.097 σr:0.012 | motifs:185/512 candidates:9386 qrej:3405 srej:5743
+  proposals model:RECALL bandit:CRYSTALLIZE selected:CRYSTALLIZE | action age:0 usage:0.35
+  v ▓█░█░█░█░█·█·█·█░█░█░█▒█▒█▒█▒▓▒▓▒▒▓▒█░█░█░█·█·█·█·█·▪·█░█░█░█·█░
+  ∂  ··∘·∘··∘·o·o∘o∘∘∘∘···˙·˙·˙·˙˙ ˙  ˙˙··∘∘∘··o∘O∘O∘O∘ooo∘∘∘∘∘∘∘o∘∘
+Chunk 5250/7031 (global 150218) [SPS: 2.82] | Move: 0.004 | Mimic: 0.350 ↑ | HARMONIC | L16 rad:0.21 | σ:0.541/0.04 | V:0.708 T:0.57 | LRx:1.41
+  field H:2.22b ·  ·░▓█░   · synergy:0.49 empower:2.57 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.55 err:0.000
+  drives S:0.00 σ:0.16 C:0.10 G:0.22 M:0.09 | curiosity:0.29 shear-rms:0.24 rad-p:0.003 | field μ:-0.000 rail:0.0110 | grad:9.26 clip:0.54 corr:+0.92
+  stereo width:0.066 side-energy:0.325 pan:+0.10 decoder/target corr:+0.92/+0.83 | dev S/C:0.707/2.071 Δ:+0.06% ready:true plateau:true
+  ecology health:0.69 stagnation:0.36 escape:0.00 | reward:-0.122 μ:-0.105 σr:0.013 | motifs:185/512 candidates:9389 qrej:3405 srej:5746
+  proposals model:RECALL bandit:CRYSTALLIZE selected:HARMONIC | action age:0 usage:0.17
+  v ▓▓░█░█▒█░█·█░█·█░█░█░█▒█▒▓▒█▒▓▒▓▒▓▓▒█░█░█░█·█·█·█·▪·▪·█░█░█░█·█░
+  ∂  ˙·∘·∘˙·∘·o·∘∘o∘∘∘∘···˙·˙˙˙·˙˙ ˙  ˙˙··∘∘·∘·o∘O∘o∘Ooooo∘∘∘∘∘∘∘o∘∘
+Chunk 5300/7031 (global 150268) [SPS: 3.48] | Move: 0.004 | Mimic: 0.271 ↓ | EXPLORE | L16 rad:0.21 | σ:0.579/0.04 | V:0.708 T:0.58 | LRx:1.41
+  field H:2.22b ·  ·░▓█░   · synergy:0.55 empower:2.58 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.89/0.58 err:0.001
+  drives S:0.00 σ:0.17 C:0.09 G:0.22 M:0.09 | curiosity:0.26 shear-rms:0.32 rad-p:0.004 | field μ:-0.001 rail:0.0103 | grad:9.26 clip:0.54 corr:+0.91
+  stereo width:0.072 side-energy:0.341 pan:+0.10 decoder/target corr:+0.91/+0.92 | dev S/C:0.744/2.063 Δ:+0.13% ready:true plateau:true
+  ecology health:0.72 stagnation:0.35 escape:0.00 | reward:-0.113 μ:-0.103 σr:0.020 | motifs:185/512 candidates:9392 qrej:3405 srej:5749
+  proposals model:RECALL bandit:CONTRACT selected:EXPLORE | action age:2 usage:0.41
+  v ▓▓░█░█░█░█·█░█·█░█░█░█▒█▒▓▒▓▒▓▒▓▒▓▓▒█░█░█░█·█·█·█·█·▪·█░█░▪░█·█░
+  ∂ ˙˙·∘·∘··∘·o·∘·o∘∘∘····˙·˙˙ ˙˙  ˙  ˙˙··∘∘·∘∘o·O∘o·o∘ooo∘∘∘∘o∘∘o∘·
+Chunk 5350/7031 (global 150318) [SPS: 2.55] | Move: 0.004 | Mimic: 0.281 → | RECALL | L16 rad:0.21 | σ:0.494/0.04 | V:0.723 T:0.56 | LRx:1.38
+  field H:2.20b ·  ·░▓█░   · synergy:0.51 empower:2.58 | energy:0.72 | φ:0.46 PI:0.06 | model raw/eff:0.89/0.58 err:0.001
+  drives S:0.00 σ:0.18 C:0.09 G:0.20 M:0.08 | curiosity:0.25 shear-rms:0.29 rad-p:0.004 | field μ:-0.000 rail:0.0104 | grad:5.59 clip:0.89 corr:+0.92
+  stereo width:0.066 side-energy:0.325 pan:+0.10 decoder/target corr:+0.92/+0.70 | dev S/C:0.705/2.029 Δ:-0.05% ready:true plateau:true
+  ecology health:0.72 stagnation:0.33 escape:0.00 | reward:-0.092 μ:-0.087 σr:0.019 | motifs:185/512 candidates:9395 qrej:3405 srej:5752
+  proposals model:RECALL bandit:RESONATE selected:RECALL | action age:0 usage:0.12
+  v ▓▓░█░█░█░█·█░█·█░█░█░█▒█▒▓▒▓▒▓▓▓▒▓▓▒█░█░█░█░█·█·█·█·█·█░█░▪░▪·█░
+  ∂ ˙ ·∘····∘·o·∘∘o∘∘∘∘···˙·˙˙ ˙   ˙  ˙˙··∘∘·∘∘∘∘O∘o∘o∘o∘o∘∘∘∘o∘oo∘·
+Chunk 5400/7031 (global 150368) [SPS: 2.94] | Move: 0.004 | Mimic: 0.323 → | CONTRACT | L16 rad:0.21 | σ:0.460/0.04 | V:0.774 T:0.61 | LRx:1.46
+  field H:2.22b ·  ·░▓█░   · synergy:0.45 empower:2.57 | energy:0.72 | φ:0.45 PI:0.05 | model raw/eff:0.89/0.54 err:0.001
+  drives S:0.00 σ:0.21 C:0.10 G:0.23 M:0.09 | curiosity:0.30 shear-rms:0.29 rad-p:0.004 | field μ:+0.001 rail:0.0103 | grad:6.82 clip:0.73 corr:+0.92
+  stereo width:0.063 side-energy:0.318 pan:+0.10 decoder/target corr:+0.92/+0.90 | dev S/C:0.790/2.158 Δ:-0.19% ready:true plateau:true
+  ecology health:0.66 stagnation:0.37 escape:0.00 | reward:-0.143 μ:-0.123 σr:0.022 | motifs:185/512 candidates:9399 qrej:3405 srej:5756
+  proposals model:RECALL bandit:CRYSTALLIZE selected:CONTRACT | action age:0 usage:0.15
+  v █▓▒█░█░█░█·█░█·█░█░█░█▒█▒▓▒▓▒▓▓▓▒▒▓▒█▒█░█░█·█·█·█·█·█·█░█░▪░▪░█░
+  ∂ · ˙∘∘∘··∘·o·∘∘o∘∘∘∘···˙· ˙ ˙      ˙˙·˙·∘·∘∘o∘O∘o∘o∘o∘o∘∘∘∘o∘o∘∘·
+Chunk 5450/7031 (global 150418) [SPS: 4.38] | Move: 0.004 | Mimic: 0.448 ↑ | HARMONIC | L16 rad:0.22 | σ:0.634/0.06 | V:0.708 T:0.62 | LRx:1.48
+  field H:2.16b ·   ▒▓█░   · synergy:0.50 empower:2.58 | energy:0.71 | φ:0.45 PI:0.06 | model raw/eff:0.88/0.54 err:0.002
+  drives S:0.00 σ:0.17 C:0.11 G:0.24 M:0.08 | curiosity:0.30 shear-rms:0.29 rad-p:0.004 | field μ:+0.002 rail:0.0098 | grad:11.31 clip:0.44 corr:+0.91
+  stereo width:0.071 side-energy:0.336 pan:+0.10 decoder/target corr:+0.91/+0.98 | dev S/C:0.747/2.178 Δ:-0.54% ready:true plateau:true
+  ecology health:0.67 stagnation:0.39 escape:0.00 | reward:-0.142 μ:-0.133 σr:0.023 | motifs:185/512 candidates:9402 qrej:3405 srej:5759
+  proposals model:RECALL bandit:HARMONIC selected:HARMONIC | action age:3 usage:0.26
+  v █▓▒█░█░█░█·█░█·█·█░█░█▒█▒▓▒▓▒▓▓▓▒▒█▒█▒█░█·█·█·█·█·█·▪·█░█░█░█░█▒
+  ∂ · ˙∘·∘··∘·o∘∘∘o∘o∘∘···˙· ˙       ˙·˙·˙·∘∘o∘o∘O∘o∘o∘ooo∘∘∘∘∘∘∘∘∘˙
+Chunk 5500/7031 (global 150468) [SPS: 4.62] | Move: 0.004 | Mimic: 0.324 → | HARMONIC | L16 rad:0.22 | σ:0.702/0.05 | V:0.664 T:0.56 | LRx:1.40
+  field H:2.20b ·   ▒▓█░   · synergy:0.57 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.88/0.56 err:0.002
+  drives S:0.00 σ:0.12 C:0.10 G:0.23 M:0.08 | curiosity:0.28 shear-rms:0.24 rad-p:0.003 | field μ:+0.001 rail:0.0107 | grad:11.31 clip:0.44 corr:+0.92
+  stereo width:0.065 side-energy:0.324 pan:+0.10 decoder/target corr:+0.92/+0.93 | dev S/C:0.763/2.129 Δ:-0.62% ready:true plateau:true
+  ecology health:0.70 stagnation:0.37 escape:0.00 | reward:-0.087 μ:-0.096 σr:0.022 | motifs:185/512 candidates:9405 qrej:3405 srej:5762
+  proposals model:RECALL bandit:HARMONIC selected:HARMONIC | action age:0 usage:0.52
+  v █▓▒█░█░█░█·█░█·█·█░█░█▒█▒▓▒▓▓▒▓▓▓▒█▒█░█░█·█·█·█·█·█░▪·█░█░█░█░█▒
+  ∂ · ˙∘∘∘····o∘∘∘o∘o∘∘···˙· ˙       ˙·˙····∘o∘o∘O∘o∘o∘∘oo∘∘∘∘∘∘∘∘∘
+Chunk 5550/7031 (global 150518) [SPS: 3.94] | Move: 0.004 | Mimic: 0.435 → | HARMONIC | L16 rad:0.22 | σ:0.583/0.04 | V:0.677 T:0.53 | LRx:1.36
+  field H:2.22b ·  ·░▓█░   · synergy:0.55 empower:2.58 | energy:0.72 | φ:0.45 PI:0.05 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.13 C:0.10 G:0.22 M:0.08 | curiosity:0.28 shear-rms:0.25 rad-p:0.004 | field μ:-0.000 rail:0.0110 | grad:11.41 clip:0.44 corr:+0.91
+  stereo width:0.070 side-energy:0.335 pan:+0.10 decoder/target corr:+0.91/+0.91 | dev S/C:0.761/2.103 Δ:-0.12% ready:true plateau:true
+  ecology health:0.70 stagnation:0.36 escape:0.00 | reward:-0.102 μ:-0.088 σr:0.016 | motifs:185/512 candidates:9408 qrej:3405 srej:5765
+  proposals model:RECALL bandit:HARMONIC selected:HARMONIC | action age:2 usage:0.60
+  v █▓▒█░█░█░█·█·█·█·█░█░█░█▒▓▒▓▓▒▓▓▓▒█▒█░▓░█·█·█·█·█·█░▪·█░█░█░█░█▒
+  ∂ ·  ∘∘∘··∘·o∘o∘o∘o∘∘∘∘···      ˙  ˙·˙··˙·∘o∘o∘O∘o∘o∘∘oo∘∘∘∘∘∘∘∘∘
+Chunk 5600/7031 (global 150568) [SPS: 4.20] | Move: 0.004 | Mimic: 0.330 ↓ | RECALL | L16 rad:0.21 | σ:0.572/0.03 | V:0.708 T:0.57 | LRx:1.42
+  field H:2.20b ·  ·░▓█░   · synergy:0.51 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.55 err:0.001
+  drives S:0.00 σ:0.16 C:0.10 G:0.23 M:0.08 | curiosity:0.29 shear-rms:0.26 rad-p:0.003 | field μ:-0.000 rail:0.0107 | grad:15.04 clip:0.33 corr:+0.93
+  stereo width:0.059 side-energy:0.305 pan:+0.10 decoder/target corr:+0.93/+0.94 | dev S/C:0.702/2.027 Δ:+0.12% ready:true plateau:true
+  ecology health:0.68 stagnation:0.37 escape:0.00 | reward:-0.116 μ:-0.107 σr:0.017 | motifs:185/512 candidates:9411 qrej:3405 srej:5768
+  proposals model:RECALL bandit:CRYSTALLIZE selected:RECALL | action age:0 usage:0.10
+  v █▒▒█░█░█░█░█·█·█░█░█░█░█▒▓▓▒▓▒▓▓▓▒█▒█░▓░█·█·█·█·█·█░█░█░█░█░█░█▒
+  ∂ ·  ∘∘∘··∘·∘∘o∘o∘∘∘∘∘∘∘··      ˙  ˙·˙··˙·∘o∘o∘O∘o∘o∘∘∘∘∘∘∘∘∘·∘∘∘
+Chunk 5650/7031 (global 150618) [SPS: 3.41] | Move: 0.004 | Mimic: 0.360 ↑ | HARMONIC | L16 rad:0.21 | σ:0.617/0.04 | V:0.702 T:0.58 | LRx:1.43
+  field H:2.22b ·  ·░▓█░   · synergy:0.59 empower:2.58 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.16 C:0.10 G:0.24 M:0.08 | curiosity:0.28 shear-rms:0.26 rad-p:0.003 | field μ:-0.001 rail:0.0109 | grad:16.71 clip:0.30 corr:+0.91
+  stereo width:0.071 side-energy:0.337 pan:+0.10 decoder/target corr:+0.91/+0.97 | dev S/C:0.736/2.077 Δ:+0.65% ready:true plateau:true
+  ecology health:0.70 stagnation:0.38 escape:0.00 | reward:-0.121 μ:-0.113 σr:0.018 | motifs:185/512 candidates:9414 qrej:3405 srej:5771
+  proposals model:RECALL bandit:HARMONIC selected:HARMONIC | action age:1 usage:0.38
+  v █▒▓█░█░█░█░█·█·█░█░█░█▒█▒▓▓▒▓▒█▓▓▒█░▓░▓░█·▪·█·█·█·█·█░█░█░█░█░█▒
+  ∂ ·  ∘·∘··∘·∘∘o∘o∘∘∘∘∘··˙·      ·  ˙··˙·˙·∘ooO∘O∘O∘O∘o∘∘∘∘∘∘∘·∘∘∘
+Chunk 5700/7031 (global 150668) [SPS: 2.45] | Move: 0.004 | Mimic: 0.344 ↑ | HARMONIC | L16 rad:0.21 | σ:0.599/0.06 | V:0.699 T:0.56 | LRx:1.41
+  field H:2.20b ·  ·░▓█░   · synergy:0.45 empower:2.57 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.55 err:0.001
+  drives S:0.00 σ:0.15 C:0.10 G:0.23 M:0.09 | curiosity:0.29 shear-rms:0.27 rad-p:0.004 | field μ:+0.001 rail:0.0107 | grad:18.39 clip:0.27 corr:+0.92
+  stereo width:0.067 side-energy:0.326 pan:+0.10 decoder/target corr:+0.92/+0.63 | dev S/C:0.695/1.983 Δ:+0.19% ready:true plateau:true
+  ecology health:0.68 stagnation:0.37 escape:0.00 | reward:-0.115 μ:-0.106 σr:0.011 | motifs:185/512 candidates:9417 qrej:3405 srej:5774
+  proposals model:RECALL bandit:HARMONIC selected:HARMONIC | action age:0 usage:0.57
+  v █▒▓█░█░█░█░█·█·█░█░█░█░█▒▓▓▒▓▒█▒▓▒█░█░█▒█·▪·█·█·█·█░█░█░█░█░█░█▒
+  ∂ ·  ∘·∘··∘·∘∘o∘o∘∘∘∘∘····     ˙· ˙˙·····˙∘ooO∘O∘o∘o∘∘∘∘∘∘∘∘∘·∘∘∘
+Chunk 5750/7031 (global 150718) [SPS: 2.97] | Move: 0.004 | Mimic: 0.468 ↑ | HARMONIC | L16 rad:0.21 | σ:0.550/0.04 | V:0.707 T:0.56 | LRx:1.39
+  field H:2.22b ·  ·░▓█░   · synergy:0.59 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.57 err:0.001
+  drives S:0.00 σ:0.16 C:0.10 G:0.22 M:0.08 | curiosity:0.26 shear-rms:0.24 rad-p:0.003 | field μ:-0.001 rail:0.0110 | grad:18.39 clip:0.27 corr:+0.89
+  stereo width:0.085 side-energy:0.370 pan:+0.10 decoder/target corr:+0.89/+0.98 | dev S/C:0.783/2.122 Δ:+0.06% ready:true plateau:true
+  ecology health:0.71 stagnation:0.36 escape:0.00 | reward:-0.108 μ:-0.100 σr:0.018 | motifs:185/512 candidates:9420 qrej:3405 srej:5777
+  proposals model:RECALL bandit:HARMONIC selected:HARMONIC | action age:0 usage:0.59
+  v █▒▓█░█░█░█░█·█·█░█░█░█░█▒▓▓▒▓▒▓▒▓▒█░█░█▒█·▪·█·█·█·█░█░█░█░█░█░█▒
+  ∂ ∘  ∘·∘∘·∘··∘o∘o∘∘·∘∘····    ˙˙˙ ˙˙···∘·˙∘ooO∘o∘o∘o∘∘∘∘∘∘∘∘∘·∘∘∘
+Chunk 5800/7031 (global 150768) [SPS: 2.58] | Move: 0.004 | Mimic: 0.225 ↓ | HARMONIC | L16 rad:0.21 | σ:0.535/0.03 | V:0.713 T:0.56 | LRx:1.39
+  field H:2.22b ·  ·░▓█░   · synergy:0.51 empower:2.58 | energy:0.72 | φ:0.45 PI:0.05 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.17 C:0.09 G:0.22 M:0.08 | curiosity:0.28 shear-rms:0.24 rad-p:0.003 | field μ:-0.000 rail:0.0110 | grad:9.45 clip:0.53 corr:+0.89
+  stereo width:0.086 side-energy:0.372 pan:+0.10 decoder/target corr:+0.89/+0.25 | dev S/C:0.760/2.058 Δ:+0.16% ready:true plateau:true
+  ecology health:0.69 stagnation:0.35 escape:0.00 | reward:-0.115 μ:-0.098 σr:0.014 | motifs:185/512 candidates:9424 qrej:3405 srej:5781
+  proposals model:RECALL bandit:CRYSTALLIZE selected:HARMONIC | action age:0 usage:0.50
+  v █▒▓█░█░█░█░█·█·█░█░█░█░█▒▓▓▒▓▒█▒█▒█░█░█▒█·▪·█·█·█░█·█░█░█░█░█░█▒
+  ∂ ∘  ··∘∘·∘··∘o∘o∘∘∘∘∘····    ˙˙·˙·˙···∘·˙∘ooO∘O∘o∘∘∘o∘∘∘∘∘∘∘·∘·∘˙
+Chunk 5850/7031 (global 150818) [SPS: 3.13] | Move: 0.004 | Mimic: 0.331 → | RECALL | L16 rad:0.21 | σ:0.621/0.04 | V:0.700 T:0.57 | LRx:1.41
+  field H:2.20b ·  ·░▓█░   · synergy:0.50 empower:2.58 | energy:0.72 | φ:0.46 PI:0.08 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.16 C:0.10 G:0.22 M:0.08 | curiosity:0.28 shear-rms:0.26 rad-p:0.003 | field μ:+0.000 rail:0.0107 | grad:13.64 clip:0.37 corr:+0.92
+  stereo width:0.062 side-energy:0.315 pan:+0.10 decoder/target corr:+0.92/+0.44 | dev S/C:0.690/1.979 Δ:+0.01% ready:true plateau:true
+  ecology health:0.70 stagnation:0.36 escape:0.00 | reward:-0.092 μ:-0.105 σr:0.015 | motifs:185/512 candidates:9427 qrej:3405 srej:5784
+  proposals model:RECALL bandit:RECALL selected:RECALL | action age:1 usage:0.44
+  v █▓▓█▒█░█░█░█·█·█░█░█░█░█▒▓▓▒▓▒▓▒█░█░█░█░█·█·█·█·█·█░█░█░█░█░█░█▒
+  ∂ ∘  ·˙∘∘·∘··∘o∘o∘∘∘∘∘····    ˙˙˙˙····∘·∘·∘o∘o∘o∘o∘o∘∘∘∘∘·∘∘∘·∘·∘˙
+Chunk 5900/7031 (global 150868) [SPS: 2.51] | Move: 0.004 | Mimic: 0.230 ↓ | HARMONIC | L16 rad:0.21 | σ:0.644/0.06 | V:0.683 T:0.54 | LRx:1.36
+  field H:2.22b ·  ·░▓█░   · synergy:0.51 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.58 err:0.001
+  drives S:0.00 σ:0.14 C:0.09 G:0.21 M:0.08 | curiosity:0.26 shear-rms:0.25 rad-p:0.003 | field μ:-0.001 rail:0.0110 | grad:9.17 clip:0.55 corr:+0.89
+  stereo width:0.090 side-energy:0.380 pan:+0.10 decoder/target corr:+0.89/+0.00 | dev S/C:0.728/2.082 Δ:+0.35% ready:true plateau:true
+  ecology health:0.72 stagnation:0.33 escape:0.00 | reward:-0.083 μ:-0.084 σr:0.016 | motifs:185/512 candidates:9430 qrej:3405 srej:5787
+  proposals model:RECALL bandit:WIDEN selected:HARMONIC | action age:0 usage:0.11
+  v █▒▓█░█░█░█░█·█░█░█░█░█▒█▒▓▒▒▓▒▓▒█░█░█░█░█·▪·█·█·█·█░█░█░█░█░█▒█▒
+  ∂ ∘  ··∘∘∘∘·∘·o∘∘∘∘∘∘∘··˙·    ˙˙˙ ····∘·∘·∘ooo∘o∘o∘o∘∘∘∘∘·∘∘∘·∘˙∘˙
+Chunk 5950/7031 (global 150918) [SPS: 3.10] | Move: 0.004 | Mimic: 0.226 ↓ | HARMONIC | L16 rad:0.21 | σ:0.580/0.04 | V:0.701 T:0.56 | LRx:1.40
+  field H:2.20b ·  ·░▓█░   · synergy:0.48 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.54 err:0.001
+  drives S:0.00 σ:0.15 C:0.10 G:0.23 M:0.08 | curiosity:0.30 shear-rms:0.26 rad-p:0.004 | field μ:+0.001 rail:0.0108 | grad:9.17 clip:0.55 corr:+0.91
+  stereo width:0.074 side-energy:0.343 pan:+0.10 decoder/target corr:+0.91/+0.33 | dev S/C:0.701/2.057 Δ:+0.10% ready:true plateau:true
+  ecology health:0.67 stagnation:0.37 escape:0.00 | reward:-0.105 μ:-0.102 σr:0.013 | motifs:185/512 candidates:9433 qrej:3405 srej:5790
+  proposals model:RECALL bandit:CRYSTALLIZE selected:HARMONIC | action age:0 usage:0.16
+  v █▒▓█░█░█░█░█·█·█░█░█░█░█▒▓▒▒▓▒▓▒█░█░█░█░█░█·█·█·█·█░█·█░█░█░█▒█▒
+  ∂ ∘  ··∘∘∘∘·∘·o∘o∘∘·∘∘····    ˙˙˙˙·∘··∘·∘·∘∘∘o∘o∘o∘o∘∘∘o∘∘∘∘∘·∘ ∘
+Chunk 6000/7031 (global 150968) [SPS: 2.44] | Move: 0.004 | Mimic: 0.187 ↓ | HOLD | L16 rad:0.21 | σ:0.627/0.04 | V:0.699 T:0.58 | LRx:1.43
+  field H:2.24b ·  ·░▓█·   · synergy:0.57 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.55 err:0.001
+  drives S:0.00 σ:0.15 C:0.10 G:0.24 M:0.08 | curiosity:0.29 shear-rms:0.25 rad-p:0.003 | field μ:+0.001 rail:0.0110 | grad:22.02 clip:0.23 corr:+0.92
+  stereo width:0.063 side-energy:0.316 pan:+0.10 decoder/target corr:+0.92/+1.00 | dev S/C:0.730/2.073 Δ:-0.35% ready:true plateau:true
+  ecology health:0.69 stagnation:0.38 escape:0.00 | reward:-0.120 μ:-0.117 σr:0.017 | motifs:185/512 candidates:9436 qrej:3405 srej:5793
+  proposals model:RECALL bandit:CRYSTALLIZE selected:HOLD | action age:0 usage:0.06
+  v █▒▓█▒█░█░█░█·█·█░█░█░█░█▒▓▒▒▓▒█▒█░█░█░█░█░▪·█·█·█·█░█·█░█░█░█▒█▒
+  ∂ ∘˙˙·˙∘∘∘∘∘∘·o∘o∘∘·∘∘····    ˙˙·˙·∘∘∘∘∘∘∘∘∘oo∘o∘o∘o∘∘∘o∘∘∘∘∘·∘ ∘
+Chunk 6050/7031 (global 151018) [SPS: 2.60] | Move: 0.004 | Mimic: 0.379 ↑ | HOLD | L16 rad:0.21 | σ:0.663/0.05 | V:0.672 T:0.55 | LRx:1.37
+  field H:2.20b ·  ·░▓█░   · synergy:0.52 empower:2.57 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.89/0.57 err:0.001
+  drives S:0.00 σ:0.13 C:0.10 G:0.22 M:0.09 | curiosity:0.26 shear-rms:0.27 rad-p:0.003 | field μ:+0.001 rail:0.0109 | grad:17.96 clip:0.28 corr:+0.92
+  stereo width:0.065 side-energy:0.320 pan:+0.10 decoder/target corr:+0.92/+1.00 | dev S/C:0.760/2.075 Δ:+0.14% ready:true plateau:true
+  ecology health:0.71 stagnation:0.35 escape:0.00 | reward:-0.093 μ:-0.088 σr:0.020 | motifs:185/512 candidates:9439 qrej:3405 srej:5796
+  proposals model:RECALL bandit:RESONATE selected:HOLD | action age:0 usage:0.05
+  v █▒▓█▒█░█░█·█·█·█░█░█░█▒█▒▓▒▒▓▒▓▒█░█░█░█░█░█·█·█·█░█·█·█░█░█░█▒█▒
+  ∂ ∘˙˙·˙∘∘∘·∘o·o∘o∘∘∘····˙·    ˙˙˙˙·∘∘∘··∘∘∘∘∘o∘o∘o∘∘∘o∘o∘∘∘∘··· ∘
+Chunk 6100/7031 (global 151068) [SPS: 3.28] | Move: 0.004 | Mimic: 0.302 ↑ | RECALL | L16 rad:0.21 | σ:0.691/0.04 | V:0.678 T:0.52 | LRx:1.34
+  field H:2.24b ·  ·░▓█·   · synergy:0.66 empower:2.59 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.88/0.57 err:0.002
+  drives S:0.00 σ:0.11 C:0.09 G:0.22 M:0.08 | curiosity:0.27 shear-rms:0.24 rad-p:0.003 | field μ:+0.001 rail:0.0110 | grad:24.65 clip:0.20 corr:+0.91
+  stereo width:0.076 side-energy:0.350 pan:+0.10 decoder/target corr:+0.90/+1.00 | dev S/C:0.713/2.008 Δ:-0.48% ready:true plateau:true
+  ecology health:0.71 stagnation:0.35 escape:0.00 | reward:-0.033 μ:-0.074 σr:0.018 | motifs:185/512 candidates:9442 qrej:3405 srej:5799
+  proposals model:RECALL bandit:CRYSTALLIZE selected:RECALL | action age:0 usage:0.20
+  v █▒▓█▒█░█▒█·█·█·█░█░█░█▒█▒▓▒▒▓▒▓▒█░█░█░█░█░█·█·█░█·█·▪·█░█░█░█▒█▓
+  ∂ ∘˙˙·˙∘∘∘˙∘o∘o∘o∘∘·∘···˙·    ˙˙˙˙··∘·∘·∘∘∘∘∘o∘o∘∘∘o∘ooo∘∘∘∘··· ·
+Chunk 6150/7031 (global 151118) [SPS: 2.85] | Move: 0.004 | Mimic: 0.406 ↑ | RESONATE | L16 rad:0.21 | σ:0.618/0.06 | V:0.681 T:0.53 | LRx:1.36
+  field H:2.20b ·  ·░▓█░   · synergy:0.59 empower:2.58 | energy:0.72 | φ:0.45 PI:0.05 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.13 C:0.10 G:0.22 M:0.08 | curiosity:0.27 shear-rms:0.25 rad-p:0.003 | field μ:+0.000 rail:0.0110 | grad:19.87 clip:0.25 corr:+0.92
+  stereo width:0.061 side-energy:0.312 pan:+0.10 decoder/target corr:+0.92/+0.99 | dev S/C:0.710/2.034 Δ:-0.22% ready:true plateau:true
+  ecology health:0.70 stagnation:0.36 escape:0.00 | reward:-0.101 μ:-0.084 σr:0.015 | motifs:185/512 candidates:9445 qrej:3405 srej:5802
+  proposals model:RECALL bandit:CRYSTALLIZE selected:RESONATE | action age:0 usage:0.39
+  v █░▓█▒█·█░█·█·█·█░█░█▒█▒█▒▓▓▒▓▒▓░█░█░█░█░▪░█·█░█░█·█·▪░█░█░█░█▓█▓
+  ∂ ∘·˙·˙∘o∘·∘o·o∘o∘∘···˙·˙·    ˙˙˙···∘∘∘·∘∘o∘∘o∘∘∘∘∘o∘oo∘∘∘∘∘··· ·
+Chunk 6200/7031 (global 151168) [SPS: 2.94] | Move: 0.004 | Mimic: 0.295 ↓ | RESONATE | L16 rad:0.21 | σ:0.558/0.06 | V:0.721 T:0.58 | LRx:1.42
+  field H:2.20b ·  ·░▓█░   · synergy:0.46 empower:2.57 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.54 err:0.001
+  drives S:0.00 σ:0.17 C:0.10 G:0.23 M:0.09 | curiosity:0.29 shear-rms:0.30 rad-p:0.004 | field μ:-0.000 rail:0.0107 | grad:19.87 clip:0.25 corr:+0.93
+  stereo width:0.056 side-energy:0.300 pan:+0.10 decoder/target corr:+0.93/+0.92 | dev S/C:0.716/2.023 Δ:+0.16% ready:true plateau:true
+  ecology health:0.67 stagnation:0.37 escape:0.00 | reward:-0.124 μ:-0.107 σr:0.016 | motifs:185/512 candidates:9449 qrej:3405 srej:5806
+  proposals model:RECALL bandit:CRYSTALLIZE selected:RESONATE | action age:0 usage:0.28
+  v █░██▒█·█░█░█·█·█░█░█▒█▒▓▒▓▒▒▓▒▓░█░█░█░█░█·█·█░█░█·█·█░█░█░█░█▓▓▓
+  ∂ ∘···˙∘o∘·∘∘·o∘o∘∘···˙·˙˙    ˙˙˙··∘∘∘∘·∘·∘o∘o∘∘∘∘∘o∘o∘∘∘∘∘∘∘·· ˙
+Chunk 6250/7031 (global 151218) [SPS: 2.62] | Move: 0.004 | Mimic: 0.281 ↓ | RECALL | L16 rad:0.21 | σ:0.629/0.04 | V:0.692 T:0.56 | LRx:1.40
+  field H:2.22b ·  ·░▓█░   · synergy:0.49 empower:2.57 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.14 C:0.10 G:0.22 M:0.09 | curiosity:0.28 shear-rms:0.26 rad-p:0.003 | field μ:-0.001 rail:0.0109 | grad:22.90 clip:0.22 corr:+0.92
+  stereo width:0.066 side-energy:0.325 pan:+0.10 decoder/target corr:+0.92/+0.98 | dev S/C:0.717/1.964 Δ:+0.01% ready:true plateau:true
+  ecology health:0.70 stagnation:0.36 escape:0.00 | reward:-0.104 μ:-0.100 σr:0.013 | motifs:185/512 candidates:9452 qrej:3405 srej:5809
+  proposals model:RECALL bandit:RECALL selected:RECALL | action age:0 usage:0.56
+  v █░█▓▒█·█░█░█·█·█░█░█▒█▒▓▒▓▒▒▓▒▓░█░█░█░█░█·█·█░█░█·█░█░█░█░█░█▒▓▓
+  ∂ ∘··˙˙∘o∘·∘∘∘o∘o∘∘···˙·˙˙    ˙˙˙··∘∘∘∘·∘·∘o∘o∘∘∘∘∘o∘∘∘∘∘∘∘∘∘·· ˙
+Chunk 6300/7031 (global 151268) [SPS: 2.98] | Move: 0.004 | Mimic: 0.304 → | WIDEN | L16 rad:0.21 | σ:0.612/0.04 | V:0.681 T:0.55 | LRx:1.38
+  field H:2.22b ·  ·░▓█░   · synergy:0.54 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.57 err:0.001
+  drives S:0.00 σ:0.14 C:0.10 G:0.22 M:0.08 | curiosity:0.27 shear-rms:0.24 rad-p:0.003 | field μ:-0.000 rail:0.0108 | grad:13.66 clip:0.37 corr:+0.92
+  stereo width:0.068 side-energy:0.331 pan:+0.10 decoder/target corr:+0.91/+0.82 | dev S/C:0.738/2.158 Δ:+0.28% ready:true plateau:true
+  ecology health:0.71 stagnation:0.36 escape:0.00 | reward:-0.103 μ:-0.095 σr:0.015 | motifs:185/512 candidates:9455 qrej:3405 srej:5812
+  proposals model:HOLD bandit:WIDEN selected:WIDEN | action age:2 usage:0.43
+  v █░█▓▒█░█░█░█·█·█░█░█▒█▒▓▓▓▒▒▓▒▓░█░█░█░█░█·█·█░█░█·█░█░█░█░█░█▒▓▓
+  ∂ ∘·∘  ∘∘∘∘∘∘·o∘o∘∘···˙·˙˙    ˙˙˙·∘∘∘∘∘·∘·∘o∘o∘∘∘∘∘o∘∘∘∘∘∘∘∘∘·· ˙
+Chunk 6350/7031 (global 151318) [SPS: 2.63] | Move: 0.004 | Mimic: 0.310 → | CONTRACT | L16 rad:0.21 | σ:0.582/0.05 | V:0.703 T:0.57 | LRx:1.41
+  field H:2.22b ·  ·░▓█░   · synergy:0.51 empower:2.58 | energy:0.72 | φ:0.46 PI:0.06 | model raw/eff:0.89/0.55 err:0.000
+  drives S:0.00 σ:0.16 C:0.10 G:0.23 M:0.08 | curiosity:0.29 shear-rms:0.25 rad-p:0.003 | field μ:-0.000 rail:0.0108 | grad:9.79 clip:0.51 corr:+0.92
+  stereo width:0.066 side-energy:0.326 pan:+0.10 decoder/target corr:+0.92/+0.74 | dev S/C:0.738/2.156 Δ:-0.13% ready:true plateau:true
+  ecology health:0.69 stagnation:0.37 escape:0.00 | reward:-0.116 μ:-0.107 σr:0.014 | motifs:185/512 candidates:9458 qrej:3405 srej:5815
+  proposals model:RECALL bandit:WIDEN selected:CONTRACT | action age:0 usage:0.08
+  v █░█▒▒█░█░█░█·█·█░█░█▒█▒▓▓▓▒▒▓▒▓░█░█░█░█░█·█·█░█·█·█░█░█░█░█░█▒▓▓
+  ∂ ∘··  ·∘·∘∘∘∘o∘o∘∘···˙·      ˙˙˙··∘∘∘∘∘∘·∘o∘o∘∘∘o∘o∘∘∘∘∘∘∘∘∘∘· ˙˙
+Chunk 6400/7031 (global 151368) [SPS: 2.60] | Move: 0.004 | Mimic: 0.448 ↑ | HOLD | L16 rad:0.21 | σ:0.562/0.05 | V:0.725 T:0.57 | LRx:1.40
+  field H:2.22b ·  ·░▓█░   · synergy:0.65 empower:2.59 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.89/0.57 err:0.000
+  drives S:0.00 σ:0.16 C:0.10 G:0.22 M:0.08 | curiosity:0.28 shear-rms:0.26 rad-p:0.003 | field μ:-0.001 rail:0.0108 | grad:14.20 clip:0.35 corr:+0.93
+  stereo width:0.054 side-energy:0.295 pan:+0.10 decoder/target corr:+0.93/+0.94 | dev S/C:0.767/2.145 Δ:-0.22% ready:true plateau:true
+  ecology health:0.70 stagnation:0.36 escape:0.00 | reward:-0.061 μ:-0.103 σr:0.017 | motifs:185/512 candidates:9461 qrej:3405 srej:5818
+  proposals model:RECALL bandit:HOLD selected:HOLD | action age:1 usage:0.27
+  v █░█▒▓█░█░█░█·█·█░█░█▒▓▒▓▓▓▓▒▓▒▓░█░█░█░█░█·█·█░█░█·█░█░█░█░█░█▒▓▓
+  ∂ ∘∘·˙ ·∘·∘∘∘∘o∘o∘∘···˙˙  ˙   ˙˙˙···∘∘∘∘∘·∘o∘o∘∘∘∘∘o∘∘∘∘∘∘∘∘··∘ ˙˙
+Chunk 6450/7031 (global 151418) [SPS: 3.30] | Move: 0.004 | Mimic: 0.449 → | HOLD | L16 rad:0.21 | σ:0.475/0.06 | V:0.739 T:0.58 | LRx:1.41
+  field H:2.22b ·  ·░▓█░   · synergy:0.56 empower:2.58 | energy:0.72 | φ:0.46 PI:0.07 | model raw/eff:0.89/0.57 err:0.000
+  drives S:0.00 σ:0.19 C:0.09 G:0.22 M:0.08 | curiosity:0.27 shear-rms:0.26 rad-p:0.003 | field μ:-0.001 rail:0.0105 | grad:14.20 clip:0.35 corr:+0.92
+  stereo width:0.065 side-energy:0.322 pan:+0.10 decoder/target corr:+0.92/+0.92 | dev S/C:0.727/2.060 Δ:-0.28% ready:true plateau:true
+  ecology health:0.70 stagnation:0.35 escape:0.00 | reward:-0.120 μ:-0.103 σr:0.017 | motifs:185/512 candidates:9464 qrej:3405 srej:5821
+  proposals model:RECALL bandit:HOLD selected:HOLD | action age:0 usage:0.39
+  v █░█░▓█░█░█░█·█·█░█░█▒▓▒▓▓▓▓▒▓▒▓░█░▪░█·█░█·█·█░█·█·█░█░█░█░█░█▒▓▓
+  ∂ ∘·∘·˙···∘∘∘∘o∘o∘∘···˙˙  ˙    ˙˙··∘o∘∘o∘·∘o∘o∘∘∘o∘o∘∘∘∘∘∘∘∘··∘  ˙
+Chunk 6500/7031 (global 151468) [SPS: 5.32] | Move: 0.004 | Mimic: 0.443 → | TURBULENCE | L16 rad:0.21 | σ:0.638/0.06 | V:0.713 T:0.59 | LRx:1.43
+  field H:2.22b ·  ·░▓█░   · synergy:0.59 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.54 err:0.001
+  drives S:0.00 σ:0.17 C:0.10 G:0.23 M:0.08 | curiosity:0.30 shear-rms:0.29 rad-p:0.004 | field μ:+0.001 rail:0.0105 | grad:10.54 clip:0.47 corr:+0.93
+  stereo width:0.058 side-energy:0.303 pan:+0.10 decoder/target corr:+0.93/+0.91 | dev S/C:0.659/1.917 Δ:-0.03% ready:true plateau:true
+  ecology health:0.67 stagnation:0.37 escape:0.00 | reward:-0.064 μ:-0.112 σr:0.017 | motifs:185/512 candidates:9467 qrej:3405 srej:5824
+  proposals model:RECALL bandit:TURBULENCE selected:TURBULENCE | action age:0 usage:0.13
+  v █░█░▓█░█░█·█░█·█░█░█▒▓▒▓▓▒▓▒▓▒▓░█░▪░█░█░█░█·█░█·█·█░█░█░█░█░█▒▓█
+  ∂ ∘·∘·˙···∘∘o∘∘∘o∘∘∘··˙˙  ˙    ˙˙··∘o·∘∘∘∘∘∘∘o∘∘∘o∘o∘∘∘∘∘∘∘····  ·
+Chunk 6550/7031 (global 151518) [SPS: 6.87] | Move: 0.004 | Mimic: 0.460 ↑ | CRYSTALLIZE | L16 rad:0.21 | σ:0.668/0.04 | V:0.690 T:0.53 | LRx:1.35
+  field H:2.22b ·  ·░▓█░   · synergy:0.35 empower:2.57 | energy:0.71 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.60 err:0.002
+  drives S:0.00 σ:0.13 C:0.09 G:0.20 M:0.09 | curiosity:0.24 shear-rms:0.34 rad-p:0.004 | field μ:+0.002 rail:0.0095 | grad:10.75 clip:0.47 corr:+0.94
+  stereo width:0.045 side-energy:0.266 pan:+0.10 decoder/target corr:+0.94/+0.85 | dev S/C:0.743/2.150 Δ:+0.11% ready:true plateau:true
+  ecology health:0.74 stagnation:0.32 escape:0.00 | reward:-0.056 μ:-0.072 σr:0.023 | motifs:185/512 candidates:9470 qrej:3405 srej:5827
+  proposals model:RECALL bandit:TURBULENCE selected:CRYSTALLIZE | action age:0 usage:0.08
+  v █░█░▓▓░█░█·█·█·█░█░█▒▓▒▓▓▒▓▒▓▒▓░█░█░▪░█░█░█·█░█·█·█░█░█░█░█░█▒▓█
+  ∂ ··∘·˙˙··∘∘o∘o·o∘∘··∘˙˙  ˙    ˙˙···∘·o∘∘∘∘∘∘o∘∘∘o∘o∘∘∘∘∘·····∘  ·
+--> Model + organism checkpoint saved at global step 151552 (L16, motifs 185, conf 0.88)
+Chunk 6600/7031 (global 151568) [SPS: 4.43] | Move: 0.004 | Mimic: 0.324 ↓ | CONTRACT | L16 rad:0.22 | σ:0.862/0.03 | V:0.643 T:0.53 | LRx:1.37
+  field H:2.18b ·   ▒▓█·   · synergy:0.50 empower:2.59 | energy:0.70 | φ:0.45 PI:0.06 | model raw/eff:0.86/0.54 err:0.021
+  drives S:0.00 σ:0.09 C:0.10 G:0.22 M:0.08 | curiosity:0.28 shear-rms:0.32 rad-p:0.005 | field μ:+0.007 rail:0.0094 | grad:12.40 clip:0.40 corr:+0.95
+  stereo width:0.041 side-energy:0.252 pan:+0.10 decoder/target corr:+0.95/+0.85 | dev S/C:0.719/2.000 Δ:-3.37% ready:true plateau:true
+  ecology health:0.69 stagnation:0.35 escape:0.00 | reward:+0.092 μ:-0.057 σr:0.037 | motifs:186/512 candidates:9474 qrej:3405 srej:5830
+  proposals model:RECALL bandit:CONTRACT selected:CONTRACT | action age:0 usage:0.07
+  v █░█░▓▓▒█░█·█░█·█░█░█▒▓▒▓▓▓▓▒▓▒█░█░▪▒█░█░█░█·█░█·█·█░█░█░█░█░█▒▓█
+  ∂ ··∘·˙ ˙·∘∘o·∘∘o∘∘∘··˙˙  ˙    ˙····o˙∘∘∘·∘∘∘o∘∘∘o∘o∘∘∘∘∘·····∘  ·
+Chunk 6650/7031 (global 151618) [SPS: 5.45] | Move: 0.004 | Mimic: 0.225 → | CRYSTALLIZE | L16 rad:0.22 | σ:0.911/0.07 | V:0.620 T:0.46 | LRx:1.26
+  field H:2.20b ·   ▒▓█░   · synergy:0.55 empower:2.58 | energy:0.71 | φ:0.45 PI:0.06 | model raw/eff:0.86/0.57 err:0.021
+  drives S:0.00 σ:0.04 C:0.09 G:0.21 M:0.08 | curiosity:0.25 shear-rms:0.27 rad-p:0.004 | field μ:+0.002 rail:0.0098 | grad:12.40 clip:0.40 corr:+0.94
+  stereo width:0.047 side-energy:0.272 pan:+0.10 decoder/target corr:+0.94/+0.86 | dev S/C:0.739/2.077 Δ:-2.60% ready:true plateau:true
+  ecology health:0.72 stagnation:0.34 escape:0.00 | reward:-0.038 μ:-0.035 σr:0.022 | motifs:186/512 candidates:9477 qrej:3405 srej:5833
+  proposals model:HOLD bandit:CONTRACT selected:CRYSTALLIZE | action age:0 usage:0.04
+  v █░█░▓▒▒█░█·█·█·█░█░█▒▓▒▓▓▓▓▒▓▒█░█░█░█░█░█░█·▪░█·█·█░█░█░█░█▒█▒▓█
+  ∂ ··∘·˙ ˙·∘∘o·o∘o∘∘·∘·˙   ˙     ····∘·∘∘∘∘∘∘∘oo∘∘o∘o∘∘∘∘∘····˙∘  ·
+Chunk 6700/7031 (global 151668) [SPS: 5.17] | Move: 0.004 | Mimic: 0.239 ↓ | CRYSTALLIZE | L16 rad:0.23 | σ:0.844/0.08 | V:0.628 T:0.42 | LRx:1.22
+  field H:2.20b ·   ▒▓█░   · synergy:0.61 empower:2.58 | energy:0.71 | φ:0.45 PI:0.05 | model raw/eff:0.87/0.57 err:0.017
+  drives S:0.00 σ:0.04 C:0.09 G:0.20 M:0.08 | curiosity:0.24 shear-rms:0.21 rad-p:0.004 | field μ:+0.000 rail:0.0105 | grad:7.58 clip:0.66 corr:+0.95
+  stereo width:0.040 side-energy:0.252 pan:+0.10 decoder/target corr:+0.95/+0.72 | dev S/C:0.780/2.177 Δ:-0.06% ready:true plateau:true
+  ecology health:0.72 stagnation:0.32 escape:0.00 | reward:-0.002 μ:-0.022 σr:0.019 | motifs:186/512 candidates:9480 qrej:3405 srej:5836
+  proposals model:RECALL bandit:CONTRACT selected:CRYSTALLIZE | action age:0 usage:0.10
+  v █░█░█▒▒█░█·█·█·█░█░█▒▓▒▓▓▒▓▒▒▒▓░█░█░█░█░█░█░█·█·█·█░█·█░█░█░█▓▓█
+  ∂ ··∘··˙ ·∘∘o·o∘o∘∘·∘∘˙         ˙···∘·∘∘∘·∘∘∘∘∘o∘o∘o∘∘∘o∘···∘··  ·
+Chunk 6750/7031 (global 151718) [SPS: 5.85] | Move: 0.004 | Mimic: 0.287 → | TURBULENCE | L16 rad:0.22 | σ:0.710/0.05 | V:0.646 T:0.46 | LRx:1.28
+  field H:2.22b ·  ·░▓█░   · synergy:0.50 empower:2.57 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.88/0.57 err:0.003
+  drives S:0.00 σ:0.09 C:0.09 G:0.21 M:0.09 | curiosity:0.26 shear-rms:0.24 rad-p:0.004 | field μ:-0.001 rail:0.0113 | grad:9.87 clip:0.51 corr:+0.95
+  stereo width:0.039 side-energy:0.246 pan:+0.10 decoder/target corr:+0.95/+0.98 | dev S/C:0.733/2.012 Δ:+0.12% ready:true plateau:true
+  ecology health:0.71 stagnation:0.33 escape:0.00 | reward:-0.050 μ:-0.047 σr:0.016 | motifs:186/512 candidates:9483 qrej:3405 srej:5839
+  proposals model:RECALL bandit:CRYSTALLIZE selected:TURBULENCE | action age:1 usage:0.28
+  v █░█░█▒▒█░█·█·█·█░█░█░▓▒▓▓▒▓▒▓▒▓░█░█░█·█░█░█░█·█·█·█░█·█░█░█░█▓▓▓
+  ∂ ··∘··˙ ·∘∘o·o∘o∘∘·∘∘·˙˙˙     ˙˙···∘·∘o∘·∘∘∘∘∘o∘o∘o∘∘∘o∘·····∘  ˙
+Chunk 6800/7031 (global 151768) [SPS: 4.62] | Move: 0.004 | Mimic: 0.254 → | RECALL | L16 rad:0.22 | σ:0.518/0.01 | V:0.716 T:0.53 | LRx:1.36
+  field H:2.22b ·  ·░▓█░   · synergy:0.65 empower:2.58 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.56 err:0.001
+  drives S:0.00 σ:0.15 C:0.09 G:0.22 M:0.08 | curiosity:0.27 shear-rms:0.24 rad-p:0.003 | field μ:-0.001 rail:0.0111 | grad:5.94 clip:0.84 corr:+0.94
+  stereo width:0.051 side-energy:0.286 pan:+0.10 decoder/target corr:+0.93/+0.83 | dev S/C:0.667/1.932 Δ:+4.26% ready:true plateau:false
+  ecology health:0.70 stagnation:0.35 escape:0.00 | reward:-0.068 μ:-0.078 σr:0.022 | motifs:186/512 candidates:9486 qrej:3405 srej:5842
+  proposals model:RECALL bandit:RECALL selected:RECALL | action age:0 usage:0.07
+  v █░█░█░▓█░█░█·█·█░█░█░▓▒▓▓▒▓▒▓▒▓▒█░█░█·█░█░█░█·█·█·█░█·█░█░█░█▓▒▓
+  ∂ ··∘∘·· ··∘∘·o∘o∘∘∘∘∘·˙˙       ˙˙··∘·∘o∘·∘∘∘∘∘o∘o∘o∘∘∘o∘·∘·∘·∘  ˙
+Chunk 6850/7031 (global 151818) [SPS: 5.10] | Move: 0.004 | Mimic: 0.279 → | EXPLORE | L16 rad:0.22 | σ:0.396/0.02 | V:0.775 T:0.63 | LRx:1.48
+  field H:2.22b ·  ·░▓█░   · synergy:0.57 empower:2.58 | energy:0.72 | φ:0.45 PI:0.05 | model raw/eff:0.88/0.53 err:0.002
+  drives S:0.00 σ:0.21 C:0.10 G:0.24 M:0.08 | curiosity:0.30 shear-rms:0.29 rad-p:0.004 | field μ:-0.000 rail:0.0105 | grad:3.86 clip:1.00 corr:+0.94
+  stereo width:0.046 side-energy:0.269 pan:+0.10 decoder/target corr:+0.94/+0.43 | dev S/C:0.675/1.988 Δ:+2.15% ready:true plateau:false
+  ecology health:0.66 stagnation:0.39 escape:0.00 | reward:-0.152 μ:-0.127 σr:0.025 | motifs:186/512 candidates:9489 qrej:3405 srej:5845
+  proposals model:RECALL bandit:RECALL selected:EXPLORE | action age:0 usage:0.06
+  v █░█░█░▓▓░█░█·█░█░█░█▒▓▒▓▓▒▓▒▓▒▓▒█▒█░█░█░█░█░█·█·█·█░█░█░█░█░█▓▒█
+  ∂ ··∘∘∘· ˙·∘∘·o∘∘∘·∘·∘˙˙˙      ˙˙˙·˙∘·∘∘∘·∘∘∘∘∘o∘o∘o∘∘∘∘∘∘∘∘∘·∘  ·
+Chunk 6900/7031 (global 151868) [SPS: 6.22] | Move: 0.004 | Mimic: 0.317 ↓ | HARMONIC | L16 rad:0.22 | σ:0.562/0.06 | V:0.740 T:0.66 | LRx:1.52
+  field H:2.22b ·  ·░▓█░   · synergy:0.50 empower:2.58 | energy:0.72 | φ:0.45 PI:0.05 | model raw/eff:0.89/0.53 err:0.001
+  drives S:0.00 σ:0.19 C:0.11 G:0.25 M:0.08 | curiosity:0.31 shear-rms:0.31 rad-p:0.003 | field μ:+0.001 rail:0.0100 | grad:3.86 clip:1.00 corr:+0.94
+  stereo width:0.049 side-energy:0.277 pan:+0.10 decoder/target corr:+0.94/+0.84 | dev S/C:0.733/2.057 Δ:-0.37% ready:true plateau:true
+  ecology health:0.67 stagnation:0.41 escape:0.00 | reward:-0.150 μ:-0.154 σr:0.021 | motifs:186/512 candidates:9492 qrej:3405 srej:5848
+  proposals model:RECALL bandit:RESONATE selected:HARMONIC | action age:0 usage:0.10
+  v █░█░█░▓▓▒█░█·█·█░█░█▒▓▒▓▓▓▓▒▓▒▓▒█░█░█░█░█░█░█░█·█·█░█░█░█░█░█▒▒█
+  ∂ ··∘∘∘·˙ ˙···o∘o∘·∘·∘˙˙˙   ˙˙  ˙˙··∘∘∘∘∘∘∘∘∘∘∘∘∘o∘o∘∘∘∘∘∘∘∘∘∘∘  ·
+Chunk 6950/7031 (global 151918) [SPS: 5.38] | Move: 0.004 | Mimic: 0.375 ↑ | RESONATE | L16 rad:0.22 | σ:0.659/0.06 | V:0.686 T:0.60 | LRx:1.45
+  field H:2.24b ·  ·░▓█░   · synergy:0.50 empower:2.57 | energy:0.72 | φ:0.45 PI:0.07 | model raw/eff:0.89/0.54 err:0.000
+  drives S:0.00 σ:0.14 C:0.11 G:0.24 M:0.09 | curiosity:0.30 shear-rms:0.28 rad-p:0.003 | field μ:+0.001 rail:0.0105 | grad:15.34 clip:0.33 corr:+0.94
+  stereo width:0.045 side-energy:0.267 pan:+0.10 decoder/target corr:+0.94/+0.89 | dev S/C:0.783/2.181 Δ:-0.50% ready:true plateau:true
+  ecology health:0.67 stagnation:0.39 escape:0.00 | reward:-0.124 μ:-0.123 σr:0.019 | motifs:186/512 candidates:9495 qrej:3405 srej:5851
+  proposals model:RECALL bandit:RESONATE selected:RESONATE | action age:2 usage:0.61
+  v █░█░█░▓▒▒█▒█·█·█░█░█▒▓▒▓▓▓▓▒▓▒▓▒█░█░█░█░█░█░█░█·█░█░█·█░█░█░█▓▒█
+  ∂ ··∘∘∘·˙ ˙∘˙·o∘o∘·∘∘∘˙˙˙   ˙ ˙ ˙˙··∘∘∘∘∘∘∘∘∘·∘∘∘o∘∘∘∘∘o∘∘∘∘∘∘∘  ·
+Chunk 7000/7031 (global 151968) [SPS: 5.90] | Move: 0.004 | Mimic: 0.306 → | HARMONIC | L16 rad:0.22 | σ:0.572/0.04 | V:0.696 T:0.57 | LRx:1.42
+  field H:2.24b ·  ·░▓█░   · synergy:0.59 empower:2.59 | energy:0.72 | φ:0.45 PI:0.06 | model raw/eff:0.89/0.54 err:0.001
+  drives S:0.00 σ:0.15 C:0.10 G:0.24 M:0.08 | curiosity:0.30 shear-rms:0.27 rad-p:0.003 | field μ:+0.001 rail:0.0109 | grad:6.52 clip:0.77 corr:+0.94
+  stereo width:0.048 side-energy:0.274 pan:+0.10 decoder/target corr:+0.94/+0.85 | dev S/C:0.706/2.048 Δ:-0.47% ready:true plateau:true
+  ecology health:0.67 stagnation:0.38 escape:0.00 | reward:-0.073 μ:-0.113 σr:0.016 | motifs:186/512 candidates:9499 qrej:3405 srej:5855
+  proposals model:RECALL bandit:RESONATE selected:HARMONIC | action age:0 usage:0.13
+  v █░█░█░▓▒▒█▒█·█·█░█░█▒▓▒▓▓▓▓▒▓▒▓▒█░▪·█░█░█·█░█░█·█░█·▪·█░█░█░█▓▒█
+  ∂ ∘·∘∘∘·˙  ∘˙·o∘o∘∘∘·∘˙˙˙   ˙˙˙˙˙˙··oo∘∘∘∘∘o∘∘·∘∘o∘∘∘ooo∘∘∘∘·∘∘  ·
+
+=== PERFORMANCE REPORT ===
+Total simulation elapsed: 2293.02s
+Overall performance speed: 3.07 steps/sec
+Phase time per completed chunk:
+  forward 84.26 ms | loss/metrics 9.49 ms (target I/O 0.38 ms) | backward 210.41 ms | optimizer 1.77 ms | output I/O 0.44 ms | checkpoints 0.12 ms
+Mastering: streamed DC-blocked peak 0.293 normalized to -1 dBFS (gain 3.04x).
+Audio saved to /sdcard/Download/rust_ecosystem_out_v9-newcorpus-retain-02_58056ec807c3.wav
+Priming segment: chunks 643..1346 (avg score 1.52) -> /sdcard/Download/titan_prime_60s_v9-newcorpus-retain-02_58056ec807c3.wav
+Features: ~59 BPM · centroid 6003 Hz (bright glassy upper spectrum) · truthful width 0.07 (focused center image, side-energy 0.33, corr +0.92)
+
+=== GENERATIVE PRIMING PROMPT ===
+Style: Chaotic, Stable, Dense, Information-Theoretic Glitch. Texture: Grit. Tempo: ~59 BPM. Tone: bright glassy upper spectrum. Space: focused center image. Field: CONVERGING regime · PULSE archetype · depth L16. [Phi: 0.45, Sigma: 0.612, Temp: 0.55, PI-proxy: 0.06, Aperture: 0.33, Synergy: 0.53, Field-Entropy: 2.13b, Energy: 0.72, Model-Confidence raw/effective: 0.89/0.54, Ecology-Health: 0.67, Stagnation: 0.39, Motifs: 186/512, Seed: 42]
+Telemetry schema v10 saved to /sdcard/Download (trace, topology index, and morph events).
+Model saved to /sdcard/Download/titan_model_v9_v9-newcorpus-retain-02.safetensors (L16, rad 0.216). Size: 64.83 MB
+Run metadata saved to /sdcard/Download/titan_run_metadata_v9_v9-newcorpus-retain-02.json.
+Organism saved to /sdcard/Download/titan_world_v9_v9-newcorpus-retain-02.bin at global step 151999 (186 motifs, raw/effective confidence 0.89/0.54, health 0.67, stagnation 0.39).
+Continue normally; use --fresh-world to keep learned weights but reset the ecology, or --fresh-model to reset everything.
