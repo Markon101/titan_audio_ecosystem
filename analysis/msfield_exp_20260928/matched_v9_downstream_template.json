@@ -1,0 +1,54 @@
+{
+  "attempts": [
+    {
+      "accepted_or_rejected": null,
+      "anonymous_id": "A",
+      "attempt_order": null,
+      "generation_seed_if_available": null,
+      "human_preference_notes": null,
+      "output_audio_sha256": null,
+      "output_identifiers": [],
+      "prompt_style_settings": null,
+      "style_slider": null,
+      "suno_custom_model": null,
+      "suno_mode": null,
+      "suno_model_version": null,
+      "titan_source_audio_hash": "dae268e211550f359c761de4b430a473ea6f1d4009e52684e4768adb58d95814",
+      "titan_source_audio_path": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/matched_v9_parent_child_64/BLIND/A.wav",
+      "titan_source_checkpoint": {
+        "bytes": 67974972,
+        "mtime_ns": 1790587535552683198,
+        "path": "/storage/emulated/0/Download/titan_model_v9_v9-newcorpus-retain-02.safetensors",
+        "sha256": "abfe5e3d5993c7c2f9fc8b3803a3501d0e46ac7b0f0c80c4f8c7aeb648ac657a"
+      },
+      "upload_trim_frames": null,
+      "weirdness_slider": null
+    },
+    {
+      "accepted_or_rejected": null,
+      "anonymous_id": "B",
+      "attempt_order": null,
+      "generation_seed_if_available": null,
+      "human_preference_notes": null,
+      "output_audio_sha256": null,
+      "output_identifiers": [],
+      "prompt_style_settings": null,
+      "style_slider": null,
+      "suno_custom_model": null,
+      "suno_mode": null,
+      "suno_model_version": null,
+      "titan_source_audio_hash": "9a8efa2b746dbee19819d6643501406631d7e3c85fb23b7ceb27a86fab695ed3",
+      "titan_source_audio_path": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/matched_v9_parent_child_64/BLIND/B.wav",
+      "titan_source_checkpoint": {
+        "bytes": 67974972,
+        "mtime_ns": 1790579645992686208,
+        "path": "/storage/emulated/0/Download/titan_model_v9_v9-newcorpus-retain-01.safetensors",
+        "sha256": "bb4e6a350763327288ece96101fdf1824f787f7d5d65735481fe441200a09a34"
+      },
+      "upload_trim_frames": null,
+      "weirdness_slider": null
+    }
+  ],
+  "note": "Private template; fill one entry per generation attempt, including rejected rerolls. No Suno API is used.",
+  "schema": "titan_downstream_attempts_v1"
+}

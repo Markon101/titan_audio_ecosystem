@@ -98,7 +98,10 @@ pub(crate) fn resolve_paths(request: &AnalysisRequest) -> ResolvedPaths {
     let tag = request.run_tag.as_deref();
     ResolvedPaths {
         base_dir: base.clone(),
-        wav_dir: base.join("OLD_WAVS"),
+        wav_dir: request
+            .corpus_dir
+            .clone()
+            .unwrap_or_else(|| base.join("OLD_WAVS")),
         model: request.model_path.clone().unwrap_or_else(|| {
             PathBuf::from(super::super::artifacts::artifact_path(
                 &base.display().to_string(),
@@ -565,6 +568,25 @@ mod tests {
         let paths = resolve_paths(&request);
         assert_eq!(paths.world.file_name().unwrap(), "titan_world_v9.bin");
         assert!(!request.base_dir.exists());
+    }
+
+    #[test]
+    fn explicit_corpus_dir_overrides_only_the_wav_location() {
+        let request = AnalysisRequest {
+            base_dir: PathBuf::from("/tmp/titan-checkpoints"),
+            corpus_dir: Some(PathBuf::from("/tmp/separate-wavs")),
+            ..AnalysisRequest::default()
+        };
+        let paths = resolve_paths(&request);
+        assert_eq!(paths.wav_dir, PathBuf::from("/tmp/separate-wavs"));
+        assert_eq!(
+            paths.model,
+            PathBuf::from("/tmp/titan-checkpoints/titan_model_v9.safetensors")
+        );
+        assert_eq!(
+            paths.corpus_manifest,
+            PathBuf::from("/tmp/titan-checkpoints/titan_corpus_manifest_v7.json")
+        );
     }
 
     #[test]

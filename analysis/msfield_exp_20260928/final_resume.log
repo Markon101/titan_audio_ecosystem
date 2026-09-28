@@ -1,0 +1,39 @@
+=== TITAN AUDIO v10-msfield-exp: ISOLATED THREE-SCALE FIELD ===
+Seed: 42 | Threads: 4 | Gradient horizon: 8 | Autograd tape: 8 | Core cadence: 1/4 tapes | Field: 64ch micro 64x64 macro 32x32 | LR: 5.00e-4 | Duration: 0.086s
+NOTE: CA/RNG/renderer and matching AdamW moments resume from v9 checkpoints. A missing or mismatched optimizer uses a 32-update LR warmup. Fresh reproducibility also requires the same --threads value.
+--> Corpus: 30 training files in 23 balanced families (1.08 h), 6 development files / 4 fixed probes, 5 validation files / 4 fixed probes (strict family holdout); coherent 21.8 s episodes.
+--> Trainable parameters: 16826171 (16.83M, 64.2 MiB FP32 weights).
+--> Msfield parameter groups: {"gru_memory": 986112, "host_auxiliary": 152447, "morphic_recurrent_stack": 8413184, "renderer_and_synthesis_heads": 70812, "substrate": 168532, "temporal_decoder": 7035084}
+--> Model migration from /sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield_next/titan_model_v10_msfield_v10-msfield-real01.safetensors: 229 exact, 0 resized morphic, 0 new morphic, 0 dropped morphic, 0 incompatible non-morphic.
+--> Resumed world /sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield_next/titan_world_v10_msfield_v10-msfield-real01.bin at global step 351 (L10, motifs 12, raw/effective model confidence 0.76/0.30).
+--> Resumed AdamW: 229 exact, 0 resized, 0 new moment pairs, 0 renderer-control moment resets; 44 cumulative updates.
+--> Msfield: fine 64x64, meso 32x32, coarse 16x16 · 64 channels/scale · dt [1.0, 0.5, 0.25] · MorphicStack L10/16 × 512 · world resumed
+--> Motif memory: 12/512 entries · growth preserves all; shrink retains newest.
+--> Morph policy: frozen at/through L10; growth requires a strict development-probe plateau.
+--> Telemetry run 1790593376646-p23399-s42 · schema v10 · build c310a1530bb8-dirty · mode resume
+Chunk 0/1 (global 351) [SPS: 0.00] | Move: 0.012 | Mimic: 0.537 → | TURBULENCE | L10 rad:0.26 | σ:0.939/0.03 | V:0.606 T:0.58 | LRx:1.55
+  field H:2.49b ·  ░▒▒░▒·  · synergy:0.47 empower:2.99 | energy:0.72 | φ:0.42 PI:0.01 | model raw/eff:0.76/0.30 err:0.036
+  drives S:0.00 σ:0.03 C:0.17 G:0.39 M:0.00 | curiosity:0.50 shear-rms:0.33 rad-p:0.005 | field μ:-0.009 rail:0.0039 | grad:20.71 clip:0.24 corr:+0.99
+  stereo width:0.011 side-energy:0.137 pan:+0.09 decoder/target corr:+0.99/+0.81 | dev S/C:1.004/1.246 Δ:+0.00% ready:false plateau:false
+  ecology health:0.45 stagnation:0.62 escape:0.00 | reward:-0.248 μ:-0.229 σr:0.016 | motifs:12/512 candidates:22 qrej:0 srej:10
+  proposals model:HOLD bandit:TURBULENCE selected:TURBULENCE | action age:0 usage:0.25
+  v ▓▓▓▓▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓
+  ∂
+
+=== PERFORMANCE REPORT ===
+Total simulation elapsed: 0.20s
+Overall performance speed: 5.07 steps/sec
+Phase time per completed chunk:
+  forward 38.53 ms | loss/metrics 4.23 ms (target I/O 1.63 ms) | backward 49.26 ms | optimizer 85.55 ms | output I/O 0.13 ms | checkpoints 0.00 ms
+Mastering: streamed DC-blocked peak 0.250 normalized to -1 dBFS (gain 3.56x).
+Audio saved to /sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield_next/rust_ecosystem_out_v10-msfield-real01_9175e2e01579.wav
+Priming segment: chunks 0..1 (avg score 1.29) -> /sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield_next/titan_prime_0s_v10-msfield-real01_9175e2e01579.wav
+Features: free time, no fixed pulse · centroid 8412 Hz (bright glassy upper spectrum) · truthful width 0.01 (focused center image, side-energy 0.14, corr +0.99)
+
+=== GENERATIVE PRIMING PROMPT ===
+Create an original instrumental passage with coherent progression and clear development. Use the uploaded audio only as a loose texture and timing reference.
+Telemetry schema v10 saved to /sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield_next (trace, topology index, and morph events).
+Model saved to /sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield_next/titan_model_v10_msfield_v10-msfield-real01.safetensors (L10, rad 0.261). Size: 64.21 MB
+Run metadata saved to /sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield_next/titan_run_metadata_v10_msfield_v10-msfield-real01.json.
+Organism saved to /sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield_next/titan_world_v10_msfield_v10-msfield-real01.bin at global step 352 (12 motifs, raw/effective confidence 0.76/0.30, health 0.45, stagnation 0.62).
+Continue this isolated msfield tag without --fresh-model; keep its exact v10 model, world, and optimizer together.

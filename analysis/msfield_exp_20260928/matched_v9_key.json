@@ -1,0 +1,537 @@
+{
+  "analysis_seed": 424242,
+  "common_world_sha256": "ade5260c7404f15bebe0e74d95c34322c87f40e5be4c394396f48f87f3a2e5d2",
+  "corpus_content_inventory_sha256": "6a1cd555eb540762030a933d0351d65248680d0c75232ca162d87bd2078d47e0",
+  "corpus_dir": "/storage/emulated/0/Download/OLD_WAVS",
+  "corpus_wavs_verified_after": 41,
+  "executable_reported_build_commit": "5f9d56a17cd7",
+  "inputs": {
+    "binary": {
+      "bytes": 6123968,
+      "mtime_ns": 1790592406684681340,
+      "path": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/titan_msfield_run_binary",
+      "sha256": "983c45470136cf08c2d49241bd7827e4f9b0d8575f381fa7dd5fb20bf5aa6220"
+    },
+    "common_world": {
+      "bytes": 1391711,
+      "mtime_ns": 1790579646136686208,
+      "path": "/storage/emulated/0/Download/titan_world_v9_v9-newcorpus-retain-01.bin",
+      "sha256": "ade5260c7404f15bebe0e74d95c34322c87f40e5be4c394396f48f87f3a2e5d2"
+    },
+    "config": {
+      "bytes": 640,
+      "mtime_ns": 1790592786364681195,
+      "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/msfield_exp_20260928/matched_v9_config.json",
+      "sha256": "28334cffbf89dab0e2666ba28dfec167105d793f5a1c674427e8fff89545904a"
+    },
+    "corpus_manifest": {
+      "bytes": 6973,
+      "mtime_ns": 1790574587692688138,
+      "path": "/storage/emulated/0/Download/titan_corpus_manifest_v7_sml.json",
+      "sha256": "0708ede659328f928f76db792d091b5b1eaaaed219754fb9820986f4d81f8228"
+    },
+    "models": {
+      "retain_01": {
+        "bytes": 67974972,
+        "mtime_ns": 1790579645992686208,
+        "path": "/storage/emulated/0/Download/titan_model_v9_v9-newcorpus-retain-01.safetensors",
+        "sha256": "bb4e6a350763327288ece96101fdf1824f787f7d5d65735481fe441200a09a34"
+      },
+      "retain_02": {
+        "bytes": 67974972,
+        "mtime_ns": 1790587535552683198,
+        "path": "/storage/emulated/0/Download/titan_model_v9_v9-newcorpus-retain-02.safetensors",
+        "sha256": "abfe5e3d5993c7c2f9fc8b3803a3501d0e46ac7b0f0c80c4f8c7aeb648ac657a"
+      }
+    }
+  },
+  "interpretation": "frozen same-world v9 comparison; metrics describe signals, not musical quality",
+  "key": [
+    {
+      "anonymous_id": "A",
+      "blind_audio": {
+        "bytes": 1048620,
+        "mtime_ns": 1790592831392681178,
+        "path": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/matched_v9_parent_child_64/BLIND/A.wav",
+        "sha256": "dae268e211550f359c761de4b430a473ea6f1d4009e52684e4768adb58d95814"
+      },
+      "candidate_id": "retain_02",
+      "descriptive_pcm": {
+        "both_channels_zero_fraction": 0.0,
+        "clipped_frames": 0,
+        "dc_left_fraction_full_scale": 1.6041682101786137e-05,
+        "dc_right_fraction_full_scale": 1.5110126696527004e-05,
+        "duration_seconds": 5.461333333333333,
+        "peak_dbfs": -11.337805457015126,
+        "rms_left_dbfs": -18.638229761251687,
+        "rms_right_dbfs": -20.26693632896507,
+        "scope": "basic PCM checks only; no musical quality or downstream claim",
+        "stereo_correlation": 0.9366662944741941
+      },
+      "level_gain": 1.0,
+      "model": {
+        "bytes": 67974972,
+        "mtime_ns": 1790587535552683198,
+        "path": "/storage/emulated/0/Download/titan_model_v9_v9-newcorpus-retain-02.safetensors",
+        "sha256": "abfe5e3d5993c7c2f9fc8b3803a3501d0e46ac7b0f0c80c4f8c7aeb648ac657a"
+      },
+      "rms_pcm": 3520.595583751136,
+      "source_audio": {
+        "bytes": 1048620,
+        "mtime_ns": 1790592828452681179,
+        "path": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/matched_v9_parent_child_64/analyses/retain_02/rollouts/post_dsp.wav",
+        "sha256": "dae268e211550f359c761de4b430a473ea6f1d4009e52684e4768adb58d95814"
+      },
+      "source_interval_frames": [
+        0,
+        262144
+      ],
+      "source_trajectory_start_step": 144968
+    },
+    {
+      "anonymous_id": "B",
+      "blind_audio": {
+        "bytes": 1048620,
+        "mtime_ns": 1790592831748681178,
+        "path": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/matched_v9_parent_child_64/BLIND/B.wav",
+        "sha256": "9a8efa2b746dbee19819d6643501406631d7e3c85fb23b7ceb27a86fab695ed3"
+      },
+      "candidate_id": "retain_01",
+      "descriptive_pcm": {
+        "both_channels_zero_fraction": 0.0,
+        "clipped_frames": 0,
+        "dc_left_fraction_full_scale": 8.961302228271961e-06,
+        "dc_right_fraction_full_scale": 8.727307431399822e-06,
+        "duration_seconds": 5.461333333333333,
+        "peak_dbfs": -10.8825537943381,
+        "rms_left_dbfs": -18.093788389590813,
+        "rms_right_dbfs": -21.20537831960034,
+        "scope": "basic PCM checks only; no musical quality or downstream claim",
+        "stereo_correlation": 0.8232867804090552
+      },
+      "level_gain": 0.9840391887015685,
+      "model": {
+        "bytes": 67974972,
+        "mtime_ns": 1790579645992686208,
+        "path": "/storage/emulated/0/Download/titan_model_v9_v9-newcorpus-retain-01.safetensors",
+        "sha256": "bb4e6a350763327288ece96101fdf1824f787f7d5d65735481fe441200a09a34"
+      },
+      "rms_pcm": 3520.595025915117,
+      "source_audio": {
+        "bytes": 1048620,
+        "mtime_ns": 1790592810064681186,
+        "path": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/matched_v9_parent_child_64/analyses/retain_01/rollouts/post_dsp.wav",
+        "sha256": "004507fb9022bb7f948b7d1a10795ff534da9098794d502e39d1d9387ce4317c"
+      },
+      "source_interval_frames": [
+        0,
+        262144
+      ],
+      "source_trajectory_start_step": 144968
+    }
+  ],
+  "level_matching": {
+    "maximum_pair_difference_db": 1.3762735226724154e-06,
+    "method": "global RMS, common -1 dBFS peak guard, PCM16 rounding",
+    "target_rms_pcm": 3520.595583751136
+  },
+  "limits": [
+    "same saved world can favor one learned model",
+    "different learned weights induce different post-forward target-error feedback",
+    "identical target schedule does not equal identical state trajectory",
+    "no Suno output or downstream transfer is evaluated"
+  ],
+  "mastering": "identical analysis post-DSP path; no final mastering normalization",
+  "render_chunks": 64,
+  "render_frames": 262144,
+  "schema": "titan_matched_frozen_eval_v1",
+  "status": "complete",
+  "strict_equivalence": false,
+  "target_schedule": [
+    {
+      "absolute_step": "144968",
+      "rollout_offset": "1",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3857247"
+    },
+    {
+      "absolute_step": "144969",
+      "rollout_offset": "2",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3861343"
+    },
+    {
+      "absolute_step": "144970",
+      "rollout_offset": "3",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3865439"
+    },
+    {
+      "absolute_step": "144971",
+      "rollout_offset": "4",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3869535"
+    },
+    {
+      "absolute_step": "144972",
+      "rollout_offset": "5",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3873631"
+    },
+    {
+      "absolute_step": "144973",
+      "rollout_offset": "6",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3877727"
+    },
+    {
+      "absolute_step": "144974",
+      "rollout_offset": "7",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3881823"
+    },
+    {
+      "absolute_step": "144975",
+      "rollout_offset": "8",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3885919"
+    },
+    {
+      "absolute_step": "144976",
+      "rollout_offset": "9",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3890015"
+    },
+    {
+      "absolute_step": "144977",
+      "rollout_offset": "10",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3894111"
+    },
+    {
+      "absolute_step": "144978",
+      "rollout_offset": "11",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3898207"
+    },
+    {
+      "absolute_step": "144979",
+      "rollout_offset": "12",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3902303"
+    },
+    {
+      "absolute_step": "144980",
+      "rollout_offset": "13",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3906399"
+    },
+    {
+      "absolute_step": "144981",
+      "rollout_offset": "14",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3910495"
+    },
+    {
+      "absolute_step": "144982",
+      "rollout_offset": "15",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3914591"
+    },
+    {
+      "absolute_step": "144983",
+      "rollout_offset": "16",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3918687"
+    },
+    {
+      "absolute_step": "144984",
+      "rollout_offset": "17",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3922783"
+    },
+    {
+      "absolute_step": "144985",
+      "rollout_offset": "18",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3926879"
+    },
+    {
+      "absolute_step": "144986",
+      "rollout_offset": "19",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3930975"
+    },
+    {
+      "absolute_step": "144987",
+      "rollout_offset": "20",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3935071"
+    },
+    {
+      "absolute_step": "144988",
+      "rollout_offset": "21",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3939167"
+    },
+    {
+      "absolute_step": "144989",
+      "rollout_offset": "22",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3943263"
+    },
+    {
+      "absolute_step": "144990",
+      "rollout_offset": "23",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3947359"
+    },
+    {
+      "absolute_step": "144991",
+      "rollout_offset": "24",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3951455"
+    },
+    {
+      "absolute_step": "144992",
+      "rollout_offset": "25",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3955551"
+    },
+    {
+      "absolute_step": "144993",
+      "rollout_offset": "26",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3959647"
+    },
+    {
+      "absolute_step": "144994",
+      "rollout_offset": "27",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3963743"
+    },
+    {
+      "absolute_step": "144995",
+      "rollout_offset": "28",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3967839"
+    },
+    {
+      "absolute_step": "144996",
+      "rollout_offset": "29",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3971935"
+    },
+    {
+      "absolute_step": "144997",
+      "rollout_offset": "30",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3976031"
+    },
+    {
+      "absolute_step": "144998",
+      "rollout_offset": "31",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3980127"
+    },
+    {
+      "absolute_step": "144999",
+      "rollout_offset": "32",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3984223"
+    },
+    {
+      "absolute_step": "145000",
+      "rollout_offset": "33",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3988319"
+    },
+    {
+      "absolute_step": "145001",
+      "rollout_offset": "34",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3992415"
+    },
+    {
+      "absolute_step": "145002",
+      "rollout_offset": "35",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "3996511"
+    },
+    {
+      "absolute_step": "145003",
+      "rollout_offset": "36",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4000607"
+    },
+    {
+      "absolute_step": "145004",
+      "rollout_offset": "37",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4004703"
+    },
+    {
+      "absolute_step": "145005",
+      "rollout_offset": "38",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4008799"
+    },
+    {
+      "absolute_step": "145006",
+      "rollout_offset": "39",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4012895"
+    },
+    {
+      "absolute_step": "145007",
+      "rollout_offset": "40",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4016991"
+    },
+    {
+      "absolute_step": "145008",
+      "rollout_offset": "41",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4021087"
+    },
+    {
+      "absolute_step": "145009",
+      "rollout_offset": "42",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4025183"
+    },
+    {
+      "absolute_step": "145010",
+      "rollout_offset": "43",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4029279"
+    },
+    {
+      "absolute_step": "145011",
+      "rollout_offset": "44",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4033375"
+    },
+    {
+      "absolute_step": "145012",
+      "rollout_offset": "45",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4037471"
+    },
+    {
+      "absolute_step": "145013",
+      "rollout_offset": "46",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4041567"
+    },
+    {
+      "absolute_step": "145014",
+      "rollout_offset": "47",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4045663"
+    },
+    {
+      "absolute_step": "145015",
+      "rollout_offset": "48",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4049759"
+    },
+    {
+      "absolute_step": "145016",
+      "rollout_offset": "49",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4053855"
+    },
+    {
+      "absolute_step": "145017",
+      "rollout_offset": "50",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4057951"
+    },
+    {
+      "absolute_step": "145018",
+      "rollout_offset": "51",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4062047"
+    },
+    {
+      "absolute_step": "145019",
+      "rollout_offset": "52",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4066143"
+    },
+    {
+      "absolute_step": "145020",
+      "rollout_offset": "53",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4070239"
+    },
+    {
+      "absolute_step": "145021",
+      "rollout_offset": "54",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4074335"
+    },
+    {
+      "absolute_step": "145022",
+      "rollout_offset": "55",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4078431"
+    },
+    {
+      "absolute_step": "145023",
+      "rollout_offset": "56",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4082527"
+    },
+    {
+      "absolute_step": "145024",
+      "rollout_offset": "57",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4086623"
+    },
+    {
+      "absolute_step": "145025",
+      "rollout_offset": "58",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4090719"
+    },
+    {
+      "absolute_step": "145026",
+      "rollout_offset": "59",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4094815"
+    },
+    {
+      "absolute_step": "145027",
+      "rollout_offset": "60",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4098911"
+    },
+    {
+      "absolute_step": "145028",
+      "rollout_offset": "61",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4103007"
+    },
+    {
+      "absolute_step": "145029",
+      "rollout_offset": "62",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4107103"
+    },
+    {
+      "absolute_step": "145030",
+      "rollout_offset": "63",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4111199"
+    },
+    {
+      "absolute_step": "145031",
+      "rollout_offset": "64",
+      "target_file": "Fractal Echoes in Void2_014351343.wav",
+      "target_frame": "4115295"
+    }
+  ],
+  "target_schedule_sha256": "3eb8af602d98d379575b10d237cb400c753a35787b96209568edeeb352b42449"
+}

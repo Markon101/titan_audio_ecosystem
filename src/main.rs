@@ -3,6 +3,7 @@
 mod analysis;
 mod artifacts;
 mod diagnostics;
+mod msfield;
 mod provenance;
 mod stereo;
 
@@ -150,6 +151,8 @@ const ACTION_COUNT: usize = 10;
 const PLAN_EVERY: usize = 8;
 const WORLD_VERSION: u32 = 9;
 const WORLD_MAGIC: [u8; 8] = *b"TITANW9\0";
+const MS_WORLD_VERSION: u32 = 10;
+const MS_WORLD_MAGIC: [u8; 8] = *b"TITANM10";
 const WORLD_SAVE_EVERY: usize = 2048;
 const TRACE_SCHEMA_VERSION: u32 = 10;
 const OPTIMIZER_RENDERER_CONTROL_VERSION: i64 = 1;
@@ -1548,6 +1551,42 @@ fn deterministic_reinit(varmap: &VarMap, seed: u64, device: &Device) -> Result<u
     deterministic_reinit_where(varmap, seed, device, |_| true)
 }
 
+fn align_msfield_shared_fresh_init(
+    target: &VarMap,
+    seed: u64,
+    device: &Device,
+    morph: MorphArchitecture,
+) -> Result<usize> {
+    // Reconstruct the exact fresh legacy initialization, then copy only
+    // same-named non-substrate tensors. A common seed alone is insufficient:
+    // deterministic_reinit consumes one sorted-name RNG stream, and msfield
+    // tensor names shift draws for the shared GRU, decoder, and MorphicStack.
+    let reference = VarMap::new();
+    let vb = VBV::from_varmap(&reference, DType::F32, device);
+    let _model = ComplexAudioEcosystem::new(vb.pp("model"), device, morph)?;
+    let _arbiter = AudioArbiter::new(vb.pp("arbiter"))?;
+    let _monitor = MonitorHead::new(vb.pp("monitor_head"))?;
+    let _episodic = EpisodicMemory::new(vb.pp("episodic"))?;
+    deterministic_reinit(&reference, seed, device)?;
+    let source = reference.data().lock().unwrap();
+    let destination = target.data().lock().unwrap();
+    let mut copied = 0usize;
+    for (name, var) in destination.iter() {
+        if name.starts_with("model.msfield.") {
+            continue;
+        }
+        let prior = source.get(name).ok_or_else(|| {
+            anyhow::anyhow!("shared fresh tensor missing from legacy model: {name}")
+        })?;
+        if prior.as_tensor().dims() != var.as_tensor().dims() {
+            anyhow::bail!("shared fresh tensor shape differs: {name}");
+        }
+        var.set(prior.as_tensor()).map_err(anyhow::Error::msg)?;
+        copied += 1;
+    }
+    Ok(copied)
+}
+
 fn parameter_count(varmap: &VarMap) -> usize {
     varmap
         .data()
@@ -1556,6 +1595,78 @@ fn parameter_count(varmap: &VarMap) -> usize {
         .values()
         .map(|var| var.as_tensor().elem_count())
         .sum()
+}
+
+fn parameter_groups(varmap: &VarMap) -> BTreeMap<String, usize> {
+    let mut groups = BTreeMap::new();
+    let data = varmap.data().lock().unwrap();
+    for (name, var) in data.iter() {
+        let group = if name.starts_with("model.msfield.")
+            || name.starts_with("model.micro_ca.")
+            || name.starts_with("model.macro_ca.")
+        {
+            "substrate"
+        } else if name.starts_with("model.temporal_decoder.") {
+            "temporal_decoder"
+        } else if name.starts_with("model.gru_memory.") {
+            "gru_memory"
+        } else if name.starts_with("model.morphic.") {
+            "morphic_recurrent_stack"
+        } else if name.starts_with("model.asymp_contract.") {
+            "legacy_recurrent_field_bridge"
+        } else if name.starts_with("model.") {
+            "renderer_and_synthesis_heads"
+        } else {
+            "host_auxiliary"
+        };
+        *groups.entry(group.to_string()).or_insert(0) += var.as_tensor().elem_count();
+    }
+    groups
+}
+
+fn field_rms(state: &Tensor) -> Result<f32> {
+    Ok(state.sqr()?.mean_all()?.sqrt()?.to_scalar::<f32>()?)
+}
+
+fn field_cosine(left: &Tensor, right: &Tensor) -> Result<f32> {
+    let a = left.flatten_all()?;
+    let b = right.flatten_all()?;
+    let dot = a.mul(&b)?.sum_all()?.to_scalar::<f32>()?;
+    let a_norm = a.sqr()?.sum_all()?.sqrt()?.to_scalar::<f32>()?;
+    let b_norm = b.sqr()?.sum_all()?.sqrt()?.to_scalar::<f32>()?;
+    Ok((dot / (a_norm * b_norm).max(1e-12)).clamp(-1.0, 1.0))
+}
+
+fn msfield_trace_values(
+    prior: [&Tensor; 3],
+    current: [&Tensor; 3],
+    prior_hidden: &Tensor,
+    next_hidden: &Tensor,
+    diagnostics: &msfield::MsFieldDiagnostics,
+) -> Result<Vec<String>> {
+    let mut values = Vec::with_capacity(15);
+    for state in current {
+        values.push(field_rms(state)?.to_string());
+    }
+    for (state, previous) in current.into_iter().zip(prior) {
+        values.push(field_rms(&state.sub(previous)?)?.to_string());
+    }
+    for velocity in &diagnostics.velocity_mean_abs {
+        values.push(velocity.to_scalar::<f32>()?.to_string());
+    }
+    for diffusion in &diagnostics.diffusivity_mean {
+        values.push(diffusion.to_scalar::<f32>()?.to_string());
+    }
+    values.push(field_rms(&next_hidden.sub(prior_hidden)?)?.to_string());
+    values.push(field_cosine(&decimate2_2d(current[0])?, current[1])?.to_string());
+    values.push(field_cosine(&decimate2_2d(current[1])?, current[2])?.to_string());
+    if values
+        .iter()
+        .any(|value| value.parse::<f32>().map_or(true, |v| !v.is_finite()))
+    {
+        anyhow::bail!("msfield telemetry became non-finite");
+    }
+    Ok(values)
 }
 
 fn is_decoder_tensor(name: &str) -> bool {
@@ -2823,6 +2934,20 @@ fn load_into_varmap(varmap: &VarMap, path: &str, device: &Device) -> Result<Mode
         }
     }
     Ok(report)
+}
+
+fn model_has_msfield_marker(path: &str) -> Result<bool> {
+    let mut file = File::open(path)?;
+    let mut length = [0u8; 8];
+    file.read_exact(&mut length)?;
+    let header_len = u64::from_le_bytes(length);
+    if header_len > 4 * 1024 * 1024 {
+        anyhow::bail!("safetensors header is unexpectedly large: {path}");
+    }
+    let mut header = vec![0u8; header_len as usize];
+    file.read_exact(&mut header)?;
+    let names: serde_json::Map<String, serde_json::Value> = serde_json::from_slice(&header)?;
+    Ok(names.contains_key("model.msfield.schema_marker"))
 }
 
 // 2x2 average pooling for the renormalization-group loss on 2D fields.
@@ -4833,6 +4958,8 @@ struct ForwardOut {
     stereo: Tensor,
     next_micro: Tensor,
     next_macro: Tensor,
+    next_coarse: Option<Tensor>,
+    msfield_diagnostics: Option<msfield::MsFieldDiagnostics>,
     next_hidden: Tensor,
     refined_hidden: Tensor,
     movement_t: Tensor,
@@ -4855,14 +4982,16 @@ struct ForwardOut {
 }
 
 struct ComplexAudioEcosystem {
-    micro_ca: NeuralCAFolded3D,
-    macro_ca: NeuralCAFolded3D,
-    micro_clocks: CellClockBank,
-    macro_clocks: CellClockBank,
+    substrate: SubstrateMode,
+    micro_ca: Option<NeuralCAFolded3D>,
+    macro_ca: Option<NeuralCAFolded3D>,
+    micro_clocks: Option<CellClockBank>,
+    macro_clocks: Option<CellClockBank>,
+    msfield: Option<msfield::MsField>,
     gru_memory: GRUCell,
     morphic: MorphicStack,
     temporal_decoder: SpatialTemporalDecoder,
-    asymptotic_contraction: AsymptoticContractionLayer,
+    asymptotic_contraction: Option<AsymptoticContractionLayer>,
     spatial_panner: candle_nn::Sequential,
     fm_mod_ratio: candle_nn::Sequential,
     fm_mod_index: candle_nn::Sequential,
@@ -4909,6 +5038,13 @@ struct ComplexAudioEcosystem {
     prev_haas_side: Tensor,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+enum SubstrateMode {
+    Legacy,
+    MsField,
+}
+
 struct AsymptoticContractionLayer {
     expand: Linear,
     contract: Linear,
@@ -4929,21 +5065,67 @@ impl AsymptoticContractionLayer {
 
 impl ComplexAudioEcosystem {
     fn new(vb: VBV, dev: &Device, morph: MorphArchitecture) -> Result<Self> {
-        let micro_ca =
-            NeuralCAFolded3D::new(CA_CHANNELS, CA_HIDDEN, GRID_H, GRID_W, vb.pp("micro_ca"))?;
-        let macro_ca =
-            NeuralCAFolded3D::new(CA_CHANNELS, CA_HIDDEN, MACRO_H, MACRO_W, vb.pp("macro_ca"))?;
-        let micro_clocks = CellClockBank::new(CA_CHANNELS, GRID_H, GRID_W, 0xC10C_0001, dev)?;
-        let macro_clocks = CellClockBank::new(CA_CHANNELS, MACRO_H, MACRO_W, 0xC10C_0002, dev)?;
+        Self::new_with_substrate(vb, dev, morph, SubstrateMode::Legacy)
+    }
+
+    fn new_with_substrate(
+        vb: VBV,
+        dev: &Device,
+        morph: MorphArchitecture,
+        substrate: SubstrateMode,
+    ) -> Result<Self> {
+        let (micro_ca, macro_ca, micro_clocks, macro_clocks, msfield) = match substrate {
+            SubstrateMode::Legacy => (
+                Some(NeuralCAFolded3D::new(
+                    CA_CHANNELS,
+                    CA_HIDDEN,
+                    GRID_H,
+                    GRID_W,
+                    vb.pp("micro_ca"),
+                )?),
+                Some(NeuralCAFolded3D::new(
+                    CA_CHANNELS,
+                    CA_HIDDEN,
+                    MACRO_H,
+                    MACRO_W,
+                    vb.pp("macro_ca"),
+                )?),
+                Some(CellClockBank::new(
+                    CA_CHANNELS,
+                    GRID_H,
+                    GRID_W,
+                    0xC10C_0001,
+                    dev,
+                )?),
+                Some(CellClockBank::new(
+                    CA_CHANNELS,
+                    MACRO_H,
+                    MACRO_W,
+                    0xC10C_0002,
+                    dev,
+                )?),
+                None,
+            ),
+            SubstrateMode::MsField => (
+                None,
+                None,
+                None,
+                None,
+                Some(msfield::MsField::new(vb.pp("msfield"), dev)?),
+            ),
+        };
         let gru_memory = GRUCell::new(CA_CHANNELS + EPI_DIM, MEMORY_DIM, vb.pp("gru_memory"))?;
         let morphic = MorphicStack::new(MEMORY_DIM, morph.width, morph.blocks, vb.pp("morphic"))?;
         let temporal_decoder = SpatialTemporalDecoder::new(vb.pp("temporal_decoder"), dev)?;
-        let asymptotic_contraction = AsymptoticContractionLayer::new(
-            MEMORY_DIM,
-            LARGE_D_DIM,
-            CA_CHANNELS,
-            vb.pp("asymp_contract"),
-        )?;
+        let asymptotic_contraction = match substrate {
+            SubstrateMode::Legacy => Some(AsymptoticContractionLayer::new(
+                MEMORY_DIM,
+                LARGE_D_DIM,
+                CA_CHANNELS,
+                vb.pp("asymp_contract"),
+            )?),
+            SubstrateMode::MsField => None,
+        };
         let spatial_panner =
             candle_nn::seq().add(candle_nn::linear(MEMORY_DIM, 1, vb.pp("spatial_panner_0"))?);
         let fm_mod_ratio = candle_nn::seq()
@@ -5066,10 +5248,12 @@ impl ComplexAudioEcosystem {
             interp[t * GRID_W + (j + 1) % GRID_W] += f;
         }
         Ok(Self {
+            substrate,
             micro_ca,
             macro_ca,
             micro_clocks,
             macro_clocks,
+            msfield,
             gru_memory,
             morphic,
             temporal_decoder,
@@ -5137,16 +5321,32 @@ impl ComplexAudioEcosystem {
         self.morphic.capacity()
     }
     fn manifold_depth(&self) -> usize {
-        manifold_depth_for_morph_depth(self.depth())
+        if self.substrate == SubstrateMode::MsField {
+            CA_MANIFOLD_MAX_DEPTH
+        } else {
+            manifold_depth_for_morph_depth(self.depth())
+        }
     }
     fn active_spatial_rings(&self) -> usize {
-        usize::from(far_ring_gain_for_morph_depth(self.depth()) > 0.0) + 1
+        if self.substrate == SubstrateMode::MsField {
+            0
+        } else {
+            usize::from(far_ring_gain_for_morph_depth(self.depth()) > 0.0) + 1
+        }
     }
     fn far_ring_gain(&self) -> f64 {
-        far_ring_gain_for_morph_depth(self.depth())
+        if self.substrate == SubstrateMode::MsField {
+            0.0
+        } else {
+            far_ring_gain_for_morph_depth(self.depth())
+        }
     }
     fn project_manifold(&self, state: &Tensor) -> CResult<Tensor> {
-        project_manifold_state(state, self.manifold_depth())
+        if self.substrate == SubstrateMode::MsField {
+            Ok(state.clone())
+        } else {
+            project_manifold_state(state, self.manifold_depth())
+        }
     }
     fn set_depth(&mut self, d: usize) {
         self.morphic.set_depth(d);
@@ -5180,51 +5380,79 @@ impl ComplexAudioEcosystem {
         train_ecology: bool,
         energy: f32,
         control: &SynthesisControl,
+        coarse: Option<&Tensor>,
     ) -> Result<ForwardOut> {
         let dev = micro.device();
         let [pc_l, pc_r, pm_l, pm_r] = phases;
         let manifold_depth = self.manifold_depth();
         let far_ring_gain = self.far_ring_gain();
 
-        let mut next_macro = macro_t.clone();
-        if force {
-            // Sign-symmetric local anti-rail restoring field (the global-mean
-            // amplitude barrier lives in the PotentialController).
-            let field = local_rail_bias(macro_t)?;
-            next_macro = self
-                .macro_ca
-                .forward(
-                    macro_t,
-                    None,
-                    Some(&field),
-                    self.macro_clocks.get(absolute_step),
-                    manifold_depth,
-                    far_ring_gain,
-                )?
-                .tanh()?
-                .affine(0.95, 0.0)?;
-        }
-        let next_macro = damp_global_mean(&next_macro)?.clamp(-1.0f32, 1.0f32)?;
-        let macro_act = next_macro.abs()?.mean_all()?;
-        let metab = macro_act.affine(5.0, 0.0)?.clamp(0.01f32, 1.0f32)?;
-        let inv_metab = metab.affine(-1.0, 1.0)?;
-        let contracted_mem = self.asymptotic_contraction.forward(mem)?;
-        let macro_ch = next_macro.mean(D::Minus1)?.mean(D::Minus1)?; // (1, C)
-        let macro_mod = contracted_mem.add(&macro_ch)?;
-        let micro_field = local_rail_bias(micro)?;
-        let raw_next_micro = self.micro_ca.forward(
-            micro,
-            Some(&macro_mod),
-            Some(&micro_field),
-            self.micro_clocks.get(absolute_step),
-            manifold_depth,
-            far_ring_gain,
-        )?;
-        let next_micro = micro
-            .broadcast_mul(&inv_metab)?
-            .add(&raw_next_micro.broadcast_mul(&metab)?)?
-            .clamp(-1.0f32, 1.0f32)?;
-        let next_micro = damp_global_mean(&next_micro)?.clamp(-1.0f32, 1.0f32)?;
+        let (next_micro, next_macro, next_coarse, msfield_diagnostics) = if let Some(msfield) =
+            self.msfield.as_ref()
+        {
+            let coarse =
+                coarse.ok_or_else(|| anyhow::anyhow!("msfield coarse state is missing"))?;
+            let (fine, meso, coarse, diagnostics) = msfield.step(micro, macro_t, coarse, mem)?;
+            (
+                damp_global_mean(&fine)?.clamp(-1.0f32, 1.0f32)?,
+                damp_global_mean(&meso)?.clamp(-1.0f32, 1.0f32)?,
+                Some(coarse),
+                Some(diagnostics),
+            )
+        } else {
+            let mut next_macro = macro_t.clone();
+            if force {
+                // Sign-symmetric local anti-rail restoring field (the global-mean
+                // amplitude barrier lives in the PotentialController).
+                let field = local_rail_bias(macro_t)?;
+                next_macro = self
+                    .macro_ca
+                    .as_ref()
+                    .expect("legacy macro CA")
+                    .forward(
+                        macro_t,
+                        None,
+                        Some(&field),
+                        self.macro_clocks
+                            .as_ref()
+                            .expect("legacy macro clock")
+                            .get(absolute_step),
+                        manifold_depth,
+                        far_ring_gain,
+                    )?
+                    .tanh()?
+                    .affine(0.95, 0.0)?;
+            }
+            let next_macro = damp_global_mean(&next_macro)?.clamp(-1.0f32, 1.0f32)?;
+            let macro_act = next_macro.abs()?.mean_all()?;
+            let metab = macro_act.affine(5.0, 0.0)?.clamp(0.01f32, 1.0f32)?;
+            let inv_metab = metab.affine(-1.0, 1.0)?;
+            let contracted_mem = self
+                .asymptotic_contraction
+                .as_ref()
+                .expect("legacy field bridge")
+                .forward(mem)?;
+            let macro_ch = next_macro.mean(D::Minus1)?.mean(D::Minus1)?; // (1, C)
+            let macro_mod = contracted_mem.add(&macro_ch)?;
+            let micro_field = local_rail_bias(micro)?;
+            let raw_next_micro = self.micro_ca.as_ref().expect("legacy micro CA").forward(
+                micro,
+                Some(&macro_mod),
+                Some(&micro_field),
+                self.micro_clocks
+                    .as_ref()
+                    .expect("legacy micro clock")
+                    .get(absolute_step),
+                manifold_depth,
+                far_ring_gain,
+            )?;
+            let next_micro = micro
+                .broadcast_mul(&inv_metab)?
+                .add(&raw_next_micro.broadcast_mul(&metab)?)?
+                .clamp(-1.0f32, 1.0f32)?;
+            let next_micro = damp_global_mean(&next_micro)?.clamp(-1.0f32, 1.0f32)?;
+            (next_micro, next_macro, None, None)
+        };
 
         // GRU input = channel features ++ episodic attention readout.
         let core_micro_feats = next_micro.mean(D::Minus1)?.mean(D::Minus1)?; // (1, C)
@@ -5236,12 +5464,19 @@ impl ComplexAudioEcosystem {
         // forward ecology exact while preventing the large CA graph from
         // participating in backward. Periodic full horizons retain end-to-end
         // credit assignment.
-        let (next_micro, next_macro, next_hidden, refined_hidden) = if train_ecology {
-            (next_micro, next_macro, next_hidden, refined_hidden)
+        let (next_micro, next_macro, next_coarse, next_hidden, refined_hidden) = if train_ecology {
+            (
+                next_micro,
+                next_macro,
+                next_coarse,
+                next_hidden,
+                refined_hidden,
+            )
         } else {
             (
                 next_micro.detach(),
                 next_macro.detach(),
+                next_coarse.map(|state| state.detach()),
                 next_hidden.detach(),
                 refined_hidden.detach(),
             )
@@ -5689,6 +5924,8 @@ impl ComplexAudioEcosystem {
             stereo,
             next_micro,
             next_macro,
+            next_coarse,
+            msfield_diagnostics,
             next_hidden,
             refined_hidden,
             movement_t,
@@ -5873,6 +6110,28 @@ struct WorldCheckpoint {
     motif_diagnostics: MotifDiagnostics,
     host_runtime: HostRuntimeState,
 }
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct MsWorldCheckpoint {
+    version: u32,
+    legacy_host: WorldCheckpoint,
+    coarse_tape: Vec<f32>,
+}
+
+impl MsWorldCheckpoint {
+    fn validate(&self) -> Result<()> {
+        if self.version != MS_WORLD_VERSION {
+            anyhow::bail!("unsupported msfield world version {}", self.version);
+        }
+        self.legacy_host.validate()?;
+        if self.coarse_tape.len() != CA_CHANNELS * msfield::COARSE_H * msfield::COARSE_W
+            || self.coarse_tape.iter().any(|value| !value.is_finite())
+        {
+            anyhow::bail!("msfield coarse state is malformed or non-finite");
+        }
+        Ok(())
+    }
+}
 impl WorldCheckpoint {
     fn validate(&self) -> Result<()> {
         if self.version != WORLD_VERSION {
@@ -5982,6 +6241,65 @@ fn load_world(path: &str) -> Result<WorldCheckpoint> {
     let checkpoint: WorldCheckpoint = bincode::deserialize(payload)?;
     checkpoint.validate()?;
     Ok(checkpoint)
+}
+
+fn atomic_save_ms_world(path: &str, checkpoint: &MsWorldCheckpoint) -> Result<()> {
+    checkpoint.validate()?;
+    let tmp = format!("{}.tmp", path);
+    let payload = bincode::serialize(checkpoint)?;
+    let mut bytes = Vec::with_capacity(24 + payload.len());
+    bytes.extend_from_slice(&MS_WORLD_MAGIC);
+    bytes.extend_from_slice(&(payload.len() as u64).to_le_bytes());
+    bytes.extend_from_slice(&checkpoint_checksum(&payload).to_le_bytes());
+    bytes.extend_from_slice(&payload);
+    std::fs::write(&tmp, bytes)?;
+    std::fs::rename(&tmp, path)?;
+    Ok(())
+}
+
+fn load_ms_world(path: &str) -> Result<MsWorldCheckpoint> {
+    let bytes = std::fs::read(path)?;
+    if bytes.len() < 24 || &bytes[..8] != MS_WORLD_MAGIC.as_slice() {
+        anyhow::bail!("world is not an isolated TITAN msfield v10 checkpoint");
+    }
+    let payload_len = u64::from_le_bytes(bytes[8..16].try_into().unwrap()) as usize;
+    let expected_checksum = u64::from_le_bytes(bytes[16..24].try_into().unwrap());
+    if payload_len != bytes.len() - 24 || checkpoint_checksum(&bytes[24..]) != expected_checksum {
+        anyhow::bail!("msfield world is truncated or failed its checksum");
+    }
+    let checkpoint: MsWorldCheckpoint = bincode::deserialize(&bytes[24..])?;
+    checkpoint.validate()?;
+    Ok(checkpoint)
+}
+
+fn world_has_msfield_magic(path: &str) -> Result<bool> {
+    let mut file = File::open(path)?;
+    let mut magic = [0u8; 8];
+    file.read_exact(&mut magic)?;
+    Ok(magic == MS_WORLD_MAGIC)
+}
+
+fn save_world_for_substrate(
+    path: &str,
+    world: &WorldCheckpoint,
+    substrate: SubstrateMode,
+    coarse: Option<&Tensor>,
+) -> Result<()> {
+    match substrate {
+        SubstrateMode::Legacy => atomic_save_world(path, world),
+        SubstrateMode::MsField => {
+            let coarse =
+                coarse.ok_or_else(|| anyhow::anyhow!("msfield coarse state is missing at save"))?;
+            atomic_save_ms_world(
+                path,
+                &MsWorldCheckpoint {
+                    version: MS_WORLD_VERSION,
+                    legacy_host: world.clone(),
+                    coarse_tape: flatten_tensor(coarse)?,
+                },
+            )
+        }
+    }
 }
 
 fn flatten_tensor(t: &Tensor) -> Result<Vec<f32>> {
@@ -6218,6 +6536,80 @@ fn validate_experiment_run(
     Ok(metadata_path)
 }
 
+// Keep the CLI inputs explicit so isolation checks can run before any output path is created.
+#[allow(clippy::too_many_arguments)]
+fn validate_msfield_run(
+    base_dir: &str,
+    tag: Option<&str>,
+    model_override: Option<&str>,
+    state_override: Option<&str>,
+    import_model: Option<&str>,
+    fresh_model: bool,
+    manifest_only: bool,
+    experiments: ExperimentProfile,
+) -> Result<String> {
+    let tag = tag.ok_or_else(|| {
+        anyhow::anyhow!("--substrate msfield requires --run-tag v10-msfield-NAME")
+    })?;
+    if !tag.starts_with("v10-msfield-") || tag.len() == "v10-msfield-".len() {
+        anyhow::bail!("msfield run tags must begin with v10-msfield-");
+    }
+    if model_override.is_some() || state_override.is_some() || import_model.is_some() {
+        anyhow::bail!("msfield uses only its isolated tagged checkpoints; --model, --state, and --import-model are unsupported");
+    }
+    if manifest_only || experiments.enabled() {
+        anyhow::bail!(
+            "msfield first experiment does not combine with manifest-only or v9 output experiments"
+        );
+    }
+    let metadata_path = artifact_path(
+        base_dir,
+        "titan_run_metadata_v10_msfield",
+        "json",
+        Some(tag),
+    );
+    if std::path::Path::new(&metadata_path).exists() {
+        if fresh_model {
+            anyhow::bail!(
+                "msfield continuation must load its tagged checkpoint; omit --fresh-model"
+            );
+        }
+        let metadata: serde_json::Value = serde_json::from_slice(&std::fs::read(&metadata_path)?)?;
+        if metadata
+            .pointer("/invocation/substrate")
+            .and_then(|v| v.as_str())
+            != Some("msfield")
+        {
+            anyhow::bail!("msfield tagged metadata has the wrong substrate identity");
+        }
+        for (stem, ext) in [
+            ("titan_model_v10_msfield", "safetensors"),
+            ("titan_world_v10_msfield", "bin"),
+            ("titan_optimizer_v10_msfield", "safetensors"),
+        ] {
+            let path = artifact_path(base_dir, stem, ext, Some(tag));
+            if !std::path::Path::new(&path).is_file() {
+                anyhow::bail!("msfield continuation is missing tagged checkpoint: {path}");
+            }
+        }
+    } else {
+        if !fresh_model {
+            anyhow::bail!("first msfield run requires --fresh-model and an unused tag");
+        }
+        if std::path::Path::new(base_dir).is_dir() {
+            for entry in std::fs::read_dir(base_dir)? {
+                let name = entry?.file_name().to_string_lossy().into_owned();
+                if name.contains(&format!("_{tag}.")) || name.contains(&format!("_{tag}_")) {
+                    anyhow::bail!(
+                        "msfield tag {tag} already has artifacts without matching metadata"
+                    );
+                }
+            }
+        }
+    }
+    Ok(metadata_path)
+}
+
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().collect();
     if args.iter().any(|arg| analysis::is_analysis_flag(arg)) {
@@ -6245,11 +6637,13 @@ fn main() -> Result<()> {
     let mut model_override: Option<String> = None;
     let mut import_model_override: Option<String> = None;
     let mut corpus_manifest_override: Option<String> = None;
+    let mut corpus_dir_override: Option<String> = None;
     let mut refresh_corpus_manifest_requested = false;
     let mut rebuild_corpus_manifest_requested = false;
     let mut prune_missing_manifest_entries = false;
     let mut manifest_only = false;
     let mut run_tag: Option<String> = None;
+    let mut substrate = SubstrateMode::Legacy;
     let mut experiments = ExperimentProfile::default();
     let mut seed: u64 = 42;
     let mut arg_idx = 1;
@@ -6343,6 +6737,14 @@ fn main() -> Result<()> {
                     anyhow::bail!("Missing value for --corpus-manifest");
                 }
             }
+            "--corpus-dir" => {
+                if arg_idx + 1 < args.len() {
+                    corpus_dir_override = Some(args[arg_idx + 1].clone());
+                    arg_idx += 2;
+                } else {
+                    anyhow::bail!("Missing value for --corpus-dir");
+                }
+            }
             "--refresh-corpus-manifest" => {
                 refresh_corpus_manifest_requested = true;
                 arg_idx += 1;
@@ -6367,6 +6769,19 @@ fn main() -> Result<()> {
                 } else {
                     anyhow::bail!("Missing value for --run-tag");
                 }
+            }
+            "--substrate" => {
+                if arg_idx + 1 >= args.len() {
+                    anyhow::bail!("Missing value for --substrate");
+                }
+                substrate = match args[arg_idx + 1].as_str() {
+                    "legacy" => SubstrateMode::Legacy,
+                    "msfield" => SubstrateMode::MsField,
+                    other => {
+                        anyhow::bail!("unsupported --substrate {other:?}; use legacy or msfield")
+                    }
+                };
+                arg_idx += 2;
             }
             "--spectral-deemphasis" => {
                 experiments.spectral_deemphasis = true;
@@ -6449,11 +6864,13 @@ Usage: titan [BASE_DIR] [options]\n\n\
       --model PATH     v9 model output/resume path\n\
       --import-model P Import compatible experimental tensors without overwriting source\n\
       --corpus-manifest PATH  Explicit train/development/validation/exclude manifest\n\
+      --corpus-dir PATH  WAV directory (default BASE_DIR/OLD_WAVS)\n\
       --refresh-corpus-manifest  Add new WAVs while preserving existing family roles\n\
       --rebuild-corpus-manifest  Replace the manifest from current WAVs (creates backup)\n\
       --prune-missing  Remove manifest entries whose WAV files are absent (refresh only)\n\
       --manifest-only  Create, repair, refresh, or rebuild the manifest, then exit\n\
       --run-tag NAME   Isolate output, telemetry, model, and world artifacts\n\
+      --substrate legacy|msfield  Legacy v9 or isolated v10 field (default legacy)\n\
       --spectral-deemphasis  Experimental 2-6 kHz spectral loss weighting\n\
       --prime-width-score   Experimental width-aware prime selection\n\
       --freeze-morph   Hold the checkpoint's current morphic depth for this run\n\
@@ -6494,7 +6911,25 @@ Usage: titan [BASE_DIR] [options]\n\n\
     if experiments.enabled() && manifest_only {
         anyhow::bail!("experimental flags require a training/render run, not --manifest-only");
     }
-    let run_metadata_path = if manifest_only {
+    if substrate == SubstrateMode::Legacy
+        && run_tag
+            .as_deref()
+            .is_some_and(|tag| tag.starts_with("v10-msfield-"))
+    {
+        anyhow::bail!("v10-msfield- tags are reserved for --substrate msfield");
+    }
+    let run_metadata_path = if substrate == SubstrateMode::MsField {
+        validate_msfield_run(
+            &base_dir,
+            run_tag.as_deref(),
+            model_override.as_deref(),
+            state_override.as_deref(),
+            import_model_override.as_deref(),
+            fresh_model,
+            manifest_only,
+            experiments,
+        )?
+    } else if manifest_only {
         artifact_path(
             &base_dir,
             "titan_run_metadata_v9",
@@ -6513,7 +6948,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
         )?
     };
     std::fs::create_dir_all(&base_dir)?;
-    let wav_dir = format!("{}/OLD_WAVS", base_dir);
+    let wav_dir = corpus_dir_override
+        .clone()
+        .unwrap_or_else(|| format!("{}/OLD_WAVS", base_dir));
     let corpus_manifest_path = corpus_manifest_override
         .unwrap_or_else(|| format!("{}/titan_corpus_manifest_v7.json", base_dir));
     if rebuild_corpus_manifest_requested {
@@ -6627,7 +7064,11 @@ Usage: titan [BASE_DIR] [options]\n\n\
             keep_running.store(false, AtomicOrdering::SeqCst);
         })?;
     }
-    println!("=== TITAN AUDIO ECOSYSTEM: RUST EDITION v9 (MORPHOGENIC MANIFOLD) ===");
+    if substrate == SubstrateMode::MsField {
+        println!("=== TITAN AUDIO v10-msfield-exp: ISOLATED THREE-SCALE FIELD ===");
+    } else {
+        println!("=== TITAN AUDIO ECOSYSTEM: RUST EDITION v9 (MORPHOGENIC MANIFOLD) ===");
+    }
     println!("Seed: {} | Threads: {} | Gradient horizon: {} | Autograd tape: {} | Core cadence: 1/{} tapes | Field: {}ch micro {}x{} macro {}x{} | LR: {:.2e} | Duration: {}s", seed, n_threads, bptt_window, tape_chunks, core_update_every, CA_CHANNELS, GRID_H, GRID_W, MACRO_H, MACRO_W, target_lr, sim_duration);
     if bptt_window > tape_chunks {
         println!("--> Memory-safe TBPTT: accumulating {}-chunk tape segments across a {}-chunk optimizer horizon.", tape_chunks, bptt_window);
@@ -6640,14 +7081,28 @@ Usage: titan [BASE_DIR] [options]\n\n\
     }
     println!("NOTE: CA/RNG/renderer and matching AdamW moments resume from v9 checkpoints. A missing or mismatched optimizer uses a 32-update LR warmup. Fresh reproducibility also requires the same --threads value.");
 
-    let model_path = model_override.unwrap_or_else(|| {
-        artifact_path(
-            &base_dir,
-            "titan_model_v9",
-            "safetensors",
-            run_tag.as_deref(),
-        )
-    });
+    let model_stem = if substrate == SubstrateMode::MsField {
+        "titan_model_v10_msfield"
+    } else {
+        "titan_model_v9"
+    };
+    let world_stem = if substrate == SubstrateMode::MsField {
+        "titan_world_v10_msfield"
+    } else {
+        "titan_world_v9"
+    };
+    let optimizer_stem = if substrate == SubstrateMode::MsField {
+        "titan_optimizer_v10_msfield"
+    } else {
+        "titan_optimizer_v9"
+    };
+    let morph_stem = if substrate == SubstrateMode::MsField {
+        "titan_morph_state_v10_msfield"
+    } else {
+        "titan_morph_state_v9"
+    };
+    let model_path = model_override
+        .unwrap_or_else(|| artifact_path(&base_dir, model_stem, "safetensors", run_tag.as_deref()));
     let importing_model = import_model_override.is_some();
     let load_model_path = if let Some(path) = import_model_override {
         path
@@ -6656,19 +7111,10 @@ Usage: titan [BASE_DIR] [options]\n\n\
     };
     let state_was_overridden = state_override.is_some();
     let world_path = state_override
-        .unwrap_or_else(|| artifact_path(&base_dir, "titan_world_v9", "bin", run_tag.as_deref()));
-    let morph_path = artifact_path(
-        &base_dir,
-        "titan_morph_state_v9",
-        "json",
-        run_tag.as_deref(),
-    );
-    let optimizer_path = artifact_path(
-        &base_dir,
-        "titan_optimizer_v9",
-        "safetensors",
-        run_tag.as_deref(),
-    );
+        .unwrap_or_else(|| artifact_path(&base_dir, world_stem, "bin", run_tag.as_deref()));
+    let morph_path = artifact_path(&base_dir, morph_stem, "json", run_tag.as_deref());
+    let optimizer_path =
+        artifact_path(&base_dir, optimizer_stem, "safetensors", run_tag.as_deref());
     let load_world_path = if importing_model && !state_was_overridden {
         model_companion_path(&load_model_path, "titan_world", "bin")
             .unwrap_or_else(|| world_path.clone())
@@ -6687,6 +7133,24 @@ Usage: titan [BASE_DIR] [options]\n\n\
     } else {
         morph_path.clone()
     };
+    for path in [&model_path, &load_model_path] {
+        if std::path::Path::new(path).is_file() {
+            let is_msfield = model_has_msfield_marker(path)?;
+            if substrate == SubstrateMode::Legacy && is_msfield {
+                anyhow::bail!("ordinary v9 cannot load or overwrite an msfield model: {path}");
+            }
+            if substrate == SubstrateMode::MsField && !fresh_model && !is_msfield {
+                anyhow::bail!("msfield continuation requires an msfield model marker: {path}");
+            }
+        }
+    }
+    if substrate == SubstrateMode::Legacy {
+        for path in [&world_path, &load_world_path] {
+            if std::path::Path::new(path).is_file() && world_has_msfield_magic(path)? {
+                anyhow::bail!("ordinary v9 cannot load or overwrite an msfield world: {path}");
+            }
+        }
+    }
     ensure_parent_dir(&model_path)?;
     ensure_parent_dir(&world_path)?;
     ensure_parent_dir(&optimizer_path)?;
@@ -6700,7 +7164,12 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let corpus_summary = target_loader.corpus_summary();
     let varmap = VarMap::new();
     let vb = VBV::from_varmap(&varmap, DType::F32, &device);
-    let mut model = ComplexAudioEcosystem::new(vb.pp("model"), &device, morph_architecture)?;
+    let mut model = ComplexAudioEcosystem::new_with_substrate(
+        vb.pp("model"),
+        &device,
+        morph_architecture,
+        substrate,
+    )?;
     let arbiter = AudioArbiter::new(vb.pp("arbiter"))?;
     let monitor_head = MonitorHead::new(vb.pp("monitor_head"))?;
     let mut episodic = EpisodicMemory::new(vb.pp("episodic"))?;
@@ -6731,18 +7200,33 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let validation_bank = FixedProbeBank::new(&validation_targets, &spec_proj, &chroma_proj)
         .map_err(anyhow::Error::msg)?;
     let model_parameters = parameter_count(&varmap);
+    let parameter_breakdown = if substrate == SubstrateMode::MsField {
+        Some(parameter_groups(&varmap))
+    } else {
+        None
+    };
     println!(
         "--> Trainable parameters: {} ({:.2}M, {:.1} MiB FP32 weights).",
         model_parameters,
         model_parameters as f64 / 1_000_000.0,
         model_parameters as f64 * 4.0 / (1024.0 * 1024.0),
     );
+    if let Some(groups) = &parameter_breakdown {
+        println!("--> Msfield parameter groups: {:?}", groups);
+    }
 
     // Initialize the full v9 parameter set deterministically first, then load
     // every compatible tensor from an older or current checkpoint on top.
     // This permits older tensor migration without discarding the learned CA just
     // because the new self-model head has different dimensions.
     let initialized = deterministic_reinit(&varmap, seed, &device)?;
+    let shared_fresh_tensors = if substrate == SubstrateMode::MsField && fresh_model {
+        let count = align_msfield_shared_fresh_init(&varmap, seed, &device, morph_architecture)?;
+        println!("--> Msfield fresh start copied {count} exactly matching shared tensors from deterministic v9 initialization.");
+        Some(count)
+    } else {
+        None
+    };
     let mut loaded_full = false;
     let mut loaded_any = false;
     let mut model_world_compatible = false;
@@ -6758,6 +7242,12 @@ Usage: titan [BASE_DIR] [options]\n\n\
     } else if std::path::Path::new(&load_model_path).exists() {
         match load_into_varmap(&varmap, &load_model_path, &device) {
             Ok(report) => {
+                if substrate == SubstrateMode::MsField && !report.fully_exact() {
+                    anyhow::bail!(
+                        "msfield continuation requires every tensor to load exactly: {:?}",
+                        report
+                    );
+                }
                 model_load_report = report;
                 loaded_any = report.loaded() > 0;
                 loaded_full = report.fully_exact();
@@ -6802,6 +7292,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
     }
     if !loaded_any && !fresh_model && std::path::Path::new(&load_model_path).exists() {
         println!("--> No compatible tensors were found; this run starts as a fresh v9 model.");
+    }
+    if substrate == SubstrateMode::MsField && !fresh_model && !loaded_full {
+        anyhow::bail!("msfield continuation could not load an exact model checkpoint");
     }
     if importing_model && loaded_any {
         println!(
@@ -6866,6 +7359,15 @@ Usage: titan [BASE_DIR] [options]\n\n\
         .map_err(anyhow::Error::msg)?;
     let mut macro_tape = randn_t(&mut rng, &[1, CA_CHANNELS, MACRO_H, MACRO_W], 1.0, &device)
         .map_err(anyhow::Error::msg)?;
+    let mut coarse_tape = if substrate == SubstrateMode::MsField {
+        Some(Tensor::zeros(
+            (1, CA_CHANNELS, msfield::COARSE_H, msfield::COARSE_W),
+            DType::F32,
+            &device,
+        )?)
+    } else {
+        None
+    };
     let mut hidden_mem =
         Tensor::zeros((1, MEMORY_DIM), DType::F32, &device).map_err(anyhow::Error::msg)?;
     let mut phases = [0.0f32; 4];
@@ -6875,8 +7377,20 @@ Usage: titan [BASE_DIR] [options]\n\n\
 
     let mut loaded_world = false;
     if !fresh_world && std::path::Path::new(&load_world_path).exists() {
-        match load_world(&load_world_path) {
-            Ok(world) => {
+        let loaded = match substrate {
+            SubstrateMode::Legacy => load_world(&load_world_path).map(|world| (world, None)),
+            SubstrateMode::MsField => load_ms_world(&load_world_path)
+                .map(|world| (world.legacy_host, Some(world.coarse_tape))),
+        };
+        match loaded {
+            Ok((world, saved_coarse)) => {
+                if let Some(coarse) = saved_coarse {
+                    coarse_tape = Some(Tensor::from_vec(
+                        coarse,
+                        (1, CA_CHANNELS, msfield::COARSE_H, msfield::COARSE_W),
+                        &device,
+                    )?);
+                }
                 global_step = world.global_step;
                 seed = world.seed;
                 rng = world.rng;
@@ -6947,6 +7461,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
             ),
         }
     }
+    if substrate == SubstrateMode::MsField && !fresh_model && !loaded_world {
+        anyhow::bail!("msfield continuation could not load its exact v10 world checkpoint");
+    }
     if fresh_world {
         println!(
             "==> FRESH WORLD: retaining compatible model weights but resetting organism state."
@@ -6991,18 +7508,30 @@ Usage: titan [BASE_DIR] [options]\n\n\
             ),
         }
     }
-    println!(
-        "--> Morphic stack: L{:02} active / {} blocks × {} width · manifold {}x{} features with {} spatial ring{} · rad_amp {:.3} · world {}",
-        model.depth(),
-        model.morph_capacity(),
-        morph_width,
-        model.manifold_depth(),
-        CA_FEATURE_CHANNELS,
-        model.active_spatial_rings(),
-        if model.active_spatial_rings() == 1 { "" } else { "s" },
-        rad_amp,
-        if loaded_world { "resumed" } else { "new" }
-    );
+    if substrate == SubstrateMode::MsField && !fresh_model && !optimizer_resumed {
+        anyhow::bail!("msfield continuation requires matching persisted AdamW state");
+    }
+    if substrate == SubstrateMode::MsField {
+        println!(
+            "--> Msfield: fine {}x{}, meso {}x{}, coarse {}x{} · 64 channels/scale · dt {:?} · MorphicStack L{:02}/{} × {} · world {}",
+            GRID_H, GRID_W, MACRO_H, MACRO_W, msfield::COARSE_H, msfield::COARSE_W,
+            msfield::FIELD_DT, model.depth(), model.morph_capacity(), morph_width,
+            if loaded_world { "resumed" } else { "new" }
+        );
+    } else {
+        println!(
+            "--> Morphic stack: L{:02} active / {} blocks × {} width · manifold {}x{} features with {} spatial ring{} · rad_amp {:.3} · world {}",
+            model.depth(),
+            model.morph_capacity(),
+            morph_width,
+            model.manifold_depth(),
+            CA_FEATURE_CHANNELS,
+            model.active_spatial_rings(),
+            if model.active_spatial_rings() == 1 { "" } else { "s" },
+            rad_amp,
+            if loaded_world { "resumed" } else { "new" }
+        );
+    }
     println!(
         "--> Motif memory: {}/{} entries · growth preserves all; shrink retains newest.",
         motifs.entries.len(),
@@ -7078,6 +7607,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
         "csv",
         run_tag.as_deref(),
     );
+    let msfield_trace_path = (substrate == SubstrateMode::MsField)
+        .then(|| artifact_path(&base_dir, "msfield_trace_v10", "csv", run_tag.as_deref()));
     let trace_spool_path = artifact_path(
         &base_dir,
         ".titan_uncertainty_spool",
@@ -7097,6 +7628,32 @@ Usage: titan [BASE_DIR] [options]\n\n\
         .from_path(&topology_tmp_path)?;
     let mut trace_spool = BufWriter::new(File::create(&trace_spool_path)?);
     let mut topology_index_spool = BufWriter::new(File::create(&topology_index_spool_path)?);
+    let mut msfield_trace_writer = if let Some(path) = &msfield_trace_path {
+        let mut writer = csv::Writer::from_path(path)?;
+        writer.write_record([
+            "run_id",
+            "global_step",
+            "run_step",
+            "fine_rms",
+            "meso_rms",
+            "coarse_rms",
+            "fine_delta_rms",
+            "meso_delta_rms",
+            "coarse_delta_rms",
+            "fine_velocity_mean_abs",
+            "meso_velocity_mean_abs",
+            "coarse_velocity_mean_abs",
+            "fine_diffusion_mean",
+            "meso_diffusion_mean",
+            "coarse_diffusion_mean",
+            "hidden_delta_rms",
+            "fine_meso_cosine",
+            "meso_coarse_cosine",
+        ])?;
+        Some(writer)
+    } else {
+        None
+    };
     let mut raw_chunk_bytes = vec![0u8; CHUNK_SIZE * 2 * std::mem::size_of::<f32>()];
     let (mut dc_x1_l, mut dc_y1_l, mut dc_x1_r, mut dc_y1_r) = (
         host_runtime.dc_x1_l,
@@ -7287,12 +7844,15 @@ Usage: titan [BASE_DIR] [options]\n\n\
             train_ecology_tape,
             energy_state,
             &current_control,
+            coarse_tape.as_ref(),
         )?;
         phase_profiler.model_forward += forward_started.elapsed();
         let ForwardOut {
             stereo: stereo_chunk,
             next_micro,
             next_macro,
+            next_coarse,
+            msfield_diagnostics,
             next_hidden,
             refined_hidden,
             movement_t,
@@ -7313,6 +7873,25 @@ Usage: titan [BASE_DIR] [options]\n\n\
             region_activity,
             region_change,
         } = out;
+
+        let msfield_sample = if step % TRACE_EVERY == 0 {
+            match (
+                coarse_tape.as_ref(),
+                next_coarse.as_ref(),
+                msfield_diagnostics.as_ref(),
+            ) {
+                (Some(previous), Some(current), Some(diagnostics)) => Some(msfield_trace_values(
+                    [&micro_tape, &macro_tape, previous],
+                    [&next_micro, &next_macro, current],
+                    &hidden_mem,
+                    &next_hidden,
+                    diagnostics,
+                )?),
+                _ => None,
+            }
+        } else {
+            None
+        };
 
         let loss_started = Instant::now();
 
@@ -8209,10 +8788,12 @@ Usage: titan [BASE_DIR] [options]\n\n\
         if tape_boundary {
             micro_tape = next_micro.detach();
             macro_tape = next_macro.detach();
+            coarse_tape = next_coarse.map(|state| state.detach());
             hidden_mem = next_hidden.detach();
         } else {
             micro_tape = next_micro;
             macro_tape = next_macro;
+            coarse_tape = next_coarse;
             hidden_mem = next_hidden;
         }
 
@@ -8385,6 +8966,11 @@ Usage: titan [BASE_DIR] [options]\n\n\
         evolved_chunks = step + 1;
 
         if step % TRACE_EVERY == 0 {
+            if let (Some(writer), Some(values)) = (&mut msfield_trace_writer, msfield_sample) {
+                let mut row = vec![run_id.clone(), absolute_step.to_string(), step.to_string()];
+                row.extend(values);
+                writer.write_record(row)?;
+            }
             let sample_index = trace_rows;
             let (trace_morph_event_step, trace_morph_event) =
                 pending_morph_event.unwrap_or((0, ""));
@@ -8645,19 +9231,25 @@ Usage: titan [BASE_DIR] [options]\n\n\
                         dc_y1_r,
                     },
                 )
-                .and_then(|world| atomic_save_world(&world_path, &world))
-                {
+                .and_then(|world| {
+                    save_world_for_substrate(&world_path, &world, substrate, coarse_tape.as_ref())
+                }) {
                     Ok(()) => {
-                        let _ = std::fs::write(
-                            &morph_path,
+                        let morph_state = if substrate == SubstrateMode::MsField {
+                            serde_json::json!({
+                                "substrate": "msfield", "active_depth": model.depth(),
+                                "morph_layers": model.morph_capacity(), "morph_width": morph_width,
+                                "rad_amp": rad_amp
+                            })
+                        } else {
                             serde_json::json!({
                                 "active_depth": model.depth(),
                                 "morph_layers": model.morph_capacity(),
                                 "morph_width": morph_width,
                                 "rad_amp": rad_amp
                             })
-                            .to_string(),
-                        );
+                        };
+                        let _ = std::fs::write(&morph_path, morph_state.to_string());
                         println!("--> Model + organism checkpoint saved at global step {} (L{:02}, motifs {}, conf {:.2})",
                             absolute_step + 1, model.depth(), motifs.entries.len(), controller.meta.confidence);
                     }
@@ -8669,6 +9261,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
     }
 
     topology_writer.flush()?;
+    if let Some(writer) = &mut msfield_trace_writer {
+        writer.flush()?;
+    }
     drop(topology_writer);
     std::fs::rename(&topology_tmp_path, &topology_path)?;
     trace_spool.flush()?;
@@ -8901,7 +9496,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let dom_archetype = semantic.dominant_archetype();
     let final_depth = model.depth();
 
-    let prompt = format!(
+    let legacy_prompt = format!(
         "Style: {}, {}, {}, {}. Texture: {}. Tempo: {}. Tone: {}. Space: {}. Field: {} regime · {} archetype · depth L{:02}. [Phi: {:.2}, Sigma: {:.3}, Temp: {:.2}, PI-proxy: {:.2}, Aperture: {:.2}, Synergy: {:.2}, Field-Entropy: {:.2}b, Energy: {:.2}, Model-Confidence raw/effective: {:.2}/{:.2}, Ecology-Health: {:.2}, Stagnation: {:.2}, Motifs: {}/{}, Seed: {}]",
         if avg_phi > 0.85 { "Hyper-Resonant" } else { "Chaotic" },
         if avg_aperture > 0.5 { "Evolving" } else { "Stable" },
@@ -8914,6 +9509,12 @@ Usage: titan [BASE_DIR] [options]\n\n\
         adaptive_dynamics.activity_health, adaptive_dynamics.stagnation,
         motifs.entries.len(), motif_capacity, seed
     );
+    let prompt = if substrate == SubstrateMode::MsField {
+        "Create an original instrumental passage with coherent progression and clear development. Use the uploaded audio only as a loose texture and timing reference."
+            .to_string()
+    } else {
+        legacy_prompt
+    };
     println!("\n=== GENERATIVE PRIMING PROMPT ===\n{}", prompt);
     let prompt_path = artifact_path(&base_dir, "suno_priming_prompt", "txt", run_tag.as_deref());
     std::fs::write(&prompt_path, &prompt)?;
@@ -9165,9 +9766,16 @@ Usage: titan [BASE_DIR] [options]\n\n\
             dc_y1_r,
         },
     )?;
-    atomic_save_world(&world_path, &world)?;
-    let _ = std::fs::write(
-        &morph_path,
+    save_world_for_substrate(&world_path, &world, substrate, coarse_tape.as_ref())?;
+    let final_morph_state = if substrate == SubstrateMode::MsField {
+        serde_json::json!({
+            "substrate": "msfield",
+            "active_depth": model.depth(),
+            "morph_layers": model.morph_capacity(),
+            "morph_width": morph_width,
+            "rad_amp": rad_amp
+        })
+    } else {
         serde_json::json!({
             "active_depth": model.depth(),
             "manifold_depth": model.manifold_depth(),
@@ -9177,12 +9785,12 @@ Usage: titan [BASE_DIR] [options]\n\n\
             "morph_width": morph_width,
             "rad_amp": rad_amp
         })
-        .to_string(),
-    );
+    };
+    let _ = std::fs::write(&morph_path, final_morph_state.to_string());
     let metadata = std::fs::metadata(&model_path)?;
     let run_finished_unix_ms = unix_time_ms();
     let run_metadata_tmp = format!("{}.tmp", run_metadata_path);
-    let run_metadata = serde_json::json!({
+    let mut run_metadata = serde_json::json!({
         "trace_schema_version": TRACE_SCHEMA_VERSION,
         "run_id": run_id,
         "audio_file_hash": audio_file_hash,
@@ -9317,6 +9925,57 @@ Usage: titan [BASE_DIR] [options]\n\n\
             "Bitwise reproducibility also requires the same thread count and build.",
         ],
     });
+    if let Some(corpus_dir) = corpus_dir_override.as_ref() {
+        run_metadata["invocation"]["corpus_dir"] = serde_json::json!(corpus_dir);
+        run_metadata["corpus"]["wav_dir"] = serde_json::json!(wav_dir);
+    }
+    if substrate == SubstrateMode::MsField {
+        run_metadata["invocation"]["substrate"] = serde_json::json!("msfield");
+        run_metadata["invocation"]["world_format"] = serde_json::json!("TITANM10");
+        run_metadata["corpus"]["wav_dir"] = serde_json::json!(wav_dir);
+        run_metadata["model"]["parameter_groups"] = serde_json::json!(parameter_breakdown);
+        run_metadata["run"]["shared_fresh_tensors"] = serde_json::json!(shared_fresh_tensors);
+        run_metadata["telemetry"]["msfield_trace"] = serde_json::json!(msfield_trace_path);
+        run_metadata["telemetry"]["msfield_trace_semantics"] = serde_json::json!(
+            "RMS energy, displacement, and hidden-state displacement are pre-ecology forward values; velocity and diffusion are learned-rule means; cosine is descriptive spatial coherence, not information flow"
+        );
+        if let Some(field) = run_metadata["field"].as_object_mut() {
+            for key in [
+                "manifold_max_depth",
+                "feature_channels_per_sheet",
+                "active_manifold_depth",
+                "active_spatial_rings",
+                "far_ring_dilation",
+                "far_ring_gain",
+            ] {
+                field.remove(key);
+            }
+            field.insert(
+                "topology".into(),
+                serde_json::json!("three_scale_continuous_klein_local_transport"),
+            );
+            field.insert("fine_height".into(), serde_json::json!(GRID_H));
+            field.insert("meso_height".into(), serde_json::json!(MACRO_H));
+            field.insert("coarse_height".into(), serde_json::json!(msfield::COARSE_H));
+            field.insert("coarse_width".into(), serde_json::json!(msfield::COARSE_W));
+            field.insert(
+                "coarse_cells".into(),
+                serde_json::json!(CA_CHANNELS * msfield::COARSE_H * msfield::COARSE_W),
+            );
+            field.insert("scale_dt".into(), serde_json::json!(msfield::FIELD_DT));
+            field.insert("macro_update_every_chunks".into(), serde_json::json!(1));
+        }
+        if let Some(run) = run_metadata["run"].as_object_mut() {
+            for key in [
+                "start_manifold_depth",
+                "end_manifold_depth",
+                "start_spatial_rings",
+                "end_spatial_rings",
+            ] {
+                run.remove(key);
+            }
+        }
+    }
     std::fs::write(&run_metadata_tmp, serde_json::to_vec_pretty(&run_metadata)?)?;
     std::fs::rename(&run_metadata_tmp, &run_metadata_path)?;
     println!(
@@ -9331,7 +9990,11 @@ Usage: titan [BASE_DIR] [options]\n\n\
         world_path, final_global_step, motifs.entries.len(), controller.meta.confidence,
         adaptive_dynamics.effective_model_weight, adaptive_dynamics.activity_health,
         adaptive_dynamics.stagnation);
-    println!("Continue normally; use --fresh-world to keep learned weights but reset the ecology, or --fresh-model to reset everything.");
+    if substrate == SubstrateMode::MsField {
+        println!("Continue this isolated msfield tag without --fresh-model; keep its exact v10 model, world, and optimizer together.");
+    } else {
+        println!("Continue normally; use --fresh-world to keep learned weights but reset the ecology, or --fresh-model to reset everything.");
+    }
     Ok(())
 }
 
@@ -9440,6 +10103,116 @@ mod tests {
         )
         .is_err());
         std::fs::remove_dir_all(root)?;
+        Ok(())
+    }
+
+    #[test]
+    fn msfield_namespace_requires_fresh_isolated_start_and_complete_resume() -> Result<()> {
+        let root = std::env::temp_dir().join(format!(
+            "titan_msfield_gate_{}_{}",
+            std::process::id(),
+            unix_time_ms()
+        ));
+        std::fs::create_dir_all(&root)?;
+        let base = root.to_str().unwrap();
+        let tag = "v10-msfield-fixture";
+        let profile = ExperimentProfile::default();
+        assert!(validate_msfield_run(base, None, None, None, None, true, false, profile).is_err());
+        assert!(validate_msfield_run(
+            base,
+            Some("ordinary"),
+            None,
+            None,
+            None,
+            true,
+            false,
+            profile
+        )
+        .is_err());
+        assert!(
+            validate_msfield_run(base, Some(tag), None, None, None, false, false, profile).is_err()
+        );
+        let metadata =
+            validate_msfield_run(base, Some(tag), None, None, None, true, false, profile)?;
+        std::fs::write(&metadata, br#"{"invocation":{"substrate":"msfield"}}"#)?;
+        assert!(
+            validate_msfield_run(base, Some(tag), None, None, None, false, false, profile).is_err()
+        );
+        for (stem, extension) in [
+            ("titan_model_v10_msfield", "safetensors"),
+            ("titan_world_v10_msfield", "bin"),
+            ("titan_optimizer_v10_msfield", "safetensors"),
+        ] {
+            std::fs::write(artifact_path(base, stem, extension, Some(tag)), b"fixture")?;
+        }
+        assert!(
+            validate_msfield_run(base, Some(tag), None, None, None, false, false, profile).is_ok()
+        );
+        assert!(
+            validate_msfield_run(base, Some(tag), None, None, None, true, false, profile).is_err()
+        );
+        assert!(validate_msfield_run(
+            base,
+            Some(tag),
+            Some("other"),
+            None,
+            None,
+            false,
+            false,
+            profile
+        )
+        .is_err());
+        std::fs::remove_dir_all(root)?;
+        Ok(())
+    }
+
+    #[test]
+    fn msfield_fresh_shared_weights_match_legacy_seed() -> Result<()> {
+        let device = Device::Cpu;
+        let morph = MorphArchitecture {
+            blocks: 1,
+            width: 64,
+        };
+        let target = VarMap::new();
+        let vb = VBV::from_varmap(&target, DType::F32, &device);
+        let _model = ComplexAudioEcosystem::new_with_substrate(
+            vb.pp("model"),
+            &device,
+            morph,
+            SubstrateMode::MsField,
+        )?;
+        let _arbiter = AudioArbiter::new(vb.pp("arbiter"))?;
+        let _monitor = MonitorHead::new(vb.pp("monitor_head"))?;
+        let _episodic = EpisodicMemory::new(vb.pp("episodic"))?;
+        deterministic_reinit(&target, 42, &device)?;
+        let copied = align_msfield_shared_fresh_init(&target, 42, &device, morph)?;
+        assert!(copied > 100);
+
+        let reference = VarMap::new();
+        let vb = VBV::from_varmap(&reference, DType::F32, &device);
+        let _model = ComplexAudioEcosystem::new(vb.pp("model"), &device, morph)?;
+        let _arbiter = AudioArbiter::new(vb.pp("arbiter"))?;
+        let _monitor = MonitorHead::new(vb.pp("monitor_head"))?;
+        let _episodic = EpisodicMemory::new(vb.pp("episodic"))?;
+        deterministic_reinit(&reference, 42, &device)?;
+        let target_data = target.data().lock().unwrap();
+        let reference_data = reference.data().lock().unwrap();
+        for prefix in [
+            "model.gru_memory.",
+            "model.temporal_decoder.",
+            "model.morphic.",
+        ] {
+            let (name, var) = target_data
+                .iter()
+                .find(|(name, _)| name.starts_with(prefix))
+                .ok_or_else(|| anyhow::anyhow!("missing shared group {prefix}"))?;
+            let prior = reference_data.get(name).unwrap();
+            assert_eq!(
+                var.as_tensor().flatten_all()?.to_vec1::<f32>()?,
+                prior.as_tensor().flatten_all()?.to_vec1::<f32>()?,
+                "shared fresh tensor differs: {name}"
+            );
+        }
         Ok(())
     }
 
@@ -9599,6 +10372,7 @@ mod tests {
             true,
             0.7,
             &SynthesisControl::default(),
+            None,
         )?;
         assert_eq!(out.stereo.dims(), &[2, CHUNK_SIZE]);
         assert_eq!(out.next_micro.dims(), &[1, CA_CHANNELS, GRID_H, GRID_W]);
@@ -9612,6 +10386,66 @@ mod tests {
                 .any(|var| gradients.get(var.as_tensor()).is_some()),
             "decoder smoke loss produced no trainable gradients"
         );
+        Ok(())
+    }
+
+    #[test]
+    fn msfield_coarse_intervention_reaches_audio() -> Result<()> {
+        fn render(coarse_level: f64) -> Result<(Vec<f32>, Vec<f32>)> {
+            let device = Device::Cpu;
+            let varmap = VarMap::new();
+            let vb = VBV::from_varmap(&varmap, DType::F32, &device);
+            let mut model = ComplexAudioEcosystem::new_with_substrate(
+                vb.pp("model"),
+                &device,
+                MorphArchitecture {
+                    blocks: 1,
+                    width: 64,
+                },
+                SubstrateMode::MsField,
+            )?;
+            deterministic_reinit(&varmap, 77, &device)?;
+            let fine = Tensor::zeros((1, CA_CHANNELS, GRID_H, GRID_W), DType::F32, &device)?;
+            let meso = Tensor::zeros((1, CA_CHANNELS, MACRO_H, MACRO_W), DType::F32, &device)?;
+            let coarse = Tensor::ones(
+                (1, CA_CHANNELS, msfield::COARSE_H, msfield::COARSE_W),
+                DType::F32,
+                &device,
+            )?
+            .affine(coarse_level, 0.0)?;
+            let memory = Tensor::zeros((1, MEMORY_DIM), DType::F32, &device)?;
+            let episodic = Tensor::zeros((1, EPI_DIM), DType::F32, &device)?;
+            let output = model.forward(
+                &fine,
+                &meso,
+                &memory,
+                &episodic,
+                [0.0; 4],
+                0.0,
+                0.0,
+                false,
+                0,
+                false,
+                0.7,
+                &SynthesisControl::default(),
+                Some(&coarse),
+            )?;
+            Ok((
+                output.stereo.flatten_all()?.to_vec1::<f32>()?,
+                output.next_macro.flatten_all()?.to_vec1::<f32>()?,
+            ))
+        }
+        let (quiet_audio, quiet_meso) = render(0.0)?;
+        let (driven_audio, driven_meso) = render(0.5)?;
+        let mean_difference = |a: &[f32], b: &[f32]| {
+            a.iter()
+                .zip(b)
+                .map(|(x, y)| (x - y).abs() as f64)
+                .sum::<f64>()
+                / a.len() as f64
+        };
+        assert!(mean_difference(&quiet_meso, &driven_meso) > 1e-7);
+        assert!(mean_difference(&quiet_audio, &driven_audio) > 1e-9);
         Ok(())
     }
 

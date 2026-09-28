@@ -239,6 +239,7 @@ pub(crate) fn step(
         false,
         world.energy,
         &control,
+        None,
     )?;
     let proposed_recurrent_delta = output
         .next_hidden

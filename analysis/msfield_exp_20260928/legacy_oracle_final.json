@@ -1,0 +1,101 @@
+{
+  "files": {
+    "full_audio": {
+      "byte_identical": true,
+      "new_bytes": 16428,
+      "new_sha256": "32ca1fcd174d1976d233bcaa27a306a67613fab24e74b79cd315a24fa428f672",
+      "old_bytes": 16428,
+      "old_sha256": "32ca1fcd174d1976d233bcaa27a306a67613fab24e74b79cd315a24fa428f672"
+    },
+    "model": {
+      "byte_identical": true,
+      "new_bytes": 67974972,
+      "new_sha256": "2c9262446cfd2df5f967d63acca9b5d2383186a74378b754be1b2e3552f455ba",
+      "old_bytes": 67974972,
+      "old_sha256": "2c9262446cfd2df5f967d63acca9b5d2383186a74378b754be1b2e3552f455ba"
+    },
+    "morph": {
+      "byte_identical": true,
+      "new_bytes": 147,
+      "new_sha256": "aa701dae86ae67f3ac06e6ab839b1c816bc11ae484f666bfac21165e0c3ece04",
+      "old_bytes": 147,
+      "old_sha256": "aa701dae86ae67f3ac06e6ab839b1c816bc11ae484f666bfac21165e0c3ece04"
+    },
+    "optimizer": {
+      "byte_identical": true,
+      "new_bytes": 135955352,
+      "new_sha256": "f34f4bdf38f717f81b8094c5ac0be4c0e2f96c0fac6c01b07d1a3687c9bb356d",
+      "old_bytes": 135955352,
+      "old_sha256": "f34f4bdf38f717f81b8094c5ac0be4c0e2f96c0fac6c01b07d1a3687c9bb356d"
+    },
+    "prime_audio": {
+      "byte_identical": true,
+      "new_bytes": 16428,
+      "new_sha256": "f037ed4f00b07b3ef6219cc06737c22ff8357bb8717e1aec8d43fbf55eb76058",
+      "old_bytes": 16428,
+      "old_sha256": "f037ed4f00b07b3ef6219cc06737c22ff8357bb8717e1aec8d43fbf55eb76058"
+    },
+    "world": {
+      "byte_identical": true,
+      "new_bytes": 1324835,
+      "new_sha256": "43d9f9af844f11220ee8cf17c41203bbef46f529243c4d5802c9e597b50ba47e",
+      "old_bytes": 1324835,
+      "old_sha256": "43d9f9af844f11220ee8cf17c41203bbef46f529243c4d5802c9e597b50ba47e"
+    }
+  },
+  "legacy_gate": {
+    "audio_equal": true,
+    "model_within_tolerance": true,
+    "optimizer_within_tolerance": true,
+    "pass": true,
+    "same_steps": true,
+    "world_payload_equal": true
+  },
+  "metadata": {
+    "new": {
+      "end_global_step": 1,
+      "experiments": {
+        "prime_width_score": false,
+        "spectral_deemphasis": false
+      },
+      "optimizer_updates_cumulative": 1
+    },
+    "old": {
+      "end_global_step": 1,
+      "experiments": {
+        "prime_width_score": false,
+        "spectral_deemphasis": false
+      },
+      "optimizer_updates_cumulative": 1
+    }
+  },
+  "new_binary_sha256": "b620b5e0d5902477cda4b5840000da74a1c0a106eace000ddc897b334de0beba",
+  "new_root": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/legacy_final",
+  "old_binary_sha256": "e7b96f94c608ce6e00c8e777d89dfce241e6ce93b389ac9e6f96708a675023d2",
+  "old_root": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/legacy_old",
+  "tensors": {
+    "model": {
+      "changed_elements": 0,
+      "largest_deltas": [],
+      "layout_equal": true,
+      "max_abs_delta": 0.0,
+      "over_tolerance": 0,
+      "tensor_count": 200,
+      "tolerance": "1e-7 + 1e-6 * max(abs(old),abs(new)) for floating tensors; exact integers"
+    },
+    "optimizer": {
+      "changed_elements": 0,
+      "largest_deltas": [],
+      "layout_equal": true,
+      "max_abs_delta": 0.0,
+      "over_tolerance": 0,
+      "tensor_count": 403,
+      "tolerance": "1e-7 + 1e-6 * max(abs(old),abs(new)) for floating tensors; exact integers"
+    }
+  },
+  "world": {
+    "payload_differing_bytes": 0,
+    "payload_equal": true,
+    "wrapper_header_equal": true
+  }
+}

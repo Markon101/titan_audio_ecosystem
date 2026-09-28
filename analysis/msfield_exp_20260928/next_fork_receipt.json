@@ -1,0 +1,35 @@
+{
+  "baseline_dir": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield",
+  "writable_fork_dir": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield_next",
+  "files": [
+    {
+      "name": "titan_model_v10_msfield_v10-msfield-real01.safetensors",
+      "baseline_sha256": "aa9a8119b60307250c3cd6bd5e7ada31d7399580971801f722a5f345624793c5",
+      "clone_sha256_before_resume": "aa9a8119b60307250c3cd6bd5e7ada31d7399580971801f722a5f345624793c5"
+    },
+    {
+      "name": "titan_world_v10_msfield_v10-msfield-real01.bin",
+      "baseline_sha256": "66682c31281fdfcc733b7948be2184fe3ff74be8a00cc4ec3a469240d7a3319d",
+      "clone_sha256_before_resume": "66682c31281fdfcc733b7948be2184fe3ff74be8a00cc4ec3a469240d7a3319d"
+    },
+    {
+      "name": "titan_optimizer_v10_msfield_v10-msfield-real01.safetensors",
+      "baseline_sha256": "148711b3168f2d145ba6104032933c2d416481fb8c19325d68dc8dd116596618",
+      "clone_sha256_before_resume": "148711b3168f2d145ba6104032933c2d416481fb8c19325d68dc8dd116596618"
+    },
+    {
+      "name": "titan_morph_state_v10_msfield_v10-msfield-real01.json",
+      "baseline_sha256": "820e42fc637e5ab3bffd1af8bc8473a5538dbcbc819987a5f7b8a37bd1a7fd90",
+      "clone_sha256_before_resume": "820e42fc637e5ab3bffd1af8bc8473a5538dbcbc819987a5f7b8a37bd1a7fd90"
+    }
+  ],
+  "verified_resume": {
+    "start_global_step": 351,
+    "end_global_step": 352,
+    "optimizer_resumed": true,
+    "model_exact_tensors": 229,
+    "optimizer_exact_moments": 229,
+    "final_binary_sha256": "b620b5e0d5902477cda4b5840000da74a1c0a106eace000ddc897b334de0beba",
+    "baseline_hashes_unchanged_after_resume": true
+  }
+}

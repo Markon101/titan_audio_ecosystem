@@ -1,0 +1,553 @@
+{
+  "legacy": {
+    "metadata": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/titan_run_metadata_v9_v9-msfield-control-01.json",
+    "audio": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/rust_ecosystem_out_v9-msfield-control-01_a4619c835ac1.wav",
+    "audio_sha256": "b59eabb2bfb60b6ff178c2447ff89d5d7b40bcdde2e77eec33cdf20e651c0f78",
+    "audio_info": {
+      "channels": 2,
+      "rate": 48000,
+      "width_bytes": 2,
+      "frames": 1437696
+    },
+    "audio_metrics": {
+      "rms": 0.39757070221114077,
+      "peak": 0.890960693359375,
+      "peak_dbfs": -1.0028291074482363,
+      "crest_db": 7.0088834352316525,
+      "lr_correlation": 0.9768379494788787,
+      "side_over_mid_db": -15.912056418878777,
+      "bands": {
+        "20-200Hz": 0.2385838427364669,
+        "200-2000Hz": 0.7203346491347826,
+        "2000-6000Hz": 0.01886046901443636,
+        "6000-12000Hz": 0.008580155947368578,
+        "12000-20000Hz": 0.00844603375094967,
+        "20000-24000Hz": 0.0047786515881066095
+      }
+    },
+    "clipped_frames": 0,
+    "run": {
+      "completed_chunks": 351,
+      "development_plateau_ready": true,
+      "development_relative_improvement": 0.04230835661292076,
+      "elapsed_seconds": 120.93379974365234,
+      "end_global_step": 351,
+      "end_manifold_depth": 4,
+      "end_morph_depth": 10,
+      "end_rad_amp": 0.41718143224716187,
+      "end_spatial_rings": 2,
+      "morph_event_count": 0,
+      "optimizer_migration": {
+        "exact": 0,
+        "initialized": 0,
+        "renderer_control_resets": 0,
+        "resized": 0
+      },
+      "optimizer_resumed": false,
+      "optimizer_updates_cumulative": 44,
+      "optimizer_updates_run": 44,
+      "phase_profile": {
+        "backward_ms_per_chunk": 204.43631905413105,
+        "checkpoint_ms_per_chunk": 0.0,
+        "loss_and_metrics_ms_per_chunk": 10.439326327635328,
+        "model_forward_ms_per_chunk": 89.04977275498575,
+        "optimizer_ms_per_chunk": 19.27407584900285,
+        "output_io_ms_per_chunk": 0.43020270370370367,
+        "target_load_ms_per_chunk": 0.4962845811965812
+      },
+      "rendered_seconds": 29.95199966430664,
+      "start_global_step": 0,
+      "start_manifold_depth": 4,
+      "start_morph_depth": 10,
+      "start_rad_amp": 0.3499999940395355,
+      "start_spatial_rings": 2,
+      "steps_per_second": 2.902414321899414
+    },
+    "model": {
+      "decoder_control_frames": 32,
+      "fp32_weight_mib": 64.80727767944336,
+      "morph_layers": 16,
+      "morph_width": 512,
+      "parameters": 16988839,
+      "regional_partials": 32
+    },
+    "corpus": {
+      "development_family_probes": 4,
+      "development_files": 6,
+      "development_is_strict": true,
+      "manifest": "/sdcard/Download/titan_corpus_manifest_v7_sml.json",
+      "prefetch_chunks": 16,
+      "selection": "uniform_family_then_uniform_variant",
+      "training_families": 23,
+      "training_files": 30,
+      "validation_family_probes": 4,
+      "validation_files": 5,
+      "validation_is_strict": true,
+      "wav_dir": "/sdcard/Download/OLD_WAVS"
+    },
+    "trace_rows": 36,
+    "movement_median": 0.0003516129945637658,
+    "movement_last": 0.0004781024763360619,
+    "target_schedule_sampled": [
+      {
+        "step": "0",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "910433"
+      },
+      {
+        "step": "10",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "951393"
+      },
+      {
+        "step": "20",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "992353"
+      },
+      {
+        "step": "30",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1033313"
+      },
+      {
+        "step": "40",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1074273"
+      },
+      {
+        "step": "50",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1115233"
+      },
+      {
+        "step": "60",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1156193"
+      },
+      {
+        "step": "70",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1197153"
+      },
+      {
+        "step": "80",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1238113"
+      },
+      {
+        "step": "90",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1279073"
+      },
+      {
+        "step": "100",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1320033"
+      },
+      {
+        "step": "110",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1360993"
+      },
+      {
+        "step": "120",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1401953"
+      },
+      {
+        "step": "130",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1442913"
+      },
+      {
+        "step": "140",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1483873"
+      },
+      {
+        "step": "150",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1524833"
+      },
+      {
+        "step": "160",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1565793"
+      },
+      {
+        "step": "170",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1606753"
+      },
+      {
+        "step": "180",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1647713"
+      },
+      {
+        "step": "190",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1688673"
+      },
+      {
+        "step": "200",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1729633"
+      },
+      {
+        "step": "210",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1770593"
+      },
+      {
+        "step": "220",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1811553"
+      },
+      {
+        "step": "230",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1852513"
+      },
+      {
+        "step": "240",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1893473"
+      },
+      {
+        "step": "250",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1934433"
+      },
+      {
+        "step": "260",
+        "target_file": "Cosmic Connections_014429729.wav",
+        "target_frame": "500768"
+      },
+      {
+        "step": "270",
+        "target_file": "Cosmic Connections_014429729.wav",
+        "target_frame": "541728"
+      },
+      {
+        "step": "280",
+        "target_file": "Cosmic Connections_014429729.wav",
+        "target_frame": "582688"
+      },
+      {
+        "step": "290",
+        "target_file": "Cosmic Connections_014429729.wav",
+        "target_frame": "623648"
+      },
+      {
+        "step": "300",
+        "target_file": "Cosmic Connections_014429729.wav",
+        "target_frame": "664608"
+      },
+      {
+        "step": "310",
+        "target_file": "Cosmic Connections_014429729.wav",
+        "target_frame": "705568"
+      },
+      {
+        "step": "320",
+        "target_file": "Cosmic Connections_014429729.wav",
+        "target_frame": "746528"
+      },
+      {
+        "step": "330",
+        "target_file": "Cosmic Connections_014429729.wav",
+        "target_frame": "787488"
+      },
+      {
+        "step": "340",
+        "target_file": "Cosmic Connections_014429729.wav",
+        "target_frame": "828448"
+      },
+      {
+        "step": "350",
+        "target_file": "Cosmic Connections_014429729.wav",
+        "target_frame": "869408"
+      }
+    ],
+    "nonfinite_trace_tokens": 0
+  },
+  "msfield": {
+    "metadata": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/titan_run_metadata_v10_msfield_v10-msfield-real01.json",
+    "audio": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/rust_ecosystem_out_v10-msfield-real01_360478547229.wav",
+    "audio_sha256": "f3bc637a50748b3616125a75efe0704724b3bda1999de97d47d9088ae2017091",
+    "audio_info": {
+      "channels": 2,
+      "rate": 48000,
+      "width_bytes": 2,
+      "frames": 1437696
+    },
+    "audio_metrics": {
+      "rms": 0.25510278476866505,
+      "peak": 0.890960693359375,
+      "peak_dbfs": -1.0028291074482363,
+      "crest_db": 10.862866902397244,
+      "lr_correlation": 0.9852619215328045,
+      "side_over_mid_db": -19.248954099267955,
+      "bands": {
+        "20-200Hz": 0.12433987077549205,
+        "200-2000Hz": 0.5742587657645523,
+        "2000-6000Hz": 0.24826695074823227,
+        "6000-12000Hz": 0.021809020046839066,
+        "12000-20000Hz": 0.01904025915303661,
+        "20000-24000Hz": 0.01095777986736327
+      }
+    },
+    "clipped_frames": 0,
+    "run": {
+      "completed_chunks": 351,
+      "development_plateau_ready": true,
+      "development_relative_improvement": -0.0039386753924191,
+      "elapsed_seconds": 108.97988891601562,
+      "end_global_step": 351,
+      "end_morph_depth": 10,
+      "end_rad_amp": 0.2608088254928589,
+      "morph_event_count": 0,
+      "optimizer_migration": {
+        "exact": 0,
+        "initialized": 0,
+        "renderer_control_resets": 0,
+        "resized": 0
+      },
+      "optimizer_resumed": false,
+      "optimizer_updates_cumulative": 44,
+      "optimizer_updates_run": 44,
+      "phase_profile": {
+        "backward_ms_per_chunk": 164.5399580883191,
+        "checkpoint_ms_per_chunk": 0.0,
+        "loss_and_metrics_ms_per_chunk": 7.676961492877493,
+        "model_forward_ms_per_chunk": 105.69713521937322,
+        "optimizer_ms_per_chunk": 15.695880817663818,
+        "output_io_ms_per_chunk": 0.3398391481481482,
+        "target_load_ms_per_chunk": 0.5509277378917379
+      },
+      "rendered_seconds": 29.95199966430664,
+      "shared_fresh_tensors": 180,
+      "start_global_step": 0,
+      "start_morph_depth": 10,
+      "start_rad_amp": 0.3499999940395355,
+      "steps_per_second": 3.220777750015259
+    },
+    "model": {
+      "decoder_control_frames": 32,
+      "fp32_weight_mib": 64.18674850463867,
+      "morph_layers": 16,
+      "morph_width": 512,
+      "parameter_groups": {
+        "gru_memory": 986112,
+        "host_auxiliary": 152447,
+        "morphic_recurrent_stack": 8413184,
+        "renderer_and_synthesis_heads": 70812,
+        "substrate": 168532,
+        "temporal_decoder": 7035084
+      },
+      "parameters": 16826171,
+      "regional_partials": 32
+    },
+    "corpus": {
+      "development_family_probes": 4,
+      "development_files": 6,
+      "development_is_strict": true,
+      "manifest": "/sdcard/Download/titan_corpus_manifest_v7_sml.json",
+      "prefetch_chunks": 16,
+      "selection": "uniform_family_then_uniform_variant",
+      "training_families": 23,
+      "training_files": 30,
+      "validation_family_probes": 4,
+      "validation_files": 5,
+      "validation_is_strict": true,
+      "wav_dir": "/sdcard/Download/OLD_WAVS"
+    },
+    "trace_rows": 36,
+    "movement_median": 0.015435365960001945,
+    "movement_last": 0.012085121124982834,
+    "target_schedule_sampled": [
+      {
+        "step": "0",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "910433"
+      },
+      {
+        "step": "10",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "951393"
+      },
+      {
+        "step": "20",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "992353"
+      },
+      {
+        "step": "30",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1033313"
+      },
+      {
+        "step": "40",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1074273"
+      },
+      {
+        "step": "50",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1115233"
+      },
+      {
+        "step": "60",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1156193"
+      },
+      {
+        "step": "70",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1197153"
+      },
+      {
+        "step": "80",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1238113"
+      },
+      {
+        "step": "90",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1279073"
+      },
+      {
+        "step": "100",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1320033"
+      },
+      {
+        "step": "110",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1360993"
+      },
+      {
+        "step": "120",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1401953"
+      },
+      {
+        "step": "130",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1442913"
+      },
+      {
+        "step": "140",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1483873"
+      },
+      {
+        "step": "150",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1524833"
+      },
+      {
+        "step": "160",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1565793"
+      },
+      {
+        "step": "170",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1606753"
+      },
+      {
+        "step": "180",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1647713"
+      },
+      {
+        "step": "190",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1688673"
+      },
+      {
+        "step": "200",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1729633"
+      },
+      {
+        "step": "210",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1770593"
+      },
+      {
+        "step": "220",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1811553"
+      },
+      {
+        "step": "230",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1852513"
+      },
+      {
+        "step": "240",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1893473"
+      },
+      {
+        "step": "250",
+        "target_file": "Transcendence Beyond_014357307.wav",
+        "target_frame": "1934433"
+      },
+      {
+        "step": "260",
+        "target_file": "Cosmic Harmony_014434258.wav",
+        "target_frame": "2714725"
+      },
+      {
+        "step": "270",
+        "target_file": "Cosmic Harmony_014434258.wav",
+        "target_frame": "2755685"
+      },
+      {
+        "step": "280",
+        "target_file": "Cosmic Harmony_014434258.wav",
+        "target_frame": "2796645"
+      },
+      {
+        "step": "290",
+        "target_file": "Cosmic Harmony_014434258.wav",
+        "target_frame": "2837605"
+      },
+      {
+        "step": "300",
+        "target_file": "Cosmic Harmony_014434258.wav",
+        "target_frame": "2878565"
+      },
+      {
+        "step": "310",
+        "target_file": "Cosmic Harmony_014434258.wav",
+        "target_frame": "2919525"
+      },
+      {
+        "step": "320",
+        "target_file": "Cosmic Harmony_014434258.wav",
+        "target_frame": "2960485"
+      },
+      {
+        "step": "330",
+        "target_file": "Cosmic Harmony_014434258.wav",
+        "target_frame": "3001445"
+      },
+      {
+        "step": "340",
+        "target_file": "Cosmic Harmony_014434258.wav",
+        "target_frame": "3042405"
+      },
+      {
+        "step": "350",
+        "target_file": "Cosmic Harmony_014434258.wav",
+        "target_frame": "3083365"
+      }
+    ],
+    "nonfinite_trace_tokens": 0
+  }
+}

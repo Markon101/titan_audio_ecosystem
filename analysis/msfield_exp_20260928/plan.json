@@ -1,0 +1,316 @@
+{
+  "schema": "titan_msfield_short_panel_v1",
+  "git_commit": "5f9d56a17cd700cef066d36e5a5b85cb31564455",
+  "binary_sha256": "983c45470136cf08c2d49241bd7827e4f9b0d8575f381fa7dd5fb20bf5aa6220",
+  "manifest_path": "/sdcard/Download/titan_corpus_manifest_v7_sml.json",
+  "manifest_sha256": "0708ede659328f928f76db792d091b5b1eaaaed219754fb9820986f4d81f8228",
+  "corpus_dir": "/sdcard/Download/OLD_WAVS",
+  "corpus_files": [
+    {
+      "file": "AlgoRhythm s in Digital Motion - Hearts Align_0144.wav",
+      "role": "train",
+      "family": "algorhythm_s_in_digital_motion_hearts_align",
+      "bytes": 43950158,
+      "sha256": "cf74bd4e4d58640fc80c7f3303dbbfd5054537b9e383f81275b1e0505f312e7e"
+    },
+    {
+      "file": "Architect of Change_014405555.wav",
+      "role": "train",
+      "family": "architect_of_change",
+      "bytes": 25174094,
+      "sha256": "ae0e812c0051712ba7994c27c45966f89dddecccffb8735bf065d440ecb66777"
+    },
+    {
+      "file": "Beats of the Night_014407065.wav",
+      "role": "train",
+      "family": "beats_of_the_night",
+      "bytes": 25174094,
+      "sha256": "e39cf68c05164e4f3e82095c15242315fb2778ad6c1e3ed28b289731c84ddee3"
+    },
+    {
+      "file": "Behind the Billion-Dollar Smile ext v2_014408567.wav",
+      "role": "validation",
+      "family": "behind_the_billion_dollar_smile",
+      "bytes": 25112654,
+      "sha256": "c69097e07fe0256a059b6432ea61748438fe534a17ba523f9df62b7e2f8a8657"
+    },
+    {
+      "file": "Behind the Billion-Dollar Smile ext v2_014410083.wav",
+      "role": "validation",
+      "family": "behind_the_billion_dollar_smile",
+      "bytes": 37654606,
+      "sha256": "0b42e76e7117f745777added9beb15e09387aedaa547ddec2ade5ce3e1213446"
+    },
+    {
+      "file": "Beyond the Veil_014411812.wav",
+      "role": "train",
+      "family": "beyond_the_veil",
+      "bytes": 25174094,
+      "sha256": "3570071b4555837cdca9bd40165fb2601d74a6fcbb793c31e8a9ab57bcaf66e4"
+    },
+    {
+      "file": "Chaos in Capitol_014414870.wav",
+      "role": "train",
+      "family": "chaos_in_capitol",
+      "bytes": 25174094,
+      "sha256": "133615304180100ba02aaa7cea1d833a3334c4684a557214a3f532478fe8d445"
+    },
+    {
+      "file": "Chasing Neon Dreams_014358820.wav",
+      "role": "train",
+      "family": "chasing_neon_dreams",
+      "bytes": 25174094,
+      "sha256": "b8fdf4420da8bb5ea6e8cd6cd9c075385d69ef879213ac019b4dab334244f747"
+    },
+    {
+      "file": "Chasing Neon Dreams_014416386.wav",
+      "role": "train",
+      "family": "chasing_neon_dreams",
+      "bytes": 25174094,
+      "sha256": "b8fdf4420da8bb5ea6e8cd6cd9c075385d69ef879213ac019b4dab334244f747"
+    },
+    {
+      "file": "Chasing Tomorrow_014417903.wav",
+      "role": "train",
+      "family": "chasing_tomorrow",
+      "bytes": 25174094,
+      "sha256": "72e89d690e95bf74181db7f932abaf58aa116f5980f61b4bb15a79bb760e959a"
+    },
+    {
+      "file": "Chill of the Everyday_014349859.wav",
+      "role": "development",
+      "family": "chill_of_the_everyday",
+      "bytes": 25174094,
+      "sha256": "bb1cf98120d2136bda26abffaa0a686bc89e1519e8de6e57c27013fc693524d5"
+    },
+    {
+      "file": "Chill of the Everyday_014419404.wav",
+      "role": "development",
+      "family": "chill_of_the_everyday",
+      "bytes": 25174094,
+      "sha256": "bb1cf98120d2136bda26abffaa0a686bc89e1519e8de6e57c27013fc693524d5"
+    },
+    {
+      "file": "Colors of the Night ext v1_014352833.wav",
+      "role": "train",
+      "family": "colors_of_the_night",
+      "bytes": 25174094,
+      "sha256": "b1b96684bfe634409415b873f1a78387e0a7bb45e8ec50999138270449844fb5"
+    },
+    {
+      "file": "Colors of the Night ext v1_014354302.wav",
+      "role": "train",
+      "family": "colors_of_the_night",
+      "bytes": 25174094,
+      "sha256": "2e71717b7ebcb5d7bde7eb9c2ee63e6019f84486e42ef2cef51ce28d2e1b14a9"
+    },
+    {
+      "file": "Colors of the Night ext v1_014420913.wav",
+      "role": "train",
+      "family": "colors_of_the_night",
+      "bytes": 25174094,
+      "sha256": "b1b96684bfe634409415b873f1a78387e0a7bb45e8ec50999138270449844fb5"
+    },
+    {
+      "file": "Colors of the Night ext v1_014422424.wav",
+      "role": "train",
+      "family": "colors_of_the_night",
+      "bytes": 25174094,
+      "sha256": "1e53ca4eaee915a90bcad42a309ec9d1a19d3be37e77279dfc8083b84988ed53"
+    },
+    {
+      "file": "Colors of the Night ext v1_014423959.wav",
+      "role": "train",
+      "family": "colors_of_the_night",
+      "bytes": 25174094,
+      "sha256": "c692732cad82c016200e1cce614f3588a28b3b71e6761605427ca7eb9ba0b757"
+    },
+    {
+      "file": "Colors of the Night ext v1_014425480.wav",
+      "role": "train",
+      "family": "colors_of_the_night",
+      "bytes": 25174094,
+      "sha256": "cb1558c8b4d47e214a265c702fb18d3ab849bf562305ae68fad8624fdd7a62d1"
+    },
+    {
+      "file": "Colors of the Night ext v1_014427010.wav",
+      "role": "train",
+      "family": "colors_of_the_night",
+      "bytes": 25174094,
+      "sha256": "2e71717b7ebcb5d7bde7eb9c2ee63e6019f84486e42ef2cef51ce28d2e1b14a9"
+    },
+    {
+      "file": "Concrete Desires_014428538.wav",
+      "role": "train",
+      "family": "concrete_desires",
+      "bytes": 6299726,
+      "sha256": "56d547310c6e42417c99056165300bb88181af14d27cc184ae61a61fa28a631c"
+    },
+    {
+      "file": "Cosmic Connections_014429729.wav",
+      "role": "train",
+      "family": "cosmic_connections",
+      "bytes": 25174094,
+      "sha256": "d83b1551644152ba5377b6008e94cf7e192a659cd352af3ea11c267e66071d83"
+    },
+    {
+      "file": "Cosmic Convergence_014431231.wav",
+      "role": "train",
+      "family": "cosmic_convergence",
+      "bytes": 25174094,
+      "sha256": "da0932721a82a7df0381c1c808a0644dab5d5e6fa2d44ea8c65244320a86f86c"
+    },
+    {
+      "file": "Cosmic Echoes 1_014432746.wav",
+      "role": "validation",
+      "family": "cosmic_echoes",
+      "bytes": 25174094,
+      "sha256": "b3cc642b5b4a5c217dcae1749ebbfc5dd3f5245fe112d883b356d90054f3a9fb"
+    },
+    {
+      "file": "Cosmic Harmony_014434258.wav",
+      "role": "train",
+      "family": "cosmic_harmony",
+      "bytes": 25174094,
+      "sha256": "c631c062d199b2b0c08c3e10cd5902d1422947b9b89e98a6cf5e691210961867"
+    },
+    {
+      "file": "Cosmic Love Ascendancy_014435775.wav",
+      "role": "development",
+      "family": "cosmic_love_ascendancy",
+      "bytes": 25174094,
+      "sha256": "2388305e05e96f867cf902cc7269fe49bec75680db40b82aca5bf0a1618d5dda"
+    },
+    {
+      "file": "Digital Tapestry remix v1_014341098.wav",
+      "role": "development",
+      "family": "digital_tapestry",
+      "bytes": 25174094,
+      "sha256": "70edfc9daf1c5795d33babb55e0a702942f21fbf461d94bfc468ea8646eeeaf7"
+    },
+    {
+      "file": "Digital Tapestry remix v2_014342396.wav",
+      "role": "development",
+      "family": "digital_tapestry",
+      "bytes": 25174094,
+      "sha256": "68e3ceb7836f7d1c2d1460870f409a7a50580b0d071ee5d623e143d420e92d67"
+    },
+    {
+      "file": "Echoes Through Dimensions_014348369.wav",
+      "role": "train",
+      "family": "echoes_through_dimensions",
+      "bytes": 25174094,
+      "sha256": "d5eebf3bd0fd5014ccfa515894ca94cce2aa2695cb02d7f91179fa213a333682"
+    },
+    {
+      "file": "Electric Nights ext v1_014400312.wav",
+      "role": "train",
+      "family": "electric_nights",
+      "bytes": 43888718,
+      "sha256": "57c05d25e7e0780eac669f5d03a7b1cda846133080d75d912b5b09dc06cb32dc"
+    },
+    {
+      "file": "Fractal Echoes 1_014355809.wav",
+      "role": "train",
+      "family": "fractal_echoes",
+      "bytes": 25174094,
+      "sha256": "96f48b7fd5b9cd0447f7abb34e67725797732f70cbb2b3d8f85bf2999f878bdc"
+    },
+    {
+      "file": "Fractal Echoes in Void2_014351343.wav",
+      "role": "train",
+      "family": "fractal_echoes_in_void2",
+      "bytes": 25174094,
+      "sha256": "b1e500ecd298e3309721787591a50139e10d064b56844258a7adabf85f6f11cf"
+    },
+    {
+      "file": "GlAd3dos_002343087.wav",
+      "role": "train",
+      "family": "glad3dos",
+      "bytes": 5300892,
+      "sha256": "67816af0eb382a72208d4df1448f099c1702599174f3516a091c124562098263"
+    },
+    {
+      "file": "In the Alley ext v1_005347251.wav",
+      "role": "train",
+      "family": "in_the_alley",
+      "bytes": 37634144,
+      "sha256": "d731322553a9f449756e4c80c1d6104fe3d534323d2c650d21f074666c3e6dea"
+    },
+    {
+      "file": "In the Embrace of Singularity_014343908.wav",
+      "role": "train",
+      "family": "in_the_embrace_of_singularity",
+      "bytes": 25174094,
+      "sha256": "b1c188dcc56095d31c8ff6f0cf4645e84ccbda6dcb142f1978dee5260a4a998a"
+    },
+    {
+      "file": "Journey to the Unknown Particle Phs_014345397.wav",
+      "role": "validation",
+      "family": "journey_to_the_unknown_particle_phs",
+      "bytes": 25174094,
+      "sha256": "f5329c796d7917f89a00a719ad010b6b79a93dc7e158237ace85318b0ead9a92"
+    },
+    {
+      "file": "Neural Dawn ext v1_014402131.wav",
+      "role": "train",
+      "family": "neural_dawn",
+      "bytes": 31445070,
+      "sha256": "92ad6fc84e2143bdd15c5fdb0fb051d52b62ea000a5310beb370fa5497863e8c"
+    },
+    {
+      "file": "The Curiosity of Ones and Zeros_010314873.wav",
+      "role": "validation",
+      "family": "the_curiosity_of_ones_and_zeros",
+      "bytes": 31436896,
+      "sha256": "42b3f156d90f0463b2beb71470edd520d2bb74bb6dcb7805ab8f72e1ec6fea29"
+    },
+    {
+      "file": "Threads of playful Complexity Complexity_014346879.wav",
+      "role": "train",
+      "family": "threads_of_playful_complexity_complexity",
+      "bytes": 25174094,
+      "sha256": "3173aab05fba0c8d2d529a95c69e798ef8f9fe1d2dd306e700568080197169ef"
+    },
+    {
+      "file": "Transcendence Beyond_014357307.wav",
+      "role": "train",
+      "family": "transcendence_beyond",
+      "bytes": 25174094,
+      "sha256": "75fd31eea17304ba9c57b702250e3329ef3203ddb7fcc0300adc9b98015d2221"
+    },
+    {
+      "file": "all-your-other-friends-couldn-t-come-either-because-you-don-_48.wav",
+      "role": "train",
+      "family": "all_your_other_friends_couldn_t_come_either_because_you_don",
+      "bytes": 628896,
+      "sha256": "56cd9f63c1ec2687197200f60a4fa0fed05d182c5821c0ffb1726c88412c36dc"
+    },
+    {
+      "file": "but it's me_014413347.wav",
+      "role": "development",
+      "family": "but_it_s_me",
+      "bytes": 25174094,
+      "sha256": "37d5aa7631814d3763ce3339e1f3254594d07085d41e00bbd860a8a326659ec3"
+    }
+  ],
+  "seed": 42,
+  "common_settings": {
+    "duration_seconds": 30,
+    "threads_requested": 4,
+    "learning_rate": 0.0005,
+    "bptt": 8,
+    "core_update_every": 4,
+    "morph_layers": 16,
+    "morph_width": 512,
+    "morph_depth": 10,
+    "freeze_morph": true,
+    "motif_capacity": 512
+  },
+  "source_history_note": "User reports some WAVs were losslessly transcoded to PCM from 320 kbps Opus; the manifest does not yet distinguish per-file source history. No codec inference was performed.",
+  "comparison_limits": [
+    "same seed and shared non-substrate fresh weights do not guarantee identical target schedule or state trajectory",
+    "v9 and msfield world states are intentionally incompatible",
+    "training losses are not audio quality or downstream transfer"
+  ]
+}

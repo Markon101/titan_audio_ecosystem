@@ -1,0 +1,54 @@
+{
+  "schema": "titan_panel_copy_receipt_v1",
+  "files": [
+    {
+      "panel": "msfield_panel",
+      "source": "analysis/msfield_exp_20260928/candidate_panel_private/BLIND/A.wav",
+      "sdcard_copy": "/sdcard/Download/TITAN_msfield_short_panel_20260928/A.wav",
+      "sha256": "aff9b5903639ceee069e56233e19be67365f6518d9f7093118fdb2c261c81045",
+      "bytes": 5750828
+    },
+    {
+      "panel": "msfield_panel",
+      "source": "analysis/msfield_exp_20260928/candidate_panel_private/BLIND/B.wav",
+      "sdcard_copy": "/sdcard/Download/TITAN_msfield_short_panel_20260928/B.wav",
+      "sha256": "9208f266ebb6c0c2871a0cc28674f723ce0593caf6de155776b604378f368edf",
+      "bytes": 5750828
+    },
+    {
+      "panel": "msfield_panel",
+      "source": "analysis/msfield_exp_20260928/candidate_panel_private/BLIND/C.wav",
+      "sdcard_copy": "/sdcard/Download/TITAN_msfield_short_panel_20260928/C.wav",
+      "sha256": "abdd8a7e2c3f57c6306bcf522127372935d7854283bb0b72d78e646cb8537784",
+      "bytes": 5750828
+    },
+    {
+      "panel": "msfield_panel",
+      "source": "analysis/msfield_exp_20260928/candidate_panel_private/BLIND/LISTEN.txt",
+      "sdcard_copy": "/sdcard/Download/TITAN_msfield_short_panel_20260928/LISTEN.txt",
+      "sha256": "0b9a0a274659c16b86be5de7aabfcefcd059cdde75885f4ce1b5106ef4e0cb98",
+      "bytes": 246
+    },
+    {
+      "panel": "matched_v9_panel",
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/matched_v9_parent_child_64/BLIND/A.wav",
+      "sdcard_copy": "/sdcard/Download/TITAN_v9_matched_parent_child_20260928/A.wav",
+      "sha256": "dae268e211550f359c761de4b430a473ea6f1d4009e52684e4768adb58d95814",
+      "bytes": 1048620
+    },
+    {
+      "panel": "matched_v9_panel",
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/matched_v9_parent_child_64/BLIND/B.wav",
+      "sdcard_copy": "/sdcard/Download/TITAN_v9_matched_parent_child_20260928/B.wav",
+      "sha256": "9a8efa2b746dbee19819d6643501406631d7e3c85fb23b7ceb27a86fab695ed3",
+      "bytes": 1048620
+    },
+    {
+      "panel": "matched_v9_panel",
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/matched_v9_parent_child_64/BLIND/LISTEN.txt",
+      "sdcard_copy": "/sdcard/Download/TITAN_v9_matched_parent_child_20260928/LISTEN.txt",
+      "sha256": "b345aeadb4a6b2709c7106e0f89b0a6b51c9cb9fbc4b72a959b8f80be21db74b",
+      "bytes": 232
+    }
+  ]
+}

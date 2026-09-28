@@ -27,9 +27,22 @@ RUSTFLAGS="-C target-cpu=native" cargo build --release --locked
 ./target/release/titan --base-dir /sdcard/Download --duration 240 --seed 42 --fresh-model
 ```
 
-Training WAVs live in `OLD_WAVS` under the selected base directory. Use
+Training WAVs default to `OLD_WAVS` under the selected base directory. Supply
+`--corpus-dir PATH` to read WAVs elsewhere; `OLD_WAVS` remains the default for
+existing commands and checkpoints. Use
 `./target/release/titan --help` for all checkpoint, reset, thread, learning-rate,
 run-tag, BPTT, and core-update options.
+
+Manifest `provenance` is a user-declared source-history string. The generated
+value `user_corpus` does not establish the original codec. A curator can record
+values such as `lossless_pcm`, `opus_320k_transcoded_pcm`, or `unknown` per
+entry without changing its train/development/validation role. TITAN does not
+infer an original codec from a PCM WAV. Generated TITAN audio belongs in the
+`exclude` role regardless of source-history label.
+
+The isolated three-scale continuous-field sibling is documented in
+[`docs/MSFIELD_EXP.md`](docs/MSFIELD_EXP.md). It requires
+`--substrate msfield` and a new `v10-msfield-` run tag; it does not replace v9.
 
 Every invocation gives only its finalized audio WAVs a random 12-hex-character
 suffix, for example `rust_ecosystem_out_a13f09c2de77.wav` and

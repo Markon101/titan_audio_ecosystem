@@ -1,0 +1,283 @@
+{
+  "clip_frames": 1437696,
+  "clip_seconds": 29.952,
+  "comparison_design": "pre-existing output candidates with independent source trajectories",
+  "config": {
+    "bytes": 2627,
+    "mtime_ns": 1790592439008681328,
+    "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/msfield_exp_20260928/candidates.json",
+    "sha256": "8c866285781882ce1f097f99dd37fb234d538bc289e738cc2fbed92d90786d54"
+  },
+  "interpretation_limits": [
+    "audio preference does not isolate substrate from training state, trajectory, interval, or random initialization",
+    "a final checkpoint is an associated lineage artifact, not necessarily the exact weight state used for every emitted chunk",
+    "a supplied executable is a hashable declaration; the package cannot prove it produced a pre-existing WAV",
+    "signal metrics are descriptive, not perceptual scores",
+    "no downstream generation or Suno transfer is measured"
+  ],
+  "key": [
+    {
+      "anonymous_id": "A",
+      "blind_audio": {
+        "bytes": 5750828,
+        "mtime_ns": 1790592480740681312,
+        "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/msfield_exp_20260928/candidate_panel_private/BLIND/A.wav",
+        "sha256": "aff9b5903639ceee069e56233e19be67365f6518d9f7093118fdb2c261c81045"
+      },
+      "candidate_id": "fresh_v9_legacy",
+      "declared_executable": {
+        "bytes": 6123968,
+        "mtime_ns": 1790592406684681340,
+        "path": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/titan_msfield_run_binary",
+        "sha256": "983c45470136cf08c2d49241bd7827e4f9b0d8575f381fa7dd5fb20bf5aa6220"
+      },
+      "descriptive_pcm": {
+        "both_channels_zero_fraction": 3.477786680911681e-06,
+        "clipped_frames": 0,
+        "dc_left_fraction_full_scale": 1.9941871662085553e-06,
+        "dc_right_fraction_full_scale": 3.3683204582953387e-06,
+        "duration_seconds": 29.952,
+        "peak_dbfs": -5.361318841389244,
+        "rms_left_dbfs": -13.525822546557453,
+        "rms_right_dbfs": -11.467567118338717,
+        "scope": "basic PCM checks only; no musical quality or downstream claim",
+        "stereo_correlation": 0.9769209588714192
+      },
+      "edge_fade_frames_per_side": 2048,
+      "gain": 0.6054538269497663,
+      "interval_pcm_sha256": "2470485fae765ea03a301828e30d157d3759886639046794cee71218792094be",
+      "output_rms_pcm": 7882.34914347474,
+      "processing_note": "Fresh legacy v9 30-second training render; no post-source EQ",
+      "run_declaration": {
+        "build": {
+          "git_commit": "5f9d56a17cd7",
+          "git_dirty": true,
+          "package": "titan-audio-ecosystem",
+          "release": true,
+          "version": "9.0.0"
+        },
+        "chunk_size": 4096,
+        "corpus": {
+          "development_family_probes": 4,
+          "development_files": 6,
+          "development_is_strict": true,
+          "manifest": "/sdcard/Download/titan_corpus_manifest_v7_sml.json",
+          "prefetch_chunks": 16,
+          "selection": "uniform_family_then_uniform_variant",
+          "training_families": 23,
+          "training_files": 30,
+          "validation_family_probes": 4,
+          "validation_files": 5,
+          "validation_is_strict": true,
+          "wav_dir": "/sdcard/Download/OLD_WAVS"
+        },
+        "declared_files_match_reported_outputs": {
+          "checkpoint": true,
+          "wav": true,
+          "world": true
+        },
+        "reported_outputs": {
+          "audio": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/rust_ecosystem_out_v9-msfield-control-01_a4619c835ac1.wav",
+          "model": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/titan_model_v9_v9-msfield-control-01.safetensors",
+          "world": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/titan_world_v9_v9-msfield-control-01.bin"
+        },
+        "run_completed_chunks": 351,
+        "run_end_step": 351,
+        "run_id": "1790591604214-p31574-s42",
+        "run_start_step": 0,
+        "scope": "run metadata describes the trajectory; a final checkpoint does not reproduce every emitted training chunk"
+      },
+      "run_metadata": {
+        "bytes": 7811,
+        "mtime_ns": 1790591727776681599,
+        "path": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/titan_run_metadata_v9_v9-msfield-control-01.json",
+        "sha256": "2da32280c1983ef76f8a77fdd38f0c8206e57d20dfd09c7819139ba1d1e9ac18"
+      },
+      "source_audio": {
+        "bytes": 5750828,
+        "mtime_ns": 1790591727496681599,
+        "path": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/rust_ecosystem_out_v9-msfield-control-01_a4619c835ac1.wav",
+        "sha256": "b59eabb2bfb60b6ff178c2447ff89d5d7b40bcdde2e77eec33cdf20e651c0f78"
+      },
+      "source_checkpoint": {
+        "bytes": 67974972,
+        "mtime_ns": 1790591727672681599,
+        "path": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/titan_model_v9_v9-msfield-control-01.safetensors",
+        "sha256": "fafd13f076e6cc1845b2119b1fb216886b1bcaa8fde8c153eded278eed200296"
+      },
+      "source_interval_frames": [
+        0,
+        1437696
+      ],
+      "source_world": {
+        "bytes": 1354955,
+        "mtime_ns": 1790591727772681599,
+        "path": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/titan_world_v9_v9-msfield-control-01.bin",
+        "sha256": "b73d53fca2fa1b494b6920023d718cd521704935590ad4cef746a05d844d5fb2"
+      }
+    },
+    {
+      "anonymous_id": "B",
+      "blind_audio": {
+        "bytes": 5750828,
+        "mtime_ns": 1790592483344681311,
+        "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/msfield_exp_20260928/candidate_panel_private/BLIND/B.wav",
+        "sha256": "9208f266ebb6c0c2871a0cc28674f723ce0593caf6de155776b604378f368edf"
+      },
+      "candidate_id": "fresh_v10_msfield",
+      "declared_executable": {
+        "bytes": 6123968,
+        "mtime_ns": 1790592406684681340,
+        "path": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/titan_msfield_run_binary",
+        "sha256": "983c45470136cf08c2d49241bd7827e4f9b0d8575f381fa7dd5fb20bf5aa6220"
+      },
+      "descriptive_pcm": {
+        "both_channels_zero_fraction": 3.477786680911681e-06,
+        "clipped_frames": 0,
+        "dc_left_fraction_full_scale": 1.615502386011629e-06,
+        "dc_right_fraction_full_scale": 2.975923213524017e-06,
+        "duration_seconds": 29.952,
+        "peak_dbfs": -1.5018387628886019,
+        "rms_left_dbfs": -12.99610272499265,
+        "rms_right_dbfs": -11.833272530541844,
+        "scope": "basic PCM checks only; no musical quality or downstream claim",
+        "stereo_correlation": 0.9852563725529427
+      },
+      "edge_fade_frames_per_side": 2048,
+      "gain": 0.9441800699527619,
+      "interval_pcm_sha256": "8b7e11999fd9b1ac512361d5eb7c5956a35a1a0842b6c721d750cc602bbc2e38",
+      "output_rms_pcm": 7882.349789859318,
+      "processing_note": "Fresh experimental msfield 30-second training render; no post-source EQ",
+      "run_declaration": {
+        "build": {
+          "git_commit": "5f9d56a17cd7",
+          "git_dirty": true,
+          "package": "titan-audio-ecosystem",
+          "release": true,
+          "version": "9.0.0"
+        },
+        "chunk_size": 4096,
+        "corpus": {
+          "development_family_probes": 4,
+          "development_files": 6,
+          "development_is_strict": true,
+          "manifest": "/sdcard/Download/titan_corpus_manifest_v7_sml.json",
+          "prefetch_chunks": 16,
+          "selection": "uniform_family_then_uniform_variant",
+          "training_families": 23,
+          "training_files": 30,
+          "validation_family_probes": 4,
+          "validation_files": 5,
+          "validation_is_strict": true,
+          "wav_dir": "/sdcard/Download/OLD_WAVS"
+        },
+        "declared_files_match_reported_outputs": {
+          "checkpoint": true,
+          "wav": true,
+          "world": true
+        },
+        "reported_outputs": {
+          "audio": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/rust_ecosystem_out_v10-msfield-real01_360478547229.wav",
+          "model": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/titan_model_v10_msfield_v10-msfield-real01.safetensors",
+          "world": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/titan_world_v10_msfield_v10-msfield-real01.bin"
+        },
+        "run_completed_chunks": 351,
+        "run_end_step": 351,
+        "run_id": "1790591737153-p2130-s42",
+        "run_start_step": 0,
+        "scope": "run metadata describes the trajectory; a final checkpoint does not reproduce every emitted training chunk"
+      },
+      "run_metadata": {
+        "bytes": 8472,
+        "mtime_ns": 1790591849228681553,
+        "path": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/titan_run_metadata_v10_msfield_v10-msfield-real01.json",
+        "sha256": "c8b48dc7fe57bebdf33fc27ef4ad5082d21c8eca3537fe82cfd7a7b20ad91e5e"
+      },
+      "source_audio": {
+        "bytes": 5750828,
+        "mtime_ns": 1790591849028681553,
+        "path": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/rust_ecosystem_out_v10-msfield-real01_360478547229.wav",
+        "sha256": "f3bc637a50748b3616125a75efe0704724b3bda1999de97d47d9088ae2017091"
+      },
+      "source_checkpoint": {
+        "bytes": 67327604,
+        "mtime_ns": 1790591849108681553,
+        "path": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/titan_model_v10_msfield_v10-msfield-real01.safetensors",
+        "sha256": "aa9a8119b60307250c3cd6bd5e7ada31d7399580971801f722a5f345624793c5"
+      },
+      "source_interval_frames": [
+        0,
+        1437696
+      ],
+      "source_world": {
+        "bytes": 1420743,
+        "mtime_ns": 1790591849228681553,
+        "path": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/titan_world_v10_msfield_v10-msfield-real01.bin",
+        "sha256": "66682c31281fdfcc733b7948be2184fe3ff74be8a00cc4ec3a469240d7a3319d"
+      }
+    },
+    {
+      "anonymous_id": "C",
+      "blind_audio": {
+        "bytes": 5750828,
+        "mtime_ns": 1790592486252681310,
+        "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/msfield_exp_20260928/candidate_panel_private/BLIND/C.wav",
+        "sha256": "abdd8a7e2c3f57c6306bcf522127372935d7854283bb0b72d78e646cb8537784"
+      },
+      "candidate_id": "fresh_v10_msfield_eq",
+      "declared_executable": {
+        "bytes": 6123968,
+        "mtime_ns": 1790592406684681340,
+        "path": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/titan_msfield_run_binary",
+        "sha256": "983c45470136cf08c2d49241bd7827e4f9b0d8575f381fa7dd5fb20bf5aa6220"
+      },
+      "descriptive_pcm": {
+        "both_channels_zero_fraction": 3.477786680911681e-06,
+        "clipped_frames": 0,
+        "dc_left_fraction_full_scale": 1.7376197369349987e-06,
+        "dc_right_fraction_full_scale": 3.1759214197468555e-06,
+        "duration_seconds": 29.952,
+        "peak_dbfs": -1.000151903819357,
+        "rms_left_dbfs": -13.03456138138536,
+        "rms_right_dbfs": -11.803944831345987,
+        "scope": "basic PCM checks only; no musical quality or downstream claim",
+        "stereo_correlation": 0.9853964429586798
+      },
+      "edge_fade_frames_per_side": 2048,
+      "gain": 0.9999657592877932,
+      "interval_pcm_sha256": "e6742fe96fa49de69245c972081f696339ac33c980622ccf71f7d283a836b3ad",
+      "output_rms_pcm": 7882.417763523904,
+      "processing_note": "Msfield source f3bc637a50748b3616125a75efe0704724b3bda1999de97d47d9088ae2017091 with -3 dB at 3500 Hz Q1; EQ receipt e78b9e95ba6bed70acd220a554cff2ab2e02a48888e557c9f9980d987f5a330f; no timing edits",
+      "run_declaration": null,
+      "run_metadata": null,
+      "source_audio": {
+        "bytes": 5750828,
+        "mtime_ns": 1790592423084681334,
+        "path": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/msfield_soft_eq.wav",
+        "sha256": "61a06c830bb28e2b54c21a1bad43a4714f5aa017c1b460a941a32af0c19b198a"
+      },
+      "source_checkpoint": {
+        "bytes": 67327604,
+        "mtime_ns": 1790591849108681553,
+        "path": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/titan_model_v10_msfield_v10-msfield-real01.safetensors",
+        "sha256": "aa9a8119b60307250c3cd6bd5e7ada31d7399580971801f722a5f345624793c5"
+      },
+      "source_interval_frames": [
+        0,
+        1437696
+      ],
+      "source_world": {
+        "bytes": 1420743,
+        "mtime_ns": 1790591849228681553,
+        "path": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/titan_world_v10_msfield_v10-msfield-real01.bin",
+        "sha256": "66682c31281fdfcc733b7948be2184fe3ff74be8a00cc4ec3a469240d7a3319d"
+      }
+    }
+  ],
+  "level_target_rms_pcm": 7882.349582292032,
+  "maximum_level_difference_db": 7.561496817698777e-05,
+  "processing": "same sample-exact PCM16 interval extraction with integer edge fades; global RMS matching and common -1 dBFS peak guard; no other mastering",
+  "schema": "titan_audio_candidate_panel_v1",
+  "seed": 20260928,
+  "strict_state_or_weight_equivalence": false
+}

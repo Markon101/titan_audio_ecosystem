@@ -1,0 +1,36 @@
+{
+  "seed": 20260928,
+  "clip_frames": 1437696,
+  "candidates": [
+    {
+      "id": "fresh_v9_legacy",
+      "wav": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/rust_ecosystem_out_v9-msfield-control-01_a4619c835ac1.wav",
+      "start_frame": 0,
+      "checkpoint": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/titan_model_v9_v9-msfield-control-01.safetensors",
+      "world": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/titan_world_v9_v9-msfield-control-01.bin",
+      "run_metadata": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/titan_run_metadata_v9_v9-msfield-control-01.json",
+      "executable": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/titan_msfield_run_binary",
+      "processing_note": "Fresh legacy v9 30-second training render; no post-source EQ"
+    },
+    {
+      "id": "fresh_v10_msfield",
+      "wav": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/rust_ecosystem_out_v10-msfield-real01_360478547229.wav",
+      "start_frame": 0,
+      "checkpoint": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/titan_model_v10_msfield_v10-msfield-real01.safetensors",
+      "world": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/titan_world_v10_msfield_v10-msfield-real01.bin",
+      "run_metadata": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/titan_run_metadata_v10_msfield_v10-msfield-real01.json",
+      "executable": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/titan_msfield_run_binary",
+      "processing_note": "Fresh experimental msfield 30-second training render; no post-source EQ"
+    },
+    {
+      "id": "fresh_v10_msfield_eq",
+      "wav": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/msfield_soft_eq.wav",
+      "start_frame": 0,
+      "checkpoint": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/titan_model_v10_msfield_v10-msfield-real01.safetensors",
+      "world": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/titan_world_v10_msfield_v10-msfield-real01.bin",
+      "run_metadata": null,
+      "executable": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/titan_msfield_run_binary",
+      "processing_note": "Msfield source f3bc637a50748b3616125a75efe0704724b3bda1999de97d47d9088ae2017091 with -3 dB at 3500 Hz Q1; EQ receipt e78b9e95ba6bed70acd220a554cff2ab2e02a48888e557c9f9980d987f5a330f; no timing edits"
+    }
+  ]
+}

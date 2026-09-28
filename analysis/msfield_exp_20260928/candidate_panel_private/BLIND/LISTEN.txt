@@ -1,0 +1,5 @@
+Blind TITAN audio candidate panel
+
+Listen to A.wav through the final letter at the same playback setting.
+Record timing, transitions, timbre, harshness, stereo, and usefulness as a prime.
+Keep key.json private until listening notes are complete.

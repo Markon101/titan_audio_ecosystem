@@ -1,0 +1,187 @@
+{
+  "schema": "titan_msfield_copy_receipt_v1",
+  "destination": "/sdcard/Download/TITAN_v10_msfield_exp_20260928",
+  "files": [
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/ca_topology_index_rust_v9-msfield-control-01.csv",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/legacy/ca_topology_index_rust_v9-msfield-control-01.csv",
+      "bytes": 2891,
+      "sha256": "a68df851bfb853910029ff59e7f8b1af20f157c5ab490e76889d0f76f3b1a7dc"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/ca_topology_rust_v9-msfield-control-01.csv",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/legacy/ca_topology_rust_v9-msfield-control-01.csv",
+      "bytes": 472944,
+      "sha256": "65acfa4a467d71ff4d5049937b3f882e4256c7e03beac339a27c447886a7391b"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/morph_events_rust_v9-msfield-control-01.csv",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/legacy/morph_events_rust_v9-msfield-control-01.csv",
+      "bytes": 168,
+      "sha256": "d1ba4596db5f89b7d0f02204948e7362abfd14367f5c60fee699159a84a12f96"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/rust_ecosystem_out_v9-msfield-control-01_a4619c835ac1.wav",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/legacy/rust_ecosystem_out_v9-msfield-control-01_a4619c835ac1.wav",
+      "bytes": 5750828,
+      "sha256": "b59eabb2bfb60b6ff178c2447ff89d5d7b40bcdde2e77eec33cdf20e651c0f78"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/suno_priming_prompt_v9-msfield-control-01.txt",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/legacy/suno_priming_prompt_v9-msfield-control-01.txt",
+      "bytes": 444,
+      "sha256": "865be899d85c649fb1ca9057b5538834a96c972055a193aab129b621bec7bcbd"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/titan_model_v9_v9-msfield-control-01.safetensors",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/legacy/titan_model_v9_v9-msfield-control-01.safetensors",
+      "bytes": 67974972,
+      "sha256": "fafd13f076e6cc1845b2119b1fb216886b1bcaa8fde8c153eded278eed200296"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/titan_morph_state_v9_v9-msfield-control-01.json",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/legacy/titan_morph_state_v9_v9-msfield-control-01.json",
+      "bytes": 150,
+      "sha256": "65a8c2a5ddc447b480e90db89cd8f187b154c3f1c53fa3560e92bd9f7f52a388"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/titan_optimizer_v9_v9-msfield-control-01.safetensors",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/legacy/titan_optimizer_v9_v9-msfield-control-01.safetensors",
+      "bytes": 135955352,
+      "sha256": "72d36fd443c072a1add7ac8b5e0c831d10b22cb33867394039eb442652f48489"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/titan_prime_29s_v9-msfield-control-01_a4619c835ac1.wav",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/legacy/titan_prime_29s_v9-msfield-control-01_a4619c835ac1.wav",
+      "bytes": 5750828,
+      "sha256": "8b83daf0f4478ebf64d34ba0e05790ab2e7797ce6bd053a11664a31ddf105379"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/titan_run_metadata_v9_v9-msfield-control-01.json",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/legacy/titan_run_metadata_v9_v9-msfield-control-01.json",
+      "bytes": 7811,
+      "sha256": "2da32280c1983ef76f8a77fdd38f0c8206e57d20dfd09c7819139ba1d1e9ac18"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/titan_world_v9_v9-msfield-control-01.bin",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/legacy/titan_world_v9_v9-msfield-control-01.bin",
+      "bytes": 1354955,
+      "sha256": "b73d53fca2fa1b494b6920023d718cd521704935590ad4cef746a05d844d5fb2"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/train.log",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/legacy/train.log",
+      "bytes": 11927,
+      "sha256": "ad27342e77cf69383bdde12be13d1021c85b5795d93d192881a19b682c8e83cc"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/uncertainty_trace_rust_v9-msfield-control-01.csv",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/legacy/uncertainty_trace_rust_v9-msfield-control-01.csv",
+      "bytes": 75447,
+      "sha256": "998a9570c39c2450687154dfce40c02cee4f5650d5cee5d1bbb0e562f63a851c"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/ca_topology_index_rust_v10-msfield-real01.csv",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield/ca_topology_index_rust_v10-msfield-real01.csv",
+      "bytes": 3332,
+      "sha256": "63f5ef479266ce02306548b2ad2aeccf1f1c91de21b1782e684da483ec54f631"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/ca_topology_rust_v10-msfield-real01.csv",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield/ca_topology_rust_v10-msfield-real01.csv",
+      "bytes": 476627,
+      "sha256": "23afaebb9266287eeafb64816b4aed3dc888b29b72f23f8f509d510b02373f8d"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/morph_events_rust_v10-msfield-real01.csv",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield/morph_events_rust_v10-msfield-real01.csv",
+      "bytes": 168,
+      "sha256": "d1ba4596db5f89b7d0f02204948e7362abfd14367f5c60fee699159a84a12f96"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/msfield_trace_v10_v10-msfield-real01.csv",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield/msfield_trace_v10_v10-msfield-real01.csv",
+      "bytes": 7367,
+      "sha256": "c027e6c4961ba826343f12faf0bec240bc535d7d5b7fe7005ffc9c768e2b16c6"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/rust_ecosystem_out_v10-msfield-real01_360478547229.wav",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield/rust_ecosystem_out_v10-msfield-real01_360478547229.wav",
+      "bytes": 5750828,
+      "sha256": "f3bc637a50748b3616125a75efe0704724b3bda1999de97d47d9088ae2017091"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/suno_priming_prompt_v10-msfield-real01.txt",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield/suno_priming_prompt_v10-msfield-real01.txt",
+      "bytes": 444,
+      "sha256": "3c9c0b1a1e7b5168da76c0462ea8d401a9f188d84a92e6b576cd6fd9ec7880d7"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/titan_model_v10_msfield_v10-msfield-real01.safetensors",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield/titan_model_v10_msfield_v10-msfield-real01.safetensors",
+      "bytes": 67327604,
+      "sha256": "aa9a8119b60307250c3cd6bd5e7ada31d7399580971801f722a5f345624793c5"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/titan_morph_state_v10_msfield_v10-msfield-real01.json",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield/titan_morph_state_v10_msfield_v10-msfield-real01.json",
+      "bytes": 106,
+      "sha256": "820e42fc637e5ab3bffd1af8bc8473a5538dbcbc819987a5f7b8a37bd1a7fd90"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/titan_optimizer_v10_msfield_v10-msfield-real01.safetensors",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield/titan_optimizer_v10_msfield_v10-msfield-real01.safetensors",
+      "bytes": 134661384,
+      "sha256": "148711b3168f2d145ba6104032933c2d416481fb8c19325d68dc8dd116596618"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/titan_prime_29s_v10-msfield-real01_360478547229.wav",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield/titan_prime_29s_v10-msfield-real01_360478547229.wav",
+      "bytes": 5750828,
+      "sha256": "452d5450d648309760914b69a012d60de5f170dcee3eea5fce9bf1fc279932a1"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/titan_run_metadata_v10_msfield_v10-msfield-real01.json",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield/titan_run_metadata_v10_msfield_v10-msfield-real01.json",
+      "bytes": 8472,
+      "sha256": "c8b48dc7fe57bebdf33fc27ef4ad5082d21c8eca3537fe82cfd7a7b20ad91e5e"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/titan_world_v10_msfield_v10-msfield-real01.bin",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield/titan_world_v10_msfield_v10-msfield-real01.bin",
+      "bytes": 1420743,
+      "sha256": "66682c31281fdfcc733b7948be2184fe3ff74be8a00cc4ec3a469240d7a3319d"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/train.log",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield/train.log",
+      "bytes": 12209,
+      "sha256": "1b74fc48e5a90c9e4318d78d34fe58198592eb1500051c31f1bd1a721916d68d"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/uncertainty_trace_rust_v10-msfield-real01.csv",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield/uncertainty_trace_rust_v10-msfield-real01.csv",
+      "bytes": 74650,
+      "sha256": "558c606e833f3b48f7ef8bc4952d6ce636ad7ff47f3201efaad89d6aa4abc9ac"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/titan_msfield_run_binary",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/titan_run_binary",
+      "bytes": 6123968,
+      "sha256": "983c45470136cf08c2d49241bd7827e4f9b0d8575f381fa7dd5fb20bf5aa6220"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/msfield_soft_eq.wav",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield_soft_eq.wav",
+      "bytes": 5750828,
+      "sha256": "61a06c830bb28e2b54c21a1bad43a4714f5aa017c1b460a941a32af0c19b198a"
+    },
+    {
+      "source": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/msfield_soft_eq.receipt.json",
+      "copy": "/sdcard/Download/TITAN_v10_msfield_exp_20260928/msfield_soft_eq.receipt.json",
+      "bytes": 2411,
+      "sha256": "e78b9e95ba6bed70acd220a554cff2ab2e02a48888e557c9f9980d987f5a330f"
+    }
+  ],
+  "note": "Original run metadata paths point to Termux tmp; these copies are byte-identical relocations. For continuation, use the copied base_dir with explicit corpus-dir and manifest."
+}

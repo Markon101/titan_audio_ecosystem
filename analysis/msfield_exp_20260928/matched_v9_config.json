@@ -1,0 +1,19 @@
+{
+  "binary": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/titan_msfield_run_binary",
+  "base_dir": "/sdcard/Download",
+  "corpus_manifest": "/sdcard/Download/titan_corpus_manifest_v7_sml.json",
+  "corpus_dir": "/sdcard/Download/OLD_WAVS",
+  "common_world": "/sdcard/Download/titan_world_v9_v9-newcorpus-retain-01.bin",
+  "seed": 424242,
+  "chunks": 64,
+  "candidates": [
+    {
+      "id": "retain_01",
+      "model": "/sdcard/Download/titan_model_v9_v9-newcorpus-retain-01.safetensors"
+    },
+    {
+      "id": "retain_02",
+      "model": "/sdcard/Download/titan_model_v9_v9-newcorpus-retain-02.safetensors"
+    }
+  ]
+}

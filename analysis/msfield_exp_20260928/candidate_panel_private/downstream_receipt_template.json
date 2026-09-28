@@ -1,0 +1,78 @@
+{
+  "attempts": [
+    {
+      "accepted_or_rejected": null,
+      "anonymous_id": "A",
+      "attempt_order": null,
+      "generation_seed_if_available": null,
+      "human_preference_notes": null,
+      "output_audio_sha256": null,
+      "output_identifiers": [],
+      "prompt_style_settings": null,
+      "style_slider": null,
+      "suno_custom_model": null,
+      "suno_mode": null,
+      "suno_model_version": null,
+      "titan_source_audio_hash": "aff9b5903639ceee069e56233e19be67365f6518d9f7093118fdb2c261c81045",
+      "titan_source_audio_path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/msfield_exp_20260928/candidate_panel_private/BLIND/A.wav",
+      "titan_source_checkpoint": {
+        "bytes": 67974972,
+        "mtime_ns": 1790591727672681599,
+        "path": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_legacy/titan_model_v9_v9-msfield-control-01.safetensors",
+        "sha256": "fafd13f076e6cc1845b2119b1fb216886b1bcaa8fde8c153eded278eed200296"
+      },
+      "upload_trim_frames": null,
+      "weirdness_slider": null
+    },
+    {
+      "accepted_or_rejected": null,
+      "anonymous_id": "B",
+      "attempt_order": null,
+      "generation_seed_if_available": null,
+      "human_preference_notes": null,
+      "output_audio_sha256": null,
+      "output_identifiers": [],
+      "prompt_style_settings": null,
+      "style_slider": null,
+      "suno_custom_model": null,
+      "suno_mode": null,
+      "suno_model_version": null,
+      "titan_source_audio_hash": "9208f266ebb6c0c2871a0cc28674f723ce0593caf6de155776b604378f368edf",
+      "titan_source_audio_path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/msfield_exp_20260928/candidate_panel_private/BLIND/B.wav",
+      "titan_source_checkpoint": {
+        "bytes": 67327604,
+        "mtime_ns": 1790591849108681553,
+        "path": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/titan_model_v10_msfield_v10-msfield-real01.safetensors",
+        "sha256": "aa9a8119b60307250c3cd6bd5e7ada31d7399580971801f722a5f345624793c5"
+      },
+      "upload_trim_frames": null,
+      "weirdness_slider": null
+    },
+    {
+      "accepted_or_rejected": null,
+      "anonymous_id": "C",
+      "attempt_order": null,
+      "generation_seed_if_available": null,
+      "human_preference_notes": null,
+      "output_audio_sha256": null,
+      "output_identifiers": [],
+      "prompt_style_settings": null,
+      "style_slider": null,
+      "suno_custom_model": null,
+      "suno_mode": null,
+      "suno_model_version": null,
+      "titan_source_audio_hash": "abdd8a7e2c3f57c6306bcf522127372935d7854283bb0b72d78e646cb8537784",
+      "titan_source_audio_path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/msfield_exp_20260928/candidate_panel_private/BLIND/C.wav",
+      "titan_source_checkpoint": {
+        "bytes": 67327604,
+        "mtime_ns": 1790591849108681553,
+        "path": "/data/data/com.termux/files/usr/tmp/titan_msfield_exp_20260928/real_msfield/titan_model_v10_msfield_v10-msfield-real01.safetensors",
+        "sha256": "aa9a8119b60307250c3cd6bd5e7ada31d7399580971801f722a5f345624793c5"
+      },
+      "upload_trim_frames": null,
+      "weirdness_slider": null
+    }
+  ],
+  "note": "Private manual template; add one record for every attempt, including rejected rerolls. No Suno API is used.",
+  "schema": "titan_downstream_attempts_v1"
+}

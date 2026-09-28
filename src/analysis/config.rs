@@ -25,6 +25,8 @@ pub(crate) struct AnalysisRequest {
     pub model_path: Option<PathBuf>,
     pub state_path: Option<PathBuf>,
     pub corpus_manifest: Option<PathBuf>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub corpus_dir: Option<PathBuf>,
     pub run_tag: Option<String>,
     pub analysis_dir: Option<PathBuf>,
     pub analysis_tag: Option<String>,
@@ -61,6 +63,7 @@ impl Default for AnalysisRequest {
             model_path: None,
             state_path: None,
             corpus_manifest: None,
+            corpus_dir: None,
             run_tag: None,
             analysis_dir: None,
             analysis_tag: None,
@@ -149,6 +152,9 @@ pub(crate) fn parse(args: &[String]) -> Result<AnalysisRequest> {
             "--state" => request.state_path = Some(PathBuf::from(value(args, &mut index, flag)?)),
             "--corpus-manifest" => {
                 request.corpus_manifest = Some(PathBuf::from(value(args, &mut index, flag)?));
+            }
+            "--corpus-dir" => {
+                request.corpus_dir = Some(PathBuf::from(value(args, &mut index, flag)?));
             }
             "--run-tag" => {
                 let tag = value(args, &mut index, flag)?;
@@ -389,6 +395,7 @@ Read-only inputs:\n\
   --model PATH                Exact v9 model checkpoint\n\
   --state PATH                Exact v9 world checkpoint\n\
   --corpus-manifest PATH      Existing manifest; never created or repaired\n\
+  --corpus-dir PATH           WAV directory (default BASE_DIR/OLD_WAVS)\n\
   --run-tag NAME              Select tagged checkpoint companions\n\
   --analysis-dir PATH         Dedicated sidecar output directory\n\
   --analysis-tag NAME         Deterministic human-readable analysis prefix\n\
