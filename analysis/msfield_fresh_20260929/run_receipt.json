@@ -1,0 +1,222 @@
+{
+  "schema": "titan_msfield_fresh_run_v1",
+  "tag": "v10-msfield-fresh-20260929-01",
+  "build": {
+    "git_commit": "fb54bb17ba17",
+    "git_dirty": false,
+    "package": "titan-audio-ecosystem",
+    "release": true,
+    "version": "9.0.0"
+  },
+  "invocation": {
+    "args": [
+      "./target/release/titan",
+      "--base-dir",
+      "/sdcard/Download/TITAN_v10_msfield_fresh_20260929_01",
+      "--corpus-dir",
+      "/sdcard/Download/OLD_WAVS",
+      "--corpus-manifest",
+      "/sdcard/Download/titan_corpus_manifest_v7_sml.json",
+      "--substrate",
+      "msfield",
+      "--run-tag",
+      "v10-msfield-fresh-20260929-01",
+      "--fresh-model",
+      "--duration",
+      "60",
+      "--threads",
+      "4",
+      "--seed",
+      "43",
+      "--lr",
+      "0.0005",
+      "--bptt",
+      "64",
+      "--core-update-every",
+      "4",
+      "--morph-layers",
+      "16",
+      "--morph-width",
+      "512",
+      "--morph-depth",
+      "10",
+      "--max-morph-depth",
+      "10",
+      "--freeze-morph",
+      "--motif-capacity",
+      "512"
+    ],
+    "autograd_tape_chunks": 8,
+    "base_dir": "/sdcard/Download/TITAN_v10_msfield_fresh_20260929_01",
+    "bptt_requested_chunks": 64,
+    "core_update_every_tapes": 4,
+    "corpus_dir": "/sdcard/Download/OLD_WAVS",
+    "duration_requested_seconds": 60.0,
+    "experiments": {
+      "prime_width_score": false,
+      "spectral_deemphasis": false
+    },
+    "freeze_morph": true,
+    "fresh_decoder": false,
+    "importing_model": false,
+    "learning_rate": 0.0005,
+    "load_paths": {
+      "model": "/sdcard/Download/TITAN_v10_msfield_fresh_20260929_01/titan_model_v10_msfield_v10-msfield-fresh-20260929-01.safetensors",
+      "morph_state": "/sdcard/Download/TITAN_v10_msfield_fresh_20260929_01/titan_morph_state_v10_msfield_v10-msfield-fresh-20260929-01.json",
+      "optimizer": "/sdcard/Download/TITAN_v10_msfield_fresh_20260929_01/titan_optimizer_v10_msfield_v10-msfield-fresh-20260929-01.safetensors",
+      "world": "/sdcard/Download/TITAN_v10_msfield_fresh_20260929_01/titan_world_v10_msfield_v10-msfield-fresh-20260929-01.bin"
+    },
+    "max_morph_depth": 10,
+    "model_fully_compatible": false,
+    "model_loaded": false,
+    "model_migration": {
+      "exact": 0,
+      "morph_initialized": 0,
+      "morph_resized": 0,
+      "non_morph_mismatch": 0,
+      "non_morph_missing": 0,
+      "source_morph_dropped": 0,
+      "source_non_morph_dropped": 0
+    },
+    "model_resized": false,
+    "model_world_compatible": false,
+    "motif_capacity": 512,
+    "reset_mode": "fresh_model",
+    "run_tag": "v10-msfield-fresh-20260929-01",
+    "seed": 43,
+    "substrate": "msfield",
+    "threads": 4,
+    "world_format": "TITANM10",
+    "world_loaded": false
+  },
+  "run": {
+    "completed_chunks": 703,
+    "development_plateau_ready": true,
+    "development_relative_improvement": 0.00335536221973598,
+    "elapsed_seconds": 120.33612060546875,
+    "end_global_step": 703,
+    "end_morph_depth": 10,
+    "end_rad_amp": 0.2746378183364868,
+    "morph_event_count": 0,
+    "optimizer_migration": {
+      "exact": 0,
+      "initialized": 0,
+      "renderer_control_resets": 0,
+      "resized": 0
+    },
+    "optimizer_resumed": false,
+    "optimizer_updates_cumulative": 11,
+    "optimizer_updates_run": 11,
+    "phase_profile": {
+      "backward_ms_per_chunk": 100.85332159886204,
+      "checkpoint_ms_per_chunk": 0.0,
+      "loss_and_metrics_ms_per_chunk": 4.259182118065434,
+      "model_forward_ms_per_chunk": 56.668954998577526,
+      "optimizer_ms_per_chunk": 0.8764040256045519,
+      "output_io_ms_per_chunk": 0.16580673968705545,
+      "target_load_ms_per_chunk": 0.2717680867709815
+    },
+    "rendered_seconds": 59.98933410644531,
+    "shared_fresh_tensors": 180,
+    "start_global_step": 0,
+    "start_morph_depth": 10,
+    "start_rad_amp": 0.3499999940395355,
+    "steps_per_second": 5.841969966888428
+  },
+  "parameter_groups": {
+    "gru_memory": 986112,
+    "host_auxiliary": 152447,
+    "morphic_recurrent_stack": 8413184,
+    "renderer_and_synthesis_heads": 70812,
+    "substrate": 168532,
+    "temporal_decoder": 7035084
+  },
+  "files": {
+    "binary": {
+      "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260929_01/titan_run_binary",
+      "bytes": 6120832,
+      "sha256": "c3049b454c32aeb19a4f3bd818bc3ded9a3837c81a7852f06560fbe1138d34dc"
+    },
+    "manifest": {
+      "path": "/sdcard/Download/titan_corpus_manifest_v7_sml.json",
+      "bytes": 6973,
+      "sha256": "0708ede659328f928f76db792d091b5b1eaaaed219754fb9820986f4d81f8228"
+    },
+    "metadata": {
+      "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260929_01/titan_run_metadata_v10_msfield_v10-msfield-fresh-20260929-01.json",
+      "bytes": 8279,
+      "sha256": "91263796815220fac1a8006ae336147ebff7fb2db218568cfcaa48d34efb928c"
+    },
+    "model": {
+      "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260929_01/titan_model_v10_msfield_v10-msfield-fresh-20260929-01.safetensors",
+      "bytes": 67327604,
+      "sha256": "a786655bf572675b9edbf033b8b5f311279cfcf313099f5a7a7715bbf2c8f20c"
+    },
+    "world": {
+      "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260929_01/titan_world_v10_msfield_v10-msfield-fresh-20260929-01.bin",
+      "bytes": 1431511,
+      "sha256": "30ac0b74dbaee4bdfc32ae5cc16a124d82a0dbeda5f688e80636620e5968dfc9"
+    },
+    "optimizer": {
+      "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260929_01/titan_optimizer_v10_msfield_v10-msfield-fresh-20260929-01.safetensors",
+      "bytes": 134661384,
+      "sha256": "78d2379cb2b6e73c1016d04f57ad35097c4151cb8f787bc3be4fd00573328ab3"
+    },
+    "audio": {
+      "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260929_01/rust_ecosystem_out_v10-msfield-fresh-20260929-01_da4b5efa4f41.wav",
+      "bytes": 11517996,
+      "sha256": "8bed20dc674f614836ac774a643769d0bdbea1c87d505716fceab2d4e93e2656"
+    },
+    "prime": {
+      "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260929_01/titan_prime_59s_v10-msfield-fresh-20260929-01_da4b5efa4f41.wav",
+      "bytes": 11517996,
+      "sha256": "aa4b81b31a596a204c0390004107a49a3bf001baf987dc2bf8999aeffa1b1f70"
+    },
+    "trace": {
+      "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260929_01/msfield_trace_v10_v10-msfield-fresh-20260929-01.csv",
+      "bytes": 15255,
+      "sha256": "96a9dfda5f7a238991969484c0bb832b340c1515663320317edad24e9ba93437"
+    }
+  },
+  "checkpoint_consistency": {
+    "world_magic": "TITANM10",
+    "model_marker": true,
+    "optimizer_global_step": 703,
+    "optimizer_updates": 11
+  },
+  "audio_checks": {
+    "channels": 2,
+    "sample_rate": 48000,
+    "sample_width_bytes": 2,
+    "frames": 2879488,
+    "duration_seconds": 59.989333333333335,
+    "rms": 0.16561154890199506,
+    "peak_dbfs": -1.0028291074482363,
+    "stereo_correlation": 0.9458689357068134,
+    "side_over_mid_db": -15.549801231820178,
+    "clipped_frames": 0
+  },
+  "msfield_trace": {
+    "rows": 71,
+    "first_coarse_rms": 0.0006183193,
+    "last_coarse_rms": 0.09783806,
+    "last_hidden_delta_rms": 0.00038270155,
+    "nonfinite_count": 0
+  },
+  "interpretation": "short training and rendered-output smoke; signal metrics are descriptive, not musical or downstream scores",
+  "continuation_copy": {
+    "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260929_01_cont",
+    "source": "/sdcard/Download/TITAN_v10_msfield_fresh_20260929_01",
+    "verified_against_source_hashes": [
+      "model",
+      "world",
+      "optimizer",
+      "metadata",
+      "audio",
+      "prime",
+      "binary"
+    ],
+    "start_global_step": 703,
+    "note": "Run the next block in this copy; the original remains the completed 60-second baseline."
+  }
+}
