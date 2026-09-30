@@ -14,8 +14,9 @@ parameter groups, invocation, and descriptive signal checks are in
 `run_receipt.json`. The exact executable is also stored as `titan_run_binary`
 beside the WAV and checkpoint set on the sdcard.
 
-The user reported that this output already sounds better and subjectively
-"more diffusiony." This is listening feedback about the sound, not a claim
+The user reported that the **full 60-second WAV** already sounds better and
+subjectively "more diffusiony." The receipt ties that note to its audio hash.
+This is listening feedback about the sound, not a claim
 that TITAN is sampling from a diffusion audio model or that the downstream
 effect has been measured.
 

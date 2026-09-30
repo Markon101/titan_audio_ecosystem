@@ -218,5 +218,12 @@
     ],
     "start_global_step": 703,
     "note": "Run the next block in this copy; the original remains the completed 60-second baseline."
+  },
+  "listening_feedback": {
+    "source": "user",
+    "asset": "full_audio",
+    "audio_sha256": "8bed20dc674f614836ac774a643769d0bdbea1c87d505716fceab2d4e93e2656",
+    "verbatim_short_note": "definitely sounds better; much more diffusiony sound subjectively",
+    "scope": "one subjective listen; not a claim of diffusion-model sampling or downstream transfer"
   }
 }
