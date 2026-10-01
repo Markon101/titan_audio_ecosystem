@@ -156,6 +156,40 @@ Claims about improved sound should be supported by repeated seeded runs,
 ablation comparisons, objective audio measurements, and blinded listening—not
 by these internal metrics alone.
 
+## Opt-in v10 metastable-regime measurements
+
+`--regime-capture --regime-stride N` writes a run-ID-specific JSONL sidecar
+for the isolated msfield substrate only. It samples pooled signed and RMS
+spatial maps at all three scales, seeded orthogonal sketches of GRU and
+representative Morphic activations and layer deltas, decoder seed/control
+state, and post-DSP audio descriptors. Internal values are captured before
+that chunk's optimizer update. Sampling has no feedback into training,
+ecology, motif storage, or target selection; the normal path remains off.
+
+`analysis/metastable_20261001/regime_archive.py` turns that raw capture into
+an offline open-endedness trace and separate saveable regime archive. Five
+domains (field, GRU, Morphic, decoder, audio) have equal total distance
+weight after calibration/online normalization. A candidate region needs four
+consecutive samples, while `persistent_new_regime` fires only after the
+calibrated long dwell and mostly healthy visits. `regime_id` can therefore
+name an unconfirmed candidate; check `regime_persistent` before counting it.
+The trace records nearest archive distance, short/long novelty, dwell,
+revisits/transitions, covariance participation, topology/entropy change,
+motif rejection, trap components, and no-intervention fields. An absent
+candidate score is `null`, not zero. The DOT/JSON/SVG graph records region
+transitions after each offline replay.
+
+The trap score is a descriptive offline diagnostic. Its hysteretic
+`over_resident` label requires sustained corroboration from independent
+dynamic indicators; a healthy long dwell, saturated confidence, or motif
+similarity rejection alone cannot trigger it. There is currently no runtime
+escape controller. Thresholds come from the first half of the first
+observer-only mature continuation and are held fixed for later forks; that
+calibration half is in-sample. Do not treat a high trajectory dimension or
+high regime count as intrinsically good: white noise raises dimension, and
+short block shuffling can create candidate regions. The companion null report
+and fixed-probe/audio evidence are required for an organization claim.
+
 ## Analysis report schema v1
 
 Frozen instrumentation writes `titan_audio_analysis` schema v1 sidecars. The

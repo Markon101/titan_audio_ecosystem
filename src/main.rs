@@ -5,6 +5,7 @@ mod artifacts;
 mod diagnostics;
 mod msfield;
 mod provenance;
+mod regime_capture;
 mod stereo;
 
 // =====================================================================
@@ -6612,6 +6613,41 @@ fn validate_msfield_run(
 
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().collect();
+    if args
+        .get(1)
+        .is_some_and(|arg| arg == "--export-msfield-world")
+    {
+        if args.len() != 4 {
+            anyhow::bail!("usage: titan --export-msfield-world WORLD.bin NEW_OUTPUT_DIR");
+        }
+        let world = load_ms_world(&args[2])?;
+        std::fs::create_dir(&args[3])?;
+        for (name, data, side) in [
+            ("fine", &world.legacy_host.micro_tape, GRID_H),
+            ("meso", &world.legacy_host.macro_tape, MACRO_H),
+            ("coarse", &world.coarse_tape, msfield::COARSE_H),
+        ] {
+            let path = format!("{}/{name}.f32le", args[3]);
+            let mut file = BufWriter::new(File::create_new(path)?);
+            for &value in data {
+                file.write_all(&value.to_le_bytes())?;
+            }
+            file.flush()?;
+            println!("exported {name}: {}x{side}x{side}", CA_CHANNELS);
+        }
+        let manifest = serde_json::json!({
+            "schema": 1, "source_world": args[2],
+            "global_step": world.legacy_host.global_step,
+            "shape": {"fine": [CA_CHANNELS, GRID_H, GRID_W],
+                      "meso": [CA_CHANNELS, MACRO_H, MACRO_W],
+                      "coarse": [CA_CHANNELS, msfield::COARSE_H, msfield::COARSE_W]},
+        });
+        std::fs::write(
+            format!("{}/manifest.json", args[3]),
+            serde_json::to_vec_pretty(&manifest)?,
+        )?;
+        return Ok(());
+    }
     if args.iter().any(|arg| analysis::is_analysis_flag(arg)) {
         return analysis::run_from_args(&args);
     }
@@ -6631,6 +6667,8 @@ fn main() -> Result<()> {
     let mut morph_blocks = MORPH_DEFAULT_BLOCKS;
     let mut morph_width = MORPH_DEFAULT_WIDTH;
     let mut motif_capacity = MOTIF_DEFAULT_CAPACITY;
+    let mut regime_capture_enabled = false;
+    let mut regime_stride = 4usize;
     let mut morph_depth_override: Option<usize> = None;
     let mut max_morph_depth_override: Option<usize> = None;
     let mut state_override: Option<String> = None;
@@ -6827,6 +6865,17 @@ fn main() -> Result<()> {
                     anyhow::bail!("Missing value for --motif-capacity");
                 }
             }
+            "--regime-capture" => {
+                regime_capture_enabled = true;
+                arg_idx += 1;
+            }
+            "--regime-stride" => {
+                if arg_idx + 1 >= args.len() {
+                    anyhow::bail!("Missing value for --regime-stride");
+                }
+                regime_stride = args[arg_idx + 1].parse()?;
+                arg_idx += 2;
+            }
             "--morph-depth" => {
                 if arg_idx + 1 < args.len() {
                     morph_depth_override = Some(args[arg_idx + 1].parse::<usize>()?);
@@ -6877,6 +6926,8 @@ Usage: titan [BASE_DIR] [options]\n\n\
       --morph-layers N Physically construct N append-preserving morph blocks (default 12)\n\
       --morph-width N  Internal morph-block width, 64..4096 (default 512)\n\
       --motif-capacity N  Runtime motif-memory slots, 1..4096 (default 64)\n\
+      --regime-capture  Opt-in sampled v10 trajectory sidecar (measurement only)\n\
+      --regime-stride N  Capture every N global chunks, 1..64 (default 4)\n\
       --morph-depth N  Override the resumed/initially active morph depth\n\
       --max-morph-depth N  Allow adaptive growth only through depth N\n\
       --fresh-world    Reset CA/DSP/memory while retaining compatible weights\n\
@@ -6910,6 +6961,15 @@ Usage: titan [BASE_DIR] [options]\n\n\
     }
     if experiments.enabled() && manifest_only {
         anyhow::bail!("experimental flags require a training/render run, not --manifest-only");
+    }
+    if regime_capture_enabled && substrate != SubstrateMode::MsField {
+        anyhow::bail!("--regime-capture requires --substrate msfield");
+    }
+    if !(1..=64).contains(&regime_stride) {
+        anyhow::bail!("--regime-stride must be between 1 and 64");
+    }
+    if regime_stride != 4 && !regime_capture_enabled {
+        anyhow::bail!("--regime-stride requires --regime-capture");
     }
     if substrate == SubstrateMode::Legacy
         && run_tag
@@ -7571,6 +7631,18 @@ Usage: titan [BASE_DIR] [options]\n\n\
         "new_world"
     };
     let run_id = format!("{}-p{}-s{}", run_started_unix_ms, std::process::id(), seed);
+    let mut regime_capture = if regime_capture_enabled {
+        Some(regime_capture::RegimeCapture::new(
+            &base_dir,
+            &run_id,
+            regime_stride,
+        )?)
+    } else {
+        None
+    };
+    let regime_capture_path = regime_capture
+        .as_ref()
+        .map(|capture| capture.path().to_owned());
     // Keep filename uniqueness outside RuntimeRng so a random filename never
     // perturbs deterministic model/world evolution for a fixed training seed.
     let audio_file_hash = unique_audio_hash(&base_dir)?;
@@ -7873,6 +7945,29 @@ Usage: titan [BASE_DIR] [options]\n\n\
             region_activity,
             region_change,
         } = out;
+
+        // Sample model and field values before the optimizer may update this
+        // chunk. Audio and health are attached later, after the post-DSP path.
+        let regime_internal = if let Some(capture) = regime_capture.as_ref() {
+            if capture.should_sample(absolute_step) {
+                Some(capture.internal_views(
+                    &model,
+                    [
+                        &next_micro,
+                        &next_macro,
+                        next_coarse.as_ref().expect("msfield coarse"),
+                    ],
+                    &next_hidden,
+                    &refined_hidden,
+                    current_control,
+                    phases,
+                )?)
+            } else {
+                None
+            }
+        } else {
+            None
+        };
 
         let msfield_sample = if step % TRACE_EVERY == 0 {
             match (
@@ -8942,6 +9037,21 @@ Usage: titan [BASE_DIR] [options]\n\n\
                 &mut motif_diagnostics,
             );
         }
+        if let (Some(capture), Some(views)) = (&mut regime_capture, regime_internal) {
+            capture.record(
+                absolute_step,
+                views,
+                &audio_l,
+                &audio_r,
+                &post.observation,
+                s_sig["stereo_corr"].as_f64().unwrap_or(0.0) as f32,
+                &motif_diagnostics,
+                &adaptive_dynamics,
+                controller.meta.confidence,
+                model.depth(),
+                optimizer.cumulative_updates(),
+            )?;
+        }
         last_observation = Some(post.observation.clone());
         pending_predictor_input = Some(current_predictor_input);
 
@@ -9263,6 +9373,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
     topology_writer.flush()?;
     if let Some(writer) = &mut msfield_trace_writer {
         writer.flush()?;
+    }
+    if let Some(capture) = &mut regime_capture {
+        capture.flush()?;
     }
     drop(topology_writer);
     std::fs::rename(&topology_tmp_path, &topology_path)?;
@@ -9936,6 +10049,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
         run_metadata["model"]["parameter_groups"] = serde_json::json!(parameter_breakdown);
         run_metadata["run"]["shared_fresh_tensors"] = serde_json::json!(shared_fresh_tensors);
         run_metadata["telemetry"]["msfield_trace"] = serde_json::json!(msfield_trace_path);
+        run_metadata["telemetry"]["regime_capture"] = serde_json::json!(regime_capture_path);
+        run_metadata["invocation"]["regime_capture"] = serde_json::json!(regime_capture_enabled);
+        run_metadata["invocation"]["regime_stride"] = serde_json::json!(regime_stride);
         run_metadata["telemetry"]["msfield_trace_semantics"] = serde_json::json!(
             "RMS energy, displacement, and hidden-state displacement are pre-ecology forward values; velocity and diffusion are learned-rule means; cosine is descriptive spatial coherence, not information flow"
         );

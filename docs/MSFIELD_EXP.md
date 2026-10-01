@@ -147,3 +147,20 @@ control for two v9 checkpoints; it does not claim to compare v9 and v10 worlds.
 Later branches, outside this experiment's scope: a discrete or hybrid field;
 a propagation/delay/ray substrate; and a continuous-discrete hybrid. None is
 implemented here.
+
+## Metastable-regime observer (2026-10-01 branch)
+
+The dedicated `experiment/v10-metastable-regimes` branch adds
+`--regime-capture --regime-stride 4` for **measurement-only** v10
+continuations. It samples fine/meso/coarse spatial structure, GRU and
+representative Morphic states/deltas, decoder control, and post-DSP audio
+behavior into a run-ID-specific JSONL sidecar. It changes no optimizer,
+controller, motif, world, or corpus decision. The archive, calibration,
+checkpoint geometry, null controls, and exact frozen step-58,107 fork
+receipts are in `analysis/metastable_20261001/RESEARCH_NOTE.md`.
+
+The first two observer blocks reached step 60,919 without enabling escape.
+Their calibrated archive records long-lived sequential trajectory regions
+but no verified over-residence event or revisit. Do not enable a novelty
+controller based on motif similarity rejection alone. Use the research note
+and compressed capture receipts when interpreting or extending this lineage.
