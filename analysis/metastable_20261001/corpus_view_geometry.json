@@ -1,0 +1,813 @@
+{
+  "arms": {
+    "a": {
+      "capture_paths": [
+        "analysis/metastable_20261001/observer_capture.jsonl.gz",
+        "analysis/metastable_20261001/observer_capture_segment2.jsonl.gz"
+      ],
+      "capture_sha256": [
+        "c66e9987534066ba71480d32daf1476ba1e7931b37d05c843857124116aa2684",
+        "c75a599da61921430d2e355a35cdabb7d628f7ec0dd8af44399d5fef3a97dc08"
+      ],
+      "first_step": 58108,
+      "last_step": 60916,
+      "views": {
+        "audio_behavior": {
+          "covariance_participation": 2.0033528897307566,
+          "detrended_participation": 2.085277999830795,
+          "dimensions": 41,
+          "first_difference_participation": 7.109120132262136,
+          "first_to_last_quarter_centroid_distance": 0.02318263396810417,
+          "independent_channel_shuffle_null_pr": [
+            2.030118910587372,
+            2.030395468998996,
+            2.0296444417105133,
+            2.0278781523218954
+          ],
+          "median_channel_std": 0.00836577188730418,
+          "samples": 703
+        },
+        "decoder_control": {
+          "covariance_participation": 4.041794567834969,
+          "detrended_participation": 4.122154773338861,
+          "dimensions": 41,
+          "first_difference_participation": 2.7694776419747362,
+          "first_to_last_quarter_centroid_distance": 1.1021967168334301,
+          "independent_channel_shuffle_null_pr": [
+            10.205825837165456,
+            10.229186391410037,
+            10.248313118460622,
+            10.214114831637248
+          ],
+          "median_channel_std": 0.4184775667190014,
+          "samples": 703
+        },
+        "field_coarse": {
+          "covariance_participation": 1.610846389371523,
+          "detrended_participation": 1.3778931291700791,
+          "dimensions": 68,
+          "first_difference_participation": 2.26325897568139,
+          "first_to_last_quarter_centroid_distance": 0.001024409793870768,
+          "independent_channel_shuffle_null_pr": [
+            51.20308557817808,
+            51.18576663412696,
+            51.261462390446844,
+            51.09910016060921
+          ],
+          "median_channel_std": 0.0009422852332094526,
+          "samples": 703
+        },
+        "field_fine": {
+          "covariance_participation": 3.4171908707239234,
+          "detrended_participation": 3.0320384309368618,
+          "dimensions": 68,
+          "first_difference_participation": 2.259535920434485,
+          "first_to_last_quarter_centroid_distance": 0.006264727298166786,
+          "independent_channel_shuffle_null_pr": [
+            44.3736597073913,
+            44.172770384792514,
+            44.14246512787906,
+            44.34748520043714
+          ],
+          "median_channel_std": 0.005418090833763864,
+          "samples": 703
+        },
+        "field_meso": {
+          "covariance_participation": 2.236342203314965,
+          "detrended_participation": 2.220646378534389,
+          "dimensions": 68,
+          "first_difference_participation": 2.470265500326172,
+          "first_to_last_quarter_centroid_distance": 0.007431268098709506,
+          "independent_channel_shuffle_null_pr": [
+            38.459380145654606,
+            38.53008798736349,
+            38.40634323153698,
+            38.571142606225244
+          ],
+          "median_channel_std": 0.026644482569668212,
+          "samples": 703
+        },
+        "gru": {
+          "covariance_participation": 1.814615080595294,
+          "detrended_participation": 1.3190729683545381,
+          "dimensions": 32,
+          "first_difference_participation": 3.5775707787204882,
+          "first_to_last_quarter_centroid_distance": 0.0013753800135043826,
+          "independent_channel_shuffle_null_pr": [
+            24.66498066252097,
+            24.58285305499209,
+            24.60579150114877,
+            24.72899117427032
+          ],
+          "median_channel_std": 0.0010796585617274257,
+          "samples": 703
+        },
+        "morphic_delta_l01": {
+          "covariance_participation": 1.3047585796831571,
+          "detrended_participation": 1.726435066613415,
+          "dimensions": 32,
+          "first_difference_participation": 3.367128943421082,
+          "first_to_last_quarter_centroid_distance": 0.5363623322827001,
+          "independent_channel_shuffle_null_pr": [
+            16.16329488973789,
+            16.163917905543038,
+            16.215013552683903,
+            16.189140005348122
+          ],
+          "median_channel_std": 0.19732694354597752,
+          "samples": 703
+        },
+        "morphic_delta_l04": {
+          "covariance_participation": 1.4598475208418804,
+          "detrended_participation": 1.4515258332782257,
+          "dimensions": 32,
+          "first_difference_participation": 2.8804108777781976,
+          "first_to_last_quarter_centroid_distance": 0.09449480027807934,
+          "independent_channel_shuffle_null_pr": [
+            12.878646508742513,
+            12.918294585991083,
+            12.892291437964413,
+            12.903240591698577
+          ],
+          "median_channel_std": 0.030290476615483362,
+          "samples": 703
+        },
+        "morphic_delta_l08": {
+          "covariance_participation": 1.7227746588255373,
+          "detrended_participation": 1.190417061649951,
+          "dimensions": 32,
+          "first_difference_participation": 2.7341044515786095,
+          "first_to_last_quarter_centroid_distance": 0.09526915128000131,
+          "independent_channel_shuffle_null_pr": [
+            16.23105917272069,
+            16.172157990938384,
+            16.225792525739344,
+            16.178849987791764
+          ],
+          "median_channel_std": 0.03792807760724324,
+          "samples": 703
+        },
+        "morphic_delta_l12": {
+          "covariance_participation": 1.732524221346153,
+          "detrended_participation": 1.5358546628151468,
+          "dimensions": 32,
+          "first_difference_participation": 3.1132805747456715,
+          "first_to_last_quarter_centroid_distance": 0.031063769998622037,
+          "independent_channel_shuffle_null_pr": [
+            17.26607202981973,
+            17.26732584532192,
+            17.334017827503892,
+            17.291282186288562
+          ],
+          "median_channel_std": 0.011485168939294615,
+          "samples": 703
+        },
+        "morphic_delta_l16": {
+          "covariance_participation": 1.1468664072927943,
+          "detrended_participation": 1.4015247817444951,
+          "dimensions": 32,
+          "first_difference_participation": 2.1361777300142677,
+          "first_to_last_quarter_centroid_distance": 0.15677861790833175,
+          "independent_channel_shuffle_null_pr": [
+            9.752369809697232,
+            9.743605498970478,
+            9.693932933844488,
+            9.757586014332356
+          ],
+          "median_channel_std": 0.04695716745557482,
+          "samples": 703
+        },
+        "morphic_l01": {
+          "covariance_participation": 1.3179910061516278,
+          "detrended_participation": 1.7033887567646835,
+          "dimensions": 32,
+          "first_difference_participation": 3.3234202211222197,
+          "first_to_last_quarter_centroid_distance": 0.5772387659371366,
+          "independent_channel_shuffle_null_pr": [
+            13.491450147755065,
+            13.537659101497148,
+            13.462891638091529,
+            13.46880431604087
+          ],
+          "median_channel_std": 0.18470224484183512,
+          "samples": 703
+        },
+        "morphic_l04": {
+          "covariance_participation": 1.4381794783314812,
+          "detrended_participation": 1.4912676204690853,
+          "dimensions": 32,
+          "first_difference_participation": 3.2478969941268043,
+          "first_to_last_quarter_centroid_distance": 0.9223319585166523,
+          "independent_channel_shuffle_null_pr": [
+            15.884164064820938,
+            15.847208930350543,
+            15.893618892197082,
+            15.87132090880924
+          ],
+          "median_channel_std": 0.3088384317054015,
+          "samples": 703
+        },
+        "morphic_l08": {
+          "covariance_participation": 1.4024733130208185,
+          "detrended_participation": 1.7586946393638154,
+          "dimensions": 32,
+          "first_difference_participation": 3.411457981607787,
+          "first_to_last_quarter_centroid_distance": 0.9519561637818127,
+          "independent_channel_shuffle_null_pr": [
+            15.185303192608945,
+            14.9940172589649,
+            15.177442784470422,
+            15.176621132272635
+          ],
+          "median_channel_std": 0.3395261654804489,
+          "samples": 703
+        },
+        "morphic_l12": {
+          "covariance_participation": 1.5469331153193553,
+          "detrended_participation": 1.3052517681017388,
+          "dimensions": 32,
+          "first_difference_participation": 3.145368131632824,
+          "first_to_last_quarter_centroid_distance": 1.1201168039348077,
+          "independent_channel_shuffle_null_pr": [
+            19.269631635120138,
+            19.25819804871943,
+            19.211195941509967,
+            19.29217033355892
+          ],
+          "median_channel_std": 0.4164472921145922,
+          "samples": 703
+        },
+        "morphic_l16": {
+          "covariance_participation": 1.3847340588509085,
+          "detrended_participation": 1.4566409702933725,
+          "dimensions": 32,
+          "first_difference_participation": 3.102351456064233,
+          "first_to_last_quarter_centroid_distance": 1.4661452182454655,
+          "independent_channel_shuffle_null_pr": [
+            15.701769210606914,
+            15.582457745110617,
+            15.637524994858829,
+            15.693648068619888
+          ],
+          "median_channel_std": 0.460126645265181,
+          "samples": 703
+        },
+        "morphic_output": {
+          "covariance_participation": 1.6444822579421088,
+          "detrended_participation": 1.2830686062016117,
+          "dimensions": 32,
+          "first_difference_participation": 2.7881571480787914,
+          "first_to_last_quarter_centroid_distance": 1.2084847819132993,
+          "independent_channel_shuffle_null_pr": [
+            15.685938953226046,
+            15.670924677630472,
+            15.736209114565387,
+            15.704883115054539
+          ],
+          "median_channel_std": 0.4526856727476133,
+          "samples": 703
+        }
+      }
+    },
+    "b": {
+      "capture_paths": [
+        "analysis/metastable_20261001/corpus_b_capture_segment1.jsonl.gz",
+        "analysis/metastable_20261001/corpus_b_capture_segment2.jsonl.gz"
+      ],
+      "capture_sha256": [
+        "737852cf3fee3292e15485c0b92457318e34c9e5d9c3324a0fe5cf2eb86858c9",
+        "a2ba19e51fcf9e46e558b02f663be444424fbd1993bd451661169895dedfcce2"
+      ],
+      "first_step": 58108,
+      "last_step": 60916,
+      "views": {
+        "audio_behavior": {
+          "covariance_participation": 1.509922229291162,
+          "detrended_participation": 1.4742239255075573,
+          "dimensions": 41,
+          "first_difference_participation": 9.125829896370202,
+          "first_to_last_quarter_centroid_distance": 0.013309389329594202,
+          "independent_channel_shuffle_null_pr": [
+            1.5150993900174707,
+            1.514928863569382,
+            1.5154114543238624,
+            1.515161160080701
+          ],
+          "median_channel_std": 0.009473224511732258,
+          "samples": 703
+        },
+        "decoder_control": {
+          "covariance_participation": 1.855151590728119,
+          "detrended_participation": 4.016916640475481,
+          "dimensions": 41,
+          "first_difference_participation": 2.945928189897496,
+          "first_to_last_quarter_centroid_distance": 2.1884123249310306,
+          "independent_channel_shuffle_null_pr": [
+            13.248741451633716,
+            13.398544089855912,
+            13.382998870959591,
+            13.374998526206525
+          ],
+          "median_channel_std": 0.6896342403952812,
+          "samples": 703
+        },
+        "field_coarse": {
+          "covariance_participation": 1.165522285049023,
+          "detrended_participation": 1.0582154986963461,
+          "dimensions": 68,
+          "first_difference_participation": 2.400096430931541,
+          "first_to_last_quarter_centroid_distance": 0.004615194821498401,
+          "independent_channel_shuffle_null_pr": [
+            23.964813199294376,
+            24.07418653932697,
+            23.99309323391647,
+            23.99553329954166
+          ],
+          "median_channel_std": 0.001502978306420366,
+          "samples": 703
+        },
+        "field_fine": {
+          "covariance_participation": 2.667331941656676,
+          "detrended_participation": 2.5270642219188058,
+          "dimensions": 68,
+          "first_difference_participation": 2.273300653013897,
+          "first_to_last_quarter_centroid_distance": 0.0026725049722596244,
+          "independent_channel_shuffle_null_pr": [
+            44.82050746775216,
+            44.66085331480033,
+            44.71987162064182,
+            44.61183800110941
+          ],
+          "median_channel_std": 0.004967380668614704,
+          "samples": 703
+        },
+        "field_meso": {
+          "covariance_participation": 2.252854102939075,
+          "detrended_participation": 2.2303455517389192,
+          "dimensions": 68,
+          "first_difference_participation": 2.473822118952705,
+          "first_to_last_quarter_centroid_distance": 0.009026786325498217,
+          "independent_channel_shuffle_null_pr": [
+            38.55223397742595,
+            38.56403460806302,
+            38.56735136855797,
+            38.64088444085947
+          ],
+          "median_channel_std": 0.026508387235024137,
+          "samples": 703
+        },
+        "gru": {
+          "covariance_participation": 1.1376309911184566,
+          "detrended_participation": 1.0835342843676732,
+          "dimensions": 32,
+          "first_difference_participation": 1.4462208021696763,
+          "first_to_last_quarter_centroid_distance": 0.009285184379940518,
+          "independent_channel_shuffle_null_pr": [
+            22.0296871847011,
+            22.019880293890065,
+            21.953435410311688,
+            22.019009336518717
+          ],
+          "median_channel_std": 0.003722763500566487,
+          "samples": 703
+        },
+        "morphic_delta_l01": {
+          "covariance_participation": 1.1657086820433986,
+          "detrended_participation": 1.914648423134124,
+          "dimensions": 32,
+          "first_difference_participation": 2.6159263922834377,
+          "first_to_last_quarter_centroid_distance": 0.6209110949141197,
+          "independent_channel_shuffle_null_pr": [
+            18.694820923368642,
+            18.57888680359192,
+            18.53284739583783,
+            18.678158778372257
+          ],
+          "median_channel_std": 0.2393388432655874,
+          "samples": 703
+        },
+        "morphic_delta_l04": {
+          "covariance_participation": 1.0649975646724583,
+          "detrended_participation": 2.438702425628607,
+          "dimensions": 32,
+          "first_difference_participation": 1.6550016806496437,
+          "first_to_last_quarter_centroid_distance": 0.1948757105584771,
+          "independent_channel_shuffle_null_pr": [
+            14.030362968844551,
+            13.984828036563963,
+            13.951568789172686,
+            14.04814527343949
+          ],
+          "median_channel_std": 0.05879643460172932,
+          "samples": 703
+        },
+        "morphic_delta_l08": {
+          "covariance_participation": 1.054201646651861,
+          "detrended_participation": 2.321367564706897,
+          "dimensions": 32,
+          "first_difference_participation": 1.4127613024894106,
+          "first_to_last_quarter_centroid_distance": 0.30639471121976986,
+          "independent_channel_shuffle_null_pr": [
+            10.516272035727209,
+            10.514161362879005,
+            10.526108497812874,
+            10.55171087647074
+          ],
+          "median_channel_std": 0.09172080178685443,
+          "samples": 703
+        },
+        "morphic_delta_l12": {
+          "covariance_participation": 1.1156733083784824,
+          "detrended_participation": 1.9150055531389494,
+          "dimensions": 32,
+          "first_difference_participation": 1.9046270202961553,
+          "first_to_last_quarter_centroid_distance": 0.08177374870636271,
+          "independent_channel_shuffle_null_pr": [
+            14.80654454202462,
+            14.785513705916982,
+            14.880753086500022,
+            14.84379308815081
+          ],
+          "median_channel_std": 0.023779086152916976,
+          "samples": 703
+        },
+        "morphic_delta_l16": {
+          "covariance_participation": 1.0672858986627822,
+          "detrended_participation": 2.4482462830829808,
+          "dimensions": 32,
+          "first_difference_participation": 1.6758985517007092,
+          "first_to_last_quarter_centroid_distance": 0.16846362939240006,
+          "independent_channel_shuffle_null_pr": [
+            11.24055307196502,
+            11.310545309592694,
+            11.269572976267831,
+            11.236351035433715
+          ],
+          "median_channel_std": 0.03574158889431145,
+          "samples": 703
+        },
+        "morphic_l01": {
+          "covariance_participation": 1.2365939979929508,
+          "detrended_participation": 1.7310176807117472,
+          "dimensions": 32,
+          "first_difference_participation": 2.668423927796371,
+          "first_to_last_quarter_centroid_distance": 0.5771805607466751,
+          "independent_channel_shuffle_null_pr": [
+            13.4767784875071,
+            13.469511027420232,
+            13.438537655390894,
+            13.480933486247304
+          ],
+          "median_channel_std": 0.16331160691662938,
+          "samples": 703
+        },
+        "morphic_l04": {
+          "covariance_participation": 1.1222432601453898,
+          "detrended_participation": 1.5000561157114307,
+          "dimensions": 32,
+          "first_difference_participation": 2.0150794611748633,
+          "first_to_last_quarter_centroid_distance": 1.27446174543985,
+          "independent_channel_shuffle_null_pr": [
+            14.625326914026825,
+            14.520826059832977,
+            14.599930619860212,
+            14.646631544081487
+          ],
+          "median_channel_std": 0.40382061292216936,
+          "samples": 703
+        },
+        "morphic_l08": {
+          "covariance_participation": 1.157896221219678,
+          "detrended_participation": 2.0707279730228914,
+          "dimensions": 32,
+          "first_difference_participation": 2.512331257185104,
+          "first_to_last_quarter_centroid_distance": 1.3762724751716424,
+          "independent_channel_shuffle_null_pr": [
+            15.21970341823293,
+            15.265623927401338,
+            15.199645729823914,
+            15.197036388464936
+          ],
+          "median_channel_std": 0.4444157454731944,
+          "samples": 703
+        },
+        "morphic_l12": {
+          "covariance_participation": 1.0643840871920538,
+          "detrended_participation": 1.8610812556192284,
+          "dimensions": 32,
+          "first_difference_participation": 1.5664691529689403,
+          "first_to_last_quarter_centroid_distance": 2.5782955257404105,
+          "independent_channel_shuffle_null_pr": [
+            5.7123087742104675,
+            5.733789925967212,
+            5.710864069141147,
+            5.695611047592318
+          ],
+          "median_channel_std": 0.6015975753502107,
+          "samples": 703
+        },
+        "morphic_l16": {
+          "covariance_participation": 1.0718932186572208,
+          "detrended_participation": 2.302533740142094,
+          "dimensions": 32,
+          "first_difference_participation": 1.6063595413499767,
+          "first_to_last_quarter_centroid_distance": 3.0720524249782035,
+          "independent_channel_shuffle_null_pr": [
+            9.422584043863228,
+            9.38062658379364,
+            9.38320606534194,
+            9.386229927815489
+          ],
+          "median_channel_std": 0.7835843787088338,
+          "samples": 703
+        },
+        "morphic_output": {
+          "covariance_participation": 1.0900336147174314,
+          "detrended_participation": 1.8263154820898517,
+          "dimensions": 32,
+          "first_difference_participation": 1.6728313743886958,
+          "first_to_last_quarter_centroid_distance": 2.7852601648909054,
+          "independent_channel_shuffle_null_pr": [
+            13.560115503058602,
+            13.650933903861084,
+            13.567473422936548,
+            13.576000971875505
+          ],
+          "median_channel_std": 0.8604811287583523,
+          "samples": 703
+        }
+      }
+    },
+    "c": {
+      "capture_paths": [
+        "analysis/metastable_20261001/corpus_c_capture_segment1.jsonl.gz",
+        "analysis/metastable_20261001/corpus_c_capture_segment2.jsonl.gz"
+      ],
+      "capture_sha256": [
+        "f345d096826422a0a87ce0800a7fd7255fa7ed43bda6a44fc3126fce8d8fea9e",
+        "fd2e882caaaac751594c5e052e909467426a03f4236ef7cd828b1177640d2703"
+      ],
+      "first_step": 58108,
+      "last_step": 60916,
+      "views": {
+        "audio_behavior": {
+          "covariance_participation": 1.6308816283458119,
+          "detrended_participation": 1.595637228010857,
+          "dimensions": 41,
+          "first_difference_participation": 7.951793560216922,
+          "first_to_last_quarter_centroid_distance": 0.021987875708135703,
+          "independent_channel_shuffle_null_pr": [
+            1.6410291932346361,
+            1.6411013290356655,
+            1.6413526598392492,
+            1.64121847246735
+          ],
+          "median_channel_std": 0.008900094242623615,
+          "samples": 703
+        },
+        "decoder_control": {
+          "covariance_participation": 3.288783928692545,
+          "detrended_participation": 4.349000501904443,
+          "dimensions": 41,
+          "first_difference_participation": 2.851640524532791,
+          "first_to_last_quarter_centroid_distance": 1.3159863614198828,
+          "independent_channel_shuffle_null_pr": [
+            13.026263289318736,
+            13.058424904035999,
+            13.033843496595342,
+            13.029957150186146
+          ],
+          "median_channel_std": 0.4190408529424452,
+          "samples": 703
+        },
+        "field_coarse": {
+          "covariance_participation": 1.049354943207788,
+          "detrended_participation": 1.0503471990941322,
+          "dimensions": 68,
+          "first_difference_participation": 2.3162914955160816,
+          "first_to_last_quarter_centroid_distance": 0.006164760734835956,
+          "independent_channel_shuffle_null_pr": [
+            35.74459182181874,
+            35.90917978199715,
+            35.930785113982246,
+            35.896179847108975
+          ],
+          "median_channel_std": 0.0014982155514475623,
+          "samples": 703
+        },
+        "field_fine": {
+          "covariance_participation": 3.317414825457458,
+          "detrended_participation": 3.282036003779082,
+          "dimensions": 68,
+          "first_difference_participation": 2.2633137362203293,
+          "first_to_last_quarter_centroid_distance": 0.006759858473320239,
+          "independent_channel_shuffle_null_pr": [
+            40.739386633483115,
+            40.58967645110757,
+            40.48858754586534,
+            40.619471100924606
+          ],
+          "median_channel_std": 0.005051538580961284,
+          "samples": 703
+        },
+        "field_meso": {
+          "covariance_participation": 2.2384640261073505,
+          "detrended_participation": 2.2252197407348318,
+          "dimensions": 68,
+          "first_difference_participation": 2.4728708672322193,
+          "first_to_last_quarter_centroid_distance": 0.006824682409913104,
+          "independent_channel_shuffle_null_pr": [
+            38.574208324788096,
+            38.53054645292348,
+            38.462985473938176,
+            38.57828585039287
+          ],
+          "median_channel_std": 0.025481948045183802,
+          "samples": 703
+        },
+        "gru": {
+          "covariance_participation": 1.1303977295616363,
+          "detrended_participation": 1.2782541487563837,
+          "dimensions": 32,
+          "first_difference_participation": 3.3948412951869855,
+          "first_to_last_quarter_centroid_distance": 0.006536848695497755,
+          "independent_channel_shuffle_null_pr": [
+            22.64104862483775,
+            22.74021530891491,
+            22.73362290104039,
+            22.719064835856017
+          ],
+          "median_channel_std": 0.0026841778255845827,
+          "samples": 703
+        },
+        "morphic_delta_l01": {
+          "covariance_participation": 1.4906654311265468,
+          "detrended_participation": 2.2171950157130027,
+          "dimensions": 32,
+          "first_difference_participation": 4.020696301305902,
+          "first_to_last_quarter_centroid_distance": 0.4050565820687236,
+          "independent_channel_shuffle_null_pr": [
+            17.134990389697965,
+            17.133350848973482,
+            17.168495354591894,
+            17.265620513736334
+          ],
+          "median_channel_std": 0.13362543272854716,
+          "samples": 703
+        },
+        "morphic_delta_l04": {
+          "covariance_participation": 1.496844156105386,
+          "detrended_participation": 1.5322466994501585,
+          "dimensions": 32,
+          "first_difference_participation": 2.5403261460692166,
+          "first_to_last_quarter_centroid_distance": 0.09746982122710077,
+          "independent_channel_shuffle_null_pr": [
+            15.41295158501056,
+            15.410583348874102,
+            15.377487340803334,
+            15.40626560268804
+          ],
+          "median_channel_std": 0.0362618582116173,
+          "samples": 703
+        },
+        "morphic_delta_l08": {
+          "covariance_participation": 1.333607615014294,
+          "detrended_participation": 1.1736242848274843,
+          "dimensions": 32,
+          "first_difference_participation": 1.6736354357295167,
+          "first_to_last_quarter_centroid_distance": 0.13747816002395222,
+          "independent_channel_shuffle_null_pr": [
+            12.178622775439258,
+            12.139315326508779,
+            12.118373754672742,
+            12.14642276675024
+          ],
+          "median_channel_std": 0.04428436368453129,
+          "samples": 703
+        },
+        "morphic_delta_l12": {
+          "covariance_participation": 1.3646190997140577,
+          "detrended_participation": 2.0246243299723377,
+          "dimensions": 32,
+          "first_difference_participation": 3.0544784310399233,
+          "first_to_last_quarter_centroid_distance": 0.0486242065548835,
+          "independent_channel_shuffle_null_pr": [
+            18.794265378438254,
+            18.710551549355408,
+            18.75914767789142,
+            18.82103055175838
+          ],
+          "median_channel_std": 0.018336418235455988,
+          "samples": 703
+        },
+        "morphic_delta_l16": {
+          "covariance_participation": 1.4236969363986471,
+          "detrended_participation": 1.5877670034814402,
+          "dimensions": 32,
+          "first_difference_participation": 1.737212791655875,
+          "first_to_last_quarter_centroid_distance": 0.11344912066992476,
+          "independent_channel_shuffle_null_pr": [
+            15.360126147916661,
+            15.383140953037016,
+            15.39017564644958,
+            15.341422175405949
+          ],
+          "median_channel_std": 0.04262314835778744,
+          "samples": 703
+        },
+        "morphic_l01": {
+          "covariance_participation": 1.8756293651836051,
+          "detrended_participation": 1.4902885288462038,
+          "dimensions": 32,
+          "first_difference_participation": 3.015274230558417,
+          "first_to_last_quarter_centroid_distance": 0.407347043406614,
+          "independent_channel_shuffle_null_pr": [
+            14.042180037600184,
+            14.062476818415792,
+            14.041627417320223,
+            13.909156864981664
+          ],
+          "median_channel_std": 0.15936088650731933,
+          "samples": 703
+        },
+        "morphic_l04": {
+          "covariance_participation": 1.4296826207453746,
+          "detrended_participation": 1.414063418006168,
+          "dimensions": 32,
+          "first_difference_participation": 2.9404112808523357,
+          "first_to_last_quarter_centroid_distance": 0.9504521979826623,
+          "independent_channel_shuffle_null_pr": [
+            17.813311931009743,
+            17.833967925790223,
+            17.814881442560843,
+            17.917944126070644
+          ],
+          "median_channel_std": 0.3504030859686128,
+          "samples": 703
+        },
+        "morphic_l08": {
+          "covariance_participation": 1.5712521911291928,
+          "detrended_participation": 1.5300961073488368,
+          "dimensions": 32,
+          "first_difference_participation": 2.8219083232554087,
+          "first_to_last_quarter_centroid_distance": 1.0194841914544326,
+          "independent_channel_shuffle_null_pr": [
+            14.327650502084238,
+            14.303706700259845,
+            14.33454441327155,
+            14.301861888705636
+          ],
+          "median_channel_std": 0.3536511766980526,
+          "samples": 703
+        },
+        "morphic_l12": {
+          "covariance_participation": 1.66229240338051,
+          "detrended_participation": 1.5331848898000082,
+          "dimensions": 32,
+          "first_difference_participation": 3.6233288432032773,
+          "first_to_last_quarter_centroid_distance": 0.942065879199586,
+          "independent_channel_shuffle_null_pr": [
+            12.336811422741667,
+            12.4012048919528,
+            12.415424761792762,
+            12.381995059344396
+          ],
+          "median_channel_std": 0.3050943740952301,
+          "samples": 703
+        },
+        "morphic_l16": {
+          "covariance_participation": 1.5669845150930075,
+          "detrended_participation": 1.6241575113115947,
+          "dimensions": 32,
+          "first_difference_participation": 3.0879633277347454,
+          "first_to_last_quarter_centroid_distance": 1.3529853486006196,
+          "independent_channel_shuffle_null_pr": [
+            14.806159813523957,
+            14.859332473379617,
+            14.798931960028822,
+            14.836144033382684
+          ],
+          "median_channel_std": 0.5299956450488525,
+          "samples": 703
+        },
+        "morphic_output": {
+          "covariance_participation": 1.6611806883637747,
+          "detrended_participation": 1.640159800393235,
+          "dimensions": 32,
+          "first_difference_participation": 3.110130962458856,
+          "first_to_last_quarter_centroid_distance": 1.258881338465273,
+          "independent_channel_shuffle_null_pr": [
+            14.60229217192094,
+            14.592785737613461,
+            14.58642313892218,
+            14.640153362587265
+          ],
+          "median_channel_std": 0.44176300236562116,
+          "samples": 703
+        }
+      }
+    }
+  },
+  "schema": 1,
+  "scope": "raw orthogonal sketches/pooled maps; dimension proxies during training, not proof of full-space capacity"
+}

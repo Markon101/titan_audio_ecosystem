@@ -1,0 +1,180 @@
+{
+  "all_equal": false,
+  "byte_equal_to_old": {
+    "new_off": {
+      "audio": true,
+      "titan_model_v10_msfield": false,
+      "titan_optimizer_v10_msfield": false,
+      "titan_world_v10_msfield": true
+    },
+    "new_on": {
+      "audio": true,
+      "titan_model_v10_msfield": true,
+      "titan_optimizer_v10_msfield": true,
+      "titan_world_v10_msfield": true
+    }
+  },
+  "disabled_equivalent_within_tolerance": true,
+  "end_step": 58108,
+  "runs": {
+    "new_off": {
+      "argv": [
+        "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/target/release/titan",
+        "--base-dir",
+        "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/regression_new_off",
+        "--corpus-dir",
+        "/sdcard/Download/OLD_WAVS",
+        "--corpus-manifest",
+        "/sdcard/Download/titan_corpus_manifest_v7_sml.json",
+        "--substrate",
+        "msfield",
+        "--run-tag",
+        "v10-msfield-fresh-20260930-02",
+        "--duration",
+        "0.09",
+        "--threads",
+        "4",
+        "--seed",
+        "44",
+        "--lr",
+        "0.00045",
+        "--bptt",
+        "64",
+        "--core-update-every",
+        "1",
+        "--morph-layers",
+        "16",
+        "--morph-width",
+        "512",
+        "--max-morph-depth",
+        "16",
+        "--motif-capacity",
+        "512"
+      ],
+      "artifact_sha256": {
+        "audio": "684d3d3bd41af14f6ff3fd20f08db9606b8eb3b5c5af5a337b3f2db015bfe905",
+        "titan_model_v10_msfield": "94a870a234c3a354bad23c082d6ed425d6196542aef8e6681a73b77839ed07b4",
+        "titan_optimizer_v10_msfield": "3ea46fa49e2b068f05f81101b15da87e9ec867f1c5f688af9abc4ae3cb2391fc",
+        "titan_world_v10_msfield": "378b55ce6353de53fe0fc45b5afd9b2c1121e041fcf14a05c6e8e7baabe5f58f"
+      },
+      "binary_sha256": "3b3c172aaf662b70e55dd4282059eb288a128e97d1a01f4c483cb6a6bba0c75d",
+      "optimizer_updates": 909,
+      "run_id": "1790852928521-p21765-s44"
+    },
+    "new_on": {
+      "argv": [
+        "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/target/release/titan",
+        "--base-dir",
+        "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/regression_new_on",
+        "--corpus-dir",
+        "/sdcard/Download/OLD_WAVS",
+        "--corpus-manifest",
+        "/sdcard/Download/titan_corpus_manifest_v7_sml.json",
+        "--substrate",
+        "msfield",
+        "--run-tag",
+        "v10-msfield-fresh-20260930-02",
+        "--duration",
+        "0.09",
+        "--threads",
+        "4",
+        "--seed",
+        "44",
+        "--lr",
+        "0.00045",
+        "--bptt",
+        "64",
+        "--core-update-every",
+        "1",
+        "--morph-layers",
+        "16",
+        "--morph-width",
+        "512",
+        "--max-morph-depth",
+        "16",
+        "--motif-capacity",
+        "512",
+        "--regime-capture",
+        "--regime-stride",
+        "1"
+      ],
+      "artifact_sha256": {
+        "audio": "684d3d3bd41af14f6ff3fd20f08db9606b8eb3b5c5af5a337b3f2db015bfe905",
+        "titan_model_v10_msfield": "88ffbe211f3021b51c5800fb1e567b969396f9e271fecb93279b65f3212ea1e4",
+        "titan_optimizer_v10_msfield": "02ce24a7ce77b68aa6fabad22e47ca234906875d03ed622d77097125953f4368",
+        "titan_world_v10_msfield": "378b55ce6353de53fe0fc45b5afd9b2c1121e041fcf14a05c6e8e7baabe5f58f"
+      },
+      "binary_sha256": "3b3c172aaf662b70e55dd4282059eb288a128e97d1a01f4c483cb6a6bba0c75d",
+      "optimizer_updates": 909,
+      "run_id": "1790852930397-p21897-s44"
+    },
+    "old": {
+      "argv": [
+        "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/titan_legacy_72a4d69",
+        "--base-dir",
+        "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/regression_old",
+        "--corpus-dir",
+        "/sdcard/Download/OLD_WAVS",
+        "--corpus-manifest",
+        "/sdcard/Download/titan_corpus_manifest_v7_sml.json",
+        "--substrate",
+        "msfield",
+        "--run-tag",
+        "v10-msfield-fresh-20260930-02",
+        "--duration",
+        "0.09",
+        "--threads",
+        "4",
+        "--seed",
+        "44",
+        "--lr",
+        "0.00045",
+        "--bptt",
+        "64",
+        "--core-update-every",
+        "1",
+        "--morph-layers",
+        "16",
+        "--morph-width",
+        "512",
+        "--max-morph-depth",
+        "16",
+        "--motif-capacity",
+        "512"
+      ],
+      "artifact_sha256": {
+        "audio": "684d3d3bd41af14f6ff3fd20f08db9606b8eb3b5c5af5a337b3f2db015bfe905",
+        "titan_model_v10_msfield": "88ffbe211f3021b51c5800fb1e567b969396f9e271fecb93279b65f3212ea1e4",
+        "titan_optimizer_v10_msfield": "02ce24a7ce77b68aa6fabad22e47ca234906875d03ed622d77097125953f4368",
+        "titan_world_v10_msfield": "378b55ce6353de53fe0fc45b5afd9b2c1121e041fcf14a05c6e8e7baabe5f58f"
+      },
+      "binary_sha256": "12e07821946cc17bdde1b3249b96cdb1023cfa1f610ef67fc24e272bd5efcc44",
+      "optimizer_updates": 909,
+      "run_id": "1790852925983-p21205-s44"
+    }
+  },
+  "schema": 1,
+  "source_step": 58107,
+  "tensor_differences": {
+    "new_off": {
+      "titan_model_v10_msfield": {
+        "changed_tensors": 121,
+        "max_abs_difference": 1.4901161193847656e-08
+      },
+      "titan_optimizer_v10_msfield": {
+        "changed_tensors": 264,
+        "max_abs_difference": 2.9802322387695312e-08
+      }
+    },
+    "new_on": {
+      "titan_model_v10_msfield": {
+        "changed_tensors": 0,
+        "max_abs_difference": 0.0
+      },
+      "titan_optimizer_v10_msfield": {
+        "changed_tensors": 0,
+        "max_abs_difference": 0.0
+      }
+    }
+  }
+}

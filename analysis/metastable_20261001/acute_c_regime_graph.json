@@ -1,0 +1,1 @@
+{"regimes":[{"entries":1,"first_step":58120,"healthy_visits":61,"id":1,"last_step":58360,"persistent":false,"persistent_step":null,"visits":61},{"entries":1,"first_step":58376,"healthy_visits":106,"id":2,"last_step":58808,"persistent":true,"persistent_step":58680,"visits":106}],"schema":1,"transitions":{"1->2":1}}

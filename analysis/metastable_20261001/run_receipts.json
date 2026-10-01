@@ -1,0 +1,665 @@
+{
+  "canonical_source_unchanged": true,
+  "runs": {
+    "a_segment1": {
+      "args": [
+        "analysis/metastable_20261001/runs/observer_step_58107/titan_run_binary",
+        "--base-dir",
+        "analysis/metastable_20261001/runs/observer_step_58107",
+        "--corpus-dir",
+        "/sdcard/Download/OLD_WAVS",
+        "--corpus-manifest",
+        "/sdcard/Download/titan_corpus_manifest_v7_sml.json",
+        "--substrate",
+        "msfield",
+        "--run-tag",
+        "v10-msfield-fresh-20260930-02",
+        "--duration",
+        "120",
+        "--threads",
+        "4",
+        "--seed",
+        "44",
+        "--lr",
+        "0.00045",
+        "--bptt",
+        "64",
+        "--core-update-every",
+        "1",
+        "--morph-layers",
+        "16",
+        "--morph-width",
+        "512",
+        "--max-morph-depth",
+        "16",
+        "--motif-capacity",
+        "512",
+        "--regime-capture",
+        "--regime-stride",
+        "4"
+      ],
+      "audio_sha256": "292d9c7e7345cd36052cebbd663525114976512a4e2a025746c6b0812d28d570",
+      "binary_sha256": "3b3c172aaf662b70e55dd4282059eb288a128e97d1a01f4c483cb6a6bba0c75d",
+      "completed_chunks": 1406,
+      "corpus_manifest_sha256": "0708ede659328f928f76db792d091b5b1eaaaed219754fb9820986f4d81f8228",
+      "end_step": 59513,
+      "files": {
+        "metadata": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/segment1_step_59513/titan_run_metadata_v10_msfield_v10-msfield-fresh-20260930-02.json",
+          "sha256": "6bdee9ea26c90f5e2ec846d9922b6f3a53cea9c4c7e445454e7afcb42c552da8"
+        },
+        "model": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/segment1_step_59513/titan_model_v10_msfield_v10-msfield-fresh-20260930-02.safetensors",
+          "sha256": "fdbbabb4a6c8b090b1a43cff1429d74e7a47ecca137eecbb9d1b328a961815a6"
+        },
+        "morph": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/segment1_step_59513/titan_morph_state_v10_msfield_v10-msfield-fresh-20260930-02.json",
+          "sha256": "cfbac2c4954dd895c5b82937f05e7c59e329e30e7f2103a701b243082bc84edd"
+        },
+        "optimizer": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/segment1_step_59513/titan_optimizer_v10_msfield_v10-msfield-fresh-20260930-02.safetensors",
+          "sha256": "a3ef57ffbb9098ef6c3f86b8b0a61ce9008dbf4548c5a369c98f036ab3b0f23f"
+        },
+        "world": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/segment1_step_59513/titan_world_v10_msfield_v10-msfield-fresh-20260930-02.bin",
+          "sha256": "d088d08d5e1bd34eaeda276d00a1e5f678087907cd04ab5b558c0e373e30a6df"
+        }
+      },
+      "model_exact_tensors_loaded": 229,
+      "optimizer_exact_moments_loaded": 229,
+      "optimizer_updates_cumulative": 930,
+      "prime_sha256": "5fa2f70880e44c7f29787bf0af33921535358a45a03647f51b510a3167f0519d",
+      "run_id": "1790853021645-p30098-s44",
+      "start_step": 58107,
+      "training_families": 23,
+      "validation_is_strict": true
+    },
+    "a_segment2": {
+      "args": [
+        "analysis/metastable_20261001/runs/observer_step_58107/titan_run_binary",
+        "--base-dir",
+        "analysis/metastable_20261001/runs/observer_step_58107",
+        "--corpus-dir",
+        "/sdcard/Download/OLD_WAVS",
+        "--corpus-manifest",
+        "/sdcard/Download/titan_corpus_manifest_v7_sml.json",
+        "--substrate",
+        "msfield",
+        "--run-tag",
+        "v10-msfield-fresh-20260930-02",
+        "--duration",
+        "120",
+        "--threads",
+        "4",
+        "--seed",
+        "44",
+        "--lr",
+        "0.00045",
+        "--bptt",
+        "64",
+        "--core-update-every",
+        "1",
+        "--morph-layers",
+        "16",
+        "--morph-width",
+        "512",
+        "--max-morph-depth",
+        "16",
+        "--motif-capacity",
+        "512",
+        "--regime-capture",
+        "--regime-stride",
+        "4"
+      ],
+      "audio_sha256": "045b615ef9eed858de4ca4c77bc5b3d36a98fc74366e6906cd1a93ca962fdd6a",
+      "binary_sha256": "3b3c172aaf662b70e55dd4282059eb288a128e97d1a01f4c483cb6a6bba0c75d",
+      "completed_chunks": 1406,
+      "corpus_manifest_sha256": "0708ede659328f928f76db792d091b5b1eaaaed219754fb9820986f4d81f8228",
+      "end_step": 60919,
+      "files": {
+        "metadata": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/observer_step_58107/titan_run_metadata_v10_msfield_v10-msfield-fresh-20260930-02.json",
+          "sha256": "27fb0164206123108af5481fb4a9c22ba79d276d9e6fe643e5bf0d8bd54f7dfe"
+        },
+        "model": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/observer_step_58107/titan_model_v10_msfield_v10-msfield-fresh-20260930-02.safetensors",
+          "sha256": "3c1016333034f0c218914e758d17ebe7538a69ad35240a4dd2b40dd26b4dd856"
+        },
+        "morph": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/observer_step_58107/titan_morph_state_v10_msfield_v10-msfield-fresh-20260930-02.json",
+          "sha256": "1f1558bc96f3120f46fb23e44630850a59e828af08e861a4fe6bfb2ea12a21c7"
+        },
+        "optimizer": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/observer_step_58107/titan_optimizer_v10_msfield_v10-msfield-fresh-20260930-02.safetensors",
+          "sha256": "56a79885319fec2d7cf4530752cae6b1ae72fc5980de1a09284a49b2646d6045"
+        },
+        "world": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/observer_step_58107/titan_world_v10_msfield_v10-msfield-fresh-20260930-02.bin",
+          "sha256": "8edc0e9b9577ea2c7213d652a8a9e1301e9c911fbcc81711981fe6bacc018bc9"
+        }
+      },
+      "model_exact_tensors_loaded": 229,
+      "optimizer_exact_moments_loaded": 229,
+      "optimizer_updates_cumulative": 952,
+      "prime_sha256": "dbaf32e9ae1e6ca77b5eb74cbe3be3e78872f489da27db719fb1fac38bc67669",
+      "run_id": "1790854862263-p28260-s44",
+      "start_step": 59513,
+      "training_families": 23,
+      "validation_is_strict": true
+    },
+    "acute_a": {
+      "args": [
+        "analysis/metastable_20261001/runs/acute_a_run/titan_run_binary",
+        "--base-dir",
+        "analysis/metastable_20261001/runs/acute_a_run",
+        "--corpus-dir",
+        "analysis/metastable_20261001/runs/acute_exposure/a",
+        "--corpus-manifest",
+        "analysis/metastable_20261001/runs/acute_exposure/a_manifest.json",
+        "--substrate",
+        "msfield",
+        "--run-tag",
+        "v10-msfield-fresh-20260930-02",
+        "--duration",
+        "60",
+        "--threads",
+        "4",
+        "--seed",
+        "44",
+        "--lr",
+        "0.00045",
+        "--bptt",
+        "64",
+        "--core-update-every",
+        "1",
+        "--morph-layers",
+        "16",
+        "--morph-width",
+        "512",
+        "--max-morph-depth",
+        "16",
+        "--motif-capacity",
+        "512",
+        "--regime-capture",
+        "--regime-stride",
+        "4"
+      ],
+      "audio_sha256": "a0a60429d6ec0e5275f5ab2a18b8fe1c2393b80d4e4ff9f1023fb9b248ea4b89",
+      "binary_sha256": "3b3c172aaf662b70e55dd4282059eb288a128e97d1a01f4c483cb6a6bba0c75d",
+      "completed_chunks": 703,
+      "corpus_manifest_sha256": "1a41906c324c68c2488022cb131971466d13c60032452123d131aaa214674e0e",
+      "end_step": 58810,
+      "files": {
+        "metadata": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/acute_a_run/titan_run_metadata_v10_msfield_v10-msfield-fresh-20260930-02.json",
+          "sha256": "4d9b4f169bec59ba880a7528020cefaf39086c0231fa447d9544f655df77ff87"
+        },
+        "model": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/acute_a_run/titan_model_v10_msfield_v10-msfield-fresh-20260930-02.safetensors",
+          "sha256": "51c814c01c8853e2597919bab7d5fc2975fdb5e64312efa4d552fb4a91e62cec"
+        },
+        "morph": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/acute_a_run/titan_morph_state_v10_msfield_v10-msfield-fresh-20260930-02.json",
+          "sha256": "793d61743fe3b5c829fecb6afcbad0f25db8c97bfd2aa08ab2182e7890ab9a7e"
+        },
+        "optimizer": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/acute_a_run/titan_optimizer_v10_msfield_v10-msfield-fresh-20260930-02.safetensors",
+          "sha256": "9278fd8bba52d9fa4a25d645c68b121eb01a0adf0f568c4729c863d34115015b"
+        },
+        "world": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/acute_a_run/titan_world_v10_msfield_v10-msfield-fresh-20260930-02.bin",
+          "sha256": "2b57384e27380555cf4a98890d8414cbe5bf8f8aac1f78781ddd8a1d9e466b84"
+        }
+      },
+      "model_exact_tensors_loaded": 229,
+      "optimizer_exact_moments_loaded": 229,
+      "optimizer_updates_cumulative": 919,
+      "prime_sha256": "85235175c52fb287a4836b102144fefe90d553d8bc96868610337ed8bd4114bd",
+      "run_id": "1790858376377-p29058-s44",
+      "start_step": 58107,
+      "training_families": 6,
+      "validation_is_strict": true
+    },
+    "acute_b": {
+      "args": [
+        "analysis/metastable_20261001/runs/acute_b_run/titan_run_binary",
+        "--base-dir",
+        "analysis/metastable_20261001/runs/acute_b_run",
+        "--corpus-dir",
+        "analysis/metastable_20261001/runs/acute_exposure/b",
+        "--corpus-manifest",
+        "analysis/metastable_20261001/runs/acute_exposure/b_manifest.json",
+        "--substrate",
+        "msfield",
+        "--run-tag",
+        "v10-msfield-fresh-20260930-02",
+        "--duration",
+        "60",
+        "--threads",
+        "4",
+        "--seed",
+        "44",
+        "--lr",
+        "0.00045",
+        "--bptt",
+        "64",
+        "--core-update-every",
+        "1",
+        "--morph-layers",
+        "16",
+        "--morph-width",
+        "512",
+        "--max-morph-depth",
+        "16",
+        "--motif-capacity",
+        "512",
+        "--regime-capture",
+        "--regime-stride",
+        "4"
+      ],
+      "audio_sha256": "6284d29ffe5e3962d5779ec1c2671d636eac0689079a73a2299a7c99ab1bcd55",
+      "binary_sha256": "3b3c172aaf662b70e55dd4282059eb288a128e97d1a01f4c483cb6a6bba0c75d",
+      "completed_chunks": 703,
+      "corpus_manifest_sha256": "66c126adf8ab905b59d37b902a8a37f93fbc50140b8b80fe3a7346536fb4284c",
+      "end_step": 58810,
+      "files": {
+        "metadata": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/acute_b_run/titan_run_metadata_v10_msfield_v10-msfield-fresh-20260930-02.json",
+          "sha256": "34bb35298335240b24f333a1fa71205a315922ee16813a62f2c432686f07c069"
+        },
+        "model": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/acute_b_run/titan_model_v10_msfield_v10-msfield-fresh-20260930-02.safetensors",
+          "sha256": "1244d7c88094057e7910749e4a86ca46090240e39fc9dd0754f8e544b390a4b8"
+        },
+        "morph": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/acute_b_run/titan_morph_state_v10_msfield_v10-msfield-fresh-20260930-02.json",
+          "sha256": "03f8b0b6e3747a18f31aade66aac3eafa1e51890f1b7b69f78b56456c63902c3"
+        },
+        "optimizer": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/acute_b_run/titan_optimizer_v10_msfield_v10-msfield-fresh-20260930-02.safetensors",
+          "sha256": "606855ed5a5a035ef7d4bb317fb203682f5937bb5579270f1923f2f5782236a5"
+        },
+        "world": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/acute_b_run/titan_world_v10_msfield_v10-msfield-fresh-20260930-02.bin",
+          "sha256": "6d88489e66f781bbdd08e5604668b4ce397db112354ab4fc0861c6087c258555"
+        }
+      },
+      "model_exact_tensors_loaded": 229,
+      "optimizer_exact_moments_loaded": 229,
+      "optimizer_updates_cumulative": 919,
+      "prime_sha256": "0ede59d9b95faf5cb2c634cd3d0a5989e62f65a884430171bfd81d168f8721f8",
+      "run_id": "1790859051351-p32714-s44",
+      "start_step": 58107,
+      "training_families": 6,
+      "validation_is_strict": true
+    },
+    "acute_c": {
+      "args": [
+        "analysis/metastable_20261001/runs/acute_c_run/titan_run_binary",
+        "--base-dir",
+        "analysis/metastable_20261001/runs/acute_c_run",
+        "--corpus-dir",
+        "analysis/metastable_20261001/runs/acute_exposure/c",
+        "--corpus-manifest",
+        "analysis/metastable_20261001/runs/acute_exposure/c_manifest.json",
+        "--substrate",
+        "msfield",
+        "--run-tag",
+        "v10-msfield-fresh-20260930-02",
+        "--duration",
+        "60",
+        "--threads",
+        "4",
+        "--seed",
+        "44",
+        "--lr",
+        "0.00045",
+        "--bptt",
+        "64",
+        "--core-update-every",
+        "1",
+        "--morph-layers",
+        "16",
+        "--morph-width",
+        "512",
+        "--max-morph-depth",
+        "16",
+        "--motif-capacity",
+        "512",
+        "--regime-capture",
+        "--regime-stride",
+        "4"
+      ],
+      "audio_sha256": "a45bce6f8a068dffbfd039c9e01a260e6ba028ab063e821c9bcb46d04aa59be8",
+      "binary_sha256": "3b3c172aaf662b70e55dd4282059eb288a128e97d1a01f4c483cb6a6bba0c75d",
+      "completed_chunks": 703,
+      "corpus_manifest_sha256": "9cd1c9b7f71cec921771174b3aec3813e9515ea68301264f690df9f53a86214c",
+      "end_step": 58810,
+      "files": {
+        "metadata": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/acute_c_run/titan_run_metadata_v10_msfield_v10-msfield-fresh-20260930-02.json",
+          "sha256": "4df46bf027887495478e07d3ded19bf0504716c97ba2cac31774aab1a5c1ebbd"
+        },
+        "model": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/acute_c_run/titan_model_v10_msfield_v10-msfield-fresh-20260930-02.safetensors",
+          "sha256": "851adc451f82e4d784ed110b3130e03e344785f916fc7c3b924dbb76750c802e"
+        },
+        "morph": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/acute_c_run/titan_morph_state_v10_msfield_v10-msfield-fresh-20260930-02.json",
+          "sha256": "e4c66d94526376a9326f51e55c8289ca6537d1d510de6d2417fe3f8b3b94c070"
+        },
+        "optimizer": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/acute_c_run/titan_optimizer_v10_msfield_v10-msfield-fresh-20260930-02.safetensors",
+          "sha256": "47053fac29d931ca84c311a8a86b34338dfa10f4d67924520d98d02138c413c1"
+        },
+        "world": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/acute_c_run/titan_world_v10_msfield_v10-msfield-fresh-20260930-02.bin",
+          "sha256": "d4cf3ae2b6cb66b3d409e210a2ad1827257e8fda6e69559dceaafc910d1f0dd1"
+        }
+      },
+      "model_exact_tensors_loaded": 229,
+      "optimizer_exact_moments_loaded": 229,
+      "optimizer_updates_cumulative": 919,
+      "prime_sha256": "82e34181eb6ae048e1a30fa3663a675176b5cb74f5e53bc2ea746d826a055602",
+      "run_id": "1790858705659-p30160-s44",
+      "start_step": 58107,
+      "training_families": 6,
+      "validation_is_strict": true
+    },
+    "b_segment1": {
+      "args": [
+        "analysis/metastable_20261001/runs/corpus_new_family_run/titan_run_binary",
+        "--base-dir",
+        "analysis/metastable_20261001/runs/corpus_new_family_run",
+        "--corpus-dir",
+        "analysis/metastable_20261001/runs/corpus_forks/new_families",
+        "--corpus-manifest",
+        "analysis/metastable_20261001/runs/corpus_forks/new_families_manifest.json",
+        "--substrate",
+        "msfield",
+        "--run-tag",
+        "v10-msfield-fresh-20260930-02",
+        "--duration",
+        "120",
+        "--threads",
+        "4",
+        "--seed",
+        "44",
+        "--lr",
+        "0.00045",
+        "--bptt",
+        "64",
+        "--core-update-every",
+        "1",
+        "--morph-layers",
+        "16",
+        "--morph-width",
+        "512",
+        "--max-morph-depth",
+        "16",
+        "--motif-capacity",
+        "512",
+        "--regime-capture",
+        "--regime-stride",
+        "4"
+      ],
+      "audio_sha256": "821daa328bf4fec238d958f654beee8c97df464b22880fe8e43b31e105087b82",
+      "binary_sha256": "3b3c172aaf662b70e55dd4282059eb288a128e97d1a01f4c483cb6a6bba0c75d",
+      "completed_chunks": 1406,
+      "corpus_manifest_sha256": "242a0e4d93db459a84a390ee01fa833b9bb2b32fe783a13b8707b92d4814986e",
+      "end_step": 59513,
+      "files": {
+        "metadata": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_b_segment1_step_59513/titan_run_metadata_v10_msfield_v10-msfield-fresh-20260930-02.json",
+          "sha256": "d0069616020a0fcddbfbe695865311c8ca39f55e1d8244692a662a81a2587d42"
+        },
+        "model": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_b_segment1_step_59513/titan_model_v10_msfield_v10-msfield-fresh-20260930-02.safetensors",
+          "sha256": "733886ca6f022513ec7b6e03000044da84fe9894af911827926fb9109c5fa728"
+        },
+        "morph": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_b_segment1_step_59513/titan_morph_state_v10_msfield_v10-msfield-fresh-20260930-02.json",
+          "sha256": "01463c7255d40a500704d3a627e9e2edf19b8beee356d69f12d988dd7b3fbf77"
+        },
+        "optimizer": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_b_segment1_step_59513/titan_optimizer_v10_msfield_v10-msfield-fresh-20260930-02.safetensors",
+          "sha256": "7989595df7790ab28635a4fc833b2d57029c8ec5772832037b93be477bfb5074"
+        },
+        "world": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_b_segment1_step_59513/titan_world_v10_msfield_v10-msfield-fresh-20260930-02.bin",
+          "sha256": "b72265cbd4e72d7bc645b8390f98267a2e6f36a16c48aa85bee0034ebf019742"
+        }
+      },
+      "model_exact_tensors_loaded": 229,
+      "optimizer_exact_moments_loaded": 229,
+      "optimizer_updates_cumulative": 930,
+      "prime_sha256": "0825a715a05b05e978f79df968394af510143c34f4e151bd90d6eac8a5540cb9",
+      "run_id": "1790855692802-p15571-s44",
+      "start_step": 58107,
+      "training_families": 29,
+      "validation_is_strict": true
+    },
+    "b_segment2": {
+      "args": [
+        "analysis/metastable_20261001/runs/corpus_new_family_run/titan_run_binary",
+        "--base-dir",
+        "analysis/metastable_20261001/runs/corpus_new_family_run",
+        "--corpus-dir",
+        "analysis/metastable_20261001/runs/corpus_forks/new_families",
+        "--corpus-manifest",
+        "analysis/metastable_20261001/runs/corpus_forks/new_families_manifest.json",
+        "--substrate",
+        "msfield",
+        "--run-tag",
+        "v10-msfield-fresh-20260930-02",
+        "--duration",
+        "120",
+        "--threads",
+        "4",
+        "--seed",
+        "44",
+        "--lr",
+        "0.00045",
+        "--bptt",
+        "64",
+        "--core-update-every",
+        "1",
+        "--morph-layers",
+        "16",
+        "--morph-width",
+        "512",
+        "--max-morph-depth",
+        "16",
+        "--motif-capacity",
+        "512",
+        "--regime-capture",
+        "--regime-stride",
+        "4"
+      ],
+      "audio_sha256": "ea1524d4a1a7ba38ddc2b36a0579ebfa486ce5aa10a5b51288a305f4ed90be73",
+      "binary_sha256": "3b3c172aaf662b70e55dd4282059eb288a128e97d1a01f4c483cb6a6bba0c75d",
+      "completed_chunks": 1406,
+      "corpus_manifest_sha256": "242a0e4d93db459a84a390ee01fa833b9bb2b32fe783a13b8707b92d4814986e",
+      "end_step": 60919,
+      "files": {
+        "metadata": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_new_family_run/titan_run_metadata_v10_msfield_v10-msfield-fresh-20260930-02.json",
+          "sha256": "781d0af13de2bdfd496233988a5c8a28b766fab6f4c8963dfd3ea22c0c23aeff"
+        },
+        "model": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_new_family_run/titan_model_v10_msfield_v10-msfield-fresh-20260930-02.safetensors",
+          "sha256": "1a2cdb65646064d818e81614e2eb72d40332897b9bd43b0f0097070a90b76491"
+        },
+        "morph": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_new_family_run/titan_morph_state_v10_msfield_v10-msfield-fresh-20260930-02.json",
+          "sha256": "ed4ebcf011c04e220a512dbb3b33e6bcd4738f1d571516c308ac5d8c04a047d2"
+        },
+        "optimizer": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_new_family_run/titan_optimizer_v10_msfield_v10-msfield-fresh-20260930-02.safetensors",
+          "sha256": "b84e650c22c2701755d506174f9df3f2e3dbbde34fb4335149d0b4e42de6356c"
+        },
+        "world": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_new_family_run/titan_world_v10_msfield_v10-msfield-fresh-20260930-02.bin",
+          "sha256": "25b70ce5b25d524af45297a64c76bec6290974e05800fed038af0fbebf88239d"
+        }
+      },
+      "model_exact_tensors_loaded": 229,
+      "optimizer_exact_moments_loaded": 229,
+      "optimizer_updates_cumulative": 952,
+      "prime_sha256": "043bc6610db606fb68a628401c4d49cb8c65cfcc50d79d4ecf1bc301e467e27b",
+      "run_id": "1790856300351-p13464-s44",
+      "start_step": 59513,
+      "training_families": 29,
+      "validation_is_strict": true
+    },
+    "c_segment1": {
+      "args": [
+        "analysis/metastable_20261001/runs/corpus_existing_variant_run/titan_run_binary",
+        "--base-dir",
+        "analysis/metastable_20261001/runs/corpus_existing_variant_run",
+        "--corpus-dir",
+        "analysis/metastable_20261001/runs/corpus_forks/existing_variants",
+        "--corpus-manifest",
+        "analysis/metastable_20261001/runs/corpus_forks/existing_variants_manifest.json",
+        "--substrate",
+        "msfield",
+        "--run-tag",
+        "v10-msfield-fresh-20260930-02",
+        "--duration",
+        "120",
+        "--threads",
+        "4",
+        "--seed",
+        "44",
+        "--lr",
+        "0.00045",
+        "--bptt",
+        "64",
+        "--core-update-every",
+        "1",
+        "--morph-layers",
+        "16",
+        "--morph-width",
+        "512",
+        "--max-morph-depth",
+        "16",
+        "--motif-capacity",
+        "512",
+        "--regime-capture",
+        "--regime-stride",
+        "4"
+      ],
+      "audio_sha256": "e69c76636f842c2aed3bcdbcacb1ffad265e98a7ae3f011505010b0b8bdef335",
+      "binary_sha256": "3b3c172aaf662b70e55dd4282059eb288a128e97d1a01f4c483cb6a6bba0c75d",
+      "completed_chunks": 1406,
+      "corpus_manifest_sha256": "b6640a5cecdd2d9022489860176a60830cae7dc29a257468f962a73a482e8cd3",
+      "end_step": 59513,
+      "files": {
+        "metadata": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_c_segment1_step_59513/titan_run_metadata_v10_msfield_v10-msfield-fresh-20260930-02.json",
+          "sha256": "591fdbc96519cec1a11acf16014f67a71b20e1ad0ad415318ea4732ae7b7aa7d"
+        },
+        "model": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_c_segment1_step_59513/titan_model_v10_msfield_v10-msfield-fresh-20260930-02.safetensors",
+          "sha256": "d8a4a1b8cc74566ea0ccc00e1154bf616de5625b466cd9b0fc19328b68f581c5"
+        },
+        "morph": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_c_segment1_step_59513/titan_morph_state_v10_msfield_v10-msfield-fresh-20260930-02.json",
+          "sha256": "6559930b24a089b9abe8d8c970eab71d3c7a99048b5cd586777bf8165b70e658"
+        },
+        "optimizer": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_c_segment1_step_59513/titan_optimizer_v10_msfield_v10-msfield-fresh-20260930-02.safetensors",
+          "sha256": "2ffbe874f7006e11c43f13f27102007874a7d73ddc8067160bacc822a381b279"
+        },
+        "world": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_c_segment1_step_59513/titan_world_v10_msfield_v10-msfield-fresh-20260930-02.bin",
+          "sha256": "36203ad4233b4f89eff9a1eb9abec57657ced72cc75b0089e274931cf60d617e"
+        }
+      },
+      "model_exact_tensors_loaded": 229,
+      "optimizer_exact_moments_loaded": 229,
+      "optimizer_updates_cumulative": 930,
+      "prime_sha256": "25bf930e733c20457bd53f4c8db7d209c76c01712d16f077359c6187d8fa94c9",
+      "run_id": "1790857001275-p19006-s44",
+      "start_step": 58107,
+      "training_families": 23,
+      "validation_is_strict": true
+    },
+    "c_segment2": {
+      "args": [
+        "analysis/metastable_20261001/runs/corpus_existing_variant_run/titan_run_binary",
+        "--base-dir",
+        "analysis/metastable_20261001/runs/corpus_existing_variant_run",
+        "--corpus-dir",
+        "analysis/metastable_20261001/runs/corpus_forks/existing_variants",
+        "--corpus-manifest",
+        "analysis/metastable_20261001/runs/corpus_forks/existing_variants_manifest.json",
+        "--substrate",
+        "msfield",
+        "--run-tag",
+        "v10-msfield-fresh-20260930-02",
+        "--duration",
+        "120",
+        "--threads",
+        "4",
+        "--seed",
+        "44",
+        "--lr",
+        "0.00045",
+        "--bptt",
+        "64",
+        "--core-update-every",
+        "1",
+        "--morph-layers",
+        "16",
+        "--morph-width",
+        "512",
+        "--max-morph-depth",
+        "16",
+        "--motif-capacity",
+        "512",
+        "--regime-capture",
+        "--regime-stride",
+        "4"
+      ],
+      "audio_sha256": "307e77c514d6b35845b47ce3e15081f5faa8fa700687e0ff686042ee39b1defb",
+      "binary_sha256": "3b3c172aaf662b70e55dd4282059eb288a128e97d1a01f4c483cb6a6bba0c75d",
+      "completed_chunks": 1406,
+      "corpus_manifest_sha256": "b6640a5cecdd2d9022489860176a60830cae7dc29a257468f962a73a482e8cd3",
+      "end_step": 60919,
+      "files": {
+        "metadata": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_existing_variant_run/titan_run_metadata_v10_msfield_v10-msfield-fresh-20260930-02.json",
+          "sha256": "4cc1b805d64272295410b69f07f3c8b91db63925e44ec01fbb3ae69b0e305688"
+        },
+        "model": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_existing_variant_run/titan_model_v10_msfield_v10-msfield-fresh-20260930-02.safetensors",
+          "sha256": "565538779b66125d58b5731a2af850b70dd9661a28740b7a907d5245fac08451"
+        },
+        "morph": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_existing_variant_run/titan_morph_state_v10_msfield_v10-msfield-fresh-20260930-02.json",
+          "sha256": "0ce37bcccb4e8d9a324c7c8797f68088b7a45415fddbfb9f8290124ae4d1dcb8"
+        },
+        "optimizer": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_existing_variant_run/titan_optimizer_v10_msfield_v10-msfield-fresh-20260930-02.safetensors",
+          "sha256": "4d05a94dc6d236ed11f96455786bb71bdc0c0cc5787a6b00822c5228b9294b97"
+        },
+        "world": {
+          "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_existing_variant_run/titan_world_v10_msfield_v10-msfield-fresh-20260930-02.bin",
+          "sha256": "bf9f77a8841c61efbd987b06f56637a9bf23ff6d22b748ab962d54191d8cd5ac"
+        }
+      },
+      "model_exact_tensors_loaded": 229,
+      "optimizer_exact_moments_loaded": 229,
+      "optimizer_updates_cumulative": 952,
+      "prime_sha256": "c8933c9a8ac084f516d983e6a89810232b1b78d12a5a968d9b4b5a5635b5e000",
+      "run_id": "1790857629911-p19308-s44",
+      "start_step": 59513,
+      "training_families": 23,
+      "validation_is_strict": true
+    }
+  },
+  "schema": 1,
+  "source_receipt_sha256": "bb3a4d9b8309c0e1f8e19391358c5b0765268d8d3ae289d6311877d625c408b0",
+  "source_step": 58107
+}

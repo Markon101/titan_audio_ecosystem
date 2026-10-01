@@ -1,0 +1,173 @@
+{
+  "arms": {
+    "a": {
+      "fixed_probe_and_health": {
+        "clipped_optimizer_trace_fraction": 0.0,
+        "median_activity_health": 0.7797750234603882,
+        "median_clip_scale": 1.0,
+        "median_development_mean_chroma": 1.5825835466384888,
+        "median_development_mean_spectral": 0.7964386343955994,
+        "median_field_entropy": 1.8413870334625244,
+        "median_grad_norm": 2.634329080581665,
+        "median_motif_rejected_similarity": 2922.0,
+        "median_motif_stored_total": 83.0,
+        "median_motifs": 83.0,
+        "median_stagnation": 0.27163687348365784,
+        "median_stereo_corr": 0.8712837100028992,
+        "median_validation_mean_chroma": 0.911302089691162,
+        "median_validation_mean_spectral": 0.8020936846733093,
+        "median_width": 0.09109247475862504,
+        "trace_rows": 71
+      },
+      "motifs_active_final": 83,
+      "optimizer_updates_cumulative": 919,
+      "prime_audio": {
+        "clipped_sample_fraction": 0.0,
+        "frames": 2879488,
+        "mid_rms": 0.23936121730736631,
+        "peak": 0.890960693359375,
+        "side_mid_rms_ratio": 0.26085001594159374,
+        "side_rms": 0.06243737735042579,
+        "spectral_centroid_hz_first_30s": 8503.522766826494,
+        "stereo_correlation": 0.872631675297226
+      },
+      "regime": {
+        "candidate_regions": 2,
+        "confirmed_regimes": 1,
+        "max_dwell_chunks": 436,
+        "median_trajectory_participation": 9.002150658795356,
+        "over_resident_samples": 0,
+        "revisit_count": 0,
+        "samples": 176,
+        "second_half_median_participation": 8.350878322510413,
+        "transition_count": 1
+      },
+      "run_id": "1790858376377-p29058-s44",
+      "target_exposure": {
+        "sampled_episodes": 3,
+        "sampled_trace_rows": 71,
+        "unique_count": 3,
+        "unique_target_files": [
+          "AlgoRhythm s in Digital Motion - Hearts Align_0144.wav",
+          "Beyond the Veil_014411812.wav",
+          "Concrete Desires_014428538.wav"
+        ]
+      },
+      "training_families": 6,
+      "validation_is_strict": true
+    },
+    "b": {
+      "fixed_probe_and_health": {
+        "clipped_optimizer_trace_fraction": 0.36619718309859156,
+        "median_activity_health": 0.7867234945297241,
+        "median_clip_scale": 1.0,
+        "median_development_mean_chroma": 1.5853255987167358,
+        "median_development_mean_spectral": 0.7788574695587158,
+        "median_field_entropy": 1.8413870334625244,
+        "median_grad_norm": 4.581207275390625,
+        "median_motif_rejected_similarity": 2922.0,
+        "median_motif_stored_total": 83.0,
+        "median_motifs": 83.0,
+        "median_stagnation": 0.2627966105937958,
+        "median_stereo_corr": 0.8714479804039001,
+        "median_validation_mean_chroma": 0.9124255180358888,
+        "median_validation_mean_spectral": 0.7898985147476196,
+        "median_width": 0.0909164771437645,
+        "trace_rows": 71
+      },
+      "motifs_active_final": 83,
+      "optimizer_updates_cumulative": 919,
+      "prime_audio": {
+        "clipped_sample_fraction": 0.0,
+        "frames": 2879488,
+        "mid_rms": 0.24540075521736407,
+        "peak": 0.890960693359375,
+        "side_mid_rms_ratio": 0.26309160319147856,
+        "side_rms": 0.06456287811453591,
+        "spectral_centroid_hz_first_30s": 8495.081175705369,
+        "stereo_correlation": 0.8705757888304582
+      },
+      "regime": {
+        "candidate_regions": 3,
+        "confirmed_regimes": 1,
+        "max_dwell_chunks": 320,
+        "median_trajectory_participation": 8.067359582998893,
+        "over_resident_samples": 0,
+        "revisit_count": 0,
+        "samples": 176,
+        "second_half_median_participation": 8.082157710925511,
+        "transition_count": 2
+      },
+      "run_id": "1790859051351-p32714-s44",
+      "target_exposure": {
+        "sampled_episodes": 3,
+        "sampled_trace_rows": 71,
+        "unique_count": 2,
+        "unique_target_files": [
+          "Measured in Quanta 2_213908974.wav",
+          "Run Free ext v2_231733492.wav"
+        ]
+      },
+      "training_families": 6,
+      "validation_is_strict": true
+    },
+    "c": {
+      "fixed_probe_and_health": {
+        "clipped_optimizer_trace_fraction": 0.0,
+        "median_activity_health": 0.7780296802520752,
+        "median_clip_scale": 1.0,
+        "median_development_mean_chroma": 1.5692987442016602,
+        "median_development_mean_spectral": 0.7899521589279175,
+        "median_field_entropy": 1.8564186096191408,
+        "median_grad_norm": 2.315122127532959,
+        "median_motif_rejected_similarity": 2922.0,
+        "median_motif_stored_total": 83.0,
+        "median_motifs": 83.0,
+        "median_stagnation": 0.27429038286209106,
+        "median_stereo_corr": 0.8758270740509033,
+        "median_validation_mean_chroma": 0.9126538038253784,
+        "median_validation_mean_spectral": 0.7864758372306824,
+        "median_width": 0.08780953288078308,
+        "trace_rows": 71
+      },
+      "motifs_active_final": 83,
+      "optimizer_updates_cumulative": 919,
+      "prime_audio": {
+        "clipped_sample_fraction": 0.0,
+        "frames": 2879488,
+        "mid_rms": 0.24664874647020227,
+        "peak": 0.890960693359375,
+        "side_mid_rms_ratio": 0.2597391213241316,
+        "side_rms": 0.06406432868386885,
+        "spectral_centroid_hz_first_30s": 8330.222252306414,
+        "stereo_correlation": 0.8736579404775641
+      },
+      "regime": {
+        "candidate_regions": 2,
+        "confirmed_regimes": 1,
+        "max_dwell_chunks": 436,
+        "median_trajectory_participation": 8.835122464660747,
+        "over_resident_samples": 0,
+        "revisit_count": 0,
+        "samples": 176,
+        "second_half_median_participation": 9.45165954499992,
+        "transition_count": 1
+      },
+      "run_id": "1790858705659-p30160-s44",
+      "target_exposure": {
+        "sampled_episodes": 3,
+        "sampled_trace_rows": 71,
+        "unique_count": 2,
+        "unique_target_files": [
+          "EQ08_Beyond the Veil_014411812.wav",
+          "EQ08_Concrete Desires_014428538.wav"
+        ]
+      },
+      "training_families": 6,
+      "validation_is_strict": true
+    }
+  },
+  "exposure_qualified": true,
+  "schema": 1,
+  "scope": "short single-seed acute ecology replacement; distinct source audio and target schedules remain confounds"
+}

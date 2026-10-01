@@ -1,0 +1,14 @@
+{
+  "binary_sha256": "3b3c172aaf662b70e55dd4282059eb288a128e97d1a01f4c483cb6a6bba0c75d",
+  "end_step": 58810,
+  "gzip_bytes": 933040,
+  "gzip_sha256": "ae964b2c5eeb3e03ba29d9dafb8b0107da6b7afdc2a04f35b0beaa4ebb629a96",
+  "run_id": "1790859051351-p32714-s44",
+  "run_metadata_sha256": "34bb35298335240b24f333a1fa71205a315922ee16813a62f2c432686f07c069",
+  "sample_stride": 4,
+  "samples": 176,
+  "schema": 1,
+  "source_capture": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/acute_b_run/regime_capture_1790859051351-p32714-s44.jsonl",
+  "source_sha256": "9ef83c25d130f8b111f5caec3ca9a99068dcce448d3359acb71a4026a93935fc",
+  "start_step": 58107
+}

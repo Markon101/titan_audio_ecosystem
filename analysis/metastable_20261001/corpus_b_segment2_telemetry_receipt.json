@@ -1,0 +1,39 @@
+{
+  "artifacts": {
+    "morph_events": {
+      "gzip_bytes": 118,
+      "gzip_sha256": "429a8f78e669d72cdf994e14033fc6af6cf280851cec0fafe01bd4653e7dd624",
+      "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_new_family_run/morph_events_rust_v10-msfield-fresh-20260930-02.csv",
+      "source_sha256": "d1ba4596db5f89b7d0f02204948e7362abfd14367f5c60fee699159a84a12f96"
+    },
+    "msfield_trace": {
+      "gzip_bytes": 10555,
+      "gzip_sha256": "0f43212b34d4a19d53c7dd968f13349516746beb055386e5ffdd5184d32ba35b",
+      "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_new_family_run/msfield_trace_v10_v10-msfield-fresh-20260930-02.csv",
+      "source_sha256": "6e87716c1a198676f9f0ab3ddfefaaa707b71749468dc75920e1b984738759d1"
+    },
+    "topology_index": {
+      "gzip_bytes": 2638,
+      "gzip_sha256": "775db6935b1f9a067228dee8a2c9e18630618477b5b4e51b53e50fa3ac45efda",
+      "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_new_family_run/ca_topology_index_rust_v10-msfield-fresh-20260930-02.csv",
+      "source_sha256": "a1afcb802ec65f3688142d270c2a05e194ac19cb275059db39d3da054884d867"
+    },
+    "topology_values": {
+      "gzip_bytes": 580893,
+      "gzip_sha256": "2a3f851c7d82256a1dc38d65da18026597238d5675cb36c6b5405313c6ad83a1",
+      "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_new_family_run/ca_topology_rust_v10-msfield-fresh-20260930-02.csv",
+      "source_sha256": "5e4da21ff76d02f5c18901d211a875da8100c10bb811d07142bd08a3b01dfef8"
+    },
+    "uncertainty_trace": {
+      "gzip_bytes": 121357,
+      "gzip_sha256": "bc229493bbe302fb96ae192bac2b7781196006199b4767df96852be968f16a5c",
+      "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_new_family_run/uncertainty_trace_rust_v10-msfield-fresh-20260930-02.csv",
+      "source_sha256": "c917d295f3995ec55232731ed9c0bc7a6ee0d6942787c78e61250e2119059cb0"
+    }
+  },
+  "end_step": 60919,
+  "metadata_sha256": "781d0af13de2bdfd496233988a5c8a28b766fab6f4c8963dfd3ea22c0c23aeff",
+  "run_id": "1790856300351-p13464-s44",
+  "schema": 1,
+  "start_step": 59513
+}

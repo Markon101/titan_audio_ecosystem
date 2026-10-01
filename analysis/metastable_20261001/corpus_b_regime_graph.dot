@@ -1,0 +1,15 @@
+digraph titan_regimes {
+  rankdir=LR;
+  node [shape=circle];
+  r1 [label="R1\nvisits 61"];
+  r2 [label="R2\nvisits 136"];
+  r3 [label="R3\nvisits 125"];
+  r4 [label="R4\nvisits 162"];
+  r5 [label="R5\nvisits 155"];
+  r6 [label="R6\nvisits 27"];
+  r1 -> r2 [label="1"];
+  r2 -> r3 [label="1"];
+  r3 -> r4 [label="1"];
+  r4 -> r5 [label="1"];
+  r5 -> r6 [label="1"];
+}

@@ -1,0 +1,217 @@
+{
+  "interpretation": "A null matching or exceeding observed persistent regime count blocks a discovery claim. This is one trajectory; surrogate repeats test descriptor gaming, not seed generalization.",
+  "nulls": {
+    "four_sample_block_shuffle": [
+      {
+        "archive_size": 4,
+        "median_dwell_samples": 4.0,
+        "median_trajectory_participation": 3.462760616728812,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 53
+      },
+      {
+        "archive_size": 6,
+        "median_dwell_samples": 4.0,
+        "median_trajectory_participation": 3.345838143699849,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 44
+      },
+      {
+        "archive_size": 6,
+        "median_dwell_samples": 4.0,
+        "median_trajectory_participation": 3.5694239353747426,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 52
+      },
+      {
+        "archive_size": 6,
+        "median_dwell_samples": 4.0,
+        "median_trajectory_participation": 3.8706834875140874,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 51
+      },
+      {
+        "archive_size": 5,
+        "median_dwell_samples": 3.0,
+        "median_trajectory_participation": 3.748992873007024,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 58
+      },
+      {
+        "archive_size": 5,
+        "median_dwell_samples": 4.0,
+        "median_trajectory_participation": 3.8852406100728714,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 50
+      },
+      {
+        "archive_size": 5,
+        "median_dwell_samples": 6.0,
+        "median_trajectory_participation": 3.893446903897922,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 33
+      },
+      {
+        "archive_size": 5,
+        "median_dwell_samples": 4.0,
+        "median_trajectory_participation": 3.599320268376759,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 52
+      }
+    ],
+    "independent_view_time_shuffle": [
+      {
+        "archive_size": 0,
+        "median_dwell_samples": null,
+        "median_trajectory_participation": 13.663821135008323,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 0
+      },
+      {
+        "archive_size": 0,
+        "median_dwell_samples": null,
+        "median_trajectory_participation": 13.4278378187787,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 0
+      },
+      {
+        "archive_size": 0,
+        "median_dwell_samples": null,
+        "median_trajectory_participation": 13.252947322423374,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 0
+      },
+      {
+        "archive_size": 0,
+        "median_dwell_samples": null,
+        "median_trajectory_participation": 13.623828414797703,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 0
+      },
+      {
+        "archive_size": 0,
+        "median_dwell_samples": null,
+        "median_trajectory_participation": 13.635730385552502,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 0
+      },
+      {
+        "archive_size": 0,
+        "median_dwell_samples": null,
+        "median_trajectory_participation": 12.979883868853275,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 0
+      },
+      {
+        "archive_size": 0,
+        "median_dwell_samples": null,
+        "median_trajectory_participation": 13.675350931891648,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 0
+      },
+      {
+        "archive_size": 0,
+        "median_dwell_samples": null,
+        "median_trajectory_participation": 13.44368803377197,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 0
+      }
+    ],
+    "matched_gaussian_white_noise": [
+      {
+        "archive_size": 0,
+        "median_dwell_samples": null,
+        "median_trajectory_participation": 51.643494249886274,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 0
+      },
+      {
+        "archive_size": 0,
+        "median_dwell_samples": null,
+        "median_trajectory_participation": 51.94563920241182,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 0
+      },
+      {
+        "archive_size": 0,
+        "median_dwell_samples": null,
+        "median_trajectory_participation": 51.80135607045676,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 0
+      },
+      {
+        "archive_size": 0,
+        "median_dwell_samples": null,
+        "median_trajectory_participation": 51.8833060452477,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 0
+      },
+      {
+        "archive_size": 0,
+        "median_dwell_samples": null,
+        "median_trajectory_participation": 51.720275797358596,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 0
+      },
+      {
+        "archive_size": 0,
+        "median_dwell_samples": null,
+        "median_trajectory_participation": 51.54056393966466,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 0
+      },
+      {
+        "archive_size": 0,
+        "median_dwell_samples": null,
+        "median_trajectory_participation": 51.699733044080645,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 0
+      },
+      {
+        "archive_size": 0,
+        "median_dwell_samples": null,
+        "median_trajectory_participation": 51.663152779180294,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 0
+      }
+    ]
+  },
+  "observed": {
+    "archive_size": 4,
+    "median_dwell_samples": 44.0,
+    "median_trajectory_participation": 9.515934495695062,
+    "over_resident_samples": 0,
+    "persistent_regimes": 3,
+    "transitions": 3
+  },
+  "observed_dwell_exceeds_block_null_max": true,
+  "regime_count_noise_gameable": false,
+  "repeats_per_null": 8,
+  "samples": 352,
+  "schema": 1,
+  "seed": 69117
+}

@@ -1,0 +1,210 @@
+{
+  "arms": {
+    "a": {
+      "fixed_probe_and_health": {
+        "clipped_optimizer_trace_fraction": 0.2765957446808511,
+        "median_activity_health": 0.7768421769142151,
+        "median_clip_scale": 1.0,
+        "median_development_mean_chroma": 1.599359154701233,
+        "median_development_mean_spectral": 0.7715694308280945,
+        "median_field_entropy": 1.8564186096191408,
+        "median_grad_norm": 3.40923810005188,
+        "median_motif_rejected_similarity": 3024.0,
+        "median_motif_stored_total": 84.0,
+        "median_motifs": 84.0,
+        "median_stagnation": 0.27116402983665466,
+        "median_stereo_corr": 0.87981778383255,
+        "median_validation_mean_chroma": 0.8730939626693726,
+        "median_validation_mean_spectral": 0.7828900814056396,
+        "median_width": 0.08514633774757385,
+        "trace_rows": 141
+      },
+      "metadata_run_id": "1790854862263-p28260-s44",
+      "motifs_active_final": 84,
+      "optimizer_updates_cumulative": 952,
+      "prime_audio": {
+        "clipped_sample_fraction": 0.0,
+        "frames": 2879488,
+        "mid_rms": 0.23858773730661934,
+        "peak": 0.890960693359375,
+        "side_mid_rms_ratio": 0.24645928610163456,
+        "side_rms": 0.058802163409193725,
+        "spectral_centroid_hz_first_30s": 8406.259896767442,
+        "stereo_correlation": 0.8863709488370463
+      },
+      "regime": {
+        "all": {
+          "candidate_regions": 5,
+          "confirmed_new_regimes": 5,
+          "last_revisit_count": 0,
+          "last_transition_count": 4,
+          "max_dwell_chunks": 944,
+          "median_health": 0.7801374793052673,
+          "median_stagnation": 0.26824721693992615,
+          "median_trajectory_participation": 10.421411879840214,
+          "over_resident_samples": 0,
+          "samples": 703
+        },
+        "second_block": {
+          "candidate_regions": 1,
+          "confirmed_new_regimes": 2,
+          "last_revisit_count": 0,
+          "last_transition_count": 4,
+          "max_dwell_chunks": 944,
+          "median_health": 0.7764409780502319,
+          "median_stagnation": 0.2715020477771759,
+          "median_trajectory_participation": 11.25176285357413,
+          "over_resident_samples": 0,
+          "samples": 351
+        }
+      },
+      "training_families": 23,
+      "training_files": 30,
+      "validation_is_strict": true
+    },
+    "b": {
+      "added_source_exposure": {
+        "sampled_episodes": 0,
+        "sampled_trace_rows": 0,
+        "unique_count": 0,
+        "unique_target_files": []
+      },
+      "fixed_probe_and_health": {
+        "clipped_optimizer_trace_fraction": 0.09219858156028368,
+        "median_activity_health": 0.7867160439491272,
+        "median_clip_scale": 1.0,
+        "median_development_mean_chroma": 1.5656251907348633,
+        "median_development_mean_spectral": 0.7690200209617615,
+        "median_field_entropy": 1.8564186096191408,
+        "median_grad_norm": 3.1293749809265137,
+        "median_motif_rejected_similarity": 3032.0,
+        "median_motif_stored_total": 83.0,
+        "median_motifs": 83.0,
+        "median_stagnation": 0.26340770721435547,
+        "median_stereo_corr": 0.8611944913864136,
+        "median_validation_mean_chroma": 0.8756778240203857,
+        "median_validation_mean_spectral": 0.7699785232543945,
+        "median_width": 0.09817566722631454,
+        "trace_rows": 141
+      },
+      "metadata_run_id": "1790856300351-p13464-s44",
+      "motifs_active_final": 83,
+      "optimizer_updates_cumulative": 952,
+      "prime_audio": {
+        "clipped_sample_fraction": 0.0,
+        "frames": 2879488,
+        "mid_rms": 0.22815211660094958,
+        "peak": 0.888427734375,
+        "side_mid_rms_ratio": 0.2768868155745004,
+        "side_rms": 0.06317231303221904,
+        "spectral_centroid_hz_first_30s": 8159.144608759027,
+        "stereo_correlation": 0.8575873723157853
+      },
+      "regime": {
+        "all": {
+          "candidate_regions": 6,
+          "confirmed_new_regimes": 4,
+          "last_revisit_count": 0,
+          "last_transition_count": 5,
+          "max_dwell_chunks": 692,
+          "median_health": 0.7851454019546509,
+          "median_stagnation": 0.2626316547393799,
+          "median_trajectory_participation": 10.688313434630007,
+          "over_resident_samples": 0,
+          "samples": 703
+        },
+        "second_block": {
+          "candidate_regions": 2,
+          "confirmed_new_regimes": 2,
+          "last_revisit_count": 0,
+          "last_transition_count": 5,
+          "max_dwell_chunks": 692,
+          "median_health": 0.7859096527099609,
+          "median_stagnation": 0.2634330987930298,
+          "median_trajectory_participation": 11.319375890266656,
+          "over_resident_samples": 0,
+          "samples": 351
+        }
+      },
+      "training_families": 29,
+      "training_files": 36,
+      "validation_is_strict": true
+    },
+    "c": {
+      "added_source_exposure": {
+        "sampled_episodes": 2,
+        "sampled_trace_rows": 52,
+        "unique_count": 2,
+        "unique_target_files": [
+          "EQ08_Architect of Change_014405555.wav",
+          "EQ08_Concrete Desires_014428538.wav"
+        ]
+      },
+      "fixed_probe_and_health": {
+        "clipped_optimizer_trace_fraction": 0.0851063829787234,
+        "median_activity_health": 0.7830967903137207,
+        "median_clip_scale": 1.0,
+        "median_development_mean_chroma": 1.605042576789856,
+        "median_development_mean_spectral": 0.771797239780426,
+        "median_field_entropy": 1.8564186096191408,
+        "median_grad_norm": 2.8278257846832275,
+        "median_motif_rejected_similarity": 3032.0,
+        "median_motif_stored_total": 83.0,
+        "median_motifs": 83.0,
+        "median_stagnation": 0.2638210952281952,
+        "median_stereo_corr": 0.8867205381393433,
+        "median_validation_mean_chroma": 0.8867773413658142,
+        "median_validation_mean_spectral": 0.775588870048523,
+        "median_width": 0.08023322373628616,
+        "trace_rows": 141
+      },
+      "metadata_run_id": "1790857629911-p19308-s44",
+      "motifs_active_final": 84,
+      "optimizer_updates_cumulative": 952,
+      "prime_audio": {
+        "clipped_sample_fraction": 0.0,
+        "frames": 2879488,
+        "mid_rms": 0.24542808165224142,
+        "peak": 0.885528564453125,
+        "side_mid_rms_ratio": 0.23994224791521937,
+        "side_rms": 0.05888856561315881,
+        "spectral_centroid_hz_first_30s": 8177.165375280528,
+        "stereo_correlation": 0.8921903426991559
+      },
+      "regime": {
+        "all": {
+          "candidate_regions": 6,
+          "confirmed_new_regimes": 4,
+          "last_revisit_count": 0,
+          "last_transition_count": 5,
+          "max_dwell_chunks": 832,
+          "median_health": 0.7825705409049988,
+          "median_stagnation": 0.2651658058166504,
+          "median_trajectory_participation": 10.529992377780783,
+          "over_resident_samples": 138,
+          "samples": 703
+        },
+        "second_block": {
+          "candidate_regions": 2,
+          "confirmed_new_regimes": 1,
+          "last_revisit_count": 0,
+          "last_transition_count": 5,
+          "max_dwell_chunks": 832,
+          "median_health": 0.782787024974823,
+          "median_stagnation": 0.2639502286911011,
+          "median_trajectory_participation": 11.807606728331187,
+          "over_resident_samples": 138,
+          "samples": 351
+        }
+      },
+      "training_families": 23,
+      "training_files": 36,
+      "validation_is_strict": true
+    }
+  },
+  "b_exposure_qualified": false,
+  "bc_comparison_qualified": false,
+  "c_exposure_qualified": true,
+  "schema": 1,
+  "scope": "single seed/checkpoint; target schedules differ with manifest; objective audio metrics do not establish beauty or Suno transfer"
+}

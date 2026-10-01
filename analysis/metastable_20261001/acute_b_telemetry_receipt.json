@@ -1,0 +1,39 @@
+{
+  "artifacts": {
+    "morph_events": {
+      "gzip_bytes": 118,
+      "gzip_sha256": "429a8f78e669d72cdf994e14033fc6af6cf280851cec0fafe01bd4653e7dd624",
+      "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/acute_b_run/morph_events_rust_v10-msfield-fresh-20260930-02.csv",
+      "source_sha256": "d1ba4596db5f89b7d0f02204948e7362abfd14367f5c60fee699159a84a12f96"
+    },
+    "msfield_trace": {
+      "gzip_bytes": 5434,
+      "gzip_sha256": "223ef8df85820d08373157859de344486f16e3dcbdbc7a6045aa68ceb28ef36b",
+      "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/acute_b_run/msfield_trace_v10_v10-msfield-fresh-20260930-02.csv",
+      "source_sha256": "164a71cc7801468aa645ef541e7cef9998a2ccd5b65872c57b1c5164c8a0cb53"
+    },
+    "topology_index": {
+      "gzip_bytes": 1429,
+      "gzip_sha256": "fb747ef849c79d510f70e5c382c91f60f186b9537e402a7040d1f1e92a65670d",
+      "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/acute_b_run/ca_topology_index_rust_v10-msfield-fresh-20260930-02.csv",
+      "source_sha256": "a187d07a661294d6a303c230dcaa0596950e70b83ff5c00874202376e354cf13"
+    },
+    "topology_values": {
+      "gzip_bytes": 293501,
+      "gzip_sha256": "8893b511339eeb30133980d0431af0306d868df6e5934fca7c2f948256bd189e",
+      "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/acute_b_run/ca_topology_rust_v10-msfield-fresh-20260930-02.csv",
+      "source_sha256": "4a84c15fceb756e4dbb103b34cb73af55f60a5a96918e0d24f7edecf765f870b"
+    },
+    "uncertainty_trace": {
+      "gzip_bytes": 61707,
+      "gzip_sha256": "9c4fa3a87ceaa8f37c2a06dd427248ee1333af5cb4631249033d964b2990e514",
+      "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/acute_b_run/uncertainty_trace_rust_v10-msfield-fresh-20260930-02.csv",
+      "source_sha256": "e976ebfa8018b1bb39cd38398c10a4e2acda8e572a2db20aa4cc7af0294e9eb8"
+    }
+  },
+  "end_step": 58810,
+  "metadata_sha256": "34bb35298335240b24f333a1fa71205a315922ee16813a62f2c432686f07c069",
+  "run_id": "1790859051351-p32714-s44",
+  "schema": 1,
+  "start_step": 58107
+}

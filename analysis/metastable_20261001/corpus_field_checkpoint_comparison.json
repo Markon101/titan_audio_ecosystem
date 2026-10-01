@@ -1,0 +1,94 @@
+{
+  "arms": {
+    "a": {
+      "final_step": 60919,
+      "vs_source": {
+        "coarse": {
+          "channel_rms_map_correlation": 0.17847864116176085,
+          "delta_rms": 0.019015664597446254,
+          "final_rms": 0.6709541264638058,
+          "full_state_cosine": 0.999598429149347,
+          "initial_rms": 0.6710166764754736,
+          "relative_delta_l2": 0.028338587197752237
+        },
+        "fine": {
+          "channel_rms_map_correlation": -0.37366707798017057,
+          "delta_rms": 0.050365325810904665,
+          "final_rms": 0.5211982640227059,
+          "full_state_cosine": 0.9953606308463847,
+          "initial_rms": 0.5234669848706657,
+          "relative_delta_l2": 0.09621490421853651
+        },
+        "meso": {
+          "channel_rms_map_correlation": -0.33996025538574454,
+          "delta_rms": 0.2535312359227235,
+          "final_rms": 0.37835146849975887,
+          "full_state_cosine": 0.7766496978347219,
+          "initial_rms": 0.38029914754800836,
+          "relative_delta_l2": 0.6666626458601737
+        }
+      }
+    },
+    "b": {
+      "final_step": 60919,
+      "vs_source": {
+        "coarse": {
+          "channel_rms_map_correlation": 0.3906370371124065,
+          "delta_rms": 0.05696997119182173,
+          "final_rms": 0.6680089994750373,
+          "full_state_cosine": 0.9963897754503707,
+          "initial_rms": 0.6710166764754736,
+          "relative_delta_l2": 0.08490097666582144
+        },
+        "fine": {
+          "channel_rms_map_correlation": 0.07768501416813375,
+          "delta_rms": 0.04677355360599264,
+          "final_rms": 0.5208308658029008,
+          "full_state_cosine": 0.9960005243410549,
+          "initial_rms": 0.5234669848706657,
+          "relative_delta_l2": 0.08935339755483458
+        },
+        "meso": {
+          "channel_rms_map_correlation": 0.12598911156844517,
+          "delta_rms": 0.16041162005448537,
+          "final_rms": 0.38187070105683746,
+          "full_state_cosine": 0.9114153899752844,
+          "initial_rms": 0.38029914754800836,
+          "relative_delta_l2": 0.42180378549030634
+        }
+      }
+    },
+    "c": {
+      "final_step": 60919,
+      "vs_source": {
+        "coarse": {
+          "channel_rms_map_correlation": 0.24653482143485286,
+          "delta_rms": 0.02371678060337396,
+          "final_rms": 0.6748071056221537,
+          "full_state_cosine": 0.9993947547791573,
+          "initial_rms": 0.6710166764754736,
+          "relative_delta_l2": 0.035344547214454514
+        },
+        "fine": {
+          "channel_rms_map_correlation": -0.0005169376511054072,
+          "delta_rms": 0.08566488586438278,
+          "final_rms": 0.5236013160021842,
+          "full_state_cosine": 0.9866129590360088,
+          "initial_rms": 0.5234669848706657,
+          "relative_delta_l2": 0.1636490711740789
+        },
+        "meso": {
+          "channel_rms_map_correlation": 0.024486270037427166,
+          "delta_rms": 0.18186805038533077,
+          "final_rms": 0.38027597227005566,
+          "full_state_cosine": 0.8856440983733018,
+          "initial_rms": 0.38029914754800836,
+          "relative_delta_l2": 0.47822366039454
+        }
+      }
+    }
+  },
+  "schema": 1,
+  "scope": "descriptive full-state and channel-RMS-map change; different corpus target schedules are not paired",
+  "source_step": 58107
+}

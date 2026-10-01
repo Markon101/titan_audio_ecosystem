@@ -1,0 +1,39 @@
+{
+  "files": [
+    {
+      "bytes": 67327604,
+      "name": "titan_model_v10_msfield_v10-msfield-fresh-20260930-02.safetensors",
+      "sha256": "1728fa868ac1203c92c696fe81e3f353cafaf03895dfd5dc60e9534d539b2960",
+      "source": "/storage/emulated/0/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_model_v10_msfield_v10-msfield-fresh-20260930-02.safetensors"
+    },
+    {
+      "bytes": 1449111,
+      "name": "titan_world_v10_msfield_v10-msfield-fresh-20260930-02.bin",
+      "sha256": "681ab112d414f74347d36e3601c814c7c41478c0d1ccea916ddffe6a3dd4c855",
+      "source": "/storage/emulated/0/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_world_v10_msfield_v10-msfield-fresh-20260930-02.bin"
+    },
+    {
+      "bytes": 134661384,
+      "name": "titan_optimizer_v10_msfield_v10-msfield-fresh-20260930-02.safetensors",
+      "sha256": "85bfd8a42a7e33b2d86f1ae0a573c752e6774466a68912fae0163bcbaade571a",
+      "source": "/storage/emulated/0/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_optimizer_v10_msfield_v10-msfield-fresh-20260930-02.safetensors"
+    },
+    {
+      "bytes": 107,
+      "name": "titan_morph_state_v10_msfield_v10-msfield-fresh-20260930-02.json",
+      "sha256": "041ef18aec90614fd4d58265e1e6432f01446bc20606db5194ef7770c4cbd15a",
+      "source": "/storage/emulated/0/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_morph_state_v10_msfield_v10-msfield-fresh-20260930-02.json"
+    },
+    {
+      "bytes": 8313,
+      "name": "titan_run_metadata_v10_msfield_v10-msfield-fresh-20260930-02.json",
+      "sha256": "744fabcc400dc54d45bc41b29afaccff75634a1e84dde753e9311ee5b984167d",
+      "source": "/storage/emulated/0/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_run_metadata_v10_msfield_v10-msfield-fresh-20260930-02.json"
+    }
+  ],
+  "global_step": 58107,
+  "metadata_run_id": "1790849526662-p10560-s44",
+  "schema": 1,
+  "source_git_commit": "72a4d69d3055",
+  "tag": "v10-msfield-fresh-20260930-02"
+}

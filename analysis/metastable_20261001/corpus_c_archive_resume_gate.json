@@ -1,0 +1,13 @@
+{
+  "calibration_sha256": "c4f12651dcc89418cd5f82aa3af7451511474569f29e4d3a1d0b0abc2c13f6ed",
+  "final_regimes": 6,
+  "final_transitions": 5,
+  "first_capture_sha256": "f345d096826422a0a87ce0800a7fd7255fa7ed43bda6a44fc3126fce8d8fea9e",
+  "first_last_step": 59512,
+  "samples": 703,
+  "schema": 1,
+  "second_capture_sha256": "fd2e882caaaac751594c5e052e909467426a03f4236ef7cd828b1177640d2703",
+  "second_first_step": 59516,
+  "state_exact": true,
+  "trace_exact": true
+}

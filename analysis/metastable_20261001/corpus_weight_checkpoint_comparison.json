@@ -1,0 +1,1264 @@
+{
+  "arms": {
+    "a": {
+      "groups": {
+        "gru": {
+          "parameters": 986112,
+          "relative_l2_delta": 0.001176197054820999
+        },
+        "host_auxiliary": {
+          "parameters": 157579,
+          "relative_l2_delta": 0.008026360294226868
+        },
+        "morphic_l01": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.009536232341279588
+        },
+        "morphic_l02": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.012228174837086292
+        },
+        "morphic_l03": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.02305990997853529
+        },
+        "morphic_l04": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.03660961628824754
+        },
+        "morphic_l05": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.03145785296068402
+        },
+        "morphic_l06": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.03512346150020215
+        },
+        "morphic_l07": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.03802105241189718
+        },
+        "morphic_l08": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.028708740019817252
+        },
+        "morphic_l09": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.02906750339987502
+        },
+        "morphic_l10": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.02804016075206834
+        },
+        "morphic_l11": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.027799073661771385
+        },
+        "morphic_l12": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.025860339187247686
+        },
+        "morphic_l13": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.03431397220887909
+        },
+        "morphic_l14": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.030419148986331117
+        },
+        "morphic_l15": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.03400257775584073
+        },
+        "morphic_l16": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.039636617382056885
+        },
+        "msfield": {
+          "parameters": 168532,
+          "relative_l2_delta": 0.024438406689233944
+        },
+        "synthesis_heads": {
+          "parameters": 65680,
+          "relative_l2_delta": 0.010268925330460421
+        },
+        "temporal_decoder": {
+          "parameters": 7035084,
+          "relative_l2_delta": 0.0896050515344275
+        }
+      },
+      "matrices": {
+        "arbiter.fc1.weight": {
+          "delta_participation_rank": 1.0177385324895645,
+          "group": "host_auxiliary"
+        },
+        "episodic.wk.weight": {
+          "delta_participation_rank": 28.51670138619932,
+          "group": "host_auxiliary"
+        },
+        "episodic.wq.weight": {
+          "delta_participation_rank": 30.72399480591033,
+          "group": "host_auxiliary"
+        },
+        "episodic.wv.weight": {
+          "delta_participation_rank": 1.9889364641024925,
+          "group": "host_auxiliary"
+        },
+        "model.gru_memory.w_hn.weight": {
+          "delta_participation_rank": 96.86043182075471,
+          "group": "gru"
+        },
+        "model.gru_memory.w_hr.weight": {
+          "delta_participation_rank": 186.6005309576067,
+          "group": "gru"
+        },
+        "model.gru_memory.w_hz.weight": {
+          "delta_participation_rank": 1.5419410793000272,
+          "group": "gru"
+        },
+        "model.gru_memory.w_in.weight": {
+          "delta_participation_rank": 2.7520086791382545,
+          "group": "gru"
+        },
+        "model.gru_memory.w_ir.weight": {
+          "delta_participation_rank": 34.200108359567544,
+          "group": "gru"
+        },
+        "model.gru_memory.w_iz.weight": {
+          "delta_participation_rank": 1.130750881723229,
+          "group": "gru"
+        },
+        "model.morphic.l0_1.weight": {
+          "delta_participation_rank": 1.0786949635766268,
+          "group": "morphic_l01"
+        },
+        "model.morphic.l0_2.weight": {
+          "delta_participation_rank": 1.0642903430433557,
+          "group": "morphic_l01"
+        },
+        "model.morphic.l10_1.weight": {
+          "delta_participation_rank": 1.1123721634904293,
+          "group": "morphic_l11"
+        },
+        "model.morphic.l10_2.weight": {
+          "delta_participation_rank": 1.2762234275440871,
+          "group": "morphic_l11"
+        },
+        "model.morphic.l11_1.weight": {
+          "delta_participation_rank": 1.1668739049562868,
+          "group": "morphic_l12"
+        },
+        "model.morphic.l11_2.weight": {
+          "delta_participation_rank": 1.2844191895892767,
+          "group": "morphic_l12"
+        },
+        "model.morphic.l12_1.weight": {
+          "delta_participation_rank": 1.0680230900836833,
+          "group": "morphic_l13"
+        },
+        "model.morphic.l12_2.weight": {
+          "delta_participation_rank": 1.314340003553407,
+          "group": "morphic_l13"
+        },
+        "model.morphic.l13_1.weight": {
+          "delta_participation_rank": 1.0873993363983139,
+          "group": "morphic_l14"
+        },
+        "model.morphic.l13_2.weight": {
+          "delta_participation_rank": 1.2731525429015595,
+          "group": "morphic_l14"
+        },
+        "model.morphic.l14_1.weight": {
+          "delta_participation_rank": 1.1158599256766084,
+          "group": "morphic_l15"
+        },
+        "model.morphic.l14_2.weight": {
+          "delta_participation_rank": 1.3267008579085189,
+          "group": "morphic_l15"
+        },
+        "model.morphic.l15_1.weight": {
+          "delta_participation_rank": 1.067284276951487,
+          "group": "morphic_l16"
+        },
+        "model.morphic.l15_2.weight": {
+          "delta_participation_rank": 1.260830877414177,
+          "group": "morphic_l16"
+        },
+        "model.morphic.l1_1.weight": {
+          "delta_participation_rank": 1.0817655339748327,
+          "group": "morphic_l02"
+        },
+        "model.morphic.l1_2.weight": {
+          "delta_participation_rank": 1.0680220860737888,
+          "group": "morphic_l02"
+        },
+        "model.morphic.l2_1.weight": {
+          "delta_participation_rank": 1.037724183336537,
+          "group": "morphic_l03"
+        },
+        "model.morphic.l2_2.weight": {
+          "delta_participation_rank": 1.0975987718622182,
+          "group": "morphic_l03"
+        },
+        "model.morphic.l3_1.weight": {
+          "delta_participation_rank": 1.0608562741536243,
+          "group": "morphic_l04"
+        },
+        "model.morphic.l3_2.weight": {
+          "delta_participation_rank": 1.1756309472956747,
+          "group": "morphic_l04"
+        },
+        "model.morphic.l4_1.weight": {
+          "delta_participation_rank": 1.0964940386658386,
+          "group": "morphic_l05"
+        },
+        "model.morphic.l4_2.weight": {
+          "delta_participation_rank": 1.1567448291956415,
+          "group": "morphic_l05"
+        },
+        "model.morphic.l5_1.weight": {
+          "delta_participation_rank": 1.0598824197097625,
+          "group": "morphic_l06"
+        },
+        "model.morphic.l5_2.weight": {
+          "delta_participation_rank": 1.166255133554784,
+          "group": "morphic_l06"
+        },
+        "model.morphic.l6_1.weight": {
+          "delta_participation_rank": 1.0721781525756149,
+          "group": "morphic_l07"
+        },
+        "model.morphic.l6_2.weight": {
+          "delta_participation_rank": 1.1358773221543899,
+          "group": "morphic_l07"
+        },
+        "model.morphic.l7_1.weight": {
+          "delta_participation_rank": 1.1295466532199516,
+          "group": "morphic_l08"
+        },
+        "model.morphic.l7_2.weight": {
+          "delta_participation_rank": 1.179800955177687,
+          "group": "morphic_l08"
+        },
+        "model.morphic.l8_1.weight": {
+          "delta_participation_rank": 1.1757772200895582,
+          "group": "morphic_l09"
+        },
+        "model.morphic.l8_2.weight": {
+          "delta_participation_rank": 1.3597258426295997,
+          "group": "morphic_l09"
+        },
+        "model.morphic.l9_1.weight": {
+          "delta_participation_rank": 1.1128547550009764,
+          "group": "morphic_l10"
+        },
+        "model.morphic.l9_2.weight": {
+          "delta_participation_rank": 1.2407028139216951,
+          "group": "morphic_l10"
+        },
+        "model.msfield.coarse.reaction_in.weight": {
+          "delta_participation_rank": 8.824052767376777,
+          "group": "msfield"
+        },
+        "model.msfield.coarse.reaction_out.weight": {
+          "delta_participation_rank": 3.2762032568429866,
+          "group": "msfield"
+        },
+        "model.msfield.coarse.recurrent_reaction.weight": {
+          "delta_participation_rank": 1.0212002570032424,
+          "group": "msfield"
+        },
+        "model.msfield.coarse_to_meso.project.weight": {
+          "delta_participation_rank": 1.0248823869477661,
+          "group": "msfield"
+        },
+        "model.msfield.fine.reaction_in.weight": {
+          "delta_participation_rank": 1.133305241746314,
+          "group": "msfield"
+        },
+        "model.msfield.fine.reaction_out.weight": {
+          "delta_participation_rank": 1.19034856885283,
+          "group": "msfield"
+        },
+        "model.msfield.fine.recurrent_reaction.weight": {
+          "delta_participation_rank": 1.0597401243067537,
+          "group": "msfield"
+        },
+        "model.msfield.fine_to_meso.project.weight": {
+          "delta_participation_rank": 1.0223418051709934,
+          "group": "msfield"
+        },
+        "model.msfield.meso.reaction_in.weight": {
+          "delta_participation_rank": 1.0686178764806546,
+          "group": "msfield"
+        },
+        "model.msfield.meso.reaction_out.weight": {
+          "delta_participation_rank": 1.1396632370744935,
+          "group": "msfield"
+        },
+        "model.msfield.meso.recurrent_reaction.weight": {
+          "delta_participation_rank": 1.0280882784706948,
+          "group": "msfield"
+        },
+        "model.msfield.meso_to_coarse.project.weight": {
+          "delta_participation_rank": 1.2975414763314814,
+          "group": "msfield"
+        },
+        "model.msfield.meso_to_fine.project.weight": {
+          "delta_participation_rank": 1.3158895083892301,
+          "group": "msfield"
+        },
+        "model.oscillator_gain_head_0.weight": {
+          "delta_participation_rank": 8.510090919611269,
+          "group": "host_auxiliary"
+        },
+        "model.partial_amplitude_head_0.weight": {
+          "delta_participation_rank": 13.019140992486637,
+          "group": "synthesis_heads"
+        },
+        "model.partial_damping_head_0.weight": {
+          "delta_participation_rank": 15.676096861753189,
+          "group": "synthesis_heads"
+        },
+        "model.partial_ratio_head_0.weight": {
+          "delta_participation_rank": 28.713756738817796,
+          "group": "synthesis_heads"
+        },
+        "model.temporal_decoder.block0.contract.weight": {
+          "delta_participation_rank": 2.5770009862321177,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block0.expand.weight": {
+          "delta_participation_rank": 2.5622104558198475,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block1.contract.weight": {
+          "delta_participation_rank": 2.755763659626381,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block1.expand.weight": {
+          "delta_participation_rank": 2.601833328630106,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block2.contract.weight": {
+          "delta_participation_rank": 2.9862192682112085,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block2.expand.weight": {
+          "delta_participation_rank": 2.828753489469248,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block3.contract.weight": {
+          "delta_participation_rank": 2.7565326906906042,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block3.expand.weight": {
+          "delta_participation_rank": 2.76485714999271,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block4.contract.weight": {
+          "delta_participation_rank": 2.5762864530193736,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block4.expand.weight": {
+          "delta_participation_rank": 2.794205496776943,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block5.contract.weight": {
+          "delta_participation_rank": 2.4210374528102703,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block5.expand.weight": {
+          "delta_participation_rank": 2.59145866595574,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.control_head.weight": {
+          "delta_participation_rank": 5.629762130321915,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.key.weight": {
+          "delta_participation_rank": 1.0520756435750807,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.macro_projection.weight": {
+          "delta_participation_rank": 1.6423077257115815,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.micro_projection.weight": {
+          "delta_participation_rank": 49.978546396374284,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.query.weight": {
+          "delta_participation_rank": 1.0750822935262005,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.seed.weight": {
+          "delta_participation_rank": 1.0772015689598384,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.value.weight": {
+          "delta_participation_rank": 1.0311515344484454,
+          "group": "temporal_decoder"
+        },
+        "model.wavefolder_l.mod_proj.weight": {
+          "delta_participation_rank": 6.922728189666505,
+          "group": "synthesis_heads"
+        },
+        "model.wavefolder_r.mod_proj.weight": {
+          "delta_participation_rank": 6.790677706575313,
+          "group": "synthesis_heads"
+        },
+        "monitor_head.fc1.weight": {
+          "delta_participation_rank": 1.1213501528484688,
+          "group": "host_auxiliary"
+        },
+        "monitor_head.fc2.weight": {
+          "delta_participation_rank": 1.0162795598532461,
+          "group": "host_auxiliary"
+        }
+      },
+      "model_sha256": "3c1016333034f0c218914e758d17ebe7538a69ad35240a4dd2b40dd26b4dd856"
+    },
+    "b": {
+      "groups": {
+        "gru": {
+          "parameters": 986112,
+          "relative_l2_delta": 0.0010796083879975435
+        },
+        "host_auxiliary": {
+          "parameters": 157579,
+          "relative_l2_delta": 0.010981853828959899
+        },
+        "morphic_l01": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.013223613470834018
+        },
+        "morphic_l02": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.01993397193677331
+        },
+        "morphic_l03": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.03145262432587322
+        },
+        "morphic_l04": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.05969671910404598
+        },
+        "morphic_l05": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.08195167282620464
+        },
+        "morphic_l06": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.04253531572161672
+        },
+        "morphic_l07": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.049419891003191795
+        },
+        "morphic_l08": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.05782759462743735
+        },
+        "morphic_l09": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.08194312379031064
+        },
+        "morphic_l10": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.04728094209217238
+        },
+        "morphic_l11": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.05460944897934617
+        },
+        "morphic_l12": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.05524523174484631
+        },
+        "morphic_l13": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.08909316030597172
+        },
+        "morphic_l14": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.06727576151521955
+        },
+        "morphic_l15": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.046923753940003254
+        },
+        "morphic_l16": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.05368341505227972
+        },
+        "msfield": {
+          "parameters": 168532,
+          "relative_l2_delta": 0.03940372171175052
+        },
+        "synthesis_heads": {
+          "parameters": 65680,
+          "relative_l2_delta": 0.007583021971338287
+        },
+        "temporal_decoder": {
+          "parameters": 7035084,
+          "relative_l2_delta": 0.116831170048459
+        }
+      },
+      "matrices": {
+        "arbiter.fc1.weight": {
+          "delta_participation_rank": 1.00225848518069,
+          "group": "host_auxiliary"
+        },
+        "episodic.wk.weight": {
+          "delta_participation_rank": 7.021406485764803,
+          "group": "host_auxiliary"
+        },
+        "episodic.wq.weight": {
+          "delta_participation_rank": 10.774395107986825,
+          "group": "host_auxiliary"
+        },
+        "episodic.wv.weight": {
+          "delta_participation_rank": 1.110233103406031,
+          "group": "host_auxiliary"
+        },
+        "model.gru_memory.w_hn.weight": {
+          "delta_participation_rank": 5.82010857001332,
+          "group": "gru"
+        },
+        "model.gru_memory.w_hr.weight": {
+          "delta_participation_rank": 168.3475311428643,
+          "group": "gru"
+        },
+        "model.gru_memory.w_hz.weight": {
+          "delta_participation_rank": 1.5996368094043485,
+          "group": "gru"
+        },
+        "model.gru_memory.w_in.weight": {
+          "delta_participation_rank": 1.1666564867410878,
+          "group": "gru"
+        },
+        "model.gru_memory.w_ir.weight": {
+          "delta_participation_rank": 6.2991354738335605,
+          "group": "gru"
+        },
+        "model.gru_memory.w_iz.weight": {
+          "delta_participation_rank": 1.1176661097086187,
+          "group": "gru"
+        },
+        "model.morphic.l0_1.weight": {
+          "delta_participation_rank": 1.0652094763019586,
+          "group": "morphic_l01"
+        },
+        "model.morphic.l0_2.weight": {
+          "delta_participation_rank": 1.1230843692488075,
+          "group": "morphic_l01"
+        },
+        "model.morphic.l10_1.weight": {
+          "delta_participation_rank": 1.0743578731974381,
+          "group": "morphic_l11"
+        },
+        "model.morphic.l10_2.weight": {
+          "delta_participation_rank": 1.402389998417529,
+          "group": "morphic_l11"
+        },
+        "model.morphic.l11_1.weight": {
+          "delta_participation_rank": 1.065111452563913,
+          "group": "morphic_l12"
+        },
+        "model.morphic.l11_2.weight": {
+          "delta_participation_rank": 1.4055043274749468,
+          "group": "morphic_l12"
+        },
+        "model.morphic.l12_1.weight": {
+          "delta_participation_rank": 1.0176722738142185,
+          "group": "morphic_l13"
+        },
+        "model.morphic.l12_2.weight": {
+          "delta_participation_rank": 1.3880365717298544,
+          "group": "morphic_l13"
+        },
+        "model.morphic.l13_1.weight": {
+          "delta_participation_rank": 1.0257785628703922,
+          "group": "morphic_l14"
+        },
+        "model.morphic.l13_2.weight": {
+          "delta_participation_rank": 1.3111294056454377,
+          "group": "morphic_l14"
+        },
+        "model.morphic.l14_1.weight": {
+          "delta_participation_rank": 1.1312405548538547,
+          "group": "morphic_l15"
+        },
+        "model.morphic.l14_2.weight": {
+          "delta_participation_rank": 1.3627844853905595,
+          "group": "morphic_l15"
+        },
+        "model.morphic.l15_1.weight": {
+          "delta_participation_rank": 1.0562996227900556,
+          "group": "morphic_l16"
+        },
+        "model.morphic.l15_2.weight": {
+          "delta_participation_rank": 1.4466743682423346,
+          "group": "morphic_l16"
+        },
+        "model.morphic.l1_1.weight": {
+          "delta_participation_rank": 1.0534791004683015,
+          "group": "morphic_l02"
+        },
+        "model.morphic.l1_2.weight": {
+          "delta_participation_rank": 1.1280633826697606,
+          "group": "morphic_l02"
+        },
+        "model.morphic.l2_1.weight": {
+          "delta_participation_rank": 1.0245841492613683,
+          "group": "morphic_l03"
+        },
+        "model.morphic.l2_2.weight": {
+          "delta_participation_rank": 1.1743232751725783,
+          "group": "morphic_l03"
+        },
+        "model.morphic.l3_1.weight": {
+          "delta_participation_rank": 1.0392051732837535,
+          "group": "morphic_l04"
+        },
+        "model.morphic.l3_2.weight": {
+          "delta_participation_rank": 1.3254065595138786,
+          "group": "morphic_l04"
+        },
+        "model.morphic.l4_1.weight": {
+          "delta_participation_rank": 1.0494909073331224,
+          "group": "morphic_l05"
+        },
+        "model.morphic.l4_2.weight": {
+          "delta_participation_rank": 1.5816761628942793,
+          "group": "morphic_l05"
+        },
+        "model.morphic.l5_1.weight": {
+          "delta_participation_rank": 1.0713387275094426,
+          "group": "morphic_l06"
+        },
+        "model.morphic.l5_2.weight": {
+          "delta_participation_rank": 1.2133533314619827,
+          "group": "morphic_l06"
+        },
+        "model.morphic.l6_1.weight": {
+          "delta_participation_rank": 1.0583329654529163,
+          "group": "morphic_l07"
+        },
+        "model.morphic.l6_2.weight": {
+          "delta_participation_rank": 1.2064152144889266,
+          "group": "morphic_l07"
+        },
+        "model.morphic.l7_1.weight": {
+          "delta_participation_rank": 1.0513527864270715,
+          "group": "morphic_l08"
+        },
+        "model.morphic.l7_2.weight": {
+          "delta_participation_rank": 1.4229096360940745,
+          "group": "morphic_l08"
+        },
+        "model.morphic.l8_1.weight": {
+          "delta_participation_rank": 1.0515143172510275,
+          "group": "morphic_l09"
+        },
+        "model.morphic.l8_2.weight": {
+          "delta_participation_rank": 1.3701604066135356,
+          "group": "morphic_l09"
+        },
+        "model.morphic.l9_1.weight": {
+          "delta_participation_rank": 1.062571453618425,
+          "group": "morphic_l10"
+        },
+        "model.morphic.l9_2.weight": {
+          "delta_participation_rank": 1.4385960881051376,
+          "group": "morphic_l10"
+        },
+        "model.msfield.coarse.reaction_in.weight": {
+          "delta_participation_rank": 1.2815894131828103,
+          "group": "msfield"
+        },
+        "model.msfield.coarse.reaction_out.weight": {
+          "delta_participation_rank": 1.0913542542484673,
+          "group": "msfield"
+        },
+        "model.msfield.coarse.recurrent_reaction.weight": {
+          "delta_participation_rank": 1.0018486075275175,
+          "group": "msfield"
+        },
+        "model.msfield.coarse_to_meso.project.weight": {
+          "delta_participation_rank": 1.0152366792573735,
+          "group": "msfield"
+        },
+        "model.msfield.fine.reaction_in.weight": {
+          "delta_participation_rank": 1.0501588475939843,
+          "group": "msfield"
+        },
+        "model.msfield.fine.reaction_out.weight": {
+          "delta_participation_rank": 1.058541103308897,
+          "group": "msfield"
+        },
+        "model.msfield.fine.recurrent_reaction.weight": {
+          "delta_participation_rank": 1.03234753267407,
+          "group": "msfield"
+        },
+        "model.msfield.fine_to_meso.project.weight": {
+          "delta_participation_rank": 1.0121746219189096,
+          "group": "msfield"
+        },
+        "model.msfield.meso.reaction_in.weight": {
+          "delta_participation_rank": 1.0990096902093727,
+          "group": "msfield"
+        },
+        "model.msfield.meso.reaction_out.weight": {
+          "delta_participation_rank": 1.155312505361279,
+          "group": "msfield"
+        },
+        "model.msfield.meso.recurrent_reaction.weight": {
+          "delta_participation_rank": 1.0298131992731767,
+          "group": "msfield"
+        },
+        "model.msfield.meso_to_coarse.project.weight": {
+          "delta_participation_rank": 1.0172584126132775,
+          "group": "msfield"
+        },
+        "model.msfield.meso_to_fine.project.weight": {
+          "delta_participation_rank": 1.2213343815405906,
+          "group": "msfield"
+        },
+        "model.oscillator_gain_head_0.weight": {
+          "delta_participation_rank": 8.50974768088669,
+          "group": "host_auxiliary"
+        },
+        "model.partial_amplitude_head_0.weight": {
+          "delta_participation_rank": 13.018857669739983,
+          "group": "synthesis_heads"
+        },
+        "model.partial_damping_head_0.weight": {
+          "delta_participation_rank": 15.616555433230316,
+          "group": "synthesis_heads"
+        },
+        "model.partial_ratio_head_0.weight": {
+          "delta_participation_rank": 28.71971996525089,
+          "group": "synthesis_heads"
+        },
+        "model.temporal_decoder.block0.contract.weight": {
+          "delta_participation_rank": 3.619995101360098,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block0.expand.weight": {
+          "delta_participation_rank": 3.42633524459026,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block1.contract.weight": {
+          "delta_participation_rank": 3.66189022848243,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block1.expand.weight": {
+          "delta_participation_rank": 3.6318367299619703,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block2.contract.weight": {
+          "delta_participation_rank": 3.7084630881141623,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block2.expand.weight": {
+          "delta_participation_rank": 3.8574332519347787,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block3.contract.weight": {
+          "delta_participation_rank": 3.3912346351840768,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block3.expand.weight": {
+          "delta_participation_rank": 4.035692932084855,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block4.contract.weight": {
+          "delta_participation_rank": 3.5501186782878227,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block4.expand.weight": {
+          "delta_participation_rank": 3.611634305134918,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block5.contract.weight": {
+          "delta_participation_rank": 3.6141725417790047,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block5.expand.weight": {
+          "delta_participation_rank": 3.5543460894847687,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.control_head.weight": {
+          "delta_participation_rank": 4.498785285255486,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.key.weight": {
+          "delta_participation_rank": 1.054043175244978,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.macro_projection.weight": {
+          "delta_participation_rank": 1.2248503287463353,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.micro_projection.weight": {
+          "delta_participation_rank": 49.979997091391986,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.query.weight": {
+          "delta_participation_rank": 1.060711919158809,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.seed.weight": {
+          "delta_participation_rank": 1.0835216096372249,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.value.weight": {
+          "delta_participation_rank": 1.023052810403068,
+          "group": "temporal_decoder"
+        },
+        "model.wavefolder_l.mod_proj.weight": {
+          "delta_participation_rank": 6.922835284140723,
+          "group": "synthesis_heads"
+        },
+        "model.wavefolder_r.mod_proj.weight": {
+          "delta_participation_rank": 6.790883851945118,
+          "group": "synthesis_heads"
+        },
+        "monitor_head.fc1.weight": {
+          "delta_participation_rank": 1.261058895662904,
+          "group": "host_auxiliary"
+        },
+        "monitor_head.fc2.weight": {
+          "delta_participation_rank": 1.0362522108571772,
+          "group": "host_auxiliary"
+        }
+      },
+      "model_sha256": "1a2cdb65646064d818e81614e2eb72d40332897b9bd43b0f0097070a90b76491"
+    },
+    "c": {
+      "groups": {
+        "gru": {
+          "parameters": 986112,
+          "relative_l2_delta": 0.0018097365503814777
+        },
+        "host_auxiliary": {
+          "parameters": 157579,
+          "relative_l2_delta": 0.007640701218804349
+        },
+        "morphic_l01": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.009253972056712991
+        },
+        "morphic_l02": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.012042951864393404
+        },
+        "morphic_l03": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.02480679134065764
+        },
+        "morphic_l04": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.038637426732643435
+        },
+        "morphic_l05": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.03573477025594312
+        },
+        "morphic_l06": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.03188750355937276
+        },
+        "morphic_l07": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.038745906756462355
+        },
+        "morphic_l08": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.028231015552636213
+        },
+        "morphic_l09": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.03364345304200433
+        },
+        "morphic_l10": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.027330747093095385
+        },
+        "morphic_l11": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.028580320532845788
+        },
+        "morphic_l12": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.033869873509155324
+        },
+        "morphic_l13": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.03238911111420762
+        },
+        "morphic_l14": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.03031797510011963
+        },
+        "morphic_l15": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.031110210494526426
+        },
+        "morphic_l16": {
+          "parameters": 525824,
+          "relative_l2_delta": 0.04868435529757976
+        },
+        "msfield": {
+          "parameters": 168532,
+          "relative_l2_delta": 0.029419707755894323
+        },
+        "synthesis_heads": {
+          "parameters": 65680,
+          "relative_l2_delta": 0.014778943388354207
+        },
+        "temporal_decoder": {
+          "parameters": 7035084,
+          "relative_l2_delta": 0.09824232813765174
+        }
+      },
+      "matrices": {
+        "arbiter.fc1.weight": {
+          "delta_participation_rank": 1.0870824102599848,
+          "group": "host_auxiliary"
+        },
+        "episodic.wk.weight": {
+          "delta_participation_rank": 21.443809553449178,
+          "group": "host_auxiliary"
+        },
+        "episodic.wq.weight": {
+          "delta_participation_rank": 28.672230949162593,
+          "group": "host_auxiliary"
+        },
+        "episodic.wv.weight": {
+          "delta_participation_rank": 1.3020314098818258,
+          "group": "host_auxiliary"
+        },
+        "model.gru_memory.w_hn.weight": {
+          "delta_participation_rank": 10.26433788140658,
+          "group": "gru"
+        },
+        "model.gru_memory.w_hr.weight": {
+          "delta_participation_rank": 188.08678921265127,
+          "group": "gru"
+        },
+        "model.gru_memory.w_hz.weight": {
+          "delta_participation_rank": 1.2145070398721005,
+          "group": "gru"
+        },
+        "model.gru_memory.w_in.weight": {
+          "delta_participation_rank": 1.6364260472522172,
+          "group": "gru"
+        },
+        "model.gru_memory.w_ir.weight": {
+          "delta_participation_rank": 72.36826237445945,
+          "group": "gru"
+        },
+        "model.gru_memory.w_iz.weight": {
+          "delta_participation_rank": 1.058423374679504,
+          "group": "gru"
+        },
+        "model.morphic.l0_1.weight": {
+          "delta_participation_rank": 1.0919508945579057,
+          "group": "morphic_l01"
+        },
+        "model.morphic.l0_2.weight": {
+          "delta_participation_rank": 1.06503910387014,
+          "group": "morphic_l01"
+        },
+        "model.morphic.l10_1.weight": {
+          "delta_participation_rank": 1.1466418794378375,
+          "group": "morphic_l11"
+        },
+        "model.morphic.l10_2.weight": {
+          "delta_participation_rank": 1.2850969649414619,
+          "group": "morphic_l11"
+        },
+        "model.morphic.l11_1.weight": {
+          "delta_participation_rank": 1.089468594673457,
+          "group": "morphic_l12"
+        },
+        "model.morphic.l11_2.weight": {
+          "delta_participation_rank": 1.3010754301797625,
+          "group": "morphic_l12"
+        },
+        "model.morphic.l12_1.weight": {
+          "delta_participation_rank": 1.3919638545654327,
+          "group": "morphic_l13"
+        },
+        "model.morphic.l12_2.weight": {
+          "delta_participation_rank": 1.357058550194613,
+          "group": "morphic_l13"
+        },
+        "model.morphic.l13_1.weight": {
+          "delta_participation_rank": 1.332293115444041,
+          "group": "morphic_l14"
+        },
+        "model.morphic.l13_2.weight": {
+          "delta_participation_rank": 1.2709523643158325,
+          "group": "morphic_l14"
+        },
+        "model.morphic.l14_1.weight": {
+          "delta_participation_rank": 1.1266467772383768,
+          "group": "morphic_l15"
+        },
+        "model.morphic.l14_2.weight": {
+          "delta_participation_rank": 1.3183867214329517,
+          "group": "morphic_l15"
+        },
+        "model.morphic.l15_1.weight": {
+          "delta_participation_rank": 1.067321382782275,
+          "group": "morphic_l16"
+        },
+        "model.morphic.l15_2.weight": {
+          "delta_participation_rank": 1.3074604056738584,
+          "group": "morphic_l16"
+        },
+        "model.morphic.l1_1.weight": {
+          "delta_participation_rank": 1.077639211845598,
+          "group": "morphic_l02"
+        },
+        "model.morphic.l1_2.weight": {
+          "delta_participation_rank": 1.0944178163747325,
+          "group": "morphic_l02"
+        },
+        "model.morphic.l2_1.weight": {
+          "delta_participation_rank": 1.0397804880613362,
+          "group": "morphic_l03"
+        },
+        "model.morphic.l2_2.weight": {
+          "delta_participation_rank": 1.0684198061899175,
+          "group": "morphic_l03"
+        },
+        "model.morphic.l3_1.weight": {
+          "delta_participation_rank": 1.0720234454644124,
+          "group": "morphic_l04"
+        },
+        "model.morphic.l3_2.weight": {
+          "delta_participation_rank": 1.224241109053189,
+          "group": "morphic_l04"
+        },
+        "model.morphic.l4_1.weight": {
+          "delta_participation_rank": 1.0786507497805344,
+          "group": "morphic_l05"
+        },
+        "model.morphic.l4_2.weight": {
+          "delta_participation_rank": 1.2817464397199265,
+          "group": "morphic_l05"
+        },
+        "model.morphic.l5_1.weight": {
+          "delta_participation_rank": 1.0886540789218562,
+          "group": "morphic_l06"
+        },
+        "model.morphic.l5_2.weight": {
+          "delta_participation_rank": 1.1545479069371192,
+          "group": "morphic_l06"
+        },
+        "model.morphic.l6_1.weight": {
+          "delta_participation_rank": 1.0945575754501613,
+          "group": "morphic_l07"
+        },
+        "model.morphic.l6_2.weight": {
+          "delta_participation_rank": 1.1108977560732383,
+          "group": "morphic_l07"
+        },
+        "model.morphic.l7_1.weight": {
+          "delta_participation_rank": 1.1370343771344993,
+          "group": "morphic_l08"
+        },
+        "model.morphic.l7_2.weight": {
+          "delta_participation_rank": 1.2698603837462765,
+          "group": "morphic_l08"
+        },
+        "model.morphic.l8_1.weight": {
+          "delta_participation_rank": 1.1171251039176464,
+          "group": "morphic_l09"
+        },
+        "model.morphic.l8_2.weight": {
+          "delta_participation_rank": 1.4456252623099042,
+          "group": "morphic_l09"
+        },
+        "model.morphic.l9_1.weight": {
+          "delta_participation_rank": 1.1677917690064472,
+          "group": "morphic_l10"
+        },
+        "model.morphic.l9_2.weight": {
+          "delta_participation_rank": 1.2185166880919056,
+          "group": "morphic_l10"
+        },
+        "model.msfield.coarse.reaction_in.weight": {
+          "delta_participation_rank": 11.871033042811376,
+          "group": "msfield"
+        },
+        "model.msfield.coarse.reaction_out.weight": {
+          "delta_participation_rank": 4.924919365809578,
+          "group": "msfield"
+        },
+        "model.msfield.coarse.recurrent_reaction.weight": {
+          "delta_participation_rank": 1.0319375396599095,
+          "group": "msfield"
+        },
+        "model.msfield.coarse_to_meso.project.weight": {
+          "delta_participation_rank": 1.0202477659019582,
+          "group": "msfield"
+        },
+        "model.msfield.fine.reaction_in.weight": {
+          "delta_participation_rank": 1.05369020139696,
+          "group": "msfield"
+        },
+        "model.msfield.fine.reaction_out.weight": {
+          "delta_participation_rank": 1.0338678482389505,
+          "group": "msfield"
+        },
+        "model.msfield.fine.recurrent_reaction.weight": {
+          "delta_participation_rank": 1.024067362564258,
+          "group": "msfield"
+        },
+        "model.msfield.fine_to_meso.project.weight": {
+          "delta_participation_rank": 1.013457270693511,
+          "group": "msfield"
+        },
+        "model.msfield.meso.reaction_in.weight": {
+          "delta_participation_rank": 1.0990719352364144,
+          "group": "msfield"
+        },
+        "model.msfield.meso.reaction_out.weight": {
+          "delta_participation_rank": 1.1689196559095385,
+          "group": "msfield"
+        },
+        "model.msfield.meso.recurrent_reaction.weight": {
+          "delta_participation_rank": 1.0290844294398829,
+          "group": "msfield"
+        },
+        "model.msfield.meso_to_coarse.project.weight": {
+          "delta_participation_rank": 1.536411638871573,
+          "group": "msfield"
+        },
+        "model.msfield.meso_to_fine.project.weight": {
+          "delta_participation_rank": 1.1961194973406897,
+          "group": "msfield"
+        },
+        "model.oscillator_gain_head_0.weight": {
+          "delta_participation_rank": 8.51015941470525,
+          "group": "host_auxiliary"
+        },
+        "model.partial_amplitude_head_0.weight": {
+          "delta_participation_rank": 13.018680305948426,
+          "group": "synthesis_heads"
+        },
+        "model.partial_damping_head_0.weight": {
+          "delta_participation_rank": 15.675526142723434,
+          "group": "synthesis_heads"
+        },
+        "model.partial_ratio_head_0.weight": {
+          "delta_participation_rank": 28.71995588804677,
+          "group": "synthesis_heads"
+        },
+        "model.temporal_decoder.block0.contract.weight": {
+          "delta_participation_rank": 2.321161810292636,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block0.expand.weight": {
+          "delta_participation_rank": 2.292151660049432,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block1.contract.weight": {
+          "delta_participation_rank": 2.390234838744233,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block1.expand.weight": {
+          "delta_participation_rank": 2.3317394850398294,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block2.contract.weight": {
+          "delta_participation_rank": 2.5074274077433523,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block2.expand.weight": {
+          "delta_participation_rank": 2.531960344069809,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block3.contract.weight": {
+          "delta_participation_rank": 2.4880632849931614,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block3.expand.weight": {
+          "delta_participation_rank": 2.527714374543185,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block4.contract.weight": {
+          "delta_participation_rank": 2.3352281482392345,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block4.expand.weight": {
+          "delta_participation_rank": 2.459702994646922,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block5.contract.weight": {
+          "delta_participation_rank": 2.0838997105078265,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.block5.expand.weight": {
+          "delta_participation_rank": 2.4185840920268435,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.control_head.weight": {
+          "delta_participation_rank": 4.587802508756805,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.key.weight": {
+          "delta_participation_rank": 1.0850896772143181,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.macro_projection.weight": {
+          "delta_participation_rank": 1.1160103157869126,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.micro_projection.weight": {
+          "delta_participation_rank": 49.97801947598821,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.query.weight": {
+          "delta_participation_rank": 1.0763076882445128,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.seed.weight": {
+          "delta_participation_rank": 1.0741605363526316,
+          "group": "temporal_decoder"
+        },
+        "model.temporal_decoder.value.weight": {
+          "delta_participation_rank": 1.0266832269634896,
+          "group": "temporal_decoder"
+        },
+        "model.wavefolder_l.mod_proj.weight": {
+          "delta_participation_rank": 6.922743613584397,
+          "group": "synthesis_heads"
+        },
+        "model.wavefolder_r.mod_proj.weight": {
+          "delta_participation_rank": 6.790754125405403,
+          "group": "synthesis_heads"
+        },
+        "monitor_head.fc1.weight": {
+          "delta_participation_rank": 1.1302607703219087,
+          "group": "host_auxiliary"
+        },
+        "monitor_head.fc2.weight": {
+          "delta_participation_rank": 1.0114270371543803,
+          "group": "host_auxiliary"
+        }
+      },
+      "model_sha256": "565538779b66125d58b5731a2af850b70dd9661a28740b7a907d5245fac08451"
+    }
+  },
+  "schema": 1,
+  "scope": "net parameter deltas over matched budgets; matrix delta rank is not gradient covariance rank",
+  "source_model_sha256": "1728fa868ac1203c92c696fe81e3f353cafaf03895dfd5dc60e9534d539b2960"
+}

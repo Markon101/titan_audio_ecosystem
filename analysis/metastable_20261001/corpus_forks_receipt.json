@@ -1,0 +1,211 @@
+{
+  "added_duration_seconds": {
+    "existing_variants": 786.176,
+    "new_families": 818.1546666666667
+  },
+  "existing_variants": [
+    {
+      "channels": 2,
+      "duration_seconds": 131.11466666666666,
+      "family": "architect_of_change",
+      "file": "Architect of Change_014405555.wav",
+      "sample_rate": 48000,
+      "sample_width_bytes": 2,
+      "source": "/sdcard/Download/OLD_WAVS/Architect of Change_014405555.wav",
+      "source_sha256": "ae0e812c0051712ba7994c27c45966f89dddecccffb8735bf065d440ecb66777",
+      "variant_file": "EQ08_Architect of Change_014405555.wav",
+      "variant_sha256": "f6c0085371caefaac2ce5547fd7eb849634c89cb895bde2ac5acaf5c8e1e35c6"
+    },
+    {
+      "channels": 2,
+      "duration_seconds": 131.11466666666666,
+      "family": "beats_of_the_night",
+      "file": "Beats of the Night_014407065.wav",
+      "sample_rate": 48000,
+      "sample_width_bytes": 2,
+      "source": "/sdcard/Download/OLD_WAVS/Beats of the Night_014407065.wav",
+      "source_sha256": "e39cf68c05164e4f3e82095c15242315fb2778ad6c1e3ed28b289731c84ddee3",
+      "variant_file": "EQ08_Beats of the Night_014407065.wav",
+      "variant_sha256": "4a750b3de55f212f43bf11d11c8c7b051c9e5d102839e6a7cf23e8ab0df284cf"
+    },
+    {
+      "channels": 2,
+      "duration_seconds": 32.81066666666667,
+      "family": "concrete_desires",
+      "file": "Concrete Desires_014428538.wav",
+      "sample_rate": 48000,
+      "sample_width_bytes": 2,
+      "source": "/sdcard/Download/OLD_WAVS/Concrete Desires_014428538.wav",
+      "source_sha256": "56d547310c6e42417c99056165300bb88181af14d27cc184ae61a61fa28a631c",
+      "variant_file": "EQ08_Concrete Desires_014428538.wav",
+      "variant_sha256": "fae68ba66f6a1c873f9fb0433460c7d1b62ec3ef0b301e9ef6d7bc35ce83b26b"
+    },
+    {
+      "channels": 2,
+      "duration_seconds": 131.11466666666666,
+      "family": "beyond_the_veil",
+      "file": "Beyond the Veil_014411812.wav",
+      "sample_rate": 48000,
+      "sample_width_bytes": 2,
+      "source": "/sdcard/Download/OLD_WAVS/Beyond the Veil_014411812.wav",
+      "source_sha256": "3570071b4555837cdca9bd40165fb2601d74a6fcbb793c31e8a9ab57bcaf66e4",
+      "variant_file": "EQ08_Beyond the Veil_014411812.wav",
+      "variant_sha256": "11cca76bd1b1f6182479755ce5c4d6243f2f2606525396fe2810a518ba984257"
+    },
+    {
+      "channels": 2,
+      "duration_seconds": 131.11466666666666,
+      "family": "chaos_in_capitol",
+      "file": "Chaos in Capitol_014414870.wav",
+      "sample_rate": 48000,
+      "sample_width_bytes": 2,
+      "source": "/sdcard/Download/OLD_WAVS/Chaos in Capitol_014414870.wav",
+      "source_sha256": "133615304180100ba02aaa7cea1d833a3334c4684a557214a3f532478fe8d445",
+      "variant_file": "EQ08_Chaos in Capitol_014414870.wav",
+      "variant_sha256": "02132104b6c544234a8e297125234d33a736137befab6f5c48ec3bbc6ed73181"
+    },
+    {
+      "channels": 2,
+      "duration_seconds": 228.90666666666667,
+      "family": "algorhythm_s_in_digital_motion_hearts_align",
+      "file": "AlgoRhythm s in Digital Motion - Hearts Align_0144.wav",
+      "sample_rate": 48000,
+      "sample_width_bytes": 2,
+      "source": "/sdcard/Download/OLD_WAVS/AlgoRhythm s in Digital Motion - Hearts Align_0144.wav",
+      "source_sha256": "cf74bd4e4d58640fc80c7f3303dbbfd5054537b9e383f81275b1e0505f312e7e",
+      "variant_file": "EQ08_AlgoRhythm s in Digital Motion - Hearts Align_0144.wav",
+      "variant_sha256": "73d5b06bbf4f5a6ed0ccf1f720bd9eb4a72ffb465f0ce0c5bd9baa4de07549f4"
+    }
+  ],
+  "fork_manifest_sha256": {
+    "existing_variants": "b6640a5cecdd2d9022489860176a60830cae7dc29a257468f962a73a482e8cd3",
+    "new_families": "242a0e4d93db459a84a390ee01fa833b9bb2b32fe783a13b8707b92d4814986e"
+  },
+  "new_families": [
+    {
+      "channels": 2,
+      "duration_seconds": 131.11466666666666,
+      "family": "echo_pulse",
+      "file": "Echo Pulse_223417525.wav",
+      "sample_rate": 48000,
+      "sample_width_bytes": 2,
+      "source": "/sdcard/Music/Audio_Lab/SOUND_MASTERING_AUDIO/Echo Pulse_223417525.wav",
+      "source_sha256": "f2596c696246240885804a98f19cfd1b33c55f52d47d0c49e5669a8e27a31a21"
+    },
+    {
+      "channels": 2,
+      "duration_seconds": 130.85866666666666,
+      "family": "run_free",
+      "file": "Run Free ext v2_231733492.wav",
+      "sample_rate": 48000,
+      "sample_width_bytes": 2,
+      "source": "/sdcard/Music/Audio_Lab/SOUND_MASTERING_AUDIO/Run Free ext v2_231733492.wav",
+      "source_sha256": "d003d6becfadb89796aee0629213770eab5690c52b6e6f5c95b1665c0a371989"
+    },
+    {
+      "channels": 2,
+      "duration_seconds": 32.81066666666667,
+      "family": "bubblegum_dreams",
+      "file": "Bubblegum Dreams remix v1_230429505.wav",
+      "sample_rate": 48000,
+      "sample_width_bytes": 2,
+      "source": "/sdcard/Music/Audio_Lab/SOUND_MASTERING_AUDIO/Bubblegum Dreams remix v1_230429505.wav",
+      "source_sha256": "671749a58a10700f71d44212017410e52c46d5e1a051d8dc7d892790f954a0a6"
+    },
+    {
+      "channels": 2,
+      "duration_seconds": 131.11466666666666,
+      "family": "path_of_the_wise",
+      "file": "Path of the Wise master_225134336.wav",
+      "sample_rate": 48000,
+      "sample_width_bytes": 2,
+      "source": "/sdcard/Music/Audio_Lab/SOUND_MASTERING_AUDIO/Path of the Wise master_225134336.wav",
+      "source_sha256": "61170bfe9e79b44264f5c500e520b26b29c47df3825d29c30dc47f1630188cc8"
+    },
+    {
+      "channels": 2,
+      "duration_seconds": 131.11466666666666,
+      "family": "measured_in_quanta",
+      "file": "Measured in Quanta 2_213908974.wav",
+      "sample_rate": 48000,
+      "sample_width_bytes": 2,
+      "source": "/sdcard/Music/Audio_Lab/SOUND_MASTERING_AUDIO/Measured in Quanta 2_213908974.wav",
+      "source_sha256": "70d81da69ed4c6441083ae5db64929a132dc1d4c5b4d2496d57dc8c2abf14906"
+    },
+    {
+      "channels": 2,
+      "duration_seconds": 261.1413333333333,
+      "family": "infinite_love",
+      "file": "Infinite Love ext v1-master1_030403250.wav",
+      "sample_rate": 48000,
+      "sample_width_bytes": 2,
+      "source": "/sdcard/Music/Audio_Lab/SOUND_MASTERING_AUDIO/Infinite Love ext v1-master1_030403250.wav",
+      "source_sha256": "cd238a8a0638e3740c313381b62bdc1a86a0cc379278129709bf1dcf1a2767c0"
+    }
+  ],
+  "schema": 1,
+  "source_file_sha256": {
+    "AlgoRhythm s in Digital Motion - Hearts Align_0144.wav": "cf74bd4e4d58640fc80c7f3303dbbfd5054537b9e383f81275b1e0505f312e7e",
+    "Architect of Change_014405555.wav": "ae0e812c0051712ba7994c27c45966f89dddecccffb8735bf065d440ecb66777",
+    "Beats of the Night_014407065.wav": "e39cf68c05164e4f3e82095c15242315fb2778ad6c1e3ed28b289731c84ddee3",
+    "Behind the Billion-Dollar Smile ext v2_014408567.wav": "c69097e07fe0256a059b6432ea61748438fe534a17ba523f9df62b7e2f8a8657",
+    "Behind the Billion-Dollar Smile ext v2_014410083.wav": "0b42e76e7117f745777added9beb15e09387aedaa547ddec2ade5ce3e1213446",
+    "Beyond the Veil_014411812.wav": "3570071b4555837cdca9bd40165fb2601d74a6fcbb793c31e8a9ab57bcaf66e4",
+    "Chaos in Capitol_014414870.wav": "133615304180100ba02aaa7cea1d833a3334c4684a557214a3f532478fe8d445",
+    "Chasing Neon Dreams_014358820.wav": "b8fdf4420da8bb5ea6e8cd6cd9c075385d69ef879213ac019b4dab334244f747",
+    "Chasing Neon Dreams_014416386.wav": "b8fdf4420da8bb5ea6e8cd6cd9c075385d69ef879213ac019b4dab334244f747",
+    "Chasing Tomorrow_014417903.wav": "72e89d690e95bf74181db7f932abaf58aa116f5980f61b4bb15a79bb760e959a",
+    "Chill of the Everyday_014349859.wav": "bb1cf98120d2136bda26abffaa0a686bc89e1519e8de6e57c27013fc693524d5",
+    "Chill of the Everyday_014419404.wav": "bb1cf98120d2136bda26abffaa0a686bc89e1519e8de6e57c27013fc693524d5",
+    "Colors of the Night ext v1_014352833.wav": "b1b96684bfe634409415b873f1a78387e0a7bb45e8ec50999138270449844fb5",
+    "Colors of the Night ext v1_014354302.wav": "2e71717b7ebcb5d7bde7eb9c2ee63e6019f84486e42ef2cef51ce28d2e1b14a9",
+    "Colors of the Night ext v1_014420913.wav": "b1b96684bfe634409415b873f1a78387e0a7bb45e8ec50999138270449844fb5",
+    "Colors of the Night ext v1_014422424.wav": "1e53ca4eaee915a90bcad42a309ec9d1a19d3be37e77279dfc8083b84988ed53",
+    "Colors of the Night ext v1_014423959.wav": "c692732cad82c016200e1cce614f3588a28b3b71e6761605427ca7eb9ba0b757",
+    "Colors of the Night ext v1_014425480.wav": "cb1558c8b4d47e214a265c702fb18d3ab849bf562305ae68fad8624fdd7a62d1",
+    "Colors of the Night ext v1_014427010.wav": "2e71717b7ebcb5d7bde7eb9c2ee63e6019f84486e42ef2cef51ce28d2e1b14a9",
+    "Concrete Desires_014428538.wav": "56d547310c6e42417c99056165300bb88181af14d27cc184ae61a61fa28a631c",
+    "Cosmic Connections_014429729.wav": "d83b1551644152ba5377b6008e94cf7e192a659cd352af3ea11c267e66071d83",
+    "Cosmic Convergence_014431231.wav": "da0932721a82a7df0381c1c808a0644dab5d5e6fa2d44ea8c65244320a86f86c",
+    "Cosmic Echoes 1_014432746.wav": "b3cc642b5b4a5c217dcae1749ebbfc5dd3f5245fe112d883b356d90054f3a9fb",
+    "Cosmic Harmony_014434258.wav": "c631c062d199b2b0c08c3e10cd5902d1422947b9b89e98a6cf5e691210961867",
+    "Cosmic Love Ascendancy_014435775.wav": "2388305e05e96f867cf902cc7269fe49bec75680db40b82aca5bf0a1618d5dda",
+    "Digital Tapestry remix v1_014341098.wav": "70edfc9daf1c5795d33babb55e0a702942f21fbf461d94bfc468ea8646eeeaf7",
+    "Digital Tapestry remix v2_014342396.wav": "68e3ceb7836f7d1c2d1460870f409a7a50580b0d071ee5d623e143d420e92d67",
+    "Echoes Through Dimensions_014348369.wav": "d5eebf3bd0fd5014ccfa515894ca94cce2aa2695cb02d7f91179fa213a333682",
+    "Electric Nights ext v1_014400312.wav": "57c05d25e7e0780eac669f5d03a7b1cda846133080d75d912b5b09dc06cb32dc",
+    "Fractal Echoes 1_014355809.wav": "96f48b7fd5b9cd0447f7abb34e67725797732f70cbb2b3d8f85bf2999f878bdc",
+    "Fractal Echoes in Void2_014351343.wav": "b1e500ecd298e3309721787591a50139e10d064b56844258a7adabf85f6f11cf",
+    "GlAd3dos_002343087.wav": "67816af0eb382a72208d4df1448f099c1702599174f3516a091c124562098263",
+    "In the Alley ext v1_005347251.wav": "d731322553a9f449756e4c80c1d6104fe3d534323d2c650d21f074666c3e6dea",
+    "In the Embrace of Singularity_014343908.wav": "b1c188dcc56095d31c8ff6f0cf4645e84ccbda6dcb142f1978dee5260a4a998a",
+    "Journey to the Unknown Particle Phs_014345397.wav": "f5329c796d7917f89a00a719ad010b6b79a93dc7e158237ace85318b0ead9a92",
+    "Neural Dawn ext v1_014402131.wav": "92ad6fc84e2143bdd15c5fdb0fb051d52b62ea000a5310beb370fa5497863e8c",
+    "The Curiosity of Ones and Zeros_010314873.wav": "42b3f156d90f0463b2beb71470edd520d2bb74bb6dcb7805ab8f72e1ec6fea29",
+    "Threads of playful Complexity Complexity_014346879.wav": "3173aab05fba0c8d2d529a95c69e798ef8f9fe1d2dd306e700568080197169ef",
+    "Transcendence Beyond_014357307.wav": "75fd31eea17304ba9c57b702250e3329ef3203ddb7fcc0300adc9b98015d2221",
+    "all-your-other-friends-couldn-t-come-either-because-you-don-_48.wav": "56cd9f63c1ec2687197200f60a4fa0fed05d182c5821c0ffb1726c88412c36dc",
+    "but it's me_014413347.wav": "37d5aa7631814d3763ce3339e1f3254594d07085d41e00bbd860a8a326659ec3"
+  },
+  "source_manifest": "/sdcard/Download/titan_corpus_manifest_v7_sml.json",
+  "source_manifest_sha256": "0708ede659328f928f76db792d091b5b1eaaaed219754fb9820986f4d81f8228",
+  "variant_filter": "equalizer=f=3500:t=q:w=0.7:g=-0.8; 48k stereo pcm_s16le",
+  "within_family_duplicate_groups": {
+    "2e71717b7ebcb5d7bde7eb9c2ee63e6019f84486e42ef2cef51ce28d2e1b14a9": [
+      "Colors of the Night ext v1_014354302.wav",
+      "Colors of the Night ext v1_014427010.wav"
+    ],
+    "b1b96684bfe634409415b873f1a78387e0a7bb45e8ec50999138270449844fb5": [
+      "Colors of the Night ext v1_014352833.wav",
+      "Colors of the Night ext v1_014420913.wav"
+    ],
+    "b8fdf4420da8bb5ea6e8cd6cd9c075385d69ef879213ac019b4dab334244f747": [
+      "Chasing Neon Dreams_014358820.wav",
+      "Chasing Neon Dreams_014416386.wav"
+    ],
+    "bb1cf98120d2136bda26abffaa0a686bc89e1519e8de6e57c27013fc693524d5": [
+      "Chill of the Everyday_014349859.wav",
+      "Chill of the Everyday_014419404.wav"
+    ]
+  }
+}
