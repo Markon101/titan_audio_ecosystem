@@ -190,6 +190,22 @@ high regime count as intrinsically good: white noise raises dimension, and
 short block shuffling can create candidate regions. The companion null report
 and fixed-probe/audio evidence are required for an organization claim.
 
+`--target-schedule FILE` is a separate v10-only, opt-in corpus experiment.
+It selects a single **training** alias and source frame by absolute global
+step from a checksummed six-slot JSON file. Target selection consumes no
+runtime RNG; sampled target filename, frame, and remaining chunks must agree
+with the file in every arm. The loader rejects gaps, invalid slots, episodes
+beyond WAV length, and non-strict held-out probes. It does not schedule or
+inspect development/validation targets. When disabled, the original
+uniform-family episode sampler is unchanged. Run metadata records schedule
+path, SHA-256, and seed only when the flag is active.
+
+`--max-autograd-tape N` optionally lowers the actual v10 graph length from
+the default eight chunks, while `--bptt 64` still accumulates gradients to a
+64-chunk optimizer horizon. This changes temporal credit assignment. Compare
+arms only when both requested horizon and actual tape length match; do not
+attribute an absolute difference from an eight-chunk run to the corpus.
+
 ## Analysis report schema v1
 
 Frozen instrumentation writes `titan_audio_analysis` schema v1 sidecars. The

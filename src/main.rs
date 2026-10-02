@@ -7,6 +7,7 @@ mod msfield;
 mod provenance;
 mod regime_capture;
 mod stereo;
+mod target_schedule;
 
 // =====================================================================
 // TITAN AUDIO ECOSYSTEM — RUST EDITION v9 ("MORPHOGENIC MANIFOLD")
@@ -6659,6 +6660,7 @@ fn main() -> Result<()> {
     let mut target_lr = BASE_LR;
     let mut sim_duration = DURATION_SECONDS;
     let mut bptt_window = BPTT_WINDOW;
+    let mut max_tape_chunks = MAX_AUTOGRAD_TAPE_CHUNKS;
     let mut core_update_every = CORE_UPDATE_EVERY;
     let mut fresh_model = false;
     let mut fresh_decoder = false;
@@ -6676,6 +6678,7 @@ fn main() -> Result<()> {
     let mut import_model_override: Option<String> = None;
     let mut corpus_manifest_override: Option<String> = None;
     let mut corpus_dir_override: Option<String> = None;
+    let mut target_schedule_path: Option<String> = None;
     let mut refresh_corpus_manifest_requested = false;
     let mut rebuild_corpus_manifest_requested = false;
     let mut prune_missing_manifest_entries = false;
@@ -6726,6 +6729,13 @@ fn main() -> Result<()> {
                 } else {
                     anyhow::bail!("Missing value for --bptt");
                 }
+            }
+            "--max-autograd-tape" => {
+                if arg_idx + 1 >= args.len() {
+                    anyhow::bail!("Missing value for --max-autograd-tape");
+                }
+                max_tape_chunks = args[arg_idx + 1].parse()?;
+                arg_idx += 2;
             }
             "--core-update-every" => {
                 if arg_idx + 1 < args.len() {
@@ -6782,6 +6792,13 @@ fn main() -> Result<()> {
                 } else {
                     anyhow::bail!("Missing value for --corpus-dir");
                 }
+            }
+            "--target-schedule" => {
+                if arg_idx + 1 >= args.len() {
+                    anyhow::bail!("Missing value for --target-schedule");
+                }
+                target_schedule_path = Some(args[arg_idx + 1].clone());
+                arg_idx += 2;
             }
             "--refresh-corpus-manifest" => {
                 refresh_corpus_manifest_requested = true;
@@ -6906,6 +6923,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
   -d, --duration SEC   Render duration (default 240)\n\
   -t, --threads N      Rayon/Candle CPU threads (default min(device cores, 6))\n\
   -w, --bptt N         Gradient horizon 1..64; tape is memory-capped at 8 (default 16)\n\
+      --max-autograd-tape N  Opt-in v10 tape cap 1..8 (default 8)\n\
       --core-update-every N  Full CA/GRU backward every N tapes (default 4)\n\
   -l, --lr VALUE       Base AdamW learning rate\n\
   -s, --seed N         Seed for a fresh deterministic organism\n\
@@ -6914,6 +6932,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
       --import-model P Import compatible experimental tensors without overwriting source\n\
       --corpus-manifest PATH  Explicit train/development/validation/exclude manifest\n\
       --corpus-dir PATH  WAV directory (default BASE_DIR/OLD_WAVS)\n\
+      --target-schedule FILE  Opt-in v10 fixed exogenous training episodes\n\
       --refresh-corpus-manifest  Add new WAVs while preserving existing family roles\n\
       --rebuild-corpus-manifest  Replace the manifest from current WAVs (creates backup)\n\
       --prune-missing  Remove manifest entries whose WAV files are absent (refresh only)\n\
@@ -6970,6 +6989,27 @@ Usage: titan [BASE_DIR] [options]\n\n\
     }
     if regime_stride != 4 && !regime_capture_enabled {
         anyhow::bail!("--regime-stride requires --regime-capture");
+    }
+    if !(1..=MAX_AUTOGRAD_TAPE_CHUNKS).contains(&max_tape_chunks) {
+        anyhow::bail!("--max-autograd-tape must be between 1 and {MAX_AUTOGRAD_TAPE_CHUNKS}");
+    }
+    if max_tape_chunks != MAX_AUTOGRAD_TAPE_CHUNKS && substrate != SubstrateMode::MsField {
+        anyhow::bail!("--max-autograd-tape is only available for msfield experiments");
+    }
+    if target_schedule_path.is_some() {
+        if substrate != SubstrateMode::MsField
+            || fresh_model
+            || fresh_world
+            || fresh_decoder
+            || manifest_only
+            || refresh_corpus_manifest_requested
+            || rebuild_corpus_manifest_requested
+        {
+            anyhow::bail!("--target-schedule requires an exact msfield continuation with an unchanged corpus manifest");
+        }
+        if corpus_dir_override.is_none() || corpus_manifest_override.is_none() {
+            anyhow::bail!("--target-schedule requires explicit --corpus-dir and --corpus-manifest");
+        }
     }
     if substrate == SubstrateMode::Legacy
         && run_tag
@@ -7114,7 +7154,7 @@ Usage: titan [BASE_DIR] [options]\n\n\
         .num_threads(n_threads)
         .build_global()?;
     let device = Device::Cpu;
-    let tape_chunks = autograd_tape_chunks(bptt_window);
+    let tape_chunks = autograd_tape_chunks(bptt_window).min(max_tape_chunks);
     let mut rng = RuntimeRng::seed_from_u64(seed);
     let _wake_lock = WakeLockGuard::acquire();
     let keep_running = Arc::new(AtomicBool::new(true));
@@ -7221,7 +7261,20 @@ Usage: titan [BASE_DIR] [options]\n\n\
             "--> No strict development split is available; morphic growth is disabled for this corpus."
         );
     }
-    let corpus_summary = target_loader.corpus_summary();
+    let mut corpus_summary = target_loader.corpus_summary();
+    let target_schedule = if let Some(path) = target_schedule_path.as_deref() {
+        let schedule = target_schedule::FixedTargetSchedule::load(path, &target_loader)?;
+        corpus_summary["selection"] = serde_json::json!("fixed_exogenous_slot_schedule");
+        println!(
+            "--> Fixed target schedule: {} · SHA-256 {} · seed {}",
+            schedule.path(),
+            schedule.sha256(),
+            schedule.seed()
+        );
+        Some(schedule)
+    } else {
+        None
+    };
     let varmap = VarMap::new();
     let vb = VBV::from_varmap(&varmap, DType::F32, &device);
     let mut model = ComplexAudioEcosystem::new_with_substrate(
@@ -7659,6 +7712,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
     );
 
     let total_chunks = ((SAMPLE_RATE as f32 * sim_duration / CHUNK_SIZE as f32) as usize).max(1);
+    if let Some(schedule) = &target_schedule {
+        schedule.validate_interval(global_step, total_chunks)?;
+    }
     // Mobile-safe output path: stream DC-blocked f32 samples to a temporary
     // file, then perform one normalization/transcode pass.  A 16-minute run
     // no longer retains ~350 MB of stereo f32 audio in RAM.
@@ -8014,7 +8070,11 @@ Usage: titan [BASE_DIR] [options]\n\n\
         let out_spec_l = spec_proj.log_mag(&audio_for_loss.narrow(0, 0, 1)?)?;
         let out_spec_r = spec_proj.log_mag(&audio_for_loss.narrow(0, 1, 1)?)?;
         let target_started = Instant::now();
-        let targets = target_loader.sample_chunks(TARGET_K, &mut rng, &device)?;
+        let targets = if let Some(schedule) = &target_schedule {
+            schedule.sample_at(&mut target_loader, absolute_step, TARGET_K, &device)?
+        } else {
+            target_loader.sample_chunks(TARGET_K, &mut rng, &device)?
+        };
         phase_profiler.target_load += target_started.elapsed();
         let tgt_specs = spec_proj
             .log_mag(&targets.reshape((TARGET_K * 2, CHUNK_SIZE))?)?
@@ -9370,6 +9430,9 @@ Usage: titan [BASE_DIR] [options]\n\n\
         }
     }
 
+    if let Some(schedule) = &target_schedule {
+        schedule.verify_unchanged()?;
+    }
     topology_writer.flush()?;
     if let Some(writer) = &mut msfield_trace_writer {
         writer.flush()?;
@@ -10052,6 +10115,19 @@ Usage: titan [BASE_DIR] [options]\n\n\
         run_metadata["telemetry"]["regime_capture"] = serde_json::json!(regime_capture_path);
         run_metadata["invocation"]["regime_capture"] = serde_json::json!(regime_capture_enabled);
         run_metadata["invocation"]["regime_stride"] = serde_json::json!(regime_stride);
+        if max_tape_chunks != MAX_AUTOGRAD_TAPE_CHUNKS {
+            run_metadata["invocation"]["max_autograd_tape_chunks"] =
+                serde_json::json!(max_tape_chunks);
+        }
+        if let Some(schedule) = &target_schedule {
+            run_metadata["invocation"]["target_schedule"] = serde_json::json!(schedule.path());
+            run_metadata["invocation"]["target_schedule_sha256"] =
+                serde_json::json!(schedule.sha256());
+            run_metadata["invocation"]["target_schedule_seed"] = serde_json::json!(schedule.seed());
+            run_metadata["telemetry"]["target_schedule_semantics"] = serde_json::json!(
+                "training target slot and source frame are fixed by absolute global step; no validation or development probe selects a target"
+            );
+        }
         run_metadata["telemetry"]["msfield_trace_semantics"] = serde_json::json!(
             "RMS energy, displacement, and hidden-state displacement are pre-ecology forward values; velocity and diffusion are learned-rule means; cosine is descriptive spatial coherence, not information flow"
         );

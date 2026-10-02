@@ -276,3 +276,13 @@ Python compilation passed. The one-chunk disabled-path regression is in
 the one new-disabled model/Adam write differed by at most f32-scale
 1.49e-8/2.98e-8. No white-noise escape, counterfactual branch rollout,
 homeostatic novelty controller, or fresh L1→L16 lineage was run.
+
+## Matched-schedule continuation
+
+The longer two-schedule-seed test was completed on the dedicated
+`experiment/v10-matched-exposure` branch. Its exogenous target slots and
+source frames matched across A/C/B within each seed. New-family B again
+raised weight-update pressure and severe clipping but produced fewer
+persistent regions than familiar A under both schedules. See
+`analysis/matched_exposure_20261001/RESULTS.md` for controls, hashes, nulls,
+and interpretation limits.

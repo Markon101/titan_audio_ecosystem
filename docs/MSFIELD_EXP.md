@@ -164,3 +164,13 @@ Their calibrated archive records long-lived sequential trajectory regions
 but no verified over-residence event or revisit. Do not enable a novelty
 controller based on motif similarity rejection alone. Use the research note
 and compressed capture receipts when interpreting or extending this lineage.
+
+The follow-up in `analysis/matched_exposure_20261001/` adds a fixed training
+episode schedule for matched corpus tests. `--target-schedule FILE` requires
+an exact v10 continuation and six single-file `slot_00.wav`–`slot_05.wav`
+training families with unchanged strict development and validation probes.
+Each schedule fixes slot, source frame, and duration by absolute global step;
+the same file can be passed to different audio sources behind those aliases.
+`--max-autograd-tape 4` is a separate opt-in memory control used equally in
+that follow-up. The normal v9 and v10 paths still default to an eight-chunk
+tape and TITAN's ordinary family sampler.

@@ -28,6 +28,7 @@ __pycache__/
 .titan-validation*/
 /analysis/metastable_20261001/frozen_step_*/
 /analysis/metastable_20261001/runs/
+/analysis/matched_exposure_20261001/runs/
 
 # Local corpus utilities
 /convert_flac_to_old_wavs.sh
