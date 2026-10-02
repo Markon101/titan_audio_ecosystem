@@ -1,0 +1,38 @@
+{
+  "episodes": [
+    {
+      "chunks": 256,
+      "slot": 3,
+      "source_frame": 2838528,
+      "start_step": 58107
+    },
+    {
+      "chunks": 256,
+      "slot": 5,
+      "source_frame": 2404352,
+      "start_step": 58363
+    },
+    {
+      "chunks": 256,
+      "slot": 4,
+      "source_frame": 4173824,
+      "start_step": 58619
+    },
+    {
+      "chunks": 256,
+      "slot": 2,
+      "source_frame": 299008,
+      "start_step": 58875
+    }
+  ],
+  "schema": 1,
+  "seed": 20261003,
+  "slots": [
+    "slot_00.wav",
+    "slot_01.wav",
+    "slot_02.wav",
+    "slot_03.wav",
+    "slot_04.wav",
+    "slot_05.wav"
+  ]
+}

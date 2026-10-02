@@ -1,0 +1,263 @@
+{
+  "runs": {
+    "20261002_a": {
+      "artifacts": {
+        "capture": {
+          "gzip_bytes": 1368833,
+          "gzip_sha256": "73b272918fd2189513157dc8f08acae654b27d869bc71599cdd8147cf53cc25b",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261002_a/regime_capture_1790877697262-p12349-s44.jsonl",
+          "source_sha256": "2a7f40f777c7dbc7d2fdf65fdb969726c4b1980c1526cb6c08005f18f1e09d5f"
+        },
+        "morph_events": {
+          "gzip_bytes": 118,
+          "gzip_sha256": "429a8f78e669d72cdf994e14033fc6af6cf280851cec0fafe01bd4653e7dd624",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261002_a/morph_events_rust_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "d1ba4596db5f89b7d0f02204948e7362abfd14367f5c60fee699159a84a12f96"
+        },
+        "msfield_trace": {
+          "gzip_bytes": 7875,
+          "gzip_sha256": "529277c00ac4b2432313d937ed20e2cfbcb9bc4b5ee0fbd7eb8224f797fcb829",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261002_a/msfield_trace_v10_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "fc1ab96d760d1f6943abb134464e5fdd78d2be67269af7cf2da4ddbe48feef9b"
+        },
+        "topology_index": {
+          "gzip_bytes": 2068,
+          "gzip_sha256": "73604e97122e2c313222d07524ed293f8354a084717deffac224be88d40b9797",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261002_a/ca_topology_index_rust_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "cc494e3c59a22d337d1501fe737b81d8307cc478045450b1d4562d6ee6fc8586"
+        },
+        "topology_values": {
+          "gzip_bytes": 429562,
+          "gzip_sha256": "6cbbd4054c109f821e32623cd354c27d32a1cc2a87e4e383f5eba58be2819a18",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261002_a/ca_topology_rust_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "f7f4c405c9d0ecfa0b384b1cea5eb0add1a277508fbe111e40e22cfbac5b703e"
+        },
+        "uncertainty_trace": {
+          "gzip_bytes": 88411,
+          "gzip_sha256": "9a2a54d6a26dab39945efca33101b466fc641c3673587f8f7676d02802b4ba57",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261002_a/uncertainty_trace_rust_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "04c010e32bc276dcc5bb8c794e5bc603aa5b64bb429d1b3dc5d892d4ebc706bd"
+        }
+      },
+      "metadata_sha256": "af667b1413c55e57c8d05290758d345d31ef9fddf18b5d538607e1b9f427eb40",
+      "resource_guard_sha256": "1e35c521e32ff1427b67ed848826be93f397e0c1f6027f9ba9b8173e6c34e9b7",
+      "run_id": "1790877697262-p12349-s44"
+    },
+    "20261002_b": {
+      "artifacts": {
+        "capture": {
+          "gzip_bytes": 1375035,
+          "gzip_sha256": "f3329a51a12d657135cb0f6a6a4d53193fef775ba24f4b91d2e4fb469e6ebbb9",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261002_b/regime_capture_1790878907419-p24402-s44.jsonl",
+          "source_sha256": "4eadabb1ab37289e1f579d64cbdc9850663cb6aac9deef65bfa8a7818100c8ec"
+        },
+        "morph_events": {
+          "gzip_bytes": 118,
+          "gzip_sha256": "429a8f78e669d72cdf994e14033fc6af6cf280851cec0fafe01bd4653e7dd624",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261002_b/morph_events_rust_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "d1ba4596db5f89b7d0f02204948e7362abfd14367f5c60fee699159a84a12f96"
+        },
+        "msfield_trace": {
+          "gzip_bytes": 7902,
+          "gzip_sha256": "3712d4f9f5ce137ae97e5130f6a131dbefdf96008b23c44be14b1360cde2073e",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261002_b/msfield_trace_v10_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "05d9554671ee5be1f93bb780fb91867b00c0812617edc32266fe3cd6b819bd66"
+        },
+        "topology_index": {
+          "gzip_bytes": 2099,
+          "gzip_sha256": "398caae44bac54249de31018ebd31f4b06fe762c359d933924f7122e3e3a8a59",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261002_b/ca_topology_index_rust_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "042b9601a8ab03164203b3ad3e31d1b27111ddc74b446f7d147ee2a1299d59c8"
+        },
+        "topology_values": {
+          "gzip_bytes": 428246,
+          "gzip_sha256": "95f7441e8a9f6f7b13f61b3bc5533e1c9691f151d8e76c190dcdc46e27b0f72e",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261002_b/ca_topology_rust_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "aca9bcca0a7f3d94694257305dfff94db88504da77f37515ea31b04403a53bb6"
+        },
+        "uncertainty_trace": {
+          "gzip_bytes": 88683,
+          "gzip_sha256": "3af810d8d294d94b73e6aa7ce72c8f1ba9f4913cb7ccedeebc1baa999dd402c8",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261002_b/uncertainty_trace_rust_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "5c6716b546e59d1ef4c021e02b8535d32b025ebb5030d4918676865bd681728f"
+        }
+      },
+      "metadata_sha256": "6892040f7924ababe06e23bb23d203ecbce2006aaf12289125363d66d2e475b5",
+      "resource_guard_sha256": "264de0f875de929986b89ed6623104c944257a741eb66e0a704bf33fc525a1f1",
+      "run_id": "1790878907419-p24402-s44"
+    },
+    "20261002_c": {
+      "artifacts": {
+        "capture": {
+          "gzip_bytes": 1380382,
+          "gzip_sha256": "53967c9f421ab91d5a56f620316e94b86672d79b5dcb4d4c0372f31ade2fdbf1",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261002_c/regime_capture_1790878310513-p17159-s44.jsonl",
+          "source_sha256": "c45bcea8c2f466968bea21e66c51ce2e057ecdbbc15dc3088807a5c60a93d004"
+        },
+        "morph_events": {
+          "gzip_bytes": 118,
+          "gzip_sha256": "429a8f78e669d72cdf994e14033fc6af6cf280851cec0fafe01bd4653e7dd624",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261002_c/morph_events_rust_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "d1ba4596db5f89b7d0f02204948e7362abfd14367f5c60fee699159a84a12f96"
+        },
+        "msfield_trace": {
+          "gzip_bytes": 7873,
+          "gzip_sha256": "cbd545fd8180776c9dd853b6a01ae91ceb5bf177671569442ffbfd2c038955ba",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261002_c/msfield_trace_v10_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "57cb9f9bb10e0f3a5e2725b9e5d2240fbf331d85542f6547b04058e72c26657f"
+        },
+        "topology_index": {
+          "gzip_bytes": 2036,
+          "gzip_sha256": "e38335e12edf8f3025acaf12654c78f49f9fbfebab766bf7e7111f42527d0240",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261002_c/ca_topology_index_rust_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "0c00723ca24fb29a3bfb178091d6559c42442f6b1c3ed0bbe1cb6e5c6385590b"
+        },
+        "topology_values": {
+          "gzip_bytes": 430549,
+          "gzip_sha256": "2dcc246d5cbb4cecac52bc354a518f1be08a5919034e26072b5955deaa23e85a",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261002_c/ca_topology_rust_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "356782a5fd8e4e773a139702e5f12fc405aea74de3aa88eba96008f291a42418"
+        },
+        "uncertainty_trace": {
+          "gzip_bytes": 88456,
+          "gzip_sha256": "a51384f105064d291d3051aa6443fc10a7c9eb77d0b1818e6a9baffa4195a157",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261002_c/uncertainty_trace_rust_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "24db0e174c50efa6e0231465f15359633f5ac9374932575b8f01fe147c1ed3b3"
+        }
+      },
+      "metadata_sha256": "35750a079ed3dee1b34970d70fc0c7ffab09af9de1b118ae533e476429ab440d",
+      "resource_guard_sha256": "ded5da710495fa2aa8f6717cee9148583560a1ee5139513c3a52b1d2f79e9068",
+      "run_id": "1790878310513-p17159-s44"
+    },
+    "20261003_a": {
+      "artifacts": {
+        "capture": {
+          "gzip_bytes": 1375968,
+          "gzip_sha256": "31d20202ccb26313df46aaf9d0770de49de44d916da0fe654743e07ba18da59a",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261003_a/regime_capture_1790880720262-p7679-s44.jsonl",
+          "source_sha256": "9e5773e8abbd63dc6c11951a292554d56dd704de6325ed32d47cceae1263967e"
+        },
+        "morph_events": {
+          "gzip_bytes": 118,
+          "gzip_sha256": "429a8f78e669d72cdf994e14033fc6af6cf280851cec0fafe01bd4653e7dd624",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261003_a/morph_events_rust_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "d1ba4596db5f89b7d0f02204948e7362abfd14367f5c60fee699159a84a12f96"
+        },
+        "msfield_trace": {
+          "gzip_bytes": 7905,
+          "gzip_sha256": "557ce0539a50bb471e7e5fd42b81dfbbf5dce58f623ec6f4d053975e39379dbd",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261003_a/msfield_trace_v10_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "d1f5df396d4fc7c74c20ff3896a43426cbaac8fe37c7654767caa1b491ca712e"
+        },
+        "topology_index": {
+          "gzip_bytes": 2019,
+          "gzip_sha256": "a701ee40751e2e79941faa5ff4ba43dc5a3c472657017d90f295b1cf2794283a",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261003_a/ca_topology_index_rust_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "91ba02bfe33a3425eab46c6d5b192fc89728d96f821e812a86935cc2bd4a80b1"
+        },
+        "topology_values": {
+          "gzip_bytes": 431026,
+          "gzip_sha256": "74ee8ed45188f7c6cedf39cca2011dbbd4a5546df64fcce9e8b0360910d9567f",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261003_a/ca_topology_rust_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "d883041a9c58a5fe20ecbceb33bfa5d46337718994c4640331403a87618396f5"
+        },
+        "uncertainty_trace": {
+          "gzip_bytes": 88521,
+          "gzip_sha256": "e06b0d71fff39d47353e171610a6ed4fb07f4d2e61dbbb5521b2227fa36de7d0",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261003_a/uncertainty_trace_rust_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "5febae0b00f05008e4e51a641132a50008f6e934927954289e316161ab89bfe4"
+        }
+      },
+      "metadata_sha256": "2720f8bc5d9de5cb7b8eb67ca658978876c7f28fb8eaf3e2f6028243cd52ad11",
+      "resource_guard_sha256": "63d953ba66059b11fa5f9aaf25906cb56a0d151da3dcbba5e60e2fadf35e38f1",
+      "run_id": "1790880720262-p7679-s44"
+    },
+    "20261003_b": {
+      "artifacts": {
+        "capture": {
+          "gzip_bytes": 1339537,
+          "gzip_sha256": "32a4fb8ccb5329206fe069b65f155204829556c7185c1b71babf447a81bb8b8e",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261003_b/regime_capture_1790880080446-p910-s44.jsonl",
+          "source_sha256": "3ab6b8712415d46892615e11bc50652759e9b9c592e82a606ec539fd52df494b"
+        },
+        "morph_events": {
+          "gzip_bytes": 118,
+          "gzip_sha256": "429a8f78e669d72cdf994e14033fc6af6cf280851cec0fafe01bd4653e7dd624",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261003_b/morph_events_rust_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "d1ba4596db5f89b7d0f02204948e7362abfd14367f5c60fee699159a84a12f96"
+        },
+        "msfield_trace": {
+          "gzip_bytes": 7824,
+          "gzip_sha256": "53feea06c5628f77864179751744c01e5886a7372c0f381d4c04906ecc8c8faf",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261003_b/msfield_trace_v10_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "df4a0728d6b4285d6b1217103163350d26257bfe54f49c0e20b0a3dec05d9d0c"
+        },
+        "topology_index": {
+          "gzip_bytes": 2061,
+          "gzip_sha256": "900c3780a7d2de7dcc9254d55471bfe21aca2cc22168291ad9cc8400ad4eb58e",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261003_b/ca_topology_index_rust_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "7005916342e53b67000240e923b1c0a0d3e663dea271f9b22eb132b91b4951a5"
+        },
+        "topology_values": {
+          "gzip_bytes": 434164,
+          "gzip_sha256": "2521a3e1da41ac3419a6e3bd1c1a33859daaa24cf2c9cae70c0da701e0cab151",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261003_b/ca_topology_rust_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "b9abddde26b5920206a1318d238bf896174ae38612be3c030a73479381c52a74"
+        },
+        "uncertainty_trace": {
+          "gzip_bytes": 88301,
+          "gzip_sha256": "ad9a7776d0c1e8c0a508da7264579145435185a679c5cdf902961abad0e68771",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261003_b/uncertainty_trace_rust_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "fe238f787cdbd639b2377e1cb5813271511da1f7de00954b1886127c1d374d7c"
+        }
+      },
+      "metadata_sha256": "3d81a1497d066c4451fea5f63a3e3bea825b1d79893a2c67daec4e78630bc2f5",
+      "resource_guard_sha256": "b9fcc9a5bec449f1e2e6ed87ed561df07560c07adc1ca941dcd07f15af1de333",
+      "run_id": "1790880080446-p910-s44"
+    },
+    "20261003_c": {
+      "artifacts": {
+        "capture": {
+          "gzip_bytes": 1355057,
+          "gzip_sha256": "dd15c5062c8d70a4162dd816ca1c19677f430adb728312289a3625e1cfc49d48",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261003_c/regime_capture_1790879474057-p29207-s44.jsonl",
+          "source_sha256": "f784683daaa8a35abebd61ca41dd6da2874b87a4cd070ad7c514ab929ffd0132"
+        },
+        "morph_events": {
+          "gzip_bytes": 118,
+          "gzip_sha256": "429a8f78e669d72cdf994e14033fc6af6cf280851cec0fafe01bd4653e7dd624",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261003_c/morph_events_rust_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "d1ba4596db5f89b7d0f02204948e7362abfd14367f5c60fee699159a84a12f96"
+        },
+        "msfield_trace": {
+          "gzip_bytes": 7879,
+          "gzip_sha256": "588ee6e28c9ed9953b13ad94b77d53e51615c89134c71834a1a4b84fd5d978c6",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261003_c/msfield_trace_v10_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "855842ba813a6d678e098140e9b93ce08fc53aa57bfe3b60c6dea4e6b7b9ee1e"
+        },
+        "topology_index": {
+          "gzip_bytes": 2025,
+          "gzip_sha256": "c2ae2d45679798d2140f5347bf29a9f34e41e38db35395b18e06781d0c497529",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261003_c/ca_topology_index_rust_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "ae8f69920f1f7255f7f87287ef1f7df5a0dd95072330e6876c5c9e6d54c42dc0"
+        },
+        "topology_values": {
+          "gzip_bytes": 430660,
+          "gzip_sha256": "8b83e383100aaad60ec096fcf4e1631b515c7d89c9234bdc655630ed5b7664a9",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261003_c/ca_topology_rust_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "09caad28c28b1c2c71ec7da232c7db119501ab78b9e2df267f8e298a8c8a5745"
+        },
+        "uncertainty_trace": {
+          "gzip_bytes": 88198,
+          "gzip_sha256": "cf2d47b6ea2bf553bfd69224510f6249d1179559098a21359c88cbb4b56f2861",
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/seed_20261003_c/uncertainty_trace_rust_v10-msfield-fresh-20260930-02.csv",
+          "source_sha256": "f17d77d0b8073648015243f92195fd2b12beff6e7ea55048499a7b5ec32a7eb1"
+        }
+      },
+      "metadata_sha256": "cf3d2e17690e4765314ecdf709a689207010973c5d918b6f71945c09bac66643",
+      "resource_guard_sha256": "5308406d8476b318bc0c889d200990d625a08db30b345d6dd8ff707eb30cebf6",
+      "run_id": "1790879474057-p29207-s44"
+    }
+  },
+  "schema": 1
+}

@@ -1,0 +1,10 @@
+{
+  "alias_and_heldout_bytes_unchanged": true,
+  "binary_sha256": "f591660b033ad8c579fab8139d8a8b7266b00df953925bfde399408fc787c2d1",
+  "canonical_source_unchanged": true,
+  "frozen_copy_unchanged": true,
+  "run_count": 6,
+  "schedule_bytes_unchanged": true,
+  "schema": 1,
+  "six_runs_and_packages_unchanged": true
+}

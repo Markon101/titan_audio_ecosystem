@@ -1,0 +1,242 @@
+{
+  "arms": {
+    "a": {
+      "manifest_sha256": "7bbbdec9c8fd7fe408e38d7453d2114c5b421d97ff019ee2d0540946640844bc",
+      "slots": [
+        {
+          "alias": "slot_00.wav",
+          "frames": 6293504,
+          "slot": 0,
+          "source": "/storage/emulated/0/Download/OLD_WAVS/Architect of Change_014405555.wav",
+          "source_family": "architect_of_change",
+          "source_sha256": "ae0e812c0051712ba7994c27c45966f89dddecccffb8735bf065d440ecb66777"
+        },
+        {
+          "alias": "slot_01.wav",
+          "frames": 6293504,
+          "slot": 1,
+          "source": "/storage/emulated/0/Download/OLD_WAVS/Beats of the Night_014407065.wav",
+          "source_family": "beats_of_the_night",
+          "source_sha256": "e39cf68c05164e4f3e82095c15242315fb2778ad6c1e3ed28b289731c84ddee3"
+        },
+        {
+          "alias": "slot_02.wav",
+          "frames": 1574912,
+          "slot": 2,
+          "source": "/storage/emulated/0/Download/OLD_WAVS/Concrete Desires_014428538.wav",
+          "source_family": "concrete_desires",
+          "source_sha256": "56d547310c6e42417c99056165300bb88181af14d27cc184ae61a61fa28a631c"
+        },
+        {
+          "alias": "slot_03.wav",
+          "frames": 6293504,
+          "slot": 3,
+          "source": "/storage/emulated/0/Download/OLD_WAVS/Beyond the Veil_014411812.wav",
+          "source_family": "beyond_the_veil",
+          "source_sha256": "3570071b4555837cdca9bd40165fb2601d74a6fcbb793c31e8a9ab57bcaf66e4"
+        },
+        {
+          "alias": "slot_04.wav",
+          "frames": 6293504,
+          "slot": 4,
+          "source": "/storage/emulated/0/Download/OLD_WAVS/Chaos in Capitol_014414870.wav",
+          "source_family": "chaos_in_capitol",
+          "source_sha256": "133615304180100ba02aaa7cea1d833a3334c4684a557214a3f532478fe8d445"
+        },
+        {
+          "alias": "slot_05.wav",
+          "frames": 10987520,
+          "slot": 5,
+          "source": "/storage/emulated/0/Download/OLD_WAVS/AlgoRhythm s in Digital Motion - Hearts Align_0144.wav",
+          "source_family": "algorhythm_s_in_digital_motion_hearts_align",
+          "source_sha256": "cf74bd4e4d58640fc80c7f3303dbbfd5054537b9e383f81275b1e0505f312e7e"
+        }
+      ]
+    },
+    "b": {
+      "manifest_sha256": "148cd2f3e56c829fd2d196849442e53bfc23b80b8e1e6de95d859d3c1273c899",
+      "slots": [
+        {
+          "alias": "slot_00.wav",
+          "frames": 6293504,
+          "slot": 0,
+          "source": "/storage/emulated/0/Music/Audio_Lab/SOUND_MASTERING_AUDIO/Echo Pulse_223417525.wav",
+          "source_family": "echo_pulse",
+          "source_sha256": "f2596c696246240885804a98f19cfd1b33c55f52d47d0c49e5669a8e27a31a21"
+        },
+        {
+          "alias": "slot_01.wav",
+          "frames": 6281216,
+          "slot": 1,
+          "source": "/storage/emulated/0/Music/Audio_Lab/SOUND_MASTERING_AUDIO/Run Free ext v2_231733492.wav",
+          "source_family": "run_free",
+          "source_sha256": "d003d6becfadb89796aee0629213770eab5690c52b6e6f5c95b1665c0a371989"
+        },
+        {
+          "alias": "slot_02.wav",
+          "frames": 1574912,
+          "slot": 2,
+          "source": "/storage/emulated/0/Music/Audio_Lab/SOUND_MASTERING_AUDIO/Bubblegum Dreams remix v1_230429505.wav",
+          "source_family": "bubblegum_dreams",
+          "source_sha256": "671749a58a10700f71d44212017410e52c46d5e1a051d8dc7d892790f954a0a6"
+        },
+        {
+          "alias": "slot_03.wav",
+          "frames": 6293504,
+          "slot": 3,
+          "source": "/storage/emulated/0/Music/Audio_Lab/SOUND_MASTERING_AUDIO/Path of the Wise master_225134336.wav",
+          "source_family": "path_of_the_wise",
+          "source_sha256": "61170bfe9e79b44264f5c500e520b26b29c47df3825d29c30dc47f1630188cc8"
+        },
+        {
+          "alias": "slot_04.wav",
+          "frames": 6293504,
+          "slot": 4,
+          "source": "/storage/emulated/0/Music/Audio_Lab/SOUND_MASTERING_AUDIO/Measured in Quanta 2_213908974.wav",
+          "source_family": "measured_in_quanta",
+          "source_sha256": "70d81da69ed4c6441083ae5db64929a132dc1d4c5b4d2496d57dc8c2abf14906"
+        },
+        {
+          "alias": "slot_05.wav",
+          "frames": 12534784,
+          "slot": 5,
+          "source": "/storage/emulated/0/Music/Audio_Lab/SOUND_MASTERING_AUDIO/Infinite Love ext v1-master1_030403250.wav",
+          "source_family": "infinite_love",
+          "source_sha256": "cd238a8a0638e3740c313381b62bdc1a86a0cc379278129709bf1dcf1a2767c0"
+        }
+      ]
+    },
+    "c": {
+      "manifest_sha256": "242d16359b1437aefe8a9560e212857296ffba7b5ee53a9d0abc5524dbef3cf8",
+      "slots": [
+        {
+          "alias": "slot_00.wav",
+          "frames": 6293504,
+          "slot": 0,
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_forks/existing_variants/EQ08_Architect of Change_014405555.wav",
+          "source_family": "architect_of_change",
+          "source_sha256": "f6c0085371caefaac2ce5547fd7eb849634c89cb895bde2ac5acaf5c8e1e35c6"
+        },
+        {
+          "alias": "slot_01.wav",
+          "frames": 6293504,
+          "slot": 1,
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_forks/existing_variants/EQ08_Beats of the Night_014407065.wav",
+          "source_family": "beats_of_the_night",
+          "source_sha256": "4a750b3de55f212f43bf11d11c8c7b051c9e5d102839e6a7cf23e8ab0df284cf"
+        },
+        {
+          "alias": "slot_02.wav",
+          "frames": 1574912,
+          "slot": 2,
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_forks/existing_variants/EQ08_Concrete Desires_014428538.wav",
+          "source_family": "concrete_desires",
+          "source_sha256": "fae68ba66f6a1c873f9fb0433460c7d1b62ec3ef0b301e9ef6d7bc35ce83b26b"
+        },
+        {
+          "alias": "slot_03.wav",
+          "frames": 6293504,
+          "slot": 3,
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_forks/existing_variants/EQ08_Beyond the Veil_014411812.wav",
+          "source_family": "beyond_the_veil",
+          "source_sha256": "11cca76bd1b1f6182479755ce5c4d6243f2f2606525396fe2810a518ba984257"
+        },
+        {
+          "alias": "slot_04.wav",
+          "frames": 6293504,
+          "slot": 4,
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_forks/existing_variants/EQ08_Chaos in Capitol_014414870.wav",
+          "source_family": "chaos_in_capitol",
+          "source_sha256": "02132104b6c544234a8e297125234d33a736137befab6f5c48ec3bbc6ed73181"
+        },
+        {
+          "alias": "slot_05.wav",
+          "frames": 10987520,
+          "slot": 5,
+          "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/runs/corpus_forks/existing_variants/EQ08_AlgoRhythm s in Digital Motion - Hearts Align_0144.wav",
+          "source_family": "algorhythm_s_in_digital_motion_hearts_align",
+          "source_sha256": "73d5b06bbf4f5a6ed0ccf1f720bd9eb4a72ffb465f0ce0c5bd9baa4de07549f4"
+        }
+      ]
+    }
+  },
+  "heldout_sha256": {
+    "Behind the Billion-Dollar Smile ext v2_014408567.wav": "c69097e07fe0256a059b6432ea61748438fe534a17ba523f9df62b7e2f8a8657",
+    "Behind the Billion-Dollar Smile ext v2_014410083.wav": "0b42e76e7117f745777added9beb15e09387aedaa547ddec2ade5ce3e1213446",
+    "Chill of the Everyday_014349859.wav": "bb1cf98120d2136bda26abffaa0a686bc89e1519e8de6e57c27013fc693524d5",
+    "Chill of the Everyday_014419404.wav": "bb1cf98120d2136bda26abffaa0a686bc89e1519e8de6e57c27013fc693524d5",
+    "Cosmic Echoes 1_014432746.wav": "b3cc642b5b4a5c217dcae1749ebbfc5dd3f5245fe112d883b356d90054f3a9fb",
+    "Cosmic Love Ascendancy_014435775.wav": "2388305e05e96f867cf902cc7269fe49bec75680db40b82aca5bf0a1618d5dda",
+    "Digital Tapestry remix v1_014341098.wav": "70edfc9daf1c5795d33babb55e0a702942f21fbf461d94bfc468ea8646eeeaf7",
+    "Digital Tapestry remix v2_014342396.wav": "68e3ceb7836f7d1c2d1460870f409a7a50580b0d071ee5d623e143d420e92d67",
+    "Journey to the Unknown Particle Phs_014345397.wav": "f5329c796d7917f89a00a719ad010b6b79a93dc7e158237ace85318b0ead9a92",
+    "The Curiosity of Ones and Zeros_010314873.wav": "42b3f156d90f0463b2beb71470edd520d2bb74bb6dcb7805ab8f72e1ec6fea29",
+    "but it's me_014413347.wav": "37d5aa7631814d3763ce3339e1f3254594d07085d41e00bbd860a8a326659ec3"
+  },
+  "schedules": {
+    "20261002": {
+      "end_step": 59131,
+      "episodes": [
+        {
+          "chunks": 256,
+          "slot": 3,
+          "source_frame": 4538368,
+          "start_step": 58107
+        },
+        {
+          "chunks": 256,
+          "slot": 0,
+          "source_frame": 3104768,
+          "start_step": 58363
+        },
+        {
+          "chunks": 256,
+          "slot": 2,
+          "source_frame": 421888,
+          "start_step": 58619
+        },
+        {
+          "chunks": 256,
+          "slot": 1,
+          "source_frame": 2961408,
+          "start_step": 58875
+        }
+      ],
+      "sha256": "c58f35252e2f3a229816c4d47d8a5a7b0cbe35b12a7b0d3fbebd097dac526eb1"
+    },
+    "20261003": {
+      "end_step": 59131,
+      "episodes": [
+        {
+          "chunks": 256,
+          "slot": 3,
+          "source_frame": 2838528,
+          "start_step": 58107
+        },
+        {
+          "chunks": 256,
+          "slot": 5,
+          "source_frame": 2404352,
+          "start_step": 58363
+        },
+        {
+          "chunks": 256,
+          "slot": 4,
+          "source_frame": 4173824,
+          "start_step": 58619
+        },
+        {
+          "chunks": 256,
+          "slot": 2,
+          "source_frame": 299008,
+          "start_step": 58875
+        }
+      ],
+      "sha256": "1ee3e15d4ff7ef509b367ab7fb6a47c20ed7b3dfcff471acc22145734b00a208"
+    }
+  },
+  "schema": 1,
+  "source_checkpoint_receipt_sha256": "bb3a4d9b8309c0e1f8e19391358c5b0765268d8d3ae289d6311877d625c408b0",
+  "source_manifest_sha256": "0708ede659328f928f76db792d091b5b1eaaaed219754fb9820986f4d81f8228",
+  "source_step": 58107
+}

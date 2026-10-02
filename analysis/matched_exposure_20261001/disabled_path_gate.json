@@ -1,0 +1,10 @@
+{
+  "audio_byte_equal": true,
+  "model_max_abs_difference": 7.450580596923828e-09,
+  "new_binary_sha256": "f591660b033ad8c579fab8139d8a8b7266b00df953925bfde399408fc787c2d1",
+  "old_binary_sha256": "12e07821946cc17bdde1b3249b96cdb1023cfa1f610ef67fc24e272bd5efcc44",
+  "optimizer_max_abs_difference": 1.4901161193847656e-08,
+  "passed": true,
+  "schema": 1,
+  "world_byte_equal": true
+}

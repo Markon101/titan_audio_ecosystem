@@ -1,0 +1,121 @@
+{
+  "interpretation": "A null matching or exceeding observed persistent regime count blocks a discovery claim. This is one trajectory; surrogate repeats test descriptor gaming, not seed generalization.",
+  "nulls": {
+    "four_sample_block_shuffle": [
+      {
+        "archive_size": 6,
+        "median_dwell_samples": 4.0,
+        "median_trajectory_participation": 3.1025781067747102,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 33
+      },
+      {
+        "archive_size": 6,
+        "median_dwell_samples": 5.0,
+        "median_trajectory_participation": 2.846008749933647,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 30
+      },
+      {
+        "archive_size": 5,
+        "median_dwell_samples": 4.0,
+        "median_trajectory_participation": 3.0131333597641046,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 34
+      },
+      {
+        "archive_size": 4,
+        "median_dwell_samples": 4.0,
+        "median_trajectory_participation": 2.735709209695431,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 31
+      }
+    ],
+    "independent_view_time_shuffle": [
+      {
+        "archive_size": 0,
+        "median_dwell_samples": null,
+        "median_trajectory_participation": 12.28515065887889,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 0
+      },
+      {
+        "archive_size": 0,
+        "median_dwell_samples": null,
+        "median_trajectory_participation": 12.077863371988627,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 0
+      },
+      {
+        "archive_size": 0,
+        "median_dwell_samples": null,
+        "median_trajectory_participation": 11.866337900757582,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 0
+      },
+      {
+        "archive_size": 0,
+        "median_dwell_samples": null,
+        "median_trajectory_participation": 12.148000230338047,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 0
+      }
+    ],
+    "matched_gaussian_white_noise": [
+      {
+        "archive_size": 0,
+        "median_dwell_samples": null,
+        "median_trajectory_participation": 50.759126311949956,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 0
+      },
+      {
+        "archive_size": 0,
+        "median_dwell_samples": null,
+        "median_trajectory_participation": 50.25565894092077,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 0
+      },
+      {
+        "archive_size": 0,
+        "median_dwell_samples": null,
+        "median_trajectory_participation": 50.32028880341174,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 0
+      },
+      {
+        "archive_size": 0,
+        "median_dwell_samples": null,
+        "median_trajectory_participation": 50.57019207200361,
+        "over_resident_samples": 0,
+        "persistent_regimes": 0,
+        "transitions": 0
+      }
+    ]
+  },
+  "observed": {
+    "archive_size": 4,
+    "median_dwell_samples": 38.0,
+    "median_trajectory_participation": 7.863113887196425,
+    "over_resident_samples": 0,
+    "persistent_regimes": 2,
+    "transitions": 3
+  },
+  "observed_dwell_exceeds_block_null_max": true,
+  "regime_count_noise_gameable": false,
+  "repeats_per_null": 4,
+  "samples": 256,
+  "schema": 1,
+  "seed": 69117
+}
