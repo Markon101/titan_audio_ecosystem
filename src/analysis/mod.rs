@@ -24,6 +24,9 @@ pub(crate) fn is_analysis_flag(argument: &str) -> bool {
     matches!(
         argument,
         "--analysis-only"
+            | "--analysis-substrate"
+            | "--analysis-warmup"
+            | "--analysis-target-schedule"
             | "--analysis-help"
             | "--analysis-dir"
             | "--analysis-tag"

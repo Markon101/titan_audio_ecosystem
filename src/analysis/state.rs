@@ -8,6 +8,11 @@ pub(crate) struct AnalysisWorld {
     pub bundle: ModelBundle,
     pub micro: Tensor,
     pub macro_t: Tensor,
+    pub coarse: Option<Tensor>,
+    pub semantic: super::super::SemanticField,
+    pub novelty_buf: VecDeque<Tensor>,
+    pub lineage_seed: u64,
+    pub target_schedule: Option<super::super::target_schedule::FixedTargetSchedule>,
     pub hidden: Tensor,
     pub phases: [f32; 4],
     pub theta_prev: f32,
@@ -59,6 +64,18 @@ impl AnalysisWorld {
         let target_loader =
             read_only_target_loader(&origin.paths.wav_dir, &origin.paths.corpus_manifest)?;
         let target_feedback_available = target_loader.is_some();
+        let target_schedule = origin
+            .target_schedule
+            .as_ref()
+            .map(|path| {
+                super::super::target_schedule::FixedTargetSchedule::load(
+                    &path.display().to_string(),
+                    target_loader.as_ref().ok_or_else(|| {
+                        anyhow::anyhow!("fixed analysis target schedule requires a corpus")
+                    })?,
+                )
+            })
+            .transpose()?;
         let forcing_seed = if fresh_world {
             initialization_seed ^ 0xF0C1_6A11
         } else {
@@ -89,6 +106,24 @@ impl AnalysisWorld {
                 &device,
             )?)?;
             return Ok(Self {
+                coarse: if origin.coarse.is_some() {
+                    Some(Tensor::zeros(
+                        (
+                            1,
+                            super::super::CA_CHANNELS,
+                            super::super::msfield::COARSE_H,
+                            super::super::msfield::COARSE_W,
+                        ),
+                        DType::F32,
+                        &device,
+                    )?)
+                } else {
+                    None
+                },
+                semantic: super::super::SemanticField::new(),
+                novelty_buf: VecDeque::new(),
+                lineage_seed: initialization_seed,
+                target_schedule,
                 bundle,
                 micro,
                 macro_t,
@@ -134,6 +169,26 @@ impl AnalysisWorld {
         let mut movement_monitor = super::super::MovementCoherenceMonitor::new(20);
         movement_monitor.restore_history(&checkpoint.movement_history);
         Ok(Self {
+            coarse: origin
+                .coarse
+                .as_ref()
+                .map(|values| {
+                    Tensor::from_vec(
+                        values.clone(),
+                        (
+                            1,
+                            super::super::CA_CHANNELS,
+                            super::super::msfield::COARSE_H,
+                            super::super::msfield::COARSE_W,
+                        ),
+                        &device,
+                    )
+                })
+                .transpose()?,
+            semantic: checkpoint.semantic.clone(),
+            novelty_buf: super::super::restore_novelty(&checkpoint.novelty_spectra, &device)?,
+            lineage_seed: checkpoint.seed,
+            target_schedule,
             bundle,
             micro: Tensor::from_vec(
                 checkpoint.micro_tape.clone(),
@@ -166,7 +221,7 @@ impl AnalysisWorld {
             energy: checkpoint.energy_state,
             rad_amp: checkpoint.rad_amp,
             shear_phase: checkpoint.shear_phase,
-            controller_rng: super::super::RuntimeRng::seed_from_u64(forcing_seed ^ 0xC017_2011),
+            controller_rng: checkpoint.rng.clone(),
             target_rng: super::super::RuntimeRng::seed_from_u64(forcing_seed ^ 0x7A26_E700),
             forcing_seed,
             absolute_step: checkpoint.global_step,
@@ -213,6 +268,54 @@ impl AnalysisWorld {
             super::super::flatten_tensor(&self.macro_t)?,
             super::super::flatten_tensor(&self.hidden)?,
         ))
+    }
+
+    pub(crate) fn coarse_values(&self) -> Result<Option<Vec<f32>>> {
+        self.coarse
+            .as_ref()
+            .map(super::super::flatten_tensor)
+            .transpose()
+    }
+
+    pub(crate) fn fingerprint(&self) -> Result<String> {
+        let saved = super::super::capture_world(
+            self.absolute_step,
+            self.lineage_seed,
+            &self.controller_rng,
+            &self.micro,
+            &self.macro_t,
+            &self.hidden,
+            self.phases,
+            self.theta_prev,
+            self.theta_prev2,
+            &self.bundle.model,
+            self.rad_amp,
+            self.energy,
+            self.shear_phase,
+            &self.uncertainty,
+            &self.potential,
+            &self.semantic,
+            &self.criticality,
+            &self.bundle.episodic,
+            &self.novelty_buf,
+            &self.controller,
+            &self.motifs,
+            &self.last_observation,
+            &self.pending_predictor_input,
+            &self.spectral_monitor,
+            &self.movement_monitor,
+            &self.adaptive,
+            &self.motif_diagnostics,
+            &self.host,
+        )?;
+        let mut bytes = bincode::serialize(&saved)?;
+        bytes.extend(bincode::serialize(&self.coarse_values()?)?);
+        bytes.extend(bincode::serialize(&self.target_rng)?);
+        bytes.extend(self.forcing_seed.to_le_bytes());
+        if let Some(loader) = &self.target_loader {
+            bytes.extend(bincode::serialize(&loader.episode_info())?);
+        }
+        Ok(super::super::provenance::sha256_bytes(&bytes))
     }
 }
 

@@ -13,6 +13,7 @@ pub(crate) struct StateFrame {
     pub absolute_step: u64,
     pub micro: Vec<f32>,
     pub macro_t: Vec<f32>,
+    pub coarse: Option<Vec<f32>>,
     pub hidden: Vec<f32>,
     pub left: Vec<f32>,
     pub right: Vec<f32>,
@@ -23,6 +24,7 @@ pub(crate) struct HorizonSummary {
     pub horizon_chunks: usize,
     pub absolute_step: u64,
     pub state_distance_from_origin: StateDistance,
+    pub coarse_distance_from_origin: Option<f32>,
     pub audio: AudioMetrics,
     pub recurrence: RecurrenceCandidate,
     pub bounded: bool,
@@ -37,6 +39,9 @@ pub(crate) struct RolloutSummary {
     pub horizon_chunks: usize,
     pub stride_chunks: usize,
     pub checkpoint_start_step: u64,
+    pub warmup_chunks: usize,
+    pub initial_world_fingerprint: String,
+    pub final_world_fingerprint: String,
     pub fixed_weights: bool,
     pub optimizer_steps: usize,
     pub fixed_morphology: bool,
@@ -55,6 +60,8 @@ pub(crate) struct RolloutRun {
     pub all_right: Vec<f32>,
     pub all_raw_left: Vec<f32>,
     pub all_raw_right: Vec<f32>,
+    pub all_feedback: Vec<Option<f32>>,
+    pub all_forcing: Vec<step::ForcingFrame>,
 }
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
@@ -81,16 +88,25 @@ pub(crate) fn run(
         initialization_seed,
         fresh_world,
     )?;
+    if let Some(schedule) = &world.target_schedule {
+        schedule.validate_interval(world.absolute_step, origin.warmup_chunks + maximum_horizon)?;
+    }
+    for offset in 1..=origin.warmup_chunks {
+        step::step(&mut world, offset, &Intervention::full())?;
+    }
     if let Some(transform) = initial_transform {
         transform(&mut world)?;
     }
     let checkpoint_start_step = world.absolute_step;
+    let initial_world_fingerprint = world.fingerprint()?;
     let initial = world.state_vectors()?;
+    let initial_coarse = world.coarse_values()?;
     let mut frames = vec![StateFrame {
         offset: 0,
         absolute_step: world.absolute_step,
         micro: initial.0.clone(),
         macro_t: initial.1.clone(),
+        coarse: initial_coarse.clone(),
         hidden: initial.2.clone(),
         left: Vec::new(),
         right: Vec::new(),
@@ -100,6 +116,8 @@ pub(crate) fn run(
     let mut all_right = Vec::with_capacity(maximum_horizon * super::super::CHUNK_SIZE);
     let mut all_raw_left = Vec::with_capacity(maximum_horizon * super::super::CHUNK_SIZE);
     let mut all_raw_right = Vec::with_capacity(maximum_horizon * super::super::CHUNK_SIZE);
+    let mut all_feedback = Vec::with_capacity(maximum_horizon);
+    let mut all_forcing = Vec::with_capacity(maximum_horizon);
     let mut recurrence_history = vec![(
         checkpoint_start_step,
         metrics::compact_signature(&initial.0, &initial.1, &initial.2),
@@ -113,6 +131,8 @@ pub(crate) fn run(
         all_right.extend_from_slice(&output.right);
         all_raw_left.extend_from_slice(&output.raw_left);
         all_raw_right.extend_from_slice(&output.raw_right);
+        all_feedback.push(output.target_feedback);
+        all_forcing.push(output.forcing);
         let observe = offset.is_multiple_of(stride) || requested.contains(&offset) || offset == 1;
         if observe {
             progress(offset, maximum_horizon, &output.record);
@@ -124,6 +144,7 @@ pub(crate) fn run(
                 absolute_step: world.absolute_step,
                 micro: state.0.clone(),
                 macro_t: state.1.clone(),
+                coarse: world.coarse_values()?,
                 hidden: state.2.clone(),
                 left: output.left.clone(),
                 right: output.right.clone(),
@@ -152,6 +173,11 @@ pub(crate) fn run(
                     horizon_chunks: offset,
                     absolute_step: world.absolute_step,
                     state_distance_from_origin: distance,
+                    coarse_distance_from_origin: world
+                        .coarse_values()?
+                        .as_ref()
+                        .zip(initial_coarse.as_ref())
+                        .and_then(|(current, prior)| metrics::relative_l2(current, prior)),
                     audio: audio.clone(),
                     recurrence,
                     bounded,
@@ -165,6 +191,10 @@ pub(crate) fn run(
     warnings.dedup();
     let target_feedback_semantics = if intervention.target_feedback_disabled {
         "target_independent_feedback_ablation"
+    } else if intervention.feedback_zero {
+        "target_error_scalar_zero_with_observation_updates_preserved"
+    } else if intervention.feedback_replay.is_some() {
+        "artificial_baseline_feedback_scalar_replay"
     } else if world.target_feedback_available {
         "coarse_target_error_feedback_without_loss_or_optimizer"
     } else {
@@ -177,11 +207,18 @@ pub(crate) fn run(
             horizon_chunks: maximum_horizon,
             stride_chunks: stride,
             checkpoint_start_step,
+            warmup_chunks: origin.warmup_chunks,
+            initial_world_fingerprint,
+            final_world_fingerprint: world.fingerprint()?,
             fixed_weights: true,
             optimizer_steps: 0,
             fixed_morphology: true,
             target_feedback_semantics: target_feedback_semantics.to_string(),
-            forcing_protocol: "common_exogenous_forcing_by_absolute_step_with_separate_controller_and_target_rng_streams".to_string(),
+            forcing_protocol: if intervention.forcing_replay.is_some() {
+                "baseline_realized_host_forcing_replayed_by_offset_with_fixed_target_schedule"
+            } else {
+                "common_exogenous_forcing_by_absolute_step_with_separate_controller_and_target_rng_streams"
+            }.to_string(),
             elapsed_seconds: started.elapsed().as_secs_f64(),
             sampled_steps,
             horizons: horizon_summaries,
@@ -192,6 +229,8 @@ pub(crate) fn run(
         all_right,
         all_raw_left,
         all_raw_right,
+        all_feedback,
+        all_forcing,
     })
 }
 
@@ -216,6 +255,9 @@ pub(crate) fn comparison(baseline: &RolloutRun, intervention: &RolloutRun) -> se
                 &baseline_frame.macro_t,
                 &baseline_frame.hidden,
             ),
+            "coarse_state_distance": intervention_frame.coarse.as_ref()
+                .zip(baseline_frame.coarse.as_ref())
+                .and_then(|(left, right)| metrics::relative_l2(left, right)),
             "audio_distance": metrics::audio_distance(
                 &intervention_frame.left,
                 &intervention_frame.right,
@@ -247,6 +289,7 @@ mod tests {
             absolute_step: 0,
             micro: vec![0.0],
             macro_t: vec![0.0],
+            coarse: None,
             hidden: vec![0.0],
             left: vec![0.0],
             right: vec![0.0],

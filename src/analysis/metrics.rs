@@ -284,7 +284,7 @@ fn normalized_ratio(numerator: f64, denominator: f64) -> Option<f32> {
     (denominator > 1e-12).then_some((numerator / denominator) as f32)
 }
 
-fn relative_l2(left: &[f32], right: &[f32]) -> Option<f32> {
+pub(crate) fn relative_l2(left: &[f32], right: &[f32]) -> Option<f32> {
     if left.len() != right.len() || left.is_empty() {
         return None;
     }

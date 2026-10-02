@@ -5,8 +5,28 @@ use candle_core::{DType, Tensor};
 use rand::{Rng, SeedableRng};
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub(crate) struct ForcingFrame {
+    pub force_macro: bool,
+    pub radiation_probability: f32,
+    pub radiation_realized: bool,
+    pub radiation_amplitude: f32,
+    pub shear_phase: f32,
+    pub shear_amplitude: f32,
+    pub macro_gain: f32,
+    pub micro_gain: f32,
+    pub kick_amplitude: f32,
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
 pub(crate) struct Intervention {
+    pub coarse_hold: bool,
+    pub exchange_disabled: bool,
+    pub morph_upper_bypass: bool,
+    pub shear_half: bool,
+    pub feedback_zero: bool,
+    pub feedback_replay: Option<Vec<Option<f32>>>,
+    pub forcing_replay: Option<Vec<ForcingFrame>>,
     pub name: String,
     pub micro_nca_hold: bool,
     pub macro_nca_hold: bool,
@@ -38,6 +58,12 @@ impl Intervention {
         };
         match name {
             "full" | "none" => {}
+            "coarse_hold" => intervention.coarse_hold = true,
+            "exchange_disabled" => intervention.exchange_disabled = true,
+            "morphic_upper_bypass" => intervention.morph_upper_bypass = true,
+            "shear_half" => intervention.shear_half = true,
+            "feedback_zero" => intervention.feedback_zero = true,
+            "feedback_replay" => {}
             "micro_nca_hold" => intervention.micro_nca_hold = true,
             "macro_nca_hold" => intervention.macro_nca_hold = true,
             "gru_hold" => intervention.gru_hold = true,
@@ -66,13 +92,25 @@ impl Intervention {
     }
 
     pub(crate) fn subsystem_class(&self) -> &'static str {
-        if self.micro_nca_hold || self.macro_nca_hold || self.gru_hold || self.episodic_read_zero {
+        if self.coarse_hold || self.exchange_disabled || self.morph_upper_bypass {
+            "msfield_or_morphic_causal_intervention"
+        } else if self.feedback_zero || self.feedback_replay.is_some() {
+            "target_error_feedback_control"
+        } else if self.micro_nca_hold
+            || self.macro_nca_hold
+            || self.gru_hold
+            || self.episodic_read_zero
+        {
             "learned_neural_state_transition"
         } else if self.planner_model_zero {
             "learned_world_model_host_effect"
         } else if self.bandit_zero || self.motif_recall_disabled || self.potential_gains_identity {
             "host_controller_or_memory"
-        } else if self.radiation_disabled || self.shear_disabled || self.micro_kick_disabled {
+        } else if self.radiation_disabled
+            || self.shear_disabled
+            || self.shear_half
+            || self.micro_kick_disabled
+        {
             "host_stochastic_forcing"
         } else if self.target_feedback_disabled {
             "target_error_feedback"
@@ -86,6 +124,8 @@ impl Intervention {
 
 #[derive(Clone, Debug, Serialize)]
 pub(crate) struct StepRecord {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub coarse_rms: Option<f32>,
     pub rollout_offset: usize,
     pub absolute_step: u64,
     pub action: String,
@@ -126,6 +166,8 @@ pub(crate) struct StepRecord {
 }
 
 pub(crate) struct StepOutput {
+    pub forcing: ForcingFrame,
+    pub target_feedback: Option<f32>,
     pub record: StepRecord,
     pub left: Vec<f32>,
     pub right: Vec<f32>,
@@ -138,6 +180,30 @@ pub(crate) fn step(
     rollout_offset: usize,
     intervention: &Intervention,
 ) -> Result<StepOutput> {
+    if world.coarse.is_none()
+        && (intervention.coarse_hold
+            || intervention.exchange_disabled
+            || intervention.morph_upper_bypass)
+    {
+        anyhow::bail!("msfield intervention requires a TITANM10 world");
+    }
+    let replay = intervention
+        .forcing_replay
+        .as_ref()
+        .map(|frames| {
+            frames
+                .get(rollout_offset - 1)
+                .ok_or_else(|| anyhow::anyhow!("forcing replay is shorter than rollout"))
+        })
+        .transpose()?;
+    if let Some(field) = &mut world.bundle.model.msfield {
+        field.analysis_disable_exchange = intervention.exchange_disabled;
+    }
+    world.bundle.model.morphic.analysis_skip = if intervention.morph_upper_bypass {
+        (11..world.bundle.model.depth()).collect()
+    } else {
+        Vec::new()
+    };
     let device = world.micro.device().clone();
     let absolute_step = world.absolute_step;
     let escape_strength = world.adaptive.escape_strength();
@@ -218,6 +284,7 @@ pub(crate) fn step(
     let mut macro_rng = forcing_rng(world.forcing_seed, absolute_step, 0x4D41_4352);
     let force_macro = absolute_step.is_multiple_of(super::super::MACRO_UPDATE_EVERY)
         && macro_rng.gen_range(0.0f32..1.0) < force_probability;
+    let force_macro = replay.map(|frame| frame.force_macro).unwrap_or(force_macro);
     let episodic_out = if intervention.episodic_read_zero {
         Tensor::zeros((1, super::super::EPI_DIM), DType::F32, &device)?
     } else {
@@ -226,6 +293,7 @@ pub(crate) fn step(
     let old_micro = world.micro.clone();
     let old_macro = world.macro_t.clone();
     let old_hidden = world.hidden.clone();
+    let old_coarse = world.coarse.clone();
     let output = world.bundle.model.forward(
         &world.micro,
         &world.macro_t,
@@ -239,7 +307,7 @@ pub(crate) fn step(
         false,
         world.energy,
         &control,
-        None,
+        world.coarse.as_ref(),
     )?;
     let proposed_recurrent_delta = output
         .next_hidden
@@ -341,8 +409,11 @@ pub(crate) fn step(
     let target_feedback = if intervention.target_feedback_disabled {
         None
     } else if let Some(loader) = world.target_loader.as_mut() {
-        let targets =
-            loader.sample_chunks(super::super::TARGET_K, &mut world.target_rng, &device)?;
+        let targets = if let Some(schedule) = &world.target_schedule {
+            schedule.sample_at(loader, absolute_step, super::super::TARGET_K, &device)?
+        } else {
+            loader.sample_chunks(super::super::TARGET_K, &mut world.target_rng, &device)?
+        };
         loader.commit_selection(0);
         let target = targets
             .narrow(0, 0, 1)?
@@ -357,6 +428,15 @@ pub(crate) fn step(
         )
     } else {
         None
+    };
+    let target_feedback = if intervention.feedback_zero {
+        Some(0.0)
+    } else if let Some(values) = &intervention.feedback_replay {
+        *values
+            .get(rollout_offset - 1)
+            .ok_or_else(|| anyhow::anyhow!("feedback replay is shorter than rollout"))?
+    } else {
+        target_feedback
     };
 
     let sigma = world.criticality.update(movement);
@@ -461,6 +541,11 @@ pub(crate) fn step(
     } else {
         output.next_hidden.detach()
     };
+    world.coarse = if intervention.coarse_hold {
+        old_coarse
+    } else {
+        output.next_coarse.map(|state| state.detach())
+    };
     let committed_recurrent_delta = world
         .hidden
         .sub(&old_hidden)?
@@ -474,40 +559,55 @@ pub(crate) fn step(
         + world.controller.meta.surprise() * 0.02
         + escape_strength * 0.12)
         .clamp(0.0, 0.30);
-    let radiation_probability =
-        super::super::reference_window_probability_to_chunk(radiation_window_probability);
+    let radiation_probability = replay
+        .map(|frame| frame.radiation_probability)
+        .unwrap_or_else(|| {
+            super::super::reference_window_probability_to_chunk(radiation_window_probability)
+        });
     let mut radiation_rng = forcing_rng(world.forcing_seed, absolute_step, 0x5241_4449);
     let radiation_draw = radiation_rng.gen::<f32>();
-    let radiation_realized =
-        !intervention.radiation_disabled && radiation_draw < radiation_probability;
-    if radiation_realized {
-        world.micro = super::super::levy_radiate(
-            &world.micro,
+    let radiation_realized = !intervention.radiation_disabled
+        && replay
+            .map(|frame| frame.radiation_realized)
+            .unwrap_or(radiation_draw < radiation_probability);
+    let radiation_amplitude = replay
+        .map(|frame| frame.radiation_amplitude)
+        .unwrap_or_else(|| {
             world.rad_amp
                 * (1.0
                     + curiosity * 0.15
                     + world.controller.meta.surprise() * 0.10
-                    + escape_strength * 0.20),
-            &mut radiation_rng,
-        )?
-        .detach();
+                    + escape_strength * 0.20)
+        });
+    if radiation_realized {
+        world.micro =
+            super::super::levy_radiate(&world.micro, radiation_amplitude, &mut radiation_rng)?
+                .detach();
     }
     let controlled_shear = if intervention.shear_disabled {
         0.0
     } else {
-        (pot.shear_amp * control.shear_mult).clamp(0.0, 0.75)
+        replay
+            .map(|frame| frame.shear_amplitude)
+            .unwrap_or_else(|| (pot.shear_amp * control.shear_mult).clamp(0.0, 0.75))
+            * if intervention.shear_half { 0.5 } else { 1.0 }
     };
     if absolute_step.is_multiple_of(super::super::MACRO_UPDATE_EVERY) {
         world.shear_phase += super::super::SHEAR_PHASE_VEL
             * super::super::MACRO_UPDATE_EVERY as f32
             * (0.82 + 0.28 * control.shear_mult);
+        if let Some(frame) = replay {
+            world.shear_phase = frame.shear_phase;
+        }
         let shear = world
             .shear
             .generate(controlled_shear, world.shear_phase, &device)?;
         let gain = if intervention.potential_gains_identity {
             1.0
         } else {
-            pot.macro_gain
+            replay
+                .map(|frame| frame.macro_gain)
+                .unwrap_or(pot.macro_gain)
         };
         world.macro_t = world
             .macro_t
@@ -518,7 +618,9 @@ pub(crate) fn step(
     let controlled_kick = if intervention.micro_kick_disabled {
         0.0
     } else {
-        (pot.micro_kick * control.kick_mult).clamp(0.0, 0.10)
+        replay
+            .map(|frame| frame.kick_amplitude)
+            .unwrap_or_else(|| (pot.micro_kick * control.kick_mult).clamp(0.0, 0.10))
     };
     if controlled_kick > 1e-3 {
         let mut kick_rng = forcing_rng(world.forcing_seed, absolute_step, 0x4B49_434B);
@@ -538,7 +640,9 @@ pub(crate) fn step(
     let micro_gain = if intervention.potential_gains_identity {
         1.0
     } else {
-        pot.micro_gain
+        replay
+            .map(|frame| frame.micro_gain)
+            .unwrap_or(pot.micro_gain)
     };
     world.micro = world
         .micro
@@ -563,6 +667,7 @@ pub(crate) fn step(
     let (micro_rms, micro_near) = signature(&micro_values);
     let (macro_rms, macro_near) = signature(&macro_values);
     let (recurrent_rms, _) = signature(&hidden_values);
+    let coarse_rms = world.coarse_values()?.map(|values| signature(&values).0);
     let target_info = world
         .target_loader
         .as_ref()
@@ -585,6 +690,7 @@ pub(crate) fn step(
         );
     }
     let record = StepRecord {
+        coarse_rms,
         rollout_offset,
         absolute_step,
         action: action.label().to_string(),
@@ -627,6 +733,20 @@ pub(crate) fn step(
     };
     world.absolute_step = world.absolute_step.saturating_add(1);
     Ok(StepOutput {
+        forcing: ForcingFrame {
+            force_macro,
+            radiation_probability,
+            radiation_realized,
+            radiation_amplitude,
+            shear_phase: world.shear_phase,
+            shear_amplitude: controlled_shear,
+            macro_gain: replay
+                .map(|frame| frame.macro_gain)
+                .unwrap_or(pot.macro_gain),
+            micro_gain,
+            kick_amplitude: controlled_kick,
+        },
+        target_feedback,
         record,
         left,
         right,

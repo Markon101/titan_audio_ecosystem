@@ -19,6 +19,7 @@ pub(crate) struct AblationSuite {
     pub forcing_protocol: String,
     pub controller_protocol: String,
     pub conditions: Vec<AblationCondition>,
+    pub no_op_clone_exact: Option<bool>,
     pub deferred_without_production_forward_hooks: Vec<String>,
     pub warnings: Vec<String>,
 }
@@ -49,7 +50,22 @@ pub(crate) fn run_suite(
         None,
         |offset, total, _| progress("ablation_full", offset, total),
     )?;
-    let names = if requested.is_empty() {
+    let names = if requested.is_empty() && origin.substrate == super::super::SubstrateMode::MsField
+    {
+        vec![
+            "none",
+            "coarse_hold",
+            "exchange_disabled",
+            "gru_hold",
+            "morphic_upper_bypass",
+            "shear_half",
+            "feedback_zero",
+            "feedback_replay",
+        ]
+        .into_iter()
+        .map(str::to_string)
+        .collect()
+    } else if requested.is_empty() {
         vec![
             "micro_nca_hold".to_string(),
             "macro_nca_hold".to_string(),
@@ -69,8 +85,24 @@ pub(crate) fn run_suite(
         requested.to_vec()
     };
     let mut conditions = Vec::new();
+    let mut no_op_clone_exact = None;
+    let names = if origin.substrate == super::super::SubstrateMode::MsField
+        && !names.iter().any(|name| name == "none")
+    {
+        let mut with_noop = vec!["none".to_string()];
+        with_noop.extend(names);
+        with_noop
+    } else {
+        names
+    };
     for name in names {
-        let intervention = Intervention::parse(&name)?;
+        let mut intervention = Intervention::parse(&name)?;
+        if origin.substrate == super::super::SubstrateMode::MsField {
+            intervention.forcing_replay = Some(baseline.all_forcing.clone());
+            if name == "feedback_replay" {
+                intervention.feedback_replay = Some(baseline.all_feedback.clone());
+            }
+        }
         let run = rollout::run(
             origin,
             &name,
@@ -89,6 +121,18 @@ pub(crate) fn run_suite(
             exact_disabled_behavior: definition(&name).to_string(),
             comparison: rollout::comparison(&baseline, &run),
         });
+        if name == "none" {
+            let exact = run.all_left == baseline.all_left
+                && run.all_right == baseline.all_right
+                && run.all_raw_left == baseline.all_raw_left
+                && run.all_raw_right == baseline.all_raw_right
+                && run.summary.final_world_fingerprint == baseline.summary.final_world_fingerprint;
+            no_op_clone_exact = Some(exact);
+            anyhow::ensure!(
+                exact,
+                "independent no-op frozen clone diverged from baseline"
+            );
+        }
         export(&name, &run)?;
     }
     Ok(AblationRuns {
@@ -100,6 +144,7 @@ pub(crate) fn run_suite(
                     .to_string(),
             controller_protocol: "closed_loop_with_separate_matched_controller_rng".to_string(),
             conditions,
+            no_op_clone_exact,
             deferred_without_production_forward_hooks: vec![
                 "morphic_bypass".to_string(),
                 "memory_to_micro_zero".to_string(),
@@ -127,6 +172,13 @@ pub(crate) fn run_suite(
 
 fn definition(name: &str) -> &'static str {
     match name {
+        "none" => "independent cloned frozen rollout with no neural or host intervention",
+        "coarse_hold" => "retain the prior coarse msfield state after each learned step; audio consequences begin on the next chunk",
+        "exchange_disabled" => "disable learned fine-meso and meso-coarse exchange inside the frozen msfield forward; energy change is reported",
+        "morphic_upper_bypass" => "bypass active L12-L16 Morphic residuals while retaining the shared 512-dimensional interface",
+        "shear_half" => "halve the baseline's realized structured meso shear and replay all other declared forcing",
+        "feedback_zero" => "sample the same training target but replace only the post-forward error scalar with zero",
+        "feedback_replay" => "sample the same training target but apply the baseline's saved error scalar as an artificial control",
         "micro_nca_hold" => "retain the prior projected micro field instead of committing the learned micro CA next state; subsequent declared forcing remains active",
         "macro_nca_hold" => "retain the prior macro field instead of committing the learned macro CA next state at eligible updates",
         "gru_hold" => "retain the prior 512-value recurrent state instead of committing the GRU next state",

@@ -19,6 +19,9 @@ pub(crate) enum TerminalMode {
 
 #[derive(Clone, Debug, Serialize)]
 pub(crate) struct AnalysisRequest {
+    pub substrate: super::super::SubstrateMode,
+    pub warmup_chunks: usize,
+    pub target_schedule: Option<PathBuf>,
     pub analysis_only: bool,
     pub help: bool,
     pub base_dir: PathBuf,
@@ -57,6 +60,9 @@ pub(crate) struct AnalysisRequest {
 impl Default for AnalysisRequest {
     fn default() -> Self {
         Self {
+            substrate: super::super::SubstrateMode::Legacy,
+            warmup_chunks: 0,
+            target_schedule: None,
             analysis_only: false,
             help: false,
             base_dir: PathBuf::from("/sdcard/Download"),
@@ -137,6 +143,17 @@ pub(crate) fn parse(args: &[String]) -> Result<AnalysisRequest> {
     while index < args.len() {
         let flag = args[index].as_str();
         match flag {
+            "--analysis-substrate" => {
+                request.substrate = match value(args, &mut index, flag)?.as_str() {
+                    "legacy" => super::super::SubstrateMode::Legacy,
+                    "msfield" => super::super::SubstrateMode::MsField,
+                    other => anyhow::bail!("unsupported analysis substrate {other}"),
+                };
+            }
+            "--analysis-warmup" => request.warmup_chunks = parse_value(args, &mut index, flag)?,
+            "--analysis-target-schedule" => {
+                request.target_schedule = Some(PathBuf::from(value(args, &mut index, flag)?))
+            }
             "--analysis-only" => {
                 request.analysis_only = true;
                 index += 1;
@@ -298,6 +315,9 @@ pub(crate) fn parse(args: &[String]) -> Result<AnalysisRequest> {
             "clone-only ecology morph decisions require target-loss parity hooks that are not safely available in Phase 1; use --analysis-morph-policy fixed"
         );
     }
+    if request.warmup_chunks > 4096 {
+        anyhow::bail!("analysis warmup must not exceed 4096 chunks");
+    }
     Ok(request)
 }
 
@@ -388,7 +408,10 @@ fn validate_analysis_tag(tag: &str) -> Result<()> {
 
 pub(crate) fn print_help() {
     println!(
-        "TITAN Audio v9 scientific instrumentation\n\n\
+        "TITAN Audio frozen scientific instrumentation\n\n\
+  --analysis-substrate legacy|msfield  Explicit checkpoint substrate (default legacy)\n\
+  --analysis-warmup N          Reconstruct a later frozen trajectory snapshot\n\
+  --analysis-target-schedule P Fixed train-only target intervals for feedback\n\
 Usage: titan --analysis-only [read-only inputs] [analyses]\n\n\
 Read-only inputs:\n\
   --base-dir DIR              Checkpoint/corpus root\n\

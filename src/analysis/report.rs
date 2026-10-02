@@ -71,6 +71,7 @@ pub(crate) fn write_step_csv_atomic(
             "movement",
             "micro_rms",
             "macro_rms",
+            "coarse_rms",
             "recurrent_rms",
             "micro_near_bound_fraction",
             "macro_near_bound_fraction",
@@ -120,6 +121,10 @@ pub(crate) fn write_step_csv_atomic(
                 record.movement.to_string(),
                 record.micro_rms.to_string(),
                 record.macro_rms.to_string(),
+                record
+                    .coarse_rms
+                    .map(|value| value.to_string())
+                    .unwrap_or_default(),
                 record.recurrent_rms.to_string(),
                 record.micro_near_bound_fraction.to_string(),
                 record.macro_near_bound_fraction.to_string(),

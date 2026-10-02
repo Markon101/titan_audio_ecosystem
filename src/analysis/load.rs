@@ -78,6 +78,10 @@ pub(crate) struct CorpusProvenance {
 }
 
 pub(crate) struct LoadedOrigin {
+    pub substrate: super::super::SubstrateMode,
+    pub coarse: Option<Vec<f32>>,
+    pub warmup_chunks: usize,
+    pub target_schedule: Option<PathBuf>,
     pub paths: ResolvedPaths,
     pub architecture: InferredArchitecture,
     pub world: Option<super::super::WorldCheckpoint>,
@@ -96,6 +100,11 @@ pub(crate) struct ModelBundle {
 pub(crate) fn resolve_paths(request: &AnalysisRequest) -> ResolvedPaths {
     let base = &request.base_dir;
     let tag = request.run_tag.as_deref();
+    let suffix = if request.substrate == super::super::SubstrateMode::MsField {
+        "v10_msfield"
+    } else {
+        "v9"
+    };
     ResolvedPaths {
         base_dir: base.clone(),
         wav_dir: request
@@ -105,7 +114,7 @@ pub(crate) fn resolve_paths(request: &AnalysisRequest) -> ResolvedPaths {
         model: request.model_path.clone().unwrap_or_else(|| {
             PathBuf::from(super::super::artifacts::artifact_path(
                 &base.display().to_string(),
-                "titan_model_v9",
+                &format!("titan_model_{suffix}"),
                 "safetensors",
                 tag,
             ))
@@ -113,26 +122,26 @@ pub(crate) fn resolve_paths(request: &AnalysisRequest) -> ResolvedPaths {
         world: request.state_path.clone().unwrap_or_else(|| {
             PathBuf::from(super::super::artifacts::artifact_path(
                 &base.display().to_string(),
-                "titan_world_v9",
+                &format!("titan_world_{suffix}"),
                 "bin",
                 tag,
             ))
         }),
         optimizer: PathBuf::from(super::super::artifacts::artifact_path(
             &base.display().to_string(),
-            "titan_optimizer_v9",
+            &format!("titan_optimizer_{suffix}"),
             "safetensors",
             tag,
         )),
         morph: PathBuf::from(super::super::artifacts::artifact_path(
             &base.display().to_string(),
-            "titan_morph_state_v9",
+            &format!("titan_morph_state_{suffix}"),
             "json",
             tag,
         )),
         run_metadata: PathBuf::from(super::super::artifacts::artifact_path(
             &base.display().to_string(),
-            "titan_run_metadata_v9",
+            &format!("titan_run_metadata_{suffix}"),
             "json",
             tag,
         )),
@@ -148,6 +157,10 @@ pub(crate) fn load_origin(request: &AnalysisRequest) -> Result<LoadedOrigin> {
     if !paths.model.is_file() {
         anyhow::bail!("analysis model does not exist: {}", paths.model.display());
     }
+    let marked = super::super::model_has_msfield_marker(&paths.model.display().to_string())?;
+    if marked != (request.substrate == super::super::SubstrateMode::MsField) {
+        anyhow::bail!("analysis substrate does not match the model schema marker");
+    }
     let architecture = infer_architecture(&paths.model)?;
     let needs_world = !request.frozen_rollouts.is_empty()
         || request.dynamics_ablation.is_some()
@@ -155,8 +168,15 @@ pub(crate) fn load_origin(request: &AnalysisRequest) -> Result<LoadedOrigin> {
         || request.trained_init_control
         || request.target_feedback_switch.is_some()
         || request.render_attribution;
+    let mut coarse = None;
     let world = if paths.world.is_file() {
-        let checkpoint = super::super::load_world(&paths.world.display().to_string())?;
+        let checkpoint = if request.substrate == super::super::SubstrateMode::MsField {
+            let saved = super::super::load_ms_world(&paths.world.display().to_string())?;
+            coarse = Some(saved.coarse_tape);
+            saved.legacy_host
+        } else {
+            super::super::load_world(&paths.world.display().to_string())?
+        };
         if checkpoint.active_depth > architecture.morph_blocks {
             anyhow::bail!(
                 "world active depth L{:02} exceeds checkpoint physical depth L{:02}",
@@ -175,9 +195,16 @@ pub(crate) fn load_origin(request: &AnalysisRequest) -> Result<LoadedOrigin> {
     };
     let optimizer = inspect_optimizer(&paths.optimizer, world.as_ref())?;
     let corpus = inspect_corpus(&paths, request.fast_provenance)?;
-    let canonical_paths = canonical_paths(&paths)?;
+    let mut canonical_paths = canonical_paths(&paths)?;
+    if let Some(path) = &request.target_schedule {
+        canonical_paths.push(path.clone());
+    }
     let canonical_before = super::super::provenance::identify_files(&canonical_paths)?;
     Ok(LoadedOrigin {
+        substrate: request.substrate,
+        coarse,
+        warmup_chunks: request.warmup_chunks,
+        target_schedule: request.target_schedule.clone(),
         paths,
         architecture,
         world,
@@ -200,8 +227,12 @@ pub(crate) fn load_model_bundle(
         blocks: origin.architecture.morph_blocks,
         width: origin.architecture.morph_width,
     };
-    let mut model =
-        super::super::ComplexAudioEcosystem::new(vb.pp("model"), &device, architecture)?;
+    let mut model = super::super::ComplexAudioEcosystem::new_with_substrate(
+        vb.pp("model"),
+        &device,
+        architecture,
+        origin.substrate,
+    )?;
     let _arbiter = super::super::AudioArbiter::new(vb.pp("arbiter"))?;
     let monitor = super::super::MonitorHead::new(vb.pp("monitor_head"))?;
     let mut episodic = super::super::EpisodicMemory::new(vb.pp("episodic"))?;

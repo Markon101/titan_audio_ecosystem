@@ -4468,6 +4468,7 @@ impl KANLayer {
 }
 
 struct MorphicStack {
+    analysis_skip: Vec<usize>,
     layers: Vec<candle_nn::Sequential>,
     norms: Vec<RmsNorm>,
     active_depth: usize,
@@ -4488,12 +4489,16 @@ impl MorphicStack {
         Ok(Self {
             layers,
             norms,
+            analysis_skip: Vec::new(),
             active_depth: MORPH_START_DEPTH,
         })
     }
     fn forward(&self, x: &Tensor) -> CResult<Tensor> {
         let mut out = x.clone();
         for i in 0..self.active_depth {
+            if self.analysis_skip.contains(&i) {
+                continue;
+            }
             let residual = self.layers[i]
                 .forward(&self.norms[i].forward(&out)?)?
                 .affine(morphic_residual_gain(i), 0.0)?;
@@ -7824,6 +7829,11 @@ Usage: titan [BASE_DIR] [options]\n\n\
     let mut latest_grad_norm = 0.0f32;
     let mut latest_clip_scale = 1.0f32;
     let mut optimizer_update_count = 0usize;
+    let mut tape_segments_dropped_nonfinite = 0usize;
+    let mut tape_segments_dropped_backward = 0usize;
+    let mut optimizer_horizons_without_gradients = 0usize;
+    let mut optimizer_horizons_nonfinite_norm = 0usize;
+    let mut optimizer_step_errors = 0usize;
     // Persisted host-side adaptive state is unpacked into local scalars for
     // the hot loop, then packed again only when checkpointing.
     let mut morph_history = std::mem::take(&mut host_runtime.morph_history);
@@ -8877,13 +8887,19 @@ Usage: titan [BASE_DIR] [options]\n\n\
                                 accumulated_steps += segment_steps;
                                 accumulated_lr_gain_sum += tape_lr_gain_sum;
                             }
-                            Err(e) => println!(
-                                "! WARNING: backward failed: {} — dropping tape segment.",
-                                e
-                            ),
+                            Err(e) => {
+                                tape_segments_dropped_backward += 1;
+                                println!(
+                                    "! WARNING: backward failed: {} — dropping tape segment.",
+                                    e
+                                );
+                            }
                         }
                     }
-                    _ => println!("! WARNING: Non-finite loss detected. Dropping tape segment."),
+                    _ => {
+                        tape_segments_dropped_nonfinite += 1;
+                        println!("! WARNING: Non-finite loss detected. Dropping tape segment.");
+                    }
                 }
             }
             steps_in_tape = 0;
@@ -8927,13 +8943,20 @@ Usage: titan [BASE_DIR] [options]\n\n\
                             .min(1.0);
                         optimizer.set_learning_rate(target_lr * mean_lr_gain * moment_warmup);
                         let optimizer_started = Instant::now();
-                        let _ = optimizer.step(&grads);
+                        if let Err(error) = optimizer.step(&grads) {
+                            optimizer_step_errors += 1;
+                            println!("! WARNING: optimizer step failed: {error}");
+                        } else {
+                            optimizer_update_count += 1;
+                        }
                         phase_profiler.optimizer += optimizer_started.elapsed();
-                        optimizer_update_count += 1;
                     } else {
+                        optimizer_horizons_nonfinite_norm += 1;
                         println!("! WARNING: non-finite grad norm — skipping horizon.");
                     }
                 }
+            } else {
+                optimizer_horizons_without_gradients += 1;
             }
             steps_since_update = 0;
             accumulated_steps = 0;
@@ -10061,6 +10084,20 @@ Usage: titan [BASE_DIR] [options]\n\n\
             "development_plateau_ready": development_plateau.ready,
             "development_relative_improvement": development_plateau.relative_improvement,
             "phase_profile": phase_profiler.json(completed_chunks),
+        },
+        "temporal_credit": {
+            "chunk_seconds": CHUNK_SIZE as f64 / SAMPLE_RATE as f64,
+            "requested_optimizer_horizon_chunks": bptt_window,
+            "maximum_connected_field_gru_tape_chunks": tape_chunks,
+            "long_spectral_loss_observation_chunks": tape_chunks,
+            "target_episode_chunks": TARGET_EPISODE_CHUNKS,
+            "core_update_every_tapes": core_update_every,
+            "tape_segments_dropped_nonfinite_loss": tape_segments_dropped_nonfinite,
+            "tape_segments_dropped_backward_error": tape_segments_dropped_backward,
+            "optimizer_horizons_without_gradients": optimizer_horizons_without_gradients,
+            "optimizer_horizons_skipped_nonfinite_norm": optimizer_horizons_nonfinite_norm,
+            "optimizer_step_errors": optimizer_step_errors,
+            "interpretation": "optimizer horizon averages gradients from detached tape segments; it is not a connected temporal graph"
         },
         "final_state": {
             "raw_model_confidence": controller.meta.confidence,

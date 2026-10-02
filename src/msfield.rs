@@ -140,6 +140,7 @@ impl Exchange {
 /// The canonical renderer still consumes the 64x64 and 32x32 fields; the
 /// 16x16 state reaches it through learned meso/coarse exchange.
 pub(super) struct MsField {
+    pub(super) analysis_disable_exchange: bool,
     // A tensor-name discriminator in SafeTensors. The v9 loader must reject
     // this marker before its permissive compatible-tensor migration begins.
     _schema_marker: Tensor,
@@ -160,6 +161,7 @@ pub(super) struct MsFieldDiagnostics {
 impl MsField {
     pub(super) fn new(vb: VBV, _device: &Device) -> Result<Self> {
         Ok(Self {
+            analysis_disable_exchange: false,
             _schema_marker: vb.get_with_hints(
                 (1,),
                 "schema_marker",
@@ -196,15 +198,21 @@ impl MsField {
         // Exchange is simultaneous: every projection reads the pre-step state.
         // This prevents one scale from seeing another scale's already-updated
         // state within the same chunk.
-        let meso_up = meso.upsample_nearest2d(GRID_H, GRID_W)?;
-        let fine_down = decimate2_2d(fine)?;
-        let coarse_up = coarse.upsample_nearest2d(MACRO_H, MACRO_W)?;
-        let meso_down = decimate2_2d(meso)?;
-        let fine_rate = fine_rate.add(&self.meso_to_fine.residual(&meso_up, fine)?)?;
-        let meso_rate = meso_rate
-            .add(&self.fine_to_meso.residual(&fine_down, meso)?)?
-            .add(&self.coarse_to_meso.residual(&coarse_up, meso)?)?;
-        let coarse_rate = coarse_rate.add(&self.meso_to_coarse.residual(&meso_down, coarse)?)?;
+        let (fine_rate, meso_rate, coarse_rate) = if self.analysis_disable_exchange {
+            (fine_rate, meso_rate, coarse_rate)
+        } else {
+            let meso_up = meso.upsample_nearest2d(GRID_H, GRID_W)?;
+            let fine_down = decimate2_2d(fine)?;
+            let coarse_up = coarse.upsample_nearest2d(MACRO_H, MACRO_W)?;
+            let meso_down = decimate2_2d(meso)?;
+            let fine_rate = fine_rate.add(&self.meso_to_fine.residual(&meso_up, fine)?)?;
+            let meso_rate = meso_rate
+                .add(&self.fine_to_meso.residual(&fine_down, meso)?)?
+                .add(&self.coarse_to_meso.residual(&coarse_up, meso)?)?;
+            let coarse_rate =
+                coarse_rate.add(&self.meso_to_coarse.residual(&meso_down, coarse)?)?;
+            (fine_rate, meso_rate, coarse_rate)
+        };
 
         // Explicit Euler with fixed scale clocks. A hard state rail is a final
         // numerical guard, not a proof that the learned map is contractive.
@@ -343,6 +351,43 @@ mod tests {
             fine_difference > 1e-9,
             "coarse must reach fine through meso"
         );
+        Ok(())
+    }
+
+    #[test]
+    fn late_fine_loss_reaches_earlier_coarse_state_only_inside_tape() -> Result<()> {
+        let device = Device::Cpu;
+        let vars = VarMap::new();
+        let vb = VBV::from_varmap(&vars, DType::F32, &device);
+        let field = MsField::new(vb.pp("msfield"), &device)?;
+        deterministic_reinit(&vars, 19, &device)?;
+        let fine = Tensor::zeros((1, CA_CHANNELS, GRID_H, GRID_W), DType::F32, &device)?;
+        let meso = Tensor::zeros((1, CA_CHANNELS, MACRO_H, MACRO_W), DType::F32, &device)?;
+        let coarse = Var::from_tensor(
+            &Tensor::ones((1, CA_CHANNELS, COARSE_H, COARSE_W), DType::F32, &device)?
+                .affine(0.05, 0.0)?,
+        )?;
+        let memory = Tensor::zeros((1, MEMORY_DIM), DType::F32, &device)?;
+        let (fine_1, meso_1, coarse_1, _) =
+            field.step(&fine, &meso, coarse.as_tensor(), &memory)?;
+        let (fine_2, _, _, _) = field.step(&fine_1, &meso_1, &coarse_1, &memory)?;
+        let within = fine_2.sqr()?.mean_all()?.backward()?;
+        let gradient = within
+            .get(coarse.as_tensor())
+            .ok_or_else(|| anyhow::anyhow!("earlier coarse state received no late fine gradient"))?
+            .abs()?
+            .max_all()?
+            .to_scalar::<f32>()?;
+        assert!(gradient.is_finite() && gradient > 0.0);
+
+        let (fine_after, _, _, _) = field.step(
+            &fine_1.detach(),
+            &meso_1.detach(),
+            &coarse_1.detach(),
+            &memory,
+        )?;
+        let beyond = fine_after.sqr()?.mean_all()?.backward()?;
+        assert!(beyond.get(coarse.as_tensor()).is_none());
         Ok(())
     }
 }
