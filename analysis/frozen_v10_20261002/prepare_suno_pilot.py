@@ -68,6 +68,8 @@ def main():
     parser.add_argument("--causal", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--seed", type=int, default=20261002)
+    parser.add_argument("--quiet-cuts", action="store_true",
+                        help="choose low-energy boundaries within +/-4096 frames of nominal blocks")
     args = parser.parse_args()
     if args.out.exists():
         raise FileExistsError(f"pilot already exists: {args.out}")
@@ -77,10 +79,21 @@ def main():
         raise ValueError("pilot needs at least eight complete 0.683 s blocks")
     baseline, causal = baseline[:frames], causal[:frames]
     rng = np.random.default_rng(args.seed)
-    order = rng.permutation(frames // BLOCK)
+    if args.quiet_cuts:
+        cuts = [0]
+        for nominal in range(BLOCK, frames, BLOCK):
+            candidates = np.arange(nominal - BLOCK // 8, nominal + BLOCK // 8)
+            boundary_energy = np.sum(baseline[candidates - 1] ** 2 + baseline[candidates] ** 2,
+                                     axis=1)
+            cuts.append(int(candidates[np.argmin(boundary_energy)]))
+        cuts.append(frames)
+    else:
+        cuts = list(range(0, frames + 1, BLOCK))
+    segments = [baseline[cuts[index]:cuts[index + 1]] for index in range(len(cuts) - 1)]
+    order = rng.permutation(len(segments))
     if np.array_equal(order, np.arange(len(order))):
         order = np.roll(order, 1)
-    reordered = baseline.reshape(-1, BLOCK, 2)[order].reshape(frames, 2).copy()
+    reordered = np.concatenate([segments[index] for index in order], axis=0).copy()
     assert np.array_equal(np.sort(order), np.arange(len(order)))
     surrogate, null_check = phase_surrogate(baseline, rng)
     conditions = {
@@ -116,7 +129,9 @@ def main():
     key = {"schema": 1, "seed": args.seed, "frames": frames,
            "duration_seconds": frames / SAMPLE_RATE, "sample_rate": SAMPLE_RATE,
            "source_sha256": {"baseline": sha(args.baseline), "causal": sha(args.causal)},
-           "time_block_frames": BLOCK, "time_permutation": order.tolist(),
+           "time_block_frames": BLOCK, "time_cut_points": cuts,
+           "time_cut_method": "minimum_stereo_boundary_energy_within_4096_frames" if args.quiet_cuts else "fixed",
+           "time_permutation": order.tolist(),
            "surrogate_validation": null_check, "processing": measurements, "conditions": {}}
     for index, name in enumerate(condition_order, 1):
         code = f"{index:03}"
@@ -140,8 +155,8 @@ def main():
         "output including rejected rerolls in `generation_receipts.csv`. Enter blind "
         "ratings in `blind_ratings.csv`. Rate coherence, interesting transitions, "
         "rhythmic/structural variety, and personal preference "
-        "before opening `private/answer_key.json`. The time-order control has "
-        "measured seam discontinuities; see `control_validation.json` after rating. "
+        "before opening `private/answer_key.json`. The time-order control may "
+        "have seam discontinuities; see `control_validation.json` after rating. "
         "No files were sent by this script.\n"
     )
     print(json.dumps({"anonymous_ids": sorted(key["conditions"]), "frames": frames,

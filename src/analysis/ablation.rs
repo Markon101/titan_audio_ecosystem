@@ -102,6 +102,9 @@ pub(crate) fn run_suite(
             if name == "feedback_replay" {
                 intervention.feedback_replay = Some(baseline.all_feedback.clone());
             }
+            if intervention.wants_control_energy_replay {
+                intervention.control_energy_replay = Some(baseline.all_control_energy.clone());
+            }
         }
         let run = rollout::run(
             origin,
@@ -121,7 +124,7 @@ pub(crate) fn run_suite(
             exact_disabled_behavior: definition(&name).to_string(),
             comparison: rollout::comparison(&baseline, &run),
         });
-        if name == "none" {
+        if name == "none" || name == "none_control_energy_replay" {
             let exact = run.all_left == baseline.all_left
                 && run.all_right == baseline.all_right
                 && run.all_raw_left == baseline.all_raw_left
@@ -173,6 +176,10 @@ pub(crate) fn run_suite(
 fn definition(name: &str) -> &'static str {
     match name {
         "none" => "independent cloned frozen rollout with no neural or host intervention",
+        "none_control_energy_replay" => "independent clone replaying baseline synthesis control and forward energy at every chunk",
+        "coarse_hold_control_energy_replay" => "hold coarse state while replaying baseline synthesis control and forward energy",
+        "gru_hold_control_energy_replay" => "hold GRU state while replaying baseline synthesis control and forward energy",
+        "morphic_upper_bypass_control_energy_replay" => "bypass L12-L16 Morphic residuals while replaying baseline synthesis control and forward energy",
         "coarse_hold" => "retain the prior coarse msfield state after each learned step; audio consequences begin on the next chunk",
         "exchange_disabled" => "disable learned fine-meso and meso-coarse exchange inside the frozen msfield forward; energy change is reported",
         "morphic_upper_bypass" => "bypass active L12-L16 Morphic residuals while retaining the shared 512-dimensional interface",

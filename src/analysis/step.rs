@@ -18,6 +18,12 @@ pub(crate) struct ForcingFrame {
     pub kick_amplitude: f32,
 }
 
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
+pub(crate) struct ControlEnergyFrame {
+    pub control: super::super::SynthesisControl,
+    pub forward_energy: f32,
+}
+
 #[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
 pub(crate) struct Intervention {
     pub coarse_hold: bool,
@@ -27,6 +33,8 @@ pub(crate) struct Intervention {
     pub feedback_zero: bool,
     pub feedback_replay: Option<Vec<Option<f32>>>,
     pub forcing_replay: Option<Vec<ForcingFrame>>,
+    pub control_energy_replay: Option<Vec<ControlEnergyFrame>>,
+    pub wants_control_energy_replay: bool,
     pub name: String,
     pub micro_nca_hold: bool,
     pub macro_nca_hold: bool,
@@ -64,6 +72,19 @@ impl Intervention {
             "shear_half" => intervention.shear_half = true,
             "feedback_zero" => intervention.feedback_zero = true,
             "feedback_replay" => {}
+            "none_control_energy_replay" => intervention.wants_control_energy_replay = true,
+            "coarse_hold_control_energy_replay" => {
+                intervention.coarse_hold = true;
+                intervention.wants_control_energy_replay = true;
+            }
+            "gru_hold_control_energy_replay" => {
+                intervention.gru_hold = true;
+                intervention.wants_control_energy_replay = true;
+            }
+            "morphic_upper_bypass_control_energy_replay" => {
+                intervention.morph_upper_bypass = true;
+                intervention.wants_control_energy_replay = true;
+            }
             "micro_nca_hold" => intervention.micro_nca_hold = true,
             "macro_nca_hold" => intervention.macro_nca_hold = true,
             "gru_hold" => intervention.gru_hold = true,
@@ -114,6 +135,8 @@ impl Intervention {
             "host_stochastic_forcing"
         } else if self.target_feedback_disabled {
             "target_error_feedback"
+        } else if self.wants_control_energy_replay {
+            "baseline_control_and_forward_energy_replay"
         } else if self.name == "arbiter_bypass" {
             "training_only_null_control"
         } else {
@@ -167,6 +190,7 @@ pub(crate) struct StepRecord {
 
 pub(crate) struct StepOutput {
     pub forcing: ForcingFrame,
+    pub control_energy: ControlEnergyFrame,
     pub target_feedback: Option<f32>,
     pub record: StepRecord,
     pub left: Vec<f32>,
@@ -180,6 +204,9 @@ pub(crate) fn step(
     rollout_offset: usize,
     intervention: &Intervention,
 ) -> Result<StepOutput> {
+    if intervention.wants_control_energy_replay && intervention.control_energy_replay.is_none() {
+        anyhow::bail!("control/energy replay requires recorded baseline frames");
+    }
     if world.coarse.is_none()
         && (intervention.coarse_hold
             || intervention.exchange_disabled
@@ -268,10 +295,25 @@ pub(crate) fn step(
             (0.18 + 0.62 * escape_strength).clamp(0.0, 0.82),
         );
     }
-    let control = world
+    let proposed_control = world
         .host
         .smoothed_control
         .blend(target_control, control_slew);
+    let control_energy_replay = intervention
+        .control_energy_replay
+        .as_ref()
+        .map(|frames| {
+            frames
+                .get(rollout_offset - 1)
+                .ok_or_else(|| anyhow::anyhow!("control/energy replay is shorter than rollout"))
+        })
+        .transpose()?;
+    let control = control_energy_replay
+        .map(|frame| frame.control)
+        .unwrap_or(proposed_control);
+    let forward_energy = control_energy_replay
+        .map(|frame| frame.forward_energy)
+        .unwrap_or(world.energy);
     world.host.smoothed_control = control;
     let predictor_input =
         super::super::predictor_input(&world.hidden.detach(), action, control, &device)?.detach();
@@ -305,7 +347,7 @@ pub(crate) fn step(
         force_macro,
         absolute_step,
         false,
-        world.energy,
+        forward_energy,
         &control,
         world.coarse.as_ref(),
     )?;
@@ -733,6 +775,10 @@ pub(crate) fn step(
     };
     world.absolute_step = world.absolute_step.saturating_add(1);
     Ok(StepOutput {
+        control_energy: ControlEnergyFrame {
+            control,
+            forward_energy,
+        },
         forcing: ForcingFrame {
             force_macro,
             radiation_probability,

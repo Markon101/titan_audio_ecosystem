@@ -62,6 +62,7 @@ pub(crate) struct RolloutRun {
     pub all_raw_right: Vec<f32>,
     pub all_feedback: Vec<Option<f32>>,
     pub all_forcing: Vec<step::ForcingFrame>,
+    pub all_control_energy: Vec<step::ControlEnergyFrame>,
 }
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
@@ -118,6 +119,7 @@ pub(crate) fn run(
     let mut all_raw_right = Vec::with_capacity(maximum_horizon * super::super::CHUNK_SIZE);
     let mut all_feedback = Vec::with_capacity(maximum_horizon);
     let mut all_forcing = Vec::with_capacity(maximum_horizon);
+    let mut all_control_energy = Vec::with_capacity(maximum_horizon);
     let mut recurrence_history = vec![(
         checkpoint_start_step,
         metrics::compact_signature(&initial.0, &initial.1, &initial.2),
@@ -133,6 +135,7 @@ pub(crate) fn run(
         all_raw_right.extend_from_slice(&output.raw_right);
         all_feedback.push(output.target_feedback);
         all_forcing.push(output.forcing);
+        all_control_energy.push(output.control_energy);
         let observe = offset.is_multiple_of(stride) || requested.contains(&offset) || offset == 1;
         if observe {
             progress(offset, maximum_horizon, &output.record);
@@ -231,6 +234,7 @@ pub(crate) fn run(
         all_raw_right,
         all_feedback,
         all_forcing,
+        all_control_energy,
     })
 }
 

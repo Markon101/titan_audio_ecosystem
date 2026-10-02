@@ -618,7 +618,7 @@ impl ControlAction {
     }
 }
 
-#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
 struct SynthesisControl {
     shear_mult: f32,
     kick_mult: f32,
