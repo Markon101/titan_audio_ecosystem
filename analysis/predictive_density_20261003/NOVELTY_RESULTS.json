@@ -1,0 +1,502 @@
+{
+  "schema": 1,
+  "descriptive_only_not_reward": true,
+  "candidates": {
+    "w0_baseline": {
+      "diagnostics": {
+        "descriptor_entropy_bits_per_feature": [
+          3.981702590570303,
+          3.984407449155872,
+          3.9892136943532592,
+          3.988787123511945,
+          3.9842785337800093,
+          3.9815521796043267,
+          3.974473871311287,
+          3.992015376669634,
+          3.9793202719851806,
+          3.9879403800747832,
+          3.9779567411429357,
+          3.982893446259725,
+          3.982985772266986
+        ],
+        "training_active_features": 13,
+        "descriptor_token_zlib_ratio": 0.5773737980769231,
+        "median_normalized_change": 1.4463560034073528,
+        "last_quarter_normalized_change": 1.4887281666223193,
+        "repeat_mean_square_by_lag": {
+          "1": 2.2402414562125137,
+          "4": 2.0967341071398837,
+          "16": 2.2989406781587043,
+          "64": 1.7577033390133552,
+          "128": 2.0133772876151084
+        },
+        "normalized_descriptor_covariance_participation_ratio": 6.896109910203822,
+        "recent_novelty_window": 128,
+        "recent_novelty_exclusion": 16,
+        "recent_nearest_distance_mean": 0.6714457940630679,
+        "recent_nearest_distance_last_quarter": 0.6707325010642033,
+        "not_waveform_compression": true
+      },
+      "physical": {
+        "frames": 4194304,
+        "chunks": 1024,
+        "seconds": 87.38133333333333,
+        "rms": 0.08533285140242311,
+        "peak": 0.30712890625,
+        "quiet_chunk_fraction": 0.0,
+        "top_three_fft_bins_median_power_fraction": 0.4346102763424182,
+        "clipping_sample_fraction": 0.0,
+        "descriptor_names": [
+          "log_mid_rms",
+          "log_side_rms",
+          "log_band_fraction_0",
+          "log_band_fraction_1",
+          "log_band_fraction_2",
+          "log_band_fraction_3",
+          "log_band_fraction_4",
+          "log_band_fraction_5",
+          "log_band_fraction_6",
+          "log_band_fraction_7",
+          "band_flux",
+          "stereo_correlation",
+          "level_balance"
+        ],
+        "eligible": true
+      }
+    },
+    "w0_energy_state_s00000000": {
+      "diagnostics": {
+        "descriptor_entropy_bits_per_feature": [
+          3.981702590570303,
+          3.984407449155872,
+          3.9892136943532592,
+          3.988787123511945,
+          3.9842785337800093,
+          3.9815521796043267,
+          3.974473871311287,
+          3.992015376669634,
+          3.9793202719851806,
+          3.9879403800747832,
+          3.9779567411429357,
+          3.982893446259725,
+          3.982985772266986
+        ],
+        "training_active_features": 13,
+        "descriptor_token_zlib_ratio": 0.5773737980769231,
+        "median_normalized_change": 1.4463560034073528,
+        "last_quarter_normalized_change": 1.4887281666223193,
+        "repeat_mean_square_by_lag": {
+          "1": 2.2402414562125137,
+          "4": 2.0967341071398837,
+          "16": 2.2989406781587043,
+          "64": 1.7577033390133552,
+          "128": 2.0133772876151084
+        },
+        "normalized_descriptor_covariance_participation_ratio": 6.896109910203822,
+        "recent_novelty_window": 128,
+        "recent_novelty_exclusion": 16,
+        "recent_nearest_distance_mean": 0.6714457940630679,
+        "recent_nearest_distance_last_quarter": 0.6707325010642033,
+        "not_waveform_compression": true
+      },
+      "physical": {
+        "frames": 4194304,
+        "chunks": 1024,
+        "seconds": 87.38133333333333,
+        "rms": 0.08533285140242311,
+        "peak": 0.30712890625,
+        "quiet_chunk_fraction": 0.0,
+        "top_three_fft_bins_median_power_fraction": 0.4346102763424182,
+        "clipping_sample_fraction": 0.0,
+        "descriptor_names": [
+          "log_mid_rms",
+          "log_side_rms",
+          "log_band_fraction_0",
+          "log_band_fraction_1",
+          "log_band_fraction_2",
+          "log_band_fraction_3",
+          "log_band_fraction_4",
+          "log_band_fraction_5",
+          "log_band_fraction_6",
+          "log_band_fraction_7",
+          "band_flux",
+          "stereo_correlation",
+          "level_balance"
+        ],
+        "eligible": true
+      }
+    },
+    "w0_energy_state_s00010000": {
+      "diagnostics": {
+        "descriptor_entropy_bits_per_feature": [
+          3.984558298968004,
+          3.9869667959002486,
+          3.9822189044509457,
+          3.9866986067696866,
+          3.984830297313035,
+          3.9824193341938474,
+          3.97749617956414,
+          3.994789657708872,
+          3.9899050993875975,
+          3.97650262280012,
+          3.983582732148677,
+          3.9833204427628717,
+          3.9881327341053003
+        ],
+        "training_active_features": 13,
+        "descriptor_token_zlib_ratio": 0.5775991586538461,
+        "median_normalized_change": 1.427116382206135,
+        "last_quarter_normalized_change": 1.5243001341124771,
+        "repeat_mean_square_by_lag": {
+          "1": 2.2243206585795594,
+          "4": 2.1074543989396046,
+          "16": 2.201482453654632,
+          "64": 1.7374654647942331,
+          "128": 1.9440700120027272
+        },
+        "normalized_descriptor_covariance_participation_ratio": 7.0820924747150595,
+        "recent_novelty_window": 128,
+        "recent_novelty_exclusion": 16,
+        "recent_nearest_distance_mean": 0.6702875211810194,
+        "recent_nearest_distance_last_quarter": 0.6711279955567687,
+        "not_waveform_compression": true
+      },
+      "physical": {
+        "frames": 4194304,
+        "chunks": 1024,
+        "seconds": 87.38133333333333,
+        "rms": 0.08539927124790272,
+        "peak": 0.305023193359375,
+        "quiet_chunk_fraction": 0.0,
+        "top_three_fft_bins_median_power_fraction": 0.4345525881283131,
+        "clipping_sample_fraction": 0.0,
+        "descriptor_names": [
+          "log_mid_rms",
+          "log_side_rms",
+          "log_band_fraction_0",
+          "log_band_fraction_1",
+          "log_band_fraction_2",
+          "log_band_fraction_3",
+          "log_band_fraction_4",
+          "log_band_fraction_5",
+          "log_band_fraction_6",
+          "log_band_fraction_7",
+          "band_flux",
+          "stereo_correlation",
+          "level_balance"
+        ],
+        "eligible": true
+      }
+    },
+    "w0_energy_state_s00030000": {
+      "diagnostics": {
+        "descriptor_entropy_bits_per_feature": [
+          3.9808617057516877,
+          3.990229897848122,
+          3.986898996444033,
+          3.993721633922517,
+          3.9799455047167727,
+          3.986327131871969,
+          3.9735391909019047,
+          3.9864860032739413,
+          3.985335958225231,
+          3.9836412280036257,
+          3.98885176663472,
+          3.9865585207422773,
+          3.9871006971822975
+        ],
+        "training_active_features": 13,
+        "descriptor_token_zlib_ratio": 0.576171875,
+        "median_normalized_change": 1.4375309118851578,
+        "last_quarter_normalized_change": 1.4714365577335546,
+        "repeat_mean_square_by_lag": {
+          "1": 2.280434531494082,
+          "4": 2.1465974849363803,
+          "16": 2.4082475463310202,
+          "64": 1.8734893553672503,
+          "128": 2.0380793986362558
+        },
+        "normalized_descriptor_covariance_participation_ratio": 7.07323320251751,
+        "recent_novelty_window": 128,
+        "recent_novelty_exclusion": 16,
+        "recent_nearest_distance_mean": 0.6701855907368497,
+        "recent_nearest_distance_last_quarter": 0.6725360443186151,
+        "not_waveform_compression": true
+      },
+      "physical": {
+        "frames": 4194304,
+        "chunks": 1024,
+        "seconds": 87.38133333333333,
+        "rms": 0.08527703302155995,
+        "peak": 0.3072509765625,
+        "quiet_chunk_fraction": 0.0,
+        "top_three_fft_bins_median_power_fraction": 0.43500678690850275,
+        "clipping_sample_fraction": 0.0,
+        "descriptor_names": [
+          "log_mid_rms",
+          "log_side_rms",
+          "log_band_fraction_0",
+          "log_band_fraction_1",
+          "log_band_fraction_2",
+          "log_band_fraction_3",
+          "log_band_fraction_4",
+          "log_band_fraction_5",
+          "log_band_fraction_6",
+          "log_band_fraction_7",
+          "band_flux",
+          "stereo_correlation",
+          "level_balance"
+        ],
+        "eligible": true
+      }
+    },
+    "w128_baseline": {
+      "diagnostics": {
+        "descriptor_entropy_bits_per_feature": [
+          3.9853450401364174,
+          3.9695220482422577,
+          3.9898372189776024,
+          3.981782710029012,
+          3.9876637266693167,
+          3.9843577475064498,
+          3.9816906955224742,
+          3.9851114617508943,
+          3.9924898054096407,
+          3.97850829030078,
+          3.9923452009424603,
+          3.9913359367734573,
+          3.9835513208940903
+        ],
+        "training_active_features": 13,
+        "descriptor_token_zlib_ratio": 0.5773737980769231,
+        "median_normalized_change": 1.4512202785297292,
+        "last_quarter_normalized_change": 1.475745054867855,
+        "repeat_mean_square_by_lag": {
+          "1": 2.254589286363898,
+          "4": 2.0810015623757083,
+          "16": 2.3185836344752144,
+          "64": 1.7105444650903203,
+          "128": 1.98142328255108
+        },
+        "normalized_descriptor_covariance_participation_ratio": 6.952253369952707,
+        "recent_novelty_window": 128,
+        "recent_novelty_exclusion": 16,
+        "recent_nearest_distance_mean": 0.670727386831979,
+        "recent_nearest_distance_last_quarter": 0.6458449345289051,
+        "not_waveform_compression": true
+      },
+      "physical": {
+        "frames": 4194304,
+        "chunks": 1024,
+        "seconds": 87.38133333333333,
+        "rms": 0.08541611180749918,
+        "peak": 0.30712890625,
+        "quiet_chunk_fraction": 0.0,
+        "top_three_fft_bins_median_power_fraction": 0.4344514352050378,
+        "clipping_sample_fraction": 0.0,
+        "descriptor_names": [
+          "log_mid_rms",
+          "log_side_rms",
+          "log_band_fraction_0",
+          "log_band_fraction_1",
+          "log_band_fraction_2",
+          "log_band_fraction_3",
+          "log_band_fraction_4",
+          "log_band_fraction_5",
+          "log_band_fraction_6",
+          "log_band_fraction_7",
+          "band_flux",
+          "stereo_correlation",
+          "level_balance"
+        ],
+        "eligible": true
+      }
+    },
+    "w128_energy_state_s00000000": {
+      "diagnostics": {
+        "descriptor_entropy_bits_per_feature": [
+          3.9853450401364174,
+          3.9695220482422577,
+          3.9898372189776024,
+          3.981782710029012,
+          3.9876637266693167,
+          3.9843577475064498,
+          3.9816906955224742,
+          3.9851114617508943,
+          3.9924898054096407,
+          3.97850829030078,
+          3.9923452009424603,
+          3.9913359367734573,
+          3.9835513208940903
+        ],
+        "training_active_features": 13,
+        "descriptor_token_zlib_ratio": 0.5773737980769231,
+        "median_normalized_change": 1.4512202785297292,
+        "last_quarter_normalized_change": 1.475745054867855,
+        "repeat_mean_square_by_lag": {
+          "1": 2.254589286363898,
+          "4": 2.0810015623757083,
+          "16": 2.3185836344752144,
+          "64": 1.7105444650903203,
+          "128": 1.98142328255108
+        },
+        "normalized_descriptor_covariance_participation_ratio": 6.952253369952707,
+        "recent_novelty_window": 128,
+        "recent_novelty_exclusion": 16,
+        "recent_nearest_distance_mean": 0.670727386831979,
+        "recent_nearest_distance_last_quarter": 0.6458449345289051,
+        "not_waveform_compression": true
+      },
+      "physical": {
+        "frames": 4194304,
+        "chunks": 1024,
+        "seconds": 87.38133333333333,
+        "rms": 0.08541611180749918,
+        "peak": 0.30712890625,
+        "quiet_chunk_fraction": 0.0,
+        "top_three_fft_bins_median_power_fraction": 0.4344514352050378,
+        "clipping_sample_fraction": 0.0,
+        "descriptor_names": [
+          "log_mid_rms",
+          "log_side_rms",
+          "log_band_fraction_0",
+          "log_band_fraction_1",
+          "log_band_fraction_2",
+          "log_band_fraction_3",
+          "log_band_fraction_4",
+          "log_band_fraction_5",
+          "log_band_fraction_6",
+          "log_band_fraction_7",
+          "band_flux",
+          "stereo_correlation",
+          "level_balance"
+        ],
+        "eligible": true
+      }
+    },
+    "w128_energy_state_s00010000": {
+      "diagnostics": {
+        "descriptor_entropy_bits_per_feature": [
+          3.9888311477473426,
+          3.9847147948464006,
+          3.9842461735214814,
+          3.992221042673413,
+          3.983451458829755,
+          3.976934678321794,
+          3.983563958444698,
+          3.974056592937181,
+          3.963358739753621,
+          3.978942375894081,
+          3.985925319782095,
+          3.9726570744506833,
+          3.9710897931487796
+        ],
+        "training_active_features": 13,
+        "descriptor_token_zlib_ratio": 0.5772986778846154,
+        "median_normalized_change": 1.4388796180735746,
+        "last_quarter_normalized_change": 1.4274282729187093,
+        "repeat_mean_square_by_lag": {
+          "1": 2.2099653225756493,
+          "4": 2.115285449450213,
+          "16": 2.2286156660173932,
+          "64": 1.7569939541835031,
+          "128": 1.961689232079398
+        },
+        "normalized_descriptor_covariance_participation_ratio": 7.116157978200934,
+        "recent_novelty_window": 128,
+        "recent_novelty_exclusion": 16,
+        "recent_nearest_distance_mean": 0.6813921240417339,
+        "recent_nearest_distance_last_quarter": 0.6659819598468388,
+        "not_waveform_compression": true
+      },
+      "physical": {
+        "frames": 4194304,
+        "chunks": 1024,
+        "seconds": 87.38133333333333,
+        "rms": 0.08536036740994754,
+        "peak": 0.305511474609375,
+        "quiet_chunk_fraction": 0.0,
+        "top_three_fft_bins_median_power_fraction": 0.43410377874369793,
+        "clipping_sample_fraction": 0.0,
+        "descriptor_names": [
+          "log_mid_rms",
+          "log_side_rms",
+          "log_band_fraction_0",
+          "log_band_fraction_1",
+          "log_band_fraction_2",
+          "log_band_fraction_3",
+          "log_band_fraction_4",
+          "log_band_fraction_5",
+          "log_band_fraction_6",
+          "log_band_fraction_7",
+          "band_flux",
+          "stereo_correlation",
+          "level_balance"
+        ],
+        "eligible": true
+      }
+    },
+    "w128_energy_state_s00030000": {
+      "diagnostics": {
+        "descriptor_entropy_bits_per_feature": [
+          3.9786487383880442,
+          3.979019536513662,
+          3.9811552523291986,
+          3.973422089361943,
+          3.991562191736043,
+          3.989675240900037,
+          3.970785915434168,
+          3.960565617087739,
+          3.982544555559865,
+          3.98720786010154,
+          3.9748695189882692,
+          3.97750075777591,
+          3.9884110953136758
+        ],
+        "training_active_features": 13,
+        "descriptor_token_zlib_ratio": 0.5771484375,
+        "median_normalized_change": 1.4376155875113026,
+        "last_quarter_normalized_change": 1.4555657398975028,
+        "repeat_mean_square_by_lag": {
+          "1": 2.247348993212596,
+          "4": 2.1208128312253183,
+          "16": 2.2615270875101467,
+          "64": 1.768037879283845,
+          "128": 1.8897740780151722
+        },
+        "normalized_descriptor_covariance_participation_ratio": 6.957004244256945,
+        "recent_novelty_window": 128,
+        "recent_novelty_exclusion": 16,
+        "recent_nearest_distance_mean": 0.6726058476444271,
+        "recent_nearest_distance_last_quarter": 0.6766768784953663,
+        "not_waveform_compression": true
+      },
+      "physical": {
+        "frames": 4194304,
+        "chunks": 1024,
+        "seconds": 87.38133333333333,
+        "rms": 0.08529344908345057,
+        "peak": 0.3116455078125,
+        "quiet_chunk_fraction": 0.0,
+        "top_three_fft_bins_median_power_fraction": 0.4337238953917252,
+        "clipping_sample_fraction": 0.0,
+        "descriptor_names": [
+          "log_mid_rms",
+          "log_side_rms",
+          "log_band_fraction_0",
+          "log_band_fraction_1",
+          "log_band_fraction_2",
+          "log_band_fraction_3",
+          "log_band_fraction_4",
+          "log_band_fraction_5",
+          "log_band_fraction_6",
+          "log_band_fraction_7",
+          "band_flux",
+          "stereo_correlation",
+          "level_balance"
+        ],
+        "eligible": true
+      }
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "command": [
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/predictive_density_20261003/runs/frozen_titan",
+    "--analysis-only",
+    "--analysis-substrate",
+    "msfield",
+    "--base-dir",
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/frozen_step_58107",
+    "--run-tag",
+    "v10-msfield-fresh-20260930-02",
+    "--corpus-dir",
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/corpus/a",
+    "--corpus-manifest",
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/corpus/a_manifest.json",
+    "--analysis-target-schedule",
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/predictive_density_20261003/schedule.json",
+    "--analysis-seed",
+    "20261003",
+    "--analysis-common-rng",
+    "--analysis-target-origin",
+    "0",
+    "--analysis-active-depth",
+    "16",
+    "--analysis-warmup",
+    "0",
+    "--analysis-stride",
+    "8",
+    "--analysis-dir",
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/predictive_density_20261003/runs/parity_a",
+    "--analysis-terminal",
+    "quiet",
+    "--threads",
+    "2",
+    "--dynamics-ablation",
+    "64",
+    "--ablation",
+    "none"
+  ],
+  "binary_sha256": "6dde973133d5a6d29811b54ac27093f3dbf15b9de7d8081836e9b82df644e261",
+  "parent_sha256": {
+    "titan_model_v10_msfield_v10-msfield-fresh-20260930-02.safetensors": "1728fa868ac1203c92c696fe81e3f353cafaf03895dfd5dc60e9534d539b2960",
+    "titan_world_v10_msfield_v10-msfield-fresh-20260930-02.bin": "681ab112d414f74347d36e3601c814c7c41478c0d1ccea916ddffe6a3dd4c855",
+    "titan_optimizer_v10_msfield_v10-msfield-fresh-20260930-02.safetensors": "85bfd8a42a7e33b2d86f1ae0a573c752e6774466a68912fae0163bcbaade571a",
+    "titan_morph_state_v10_msfield_v10-msfield-fresh-20260930-02.json": "041ef18aec90614fd4d58265e1e6432f01446bc20606db5194ef7770c4cbd15a",
+    "titan_run_metadata_v10_msfield_v10-msfield-fresh-20260930-02.json": "744fabcc400dc54d45bc41b29afaccff75634a1e84dde753e9311ee5b984167d"
+  },
+  "schedule_sha256": "6f6b57e3be2f3d88d49c13f740c956453324f527e926424af62f54b9dd8e0898",
+  "resource": {
+    "initial": {
+      "MemAvailable": 2239.984375,
+      "SwapFree": 64.72265625
+    },
+    "minimum_available_mib": 2233.53515625,
+    "peak_rss_mib": 304.1171875,
+    "elapsed_seconds": 30.04796311398968,
+    "exit_code": 0,
+    "safety_stop": false
+  },
+  "checks": {
+    "report_sha256": "03b46dd965c204a6515738a7f6020b57d9c1dba3bbf76c576dbdefd1e497bc9d",
+    "no_op_exact": true,
+    "optimizer_steps": 0,
+    "baseline_export": "full",
+    "baseline_post_sha256": "7c0012382d67b5b73d253b4353613453d0bc0b1e6ba6b2188501c3adcdeed0bd",
+    "baseline_raw_sha256": "15fa77d2fa2152148e719ec8ce2027bfed3cbf92dd8588bcff59cbb428082041",
+    "world_fingerprint": "79864e1aeabdfa8d2c6f18320881834d0d6555649714721fe9b8f060e37402df",
+    "candidate_exports": [
+      "full",
+      "none"
+    ]
+  }
+}

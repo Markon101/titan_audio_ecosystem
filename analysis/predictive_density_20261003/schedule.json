@@ -1,0 +1,134 @@
+{
+  "schema": 1,
+  "seed": 20261003,
+  "slots": [
+    "slot_00.wav",
+    "slot_01.wav",
+    "slot_02.wav",
+    "slot_03.wav",
+    "slot_04.wav",
+    "slot_05.wav"
+  ],
+  "episodes": [
+    {
+      "start_step": 0,
+      "chunks": 64,
+      "slot": 3,
+      "source_frame": 4538368
+    },
+    {
+      "start_step": 64,
+      "chunks": 64,
+      "slot": 0,
+      "source_frame": 3104768
+    },
+    {
+      "start_step": 128,
+      "chunks": 64,
+      "slot": 2,
+      "source_frame": 421888
+    },
+    {
+      "start_step": 192,
+      "chunks": 64,
+      "slot": 1,
+      "source_frame": 2961408
+    },
+    {
+      "start_step": 256,
+      "chunks": 64,
+      "slot": 4,
+      "source_frame": 131072
+    },
+    {
+      "start_step": 320,
+      "chunks": 64,
+      "slot": 5,
+      "source_frame": 131072
+    },
+    {
+      "start_step": 384,
+      "chunks": 64,
+      "slot": 3,
+      "source_frame": 4538368
+    },
+    {
+      "start_step": 448,
+      "chunks": 64,
+      "slot": 0,
+      "source_frame": 3104768
+    },
+    {
+      "start_step": 512,
+      "chunks": 64,
+      "slot": 2,
+      "source_frame": 421888
+    },
+    {
+      "start_step": 576,
+      "chunks": 64,
+      "slot": 1,
+      "source_frame": 2961408
+    },
+    {
+      "start_step": 640,
+      "chunks": 64,
+      "slot": 4,
+      "source_frame": 131072
+    },
+    {
+      "start_step": 704,
+      "chunks": 64,
+      "slot": 5,
+      "source_frame": 131072
+    },
+    {
+      "start_step": 768,
+      "chunks": 64,
+      "slot": 3,
+      "source_frame": 4538368
+    },
+    {
+      "start_step": 832,
+      "chunks": 64,
+      "slot": 0,
+      "source_frame": 3104768
+    },
+    {
+      "start_step": 896,
+      "chunks": 64,
+      "slot": 2,
+      "source_frame": 421888
+    },
+    {
+      "start_step": 960,
+      "chunks": 64,
+      "slot": 1,
+      "source_frame": 2961408
+    },
+    {
+      "start_step": 1024,
+      "chunks": 64,
+      "slot": 4,
+      "source_frame": 131072
+    },
+    {
+      "start_step": 1088,
+      "chunks": 64,
+      "slot": 5,
+      "source_frame": 131072
+    },
+    {
+      "start_step": 1152,
+      "chunks": 64,
+      "slot": 3,
+      "source_frame": 4538368
+    },
+    {
+      "start_step": 1216,
+      "chunks": 64,
+      "slot": 0,
+      "source_frame": 3104768
+    }
+  ]
+}

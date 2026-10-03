@@ -3,6 +3,25 @@
 TITAN's telemetry mixes direct signal measurements with control heuristics and
 artistic interpretation. The distinction matters when comparing experiments.
 
+## Experimental predictive coding (opt-in offline study)
+
+`analysis/predictive_density_20261003/README.md` documents an optimizer-free
+future selector with `--pd-weight 0` as an exact baseline bypass. It does not
+alter the production loss, world schema, or ordinary trace columns. Dedicated
+JSON/CSV sidecars report chronological predictive code-length gains for
+quantized audio descriptors, tiny internal-state probes, joint-versus-single
+contrasts, simple/affine-periodic baselines, shuffled-view controls, fixed-audit
+probe learning progress, coefficient-cost assumptions and compute overhead.
+
+These gains are conditional product-code reductions, not measured mutual
+information, PID, musical quality, or Titan parameter learning. Total gain
+depends on forecast support; use bits per feature/forecast when comparing
+horizons. An assumed 16-bit coefficient charge is not an actual serialized
+MDL code. Entropy, zlib token compression, covariance participation and recent
+descriptor distances remain supporting descriptions. Baseline snapshots
+overlap, so they are not independent replication. The original loop-reward
+failure and its hardened affine-periodic control are retained in the study.
+
 ## Files and schema
 
 Telemetry schema v10 writes five complementary artifacts per run. With

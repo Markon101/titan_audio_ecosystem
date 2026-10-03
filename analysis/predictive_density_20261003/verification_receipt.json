@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "parent_unchanged": true,
+  "model_optimizer_updates": 0,
+  "target_source_bytes_verified": {
+    "slot_00.wav": {
+      "sha256": "ae0e812c0051712ba7994c27c45966f89dddecccffb8735bf065d440ecb66777",
+      "family": "architect_of_change"
+    },
+    "slot_01.wav": {
+      "sha256": "e39cf68c05164e4f3e82095c15242315fb2778ad6c1e3ed28b289731c84ddee3",
+      "family": "beats_of_the_night"
+    },
+    "slot_02.wav": {
+      "sha256": "56d547310c6e42417c99056165300bb88181af14d27cc184ae61a61fa28a631c",
+      "family": "concrete_desires"
+    },
+    "slot_03.wav": {
+      "sha256": "3570071b4555837cdca9bd40165fb2601d74a6fcbb793c31e8a9ab57bcaf66e4",
+      "family": "beyond_the_veil"
+    },
+    "slot_04.wav": {
+      "sha256": "133615304180100ba02aaa7cea1d833a3334c4684a557214a3f532478fe8d445",
+      "family": "chaos_in_capitol"
+    },
+    "slot_05.wav": {
+      "sha256": "cf74bd4e4d58640fc80c7f3303dbbfd5054537b9e383f81275b1e0505f312e7e",
+      "family": "algorhythm_s_in_digital_motion_hearts_align"
+    }
+  },
+  "sampled_target_rows_verified": {
+    "parity_a": 18,
+    "parity_b": 18,
+    "w0": 516,
+    "w128": 516
+  },
+  "host_energy_bounded": true,
+  "disabled_exact_baseline": true,
+  "selected_export_sha256": {
+    "w0_A_baseline": "5371093f2627f47c5964e9a39ca17e76d51aa82df4bab877e13d5cdac69c2dd9",
+    "w0_B_measurement_only": "5371093f2627f47c5964e9a39ca17e76d51aa82df4bab877e13d5cdac69c2dd9",
+    "w0_C_weak_PD": "5371093f2627f47c5964e9a39ca17e76d51aa82df4bab877e13d5cdac69c2dd9",
+    "w0_D_naive_predictability": "38bc7d501f8d44a3008c429d5ab85668118883efecd546f2141ba7999df21ae2",
+    "w128_A_baseline": "558f8568621266aa21594619002544840ef80a67f9c6d1f39d8c821940266017",
+    "w128_B_measurement_only": "558f8568621266aa21594619002544840ef80a67f9c6d1f39d8c821940266017",
+    "w128_C_weak_PD": "558f8568621266aa21594619002544840ef80a67f9c6d1f39d8c821940266017",
+    "w128_D_naive_predictability": "3b4ccc1c60edfb943a5f320f605a3ce87a094ee390c359f5a7a1d1466d23537f"
+  },
+  "tests": 9,
+  "validation_probe_scores_excluded_from_coding_and_choice": true
+}

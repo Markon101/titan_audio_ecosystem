@@ -1,0 +1,1153 @@
+{
+  "schema": 1,
+  "controls": {
+    "noise_with_chirped_amplitude": {
+      "coding": {
+        "schema": 1,
+        "samples": 1024,
+        "sample_chunks": 1,
+        "split_boundaries": [
+          409,
+          614,
+          819
+        ],
+        "history_lags": [
+          0,
+          1,
+          4,
+          16,
+          32,
+          64,
+          128
+        ],
+        "short_protocol": false,
+        "protocol": "v2_affine_periodic",
+        "bins_per_target": [
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16
+        ],
+        "horizons": {
+          "1": {
+            "supported": true,
+            "horizon_chunks": 1,
+            "horizon_seconds": 0.08533333333333333,
+            "selected_simple_baseline": "affine_period_1",
+            "unpenalized_calibration_baseline": "affine_period_1",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 10611.234337059239,
+              "persistence": 10724.089184041484,
+              "trend": 12243.258564999656,
+              "period_1": 10740.089184041484,
+              "period_4": 11145.924294211389,
+              "period_16": 11882.68504063046,
+              "period_64": 12444.1014214444,
+              "period_128": 11605.86341184668,
+              "affine_period_1": 10160.553054507607,
+              "affine_period_4": 10535.994431275958,
+              "affine_period_16": 11241.75508681898,
+              "affine_period_64": 11186.996441654906,
+              "affine_period_128": 11582.361009307402,
+              "history": 12790.855362005557
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -1011.078121305134,
+                  "bits_per_feature_forecast": -0.3812511769627202,
+                  "coefficient_cost_bits": 2480,
+                  "net_gain_bits": -3491.078121305134,
+                  "pd_bits_saved_per_coefficient_bit": -0.40769279084884436,
+                  "half_gain_bits": [
+                    -515.8769016269173,
+                    -495.20121967821683
+                  ],
+                  "extra_parameters": 155,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57624,
+                  "forecasts": 204,
+                  "iid_gain_bits": 86.21050371690828,
+                  "incremental_over_history_bits": -22.440291576010047,
+                  "incremental_over_unpenalized_baseline_bits": -1011.078121305134,
+                  "predictor_code_bits": 10521.416651023868,
+                  "baseline_code_bits": 9510.338529718736
+                },
+                "audit": {
+                  "gain_bits": -987.0467330537961,
+                  "bits_per_feature_forecast": -0.37218956751651433,
+                  "coefficient_cost_bits": 2480,
+                  "net_gain_bits": -3467.046733053796,
+                  "pd_bits_saved_per_coefficient_bit": -0.3980027149410468,
+                  "half_gain_bits": [
+                    -470.2659820414217,
+                    -516.7807510123745
+                  ],
+                  "extra_parameters": 155,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57624,
+                  "forecasts": 204,
+                  "iid_gain_bits": 79.81936961736086,
+                  "incremental_over_history_bits": -13.922158089651342,
+                  "incremental_over_unpenalized_baseline_bits": -987.0467330537961,
+                  "predictor_code_bits": 10527.918775348599,
+                  "baseline_code_bits": 9540.872042294804
+                },
+                "fixed_audit_probe_learning_progress_bits": 79.65426779792384
+              }
+            },
+            "synergy": {}
+          },
+          "4": {
+            "supported": true,
+            "horizon_chunks": 4,
+            "horizon_seconds": 0.3413333333333333,
+            "selected_simple_baseline": "affine_period_4",
+            "unpenalized_calibration_baseline": "affine_period_4",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 10455.394063846577,
+              "persistence": 10965.07685113838,
+              "trend": 14896.841057572976,
+              "period_1": 10981.07685113838,
+              "period_4": 10981.07685113838,
+              "period_16": 11707.126375343527,
+              "period_64": 12260.399228927734,
+              "period_128": 11440.09335178791,
+              "affine_period_1": 10392.669555923532,
+              "affine_period_4": 10392.165144624316,
+              "affine_period_16": 11085.05293003809,
+              "affine_period_64": 11033.53028007355,
+              "affine_period_128": 11419.766083295566,
+              "history": 12646.287678164063
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -516.372646521956,
+                  "bits_per_feature_forecast": -0.19761678014617526,
+                  "coefficient_cost_bits": 2480,
+                  "net_gain_bits": -2996.372646521956,
+                  "pd_bits_saved_per_coefficient_bit": -0.20821477682336934,
+                  "half_gain_bits": [
+                    -266.1381303948839,
+                    -250.23451612707208
+                  ],
+                  "extra_parameters": 155,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57036,
+                  "forecasts": 201,
+                  "iid_gain_bits": 23.303717634410347,
+                  "incremental_over_history_bits": -31.903501582263498,
+                  "incremental_over_unpenalized_baseline_bits": -516.372646521956,
+                  "predictor_code_bits": 10428.372173668522,
+                  "baseline_code_bits": 9911.999527146567
+                },
+                "audit": {
+                  "gain_bits": -356.74913593438373,
+                  "bits_per_feature_forecast": -0.13652856331204888,
+                  "coefficient_cost_bits": 2480,
+                  "net_gain_bits": -2836.749135934384,
+                  "pd_bits_saved_per_coefficient_bit": -0.14385045803805796,
+                  "half_gain_bits": [
+                    -150.41793978164105,
+                    -206.3311961527427
+                  ],
+                  "extra_parameters": 155,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57036,
+                  "forecasts": 201,
+                  "iid_gain_bits": 37.784499787354065,
+                  "incremental_over_history_bits": 1.0309314510466967,
+                  "incremental_over_unpenalized_baseline_bits": -356.74913593438373,
+                  "predictor_code_bits": 10413.669411065212,
+                  "baseline_code_bits": 10056.92027513083
+                },
+                "fixed_audit_probe_learning_progress_bits": 114.1786126783324
+              }
+            },
+            "synergy": {}
+          },
+          "16": {
+            "supported": true,
+            "horizon_chunks": 16,
+            "horizon_seconds": 1.3653333333333333,
+            "selected_simple_baseline": "iid",
+            "unpenalized_calibration_baseline": "affine_period_64",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 9830.59009806855,
+              "persistence": 11003.4949455293,
+              "trend": 18025.669621464316,
+              "period_1": 11019.4949455293,
+              "period_4": 11019.4949455293,
+              "period_16": 11019.4949455293,
+              "period_64": 11493.574875309256,
+              "period_128": 10759.779365052576,
+              "affine_period_1": 10445.714647650388,
+              "affine_period_4": 10441.998702178258,
+              "affine_period_16": 10437.910251963054,
+              "affine_period_64": 10395.048049472734,
+              "affine_period_128": 10738.260590434445,
+              "history": 12173.734859069727
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -368.22146106565856,
+                  "bits_per_feature_forecast": -0.14986628452000755,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3488.2214610656583,
+                  "pd_bits_saved_per_coefficient_bit": -0.11801969905950595,
+                  "half_gain_bits": [
+                    -181.4950079096699,
+                    -186.72645315598865
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 54684,
+                  "forecasts": 189,
+                  "iid_gain_bits": -368.22146106565856,
+                  "incremental_over_history_bits": -118.3748469122285,
+                  "incremental_over_unpenalized_baseline_bits": -278.99763030687575,
+                  "predictor_code_bits": 10196.203288842396,
+                  "baseline_code_bits": 9827.981827776739
+                },
+                "audit": {
+                  "gain_bits": -503.3306377329909,
+                  "bits_per_feature_forecast": -0.2048557744131017,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3623.330637732991,
+                  "pd_bits_saved_per_coefficient_bit": -0.1613239223503176,
+                  "half_gain_bits": [
+                    -228.0766569695113,
+                    -275.25398076347955
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 54684,
+                  "forecasts": 189,
+                  "iid_gain_bits": -503.3306377329909,
+                  "incremental_over_history_bits": -163.15434545578174,
+                  "incremental_over_unpenalized_baseline_bits": -89.91784293698339,
+                  "predictor_code_bits": 10331.256970397139,
+                  "baseline_code_bits": 9827.926332664147
+                },
+                "fixed_audit_probe_learning_progress_bits": -21.297704215533628
+              }
+            },
+            "synergy": {}
+          },
+          "64": {
+            "supported": true,
+            "horizon_chunks": 64,
+            "horizon_seconds": 5.461333333333333,
+            "selected_simple_baseline": "iid",
+            "unpenalized_calibration_baseline": "affine_period_64",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 7334.42646614898,
+              "persistence": 8558.23802040214,
+              "trend": 16876.16744351619,
+              "period_1": 8574.23802040214,
+              "period_4": 8574.23802040214,
+              "period_16": 8574.23802040214,
+              "period_64": 8574.23802040214,
+              "period_128": 7969.338727296056,
+              "affine_period_1": 8253.294983066771,
+              "affine_period_4": 8235.90496183822,
+              "affine_period_16": 8163.582557082133,
+              "affine_period_64": 7901.006169342805,
+              "affine_period_128": 8146.256701337464,
+              "history": 9639.756654471552
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -279.6645050391174,
+                  "bits_per_feature_forecast": -0.15257201584239902,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3399.6645050391176,
+                  "pd_bits_saved_per_coefficient_bit": -0.08963605930740942,
+                  "half_gain_bits": [
+                    -113.0993900964262,
+                    -166.5651149426912
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 45276,
+                  "forecasts": 141,
+                  "iid_gain_bits": -279.6645050391174,
+                  "incremental_over_history_bits": -67.12137842360747,
+                  "incremental_over_unpenalized_baseline_bits": -228.20503110821295,
+                  "predictor_code_bits": 7612.093147134796,
+                  "baseline_code_bits": 7332.428642095679
+                },
+                "audit": {
+                  "gain_bits": -356.47778362447076,
+                  "bits_per_feature_forecast": -0.19447778702917118,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3476.4777836244707,
+                  "pd_bits_saved_per_coefficient_bit": -0.11425569987963806,
+                  "half_gain_bits": [
+                    -158.3107711514345,
+                    -198.16701247303624
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 45276,
+                  "forecasts": 141,
+                  "iid_gain_bits": -356.47778362447076,
+                  "incremental_over_history_bits": 83.3162315887587,
+                  "incremental_over_unpenalized_baseline_bits": -61.01382141140592,
+                  "predictor_code_bits": 7687.96300880609,
+                  "baseline_code_bits": 7331.485225181619
+                },
+                "fixed_audit_probe_learning_progress_bits": -1.1292251358271628
+              }
+            },
+            "synergy": {}
+          }
+        },
+        "units": "proper code lengths of quantized descriptors; not MI",
+        "elapsed_seconds": 1.7847726549953222
+      },
+      "physical": {
+        "frames": 4194304,
+        "chunks": 1024,
+        "seconds": 87.38133333333333,
+        "rms": 0.09012376078443021,
+        "peak": 0.6431921342304022,
+        "quiet_chunk_fraction": 0.0,
+        "top_three_fft_bins_median_power_fraction": 0.010598576493572924,
+        "clipping_sample_fraction": 0.0,
+        "descriptor_names": [
+          "log_mid_rms",
+          "log_side_rms",
+          "log_band_fraction_0",
+          "log_band_fraction_1",
+          "log_band_fraction_2",
+          "log_band_fraction_3",
+          "log_band_fraction_4",
+          "log_band_fraction_5",
+          "log_band_fraction_6",
+          "log_band_fraction_7",
+          "band_flux",
+          "stereo_correlation",
+          "level_balance"
+        ],
+        "eligible": true
+      },
+      "diagnostics": {
+        "descriptor_entropy_bits_per_feature": [
+          3.991128454440803,
+          3.9920983209878886,
+          3.9862398726563866,
+          3.9822770912756598,
+          3.9773881851939135,
+          3.9879564151368676,
+          3.995419853651069,
+          3.987677751179105,
+          3.9824815039575707,
+          3.9927261226518618,
+          3.9870708884112793,
+          3.9942232313929518,
+          3.9841573142460733
+        ],
+        "training_active_features": 13,
+        "descriptor_token_zlib_ratio": 0.5760216346153846,
+        "median_normalized_change": 1.235304822124491,
+        "last_quarter_normalized_change": 1.2133807730969997,
+        "repeat_mean_square_by_lag": {
+          "1": 1.6469466414687302,
+          "4": 1.6644860554908205,
+          "16": 1.8322807942596802,
+          "64": 2.140189811692375,
+          "128": 2.0141046057600556
+        },
+        "not_waveform_compression": true
+      },
+      "eligible_reward": 0.0
+    },
+    "random_walk_amplitude_noise": {
+      "coding": {
+        "schema": 1,
+        "samples": 1024,
+        "sample_chunks": 1,
+        "split_boundaries": [
+          409,
+          614,
+          819
+        ],
+        "history_lags": [
+          0,
+          1,
+          4,
+          16,
+          32,
+          64,
+          128
+        ],
+        "short_protocol": false,
+        "protocol": "v2_affine_periodic",
+        "bins_per_target": [
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16
+        ],
+        "horizons": {
+          "1": {
+            "supported": true,
+            "horizon_chunks": 1,
+            "horizon_seconds": 0.08533333333333333,
+            "selected_simple_baseline": "affine_period_1",
+            "unpenalized_calibration_baseline": "affine_period_1",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 10605.740320912659,
+              "persistence": 10667.945474968914,
+              "trend": 12355.250662742106,
+              "period_1": 10683.945474968914,
+              "period_4": 10813.729747550207,
+              "period_16": 11112.743144850152,
+              "period_64": 11495.300647521519,
+              "period_128": 11634.36067272671,
+              "affine_period_1": 10071.802397398716,
+              "affine_period_4": 10239.374998611664,
+              "affine_period_16": 10555.821370660484,
+              "affine_period_64": 10936.961001569784,
+              "affine_period_128": 10980.921950712633,
+              "history": 12193.116362862482
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -474.54167294620686,
+                  "bits_per_feature_forecast": -0.17893728240807197,
+                  "coefficient_cost_bits": 2480,
+                  "net_gain_bits": -2954.5416729462067,
+                  "pd_bits_saved_per_coefficient_bit": -0.1913474487686318,
+                  "half_gain_bits": [
+                    -176.14595714433347,
+                    -298.3957158018734
+                  ],
+                  "extra_parameters": 155,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57624,
+                  "forecasts": 204,
+                  "iid_gain_bits": 1162.5004729737147,
+                  "incremental_over_history_bits": -185.63340182582627,
+                  "incremental_over_unpenalized_baseline_bits": -474.54167294620686,
+                  "predictor_code_bits": 9433.528203235395,
+                  "baseline_code_bits": 8958.986530289189
+                },
+                "audit": {
+                  "gain_bits": -658.8884413169751,
+                  "bits_per_feature_forecast": -0.24844963850564672,
+                  "coefficient_cost_bits": 2480,
+                  "net_gain_bits": -3138.8884413169753,
+                  "pd_bits_saved_per_coefficient_bit": -0.2656808231116835,
+                  "half_gain_bits": [
+                    -315.3696336787657,
+                    -343.51880763820947
+                  ],
+                  "extra_parameters": 155,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57624,
+                  "forecasts": 204,
+                  "iid_gain_bits": 991.7263342882541,
+                  "incremental_over_history_bits": -405.79531689447543,
+                  "incremental_over_unpenalized_baseline_bits": -658.8884413169751,
+                  "predictor_code_bits": 9605.07927349714,
+                  "baseline_code_bits": 8946.190832180166
+                },
+                "fixed_audit_probe_learning_progress_bits": 1608.350684825484
+              }
+            },
+            "synergy": {}
+          },
+          "4": {
+            "supported": true,
+            "horizon_chunks": 4,
+            "horizon_seconds": 0.3413333333333333,
+            "selected_simple_baseline": "affine_period_4",
+            "unpenalized_calibration_baseline": "affine_period_4",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 10449.678067249632,
+              "persistence": 10632.434575913225,
+              "trend": 15166.459151659712,
+              "period_1": 10648.434575913225,
+              "period_4": 10648.434575913225,
+              "period_16": 10943.101730488926,
+              "period_64": 11310.19983866181,
+              "period_128": 11451.003700416062,
+              "affine_period_1": 10100.2678377852,
+              "affine_period_4": 10087.490796546303,
+              "affine_period_16": 10396.823000762915,
+              "affine_period_64": 10771.273683375686,
+              "affine_period_128": 10813.65714518065,
+              "history": 12043.376554168193
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -281.88835973186923,
+                  "bits_per_feature_forecast": -0.10787920387748536,
+                  "coefficient_cost_bits": 2480,
+                  "net_gain_bits": -2761.888359731869,
+                  "pd_bits_saved_per_coefficient_bit": -0.11366466118220533,
+                  "half_gain_bits": [
+                    -131.39018785906637,
+                    -150.49817187280286
+                  ],
+                  "extra_parameters": 155,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57036,
+                  "forecasts": 201,
+                  "iid_gain_bits": 1321.8365399485615,
+                  "incremental_over_history_bits": -59.83903532184386,
+                  "incremental_over_unpenalized_baseline_bits": -281.88835973186923,
+                  "predictor_code_bits": 9118.573843498256,
+                  "baseline_code_bits": 8836.685483766387
+                },
+                "audit": {
+                  "gain_bits": -340.21005356492844,
+                  "bits_per_feature_forecast": -0.13019902547452294,
+                  "coefficient_cost_bits": 2480,
+                  "net_gain_bits": -2820.2100535649283,
+                  "pd_bits_saved_per_coefficient_bit": -0.13718147321166468,
+                  "half_gain_bits": [
+                    -170.83372311643058,
+                    -169.3763304484979
+                  ],
+                  "extra_parameters": 155,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57036,
+                  "forecasts": 201,
+                  "iid_gain_bits": 1273.905120347968,
+                  "incremental_over_history_bits": -107.12872469459037,
+                  "incremental_over_unpenalized_baseline_bits": -340.21005356492844,
+                  "predictor_code_bits": 9166.949223999582,
+                  "baseline_code_bits": 8826.739170434654
+                },
+                "fixed_audit_probe_learning_progress_bits": 1480.7649989181045
+              }
+            },
+            "synergy": {}
+          },
+          "16": {
+            "supported": true,
+            "horizon_chunks": 16,
+            "horizon_seconds": 1.3653333333333333,
+            "selected_simple_baseline": "affine_period_16",
+            "unpenalized_calibration_baseline": "affine_period_16",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 9824.652121021236,
+              "persistence": 10247.702478805533,
+              "trend": 18037.480955030234,
+              "period_1": 10263.702478805533,
+              "period_4": 10263.702478805533,
+              "period_16": 10263.702478805533,
+              "period_64": 10600.575385215161,
+              "period_128": 10739.979546499526,
+              "affine_period_1": 9827.515542617486,
+              "affine_period_4": 9776.099700408235,
+              "affine_period_16": 9771.705297288687,
+              "affine_period_64": 10118.026590786169,
+              "affine_period_128": 10157.873288130677,
+              "history": 11507.97530386546
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -271.64630773417264,
+                  "bits_per_feature_forecast": -0.11056015780796608,
+                  "coefficient_cost_bits": 2480,
+                  "net_gain_bits": -2751.6463077341728,
+                  "pd_bits_saved_per_coefficient_bit": -0.10953480150571478,
+                  "half_gain_bits": [
+                    -129.2736726336447,
+                    -142.37263510052793
+                  ],
+                  "extra_parameters": 155,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 54684,
+                  "forecasts": 189,
+                  "iid_gain_bits": 1203.8918177168398,
+                  "incremental_over_history_bits": -87.43314267464014,
+                  "incremental_over_unpenalized_baseline_bits": -271.64630773417264,
+                  "predictor_code_bits": 8613.656928892658,
+                  "baseline_code_bits": 8342.010621158486
+                },
+                "audit": {
+                  "gain_bits": -250.1338167269513,
+                  "bits_per_feature_forecast": -0.10180456521243439,
+                  "coefficient_cost_bits": 2480,
+                  "net_gain_bits": -2730.1338167269514,
+                  "pd_bits_saved_per_coefficient_bit": -0.10086040997054488,
+                  "half_gain_bits": [
+                    -148.6232187485453,
+                    -101.510597978406
+                  ],
+                  "extra_parameters": 155,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 54684,
+                  "forecasts": 189,
+                  "iid_gain_bits": 1253.9973811818527,
+                  "incremental_over_history_bits": -41.24676077706571,
+                  "incremental_over_unpenalized_baseline_bits": -250.1338167269513,
+                  "predictor_code_bits": 8563.773345878013,
+                  "baseline_code_bits": 8313.639529151062
+                },
+                "fixed_audit_probe_learning_progress_bits": 2712.2746276996722
+              }
+            },
+            "synergy": {}
+          },
+          "64": {
+            "supported": true,
+            "horizon_chunks": 64,
+            "horizon_seconds": 5.461333333333333,
+            "selected_simple_baseline": "iid",
+            "unpenalized_calibration_baseline": "history",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 7328.155518426118,
+              "persistence": 7769.361701240587,
+              "trend": 16026.157913536554,
+              "period_1": 7785.361701240587,
+              "period_4": 7785.361701240587,
+              "period_16": 7785.361701240587,
+              "period_64": 7785.361701240587,
+              "period_128": 7897.443850131209,
+              "affine_period_1": 7541.784172136694,
+              "affine_period_4": 7535.998743373686,
+              "affine_period_16": 7536.822333817881,
+              "affine_period_64": 7555.889524397233,
+              "affine_period_128": 7579.350375956664,
+              "history": 9183.276537564634
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": 520.6226198076449,
+                  "bits_per_feature_forecast": 0.2840276158252291,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -2599.3773801923553,
+                  "pd_bits_saved_per_coefficient_bit": 0.1668662242973221,
+                  "half_gain_bits": [
+                    308.39559410671063,
+                    212.22702570093423
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 45276,
+                  "forecasts": 141,
+                  "iid_gain_bits": 520.6226198076449,
+                  "incremental_over_history_bits": -183.46223530337488,
+                  "incremental_over_unpenalized_baseline_bits": -183.46223530337488,
+                  "predictor_code_bits": 6803.4262602866875,
+                  "baseline_code_bits": 7324.048880094332
+                },
+                "audit": {
+                  "gain_bits": 169.91630439513614,
+                  "bits_per_feature_forecast": 0.09269847484731922,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -2950.083695604864,
+                  "pd_bits_saved_per_coefficient_bit": 0.054460353972800045,
+                  "half_gain_bits": [
+                    82.15775789425446,
+                    87.7585465008817
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 45276,
+                  "forecasts": 141,
+                  "iid_gain_bits": 169.91630439513614,
+                  "incremental_over_history_bits": -464.12482528475095,
+                  "incremental_over_unpenalized_baseline_bits": -464.12482528475095,
+                  "predictor_code_bits": 7153.910595248828,
+                  "baseline_code_bits": 7323.826899643966
+                },
+                "fixed_audit_probe_learning_progress_bits": 1166.135215374109
+              }
+            },
+            "synergy": {}
+          }
+        },
+        "units": "proper code lengths of quantized descriptors; not MI",
+        "elapsed_seconds": 1.897136874991702
+      },
+      "physical": {
+        "frames": 4194304,
+        "chunks": 1024,
+        "seconds": 87.38133333333333,
+        "rms": 0.10100764116747513,
+        "peak": 0.700439027714999,
+        "quiet_chunk_fraction": 0.0,
+        "top_three_fft_bins_median_power_fraction": 0.010676269776975226,
+        "clipping_sample_fraction": 0.0,
+        "descriptor_names": [
+          "log_mid_rms",
+          "log_side_rms",
+          "log_band_fraction_0",
+          "log_band_fraction_1",
+          "log_band_fraction_2",
+          "log_band_fraction_3",
+          "log_band_fraction_4",
+          "log_band_fraction_5",
+          "log_band_fraction_6",
+          "log_band_fraction_7",
+          "band_flux",
+          "stereo_correlation",
+          "level_balance"
+        ],
+        "eligible": true
+      },
+      "diagnostics": {
+        "descriptor_entropy_bits_per_feature": [
+          2.847069281763294,
+          2.8427612839865013,
+          3.979215303009661,
+          3.989803150287991,
+          3.986196229720377,
+          3.9818076589375155,
+          3.981293898127827,
+          3.98702506895457,
+          3.979353301530672,
+          3.993586981122543,
+          3.979764392479392,
+          3.9823801449058336,
+          3.9767816822391753
+        ],
+        "training_active_features": 13,
+        "descriptor_token_zlib_ratio": 0.5652794471153846,
+        "median_normalized_change": 1.243971895409867,
+        "last_quarter_normalized_change": 1.2108126860656356,
+        "repeat_mean_square_by_lag": {
+          "1": 1.6638500423879496,
+          "4": 1.718908514620795,
+          "16": 1.7601188358125934,
+          "64": 2.1142445572297985,
+          "128": 2.590068246298612
+        },
+        "not_waveform_compression": true
+      },
+      "eligible_reward": 0.0
+    },
+    "single_chirped_oscillator": {
+      "coding": {
+        "schema": 1,
+        "samples": 1024,
+        "sample_chunks": 1,
+        "split_boundaries": [
+          409,
+          614,
+          819
+        ],
+        "history_lags": [
+          0,
+          1,
+          4,
+          16,
+          32,
+          64,
+          128
+        ],
+        "short_protocol": false,
+        "protocol": "v2_affine_periodic",
+        "bins_per_target": [
+          16,
+          1,
+          1,
+          3,
+          16,
+          16,
+          7,
+          1,
+          1,
+          1,
+          16,
+          1,
+          1
+        ],
+        "horizons": {
+          "1": {
+            "supported": true,
+            "horizon_chunks": 1,
+            "horizon_seconds": 0.08533333333333333,
+            "selected_simple_baseline": "persistence",
+            "unpenalized_calibration_baseline": "persistence",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 4563.218764128947,
+              "persistence": 2902.8039754074125,
+              "trend": 2982.691466146174,
+              "period_4": 3139.559166332009,
+              "period_7": 3264.9734761472023,
+              "period_16": 3488.604873077361,
+              "period_64": 3890.800845430067,
+              "period_128": 3839.6032747153313,
+              "affine_period_4": 3520.6908711155984,
+              "affine_period_7": 3652.315732106833,
+              "affine_period_16": 3836.0064699432587,
+              "affine_period_64": 4204.500066513745,
+              "affine_period_128": 4098.72044963728,
+              "history": 5463.5011874480115
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -999.4978905996084,
+                  "bits_per_feature_forecast": -0.37688457413258236,
+                  "coefficient_cost_bits": 2912,
+                  "net_gain_bits": -3911.4978905996086,
+                  "pd_bits_saved_per_coefficient_bit": -0.3432341657278875,
+                  "half_gain_bits": [
+                    -516.9879547090712,
+                    -482.509935890537
+                  ],
+                  "extra_parameters": 182,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57624,
+                  "forecasts": 204,
+                  "iid_gain_bits": 628.5640543943472,
+                  "incremental_over_history_bits": -402.36691677679,
+                  "incremental_over_unpenalized_baseline_bits": -999.4978905996084,
+                  "predictor_code_bits": 4047.9527848498283,
+                  "baseline_code_bits": 3048.4548942502197
+                },
+                "audit": {
+                  "gain_bits": -1118.1546164169067,
+                  "bits_per_feature_forecast": -0.4216269292673102,
+                  "coefficient_cost_bits": 2912,
+                  "net_gain_bits": -4030.1546164169067,
+                  "pd_bits_saved_per_coefficient_bit": -0.3839816677255861,
+                  "half_gain_bits": [
+                    -408.3064047772808,
+                    -709.8482116396257
+                  ],
+                  "extra_parameters": 182,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57624,
+                  "forecasts": 204,
+                  "iid_gain_bits": 9.822276415301758,
+                  "incremental_over_history_bits": -495.63257969406845,
+                  "incremental_over_unpenalized_baseline_bits": -1118.1546164169067,
+                  "predictor_code_bits": 4476.822193036655,
+                  "baseline_code_bits": 3358.667576619749
+                },
+                "fixed_audit_probe_learning_progress_bits": 616.7437971400813
+              }
+            },
+            "synergy": {}
+          },
+          "4": {
+            "supported": true,
+            "horizon_chunks": 4,
+            "horizon_seconds": 0.3413333333333333,
+            "selected_simple_baseline": "persistence",
+            "unpenalized_calibration_baseline": "affine_period_4",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 4495.510195354773,
+              "persistence": 3068.8529862164996,
+              "trend": 3198.3680352422525,
+              "period_4": 3084.8529862164996,
+              "period_7": 3208.646532173381,
+              "period_16": 3425.6717963990495,
+              "period_64": 3814.755117673428,
+              "period_128": 3765.3224214244,
+              "affine_period_4": 3467.6919474862048,
+              "affine_period_7": 3596.9199511366396,
+              "affine_period_16": 3776.232985829611,
+              "affine_period_64": 4140.504932564085,
+              "affine_period_128": 4033.653105713233,
+              "history": 5421.768484077176
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -491.01179100478714,
+                  "bits_per_feature_forecast": -0.18791113318208463,
+                  "coefficient_cost_bits": 2912,
+                  "net_gain_bits": -3403.011791004787,
+                  "pd_bits_saved_per_coefficient_bit": -0.16861668647142417,
+                  "half_gain_bits": [
+                    -300.8818833374318,
+                    -190.12990766735533
+                  ],
+                  "extra_parameters": 182,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57036,
+                  "forecasts": 201,
+                  "iid_gain_bits": 745.4278533572852,
+                  "incremental_over_history_bits": -266.85904582301254,
+                  "incremental_over_unpenalized_baseline_bits": -517.0594730356768,
+                  "predictor_code_bits": 3863.435912225307,
+                  "baseline_code_bits": 3372.4241212205197
+                },
+                "audit": {
+                  "gain_bits": -761.7672676878345,
+                  "bits_per_feature_forecast": -0.2915297618399673,
+                  "coefficient_cost_bits": 2912,
+                  "net_gain_bits": -3673.7672676878346,
+                  "pd_bits_saved_per_coefficient_bit": -0.2615959023653278,
+                  "half_gain_bits": [
+                    -193.17069953545283,
+                    -568.5965681523817
+                  ],
+                  "extra_parameters": 182,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57036,
+                  "forecasts": 201,
+                  "iid_gain_bits": 63.62801048528911,
+                  "incremental_over_history_bits": -374.54290332863167,
+                  "incremental_over_unpenalized_baseline_bits": -768.4511595090944,
+                  "predictor_code_bits": 4351.34173765437,
+                  "baseline_code_bits": 3589.5744699665356
+                },
+                "fixed_audit_probe_learning_progress_bits": 688.641309137029
+              }
+            },
+            "synergy": {}
+          },
+          "16": {
+            "supported": true,
+            "horizon_chunks": 16,
+            "horizon_seconds": 1.3653333333333333,
+            "selected_simple_baseline": "persistence",
+            "unpenalized_calibration_baseline": "affine_period_16",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 4232.0532742084015,
+              "persistence": 3213.356965470166,
+              "trend": 3688.6166270670838,
+              "period_4": 3229.356965470166,
+              "period_7": 3293.421228967987,
+              "period_16": 3229.356965470166,
+              "period_64": 3563.0286612680356,
+              "period_128": 3524.3025448537287,
+              "affine_period_4": 3630.394863996583,
+              "affine_period_7": 3643.036411788503,
+              "affine_period_16": 3588.364771392057,
+              "affine_period_64": 3926.192090102536,
+              "affine_period_128": 3821.3985332212196,
+              "history": 5449.22641681051
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -169.131552838014,
+                  "bits_per_feature_forecast": -0.06883661084168254,
+                  "coefficient_cost_bits": 2912,
+                  "net_gain_bits": -3081.131552838014,
+                  "pd_bits_saved_per_coefficient_bit": -0.058080890397669636,
+                  "half_gain_bits": [
+                    -120.99896135009928,
+                    -48.13259148791471
+                  ],
+                  "extra_parameters": 182,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 54684,
+                  "forecasts": 189,
+                  "iid_gain_bits": 673.2398970590557,
+                  "incremental_over_history_bits": -22.642713246451017,
+                  "incremental_over_unpenalized_baseline_bits": -228.1487427163755,
+                  "predictor_code_bits": 3660.8234408887133,
+                  "baseline_code_bits": 3491.691888050699
+                },
+                "audit": {
+                  "gain_bits": -471.6496324351014,
+                  "bits_per_feature_forecast": -0.19196159236267862,
+                  "coefficient_cost_bits": 2912,
+                  "net_gain_bits": -3383.6496324351015,
+                  "pd_bits_saved_per_coefficient_bit": -0.1619675935560101,
+                  "half_gain_bits": [
+                    -19.826278979919124,
+                    -451.82335345518226
+                  ],
+                  "extra_parameters": 182,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 54684,
+                  "forecasts": 189,
+                  "iid_gain_bits": -101.26603634057574,
+                  "incremental_over_history_bits": -170.44782019875035,
+                  "incremental_over_unpenalized_baseline_bits": -500.46854355421,
+                  "predictor_code_bits": 4249.256671696475,
+                  "baseline_code_bits": 3777.6070392613738
+                },
+                "fixed_audit_probe_learning_progress_bits": 690.847268278686
+              }
+            },
+            "synergy": {}
+          },
+          "64": {
+            "supported": true,
+            "horizon_chunks": 64,
+            "horizon_seconds": 5.461333333333333,
+            "selected_simple_baseline": "period_128",
+            "unpenalized_calibration_baseline": "period_128",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 3179.4464820999356,
+              "persistence": 2660.5810886376166,
+              "trend": 3570.8300354817593,
+              "period_4": 2676.5810886376166,
+              "period_7": 2677.1088581588792,
+              "period_16": 2676.5810886376166,
+              "period_64": 2676.5810886376166,
+              "period_128": 2574.51994490128,
+              "affine_period_4": 3037.6354209139736,
+              "affine_period_7": 3011.847802772415,
+              "affine_period_16": 3001.8005381801877,
+              "affine_period_64": 3087.227363289585,
+              "affine_period_128": 3024.498617631316,
+              "history": 4877.920216953422
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": 799.7548987045054,
+                  "bits_per_feature_forecast": 0.4363092737067678,
+                  "coefficient_cost_bits": 2896,
+                  "net_gain_bits": -2096.2451012954944,
+                  "pd_bits_saved_per_coefficient_bit": 0.2761584594974121,
+                  "half_gain_bits": [
+                    301.5017789586981,
+                    498.2531197458073
+                  ],
+                  "extra_parameters": 181,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 45276,
+                  "forecasts": 141,
+                  "iid_gain_bits": 247.36984550728783,
+                  "incremental_over_history_bits": -73.30930606851138,
+                  "incremental_over_unpenalized_baseline_bits": 799.7548987045054,
+                  "predictor_code_bits": 2983.1371635749238,
+                  "baseline_code_bits": 3782.892062279429
+                },
+                "audit": {
+                  "gain_bits": 1370.6360947958494,
+                  "bits_per_feature_forecast": 0.7477556436420346,
+                  "coefficient_cost_bits": 2896,
+                  "net_gain_bits": -1525.3639052041506,
+                  "pd_bits_saved_per_coefficient_bit": 0.47328594433558335,
+                  "half_gain_bits": [
+                    934.5041679040223,
+                    436.1319268918271
+                  ],
+                  "extra_parameters": 181,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 45276,
+                  "forecasts": 141,
+                  "iid_gain_bits": -811.6096430288451,
+                  "incremental_over_history_bits": -215.66068822013352,
+                  "incremental_over_unpenalized_baseline_bits": 1370.6360947958494,
+                  "predictor_code_bits": 3887.4956942612134,
+                  "baseline_code_bits": 5258.131789057063
+                },
+                "fixed_audit_probe_learning_progress_bits": 163.83811939012918
+              }
+            },
+            "synergy": {}
+          }
+        },
+        "units": "proper code lengths of quantized descriptors; not MI",
+        "elapsed_seconds": 0.7396629169816151
+      },
+      "physical": {
+        "frames": 4194304,
+        "chunks": 1024,
+        "seconds": 87.38133333333333,
+        "rms": 0.06372233919548666,
+        "peak": 0.12999998909036006,
+        "quiet_chunk_fraction": 0.0,
+        "top_three_fft_bins_median_power_fraction": 0.9944153452247497,
+        "clipping_sample_fraction": 0.0,
+        "descriptor_names": [
+          "log_mid_rms",
+          "log_side_rms",
+          "log_band_fraction_0",
+          "log_band_fraction_1",
+          "log_band_fraction_2",
+          "log_band_fraction_3",
+          "log_band_fraction_4",
+          "log_band_fraction_5",
+          "log_band_fraction_6",
+          "log_band_fraction_7",
+          "band_flux",
+          "stereo_correlation",
+          "level_balance"
+        ],
+        "eligible": false
+      },
+      "diagnostics": {
+        "descriptor_entropy_bits_per_feature": [
+          3.9949023949983093,
+          -0.0,
+          -0.0,
+          0.9706068109252581,
+          2.6944491364323495,
+          2.7362643755136222,
+          1.565954903432131,
+          -0.0,
+          -0.0,
+          -0.0,
+          3.8095450987899664,
+          -0.0,
+          -0.0
+        ],
+        "training_active_features": 6,
+        "descriptor_token_zlib_ratio": 0.15106670673076922,
+        "median_normalized_change": 0.24161842515088497,
+        "last_quarter_normalized_change": 1.4697400937311813,
+        "repeat_mean_square_by_lag": {
+          "1": 2.027642404144442,
+          "4": 3.5208720992110725,
+          "16": 3.702296699378373,
+          "64": 3.9005856758772715,
+          "128": 4.782255139190665
+        },
+        "not_waveform_compression": true
+      },
+      "eligible_reward": 0
+    }
+  },
+  "metric_was_not_retuned": true,
+  "all_rewards_zero": true
+}

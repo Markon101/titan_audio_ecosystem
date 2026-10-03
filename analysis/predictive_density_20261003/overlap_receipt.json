@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "snapshots_are_not_independent": true,
+  "overlap_chunks": 896,
+  "overlap_fraction_of_each_baseline": 0.875,
+  "raw_post_overlap_exact": {
+    "raw_renderer.wav": true,
+    "post_dsp.wav": true
+  }
+}

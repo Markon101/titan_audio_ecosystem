@@ -1,0 +1,181 @@
+{
+  "schema": 1,
+  "results_sha256": "e2e44f20b0d68544ab8f02de9bd4fb3f47850d71a0e0353862c257dd2aca8ec2",
+  "snapshots": {
+    "w0": {
+      "decisions": {
+        "A_baseline": "baseline",
+        "B_measurement_only": "baseline",
+        "C_weak_PD": "baseline",
+        "D_naive_predictability": "energy_state_s00030000"
+      },
+      "baseline_audit_curve": {
+        "1": {
+          "gain_bits": 276.01122766964556,
+          "net_gain_bits": -2843.9887723303545,
+          "over_history_bits": -2.107308406940719,
+          "over_unpenalized_baseline_bits": -2.107308406940719,
+          "pd": 0.08846513707360434,
+          "baseline": "iid"
+        },
+        "4": {
+          "gain_bits": 137.5705372313974,
+          "net_gain_bits": -2982.4294627686027,
+          "over_history_bits": 7.002459756708895,
+          "over_unpenalized_baseline_bits": 7.002459756708895,
+          "pd": 0.044093120907499166,
+          "baseline": "iid"
+        },
+        "16": {
+          "gain_bits": 8.735521360748876,
+          "net_gain_bits": -3111.264478639251,
+          "over_history_bits": -23.973682038024318,
+          "over_unpenalized_baseline_bits": -71.16592001898766,
+          "pd": 0.0027998465899836144,
+          "baseline": "iid"
+        },
+        "64": {
+          "gain_bits": 17.639678503367552,
+          "net_gain_bits": -3102.3603214966324,
+          "over_history_bits": -13.408221702363539,
+          "over_unpenalized_baseline_bits": -52.848891012502946,
+          "pd": 0.005653743110053702,
+          "baseline": "iid"
+        }
+      },
+      "naive_selected": {
+        "frames": 4194304,
+        "chunks": 1024,
+        "seconds": 87.38133333333333,
+        "rms": 0.08527703302155995,
+        "peak": 0.3072509765625,
+        "quiet_chunk_fraction": 0.0,
+        "top_three_fft_bins_median_power_fraction": 0.43500678690850275,
+        "clipping_sample_fraction": 0.0,
+        "descriptor_names": [
+          "log_mid_rms",
+          "log_side_rms",
+          "log_band_fraction_0",
+          "log_band_fraction_1",
+          "log_band_fraction_2",
+          "log_band_fraction_3",
+          "log_band_fraction_4",
+          "log_band_fraction_5",
+          "log_band_fraction_6",
+          "log_band_fraction_7",
+          "band_flux",
+          "stereo_correlation",
+          "level_balance"
+        ],
+        "eligible": true
+      },
+      "baseline_rms": 0.08533285140242311,
+      "analysis_elapsed_seconds": 9.041567184001906,
+      "runtime_resource": {
+        "initial": {
+          "MemAvailable": 2837.453125,
+          "SwapFree": 66.51953125
+        },
+        "minimum_available_mib": 1579.375,
+        "peak_rss_mib": 894.65234375,
+        "elapsed_seconds": 596.008627792995,
+        "exit_code": 0,
+        "safety_stop": false
+      }
+    },
+    "w128": {
+      "decisions": {
+        "A_baseline": "baseline",
+        "B_measurement_only": "baseline",
+        "C_weak_PD": "baseline",
+        "D_naive_predictability": "energy_state_s00030000"
+      },
+      "baseline_audit_curve": {
+        "1": {
+          "gain_bits": -105.93811590135843,
+          "net_gain_bits": -3225.9381159013583,
+          "over_history_bits": -20.318342329884494,
+          "over_unpenalized_baseline_bits": -20.318342329884494,
+          "pd": -0.033954524327358473,
+          "baseline": "iid"
+        },
+        "4": {
+          "gain_bits": -110.82071684364334,
+          "net_gain_bits": -3230.8207168436434,
+          "over_history_bits": 12.440776201045548,
+          "over_unpenalized_baseline_bits": 12.440776201045548,
+          "pd": -0.035519460526808766,
+          "baseline": "iid"
+        },
+        "16": {
+          "gain_bits": -323.6196904265918,
+          "net_gain_bits": -3443.6196904265917,
+          "over_history_bits": -14.440717643993946,
+          "over_unpenalized_baseline_bits": -437.450534609831,
+          "pd": -0.10372425975211275,
+          "baseline": "iid"
+        },
+        "64": {
+          "gain_bits": -289.1250445619596,
+          "net_gain_bits": -3409.12504456196,
+          "over_history_bits": -18.142586764822134,
+          "over_unpenalized_baseline_bits": -18.142586764822134,
+          "pd": -0.0926682835134486,
+          "baseline": "iid"
+        }
+      },
+      "naive_selected": {
+        "frames": 4194304,
+        "chunks": 1024,
+        "seconds": 87.38133333333333,
+        "rms": 0.08529344908345057,
+        "peak": 0.3116455078125,
+        "quiet_chunk_fraction": 0.0,
+        "top_three_fft_bins_median_power_fraction": 0.4337238953917252,
+        "clipping_sample_fraction": 0.0,
+        "descriptor_names": [
+          "log_mid_rms",
+          "log_side_rms",
+          "log_band_fraction_0",
+          "log_band_fraction_1",
+          "log_band_fraction_2",
+          "log_band_fraction_3",
+          "log_band_fraction_4",
+          "log_band_fraction_5",
+          "log_band_fraction_6",
+          "log_band_fraction_7",
+          "band_flux",
+          "stereo_correlation",
+          "level_balance"
+        ],
+        "eligible": true
+      },
+      "baseline_rms": 0.08541611180749918,
+      "analysis_elapsed_seconds": 7.208894163981313,
+      "runtime_resource": {
+        "initial": {
+          "MemAvailable": 2413.41015625,
+          "SwapFree": 0.19140625
+        },
+        "minimum_available_mib": 1317.18359375,
+        "peak_rss_mib": 917.234375,
+        "elapsed_seconds": 644.0470151710033,
+        "exit_code": 0,
+        "safety_stop": false
+      }
+    }
+  },
+  "overlap": {
+    "schema": 1,
+    "snapshots_are_not_independent": true,
+    "overlap_chunks": 896,
+    "overlap_fraction_of_each_baseline": 0.875,
+    "raw_post_overlap_exact": {
+      "raw_renderer.wav": true,
+      "post_dsp.wav": true
+    }
+  },
+  "no_generation_benefit_demonstrated": true,
+  "no_supported_net_predictive_depth": true,
+  "qualitative_audio_ratings": null
+}

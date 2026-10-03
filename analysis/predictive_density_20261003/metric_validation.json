@@ -1,0 +1,2784 @@
+{
+  "schema": 1,
+  "controls": {
+    "silence": {
+      "physical": {
+        "frames": 4194304,
+        "chunks": 1024,
+        "seconds": 87.38133333333333,
+        "rms": 0.0,
+        "peak": 0.0,
+        "quiet_chunk_fraction": 1.0,
+        "top_three_fft_bins_median_power_fraction": 0.0,
+        "clipping_sample_fraction": 0.0,
+        "descriptor_names": [
+          "log_mid_rms",
+          "log_side_rms",
+          "log_band_fraction_0",
+          "log_band_fraction_1",
+          "log_band_fraction_2",
+          "log_band_fraction_3",
+          "log_band_fraction_4",
+          "log_band_fraction_5",
+          "log_band_fraction_6",
+          "log_band_fraction_7",
+          "band_flux",
+          "stereo_correlation",
+          "level_balance"
+        ],
+        "eligible": false
+      },
+      "coding": {
+        "schema": 1,
+        "samples": 1024,
+        "sample_chunks": 1,
+        "split_boundaries": [
+          409,
+          614,
+          819
+        ],
+        "bins_per_target": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "horizons": {
+          "1": {
+            "supported": true,
+            "horizon_chunks": 1,
+            "horizon_seconds": 0.08533333333333333,
+            "selected_simple_baseline": "iid",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 0.0,
+              "persistence": 208.0,
+              "trend": 208.0,
+              "period_1": 224.0,
+              "period_4": 224.0,
+              "period_16": 224.0,
+              "period_64": 224.0,
+              "period_128": 224.0,
+              "history": 2288.0
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": 0.0,
+                  "bits_per_feature_forecast": 0.0,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3120.0,
+                  "pd_bits_saved_per_coefficient_bit": 0.0,
+                  "half_gain_bits": [
+                    0.0,
+                    0.0
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57624,
+                  "forecasts": 204,
+                  "iid_gain_bits": 0.0,
+                  "incremental_over_history_bits": 0.0,
+                  "predictor_code_bits": 0.0,
+                  "baseline_code_bits": 0.0
+                },
+                "audit": {
+                  "gain_bits": 0.0,
+                  "bits_per_feature_forecast": 0.0,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3120.0,
+                  "pd_bits_saved_per_coefficient_bit": 0.0,
+                  "half_gain_bits": [
+                    0.0,
+                    0.0
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57624,
+                  "forecasts": 204,
+                  "iid_gain_bits": 0.0,
+                  "incremental_over_history_bits": 0.0,
+                  "predictor_code_bits": 0.0,
+                  "baseline_code_bits": 0.0
+                },
+                "fixed_audit_probe_learning_progress_bits": 0.0
+              }
+            },
+            "synergy": {}
+          },
+          "4": {
+            "supported": true,
+            "horizon_chunks": 4,
+            "horizon_seconds": 0.3413333333333333,
+            "selected_simple_baseline": "iid",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 0.0,
+              "persistence": 208.0,
+              "trend": 208.0,
+              "period_1": 224.0,
+              "period_4": 224.0,
+              "period_16": 224.0,
+              "period_64": 224.0,
+              "period_128": 224.0,
+              "history": 2288.0
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": 0.0,
+                  "bits_per_feature_forecast": 0.0,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3120.0,
+                  "pd_bits_saved_per_coefficient_bit": 0.0,
+                  "half_gain_bits": [
+                    0.0,
+                    0.0
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57036,
+                  "forecasts": 201,
+                  "iid_gain_bits": 0.0,
+                  "incremental_over_history_bits": 0.0,
+                  "predictor_code_bits": 0.0,
+                  "baseline_code_bits": 0.0
+                },
+                "audit": {
+                  "gain_bits": 0.0,
+                  "bits_per_feature_forecast": 0.0,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3120.0,
+                  "pd_bits_saved_per_coefficient_bit": 0.0,
+                  "half_gain_bits": [
+                    0.0,
+                    0.0
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57036,
+                  "forecasts": 201,
+                  "iid_gain_bits": 0.0,
+                  "incremental_over_history_bits": 0.0,
+                  "predictor_code_bits": 0.0,
+                  "baseline_code_bits": 0.0
+                },
+                "fixed_audit_probe_learning_progress_bits": 0.0
+              }
+            },
+            "synergy": {}
+          },
+          "16": {
+            "supported": true,
+            "horizon_chunks": 16,
+            "horizon_seconds": 1.3653333333333333,
+            "selected_simple_baseline": "iid",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 0.0,
+              "persistence": 208.0,
+              "trend": 208.0,
+              "period_1": 224.0,
+              "period_4": 224.0,
+              "period_16": 224.0,
+              "period_64": 224.0,
+              "period_128": 224.0,
+              "history": 2288.0
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": 0.0,
+                  "bits_per_feature_forecast": 0.0,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3120.0,
+                  "pd_bits_saved_per_coefficient_bit": 0.0,
+                  "half_gain_bits": [
+                    0.0,
+                    0.0
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 54684,
+                  "forecasts": 189,
+                  "iid_gain_bits": 0.0,
+                  "incremental_over_history_bits": 0.0,
+                  "predictor_code_bits": 0.0,
+                  "baseline_code_bits": 0.0
+                },
+                "audit": {
+                  "gain_bits": 0.0,
+                  "bits_per_feature_forecast": 0.0,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3120.0,
+                  "pd_bits_saved_per_coefficient_bit": 0.0,
+                  "half_gain_bits": [
+                    0.0,
+                    0.0
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 54684,
+                  "forecasts": 189,
+                  "iid_gain_bits": 0.0,
+                  "incremental_over_history_bits": 0.0,
+                  "predictor_code_bits": 0.0,
+                  "baseline_code_bits": 0.0
+                },
+                "fixed_audit_probe_learning_progress_bits": 0.0
+              }
+            },
+            "synergy": {}
+          },
+          "64": {
+            "supported": true,
+            "horizon_chunks": 64,
+            "horizon_seconds": 5.461333333333333,
+            "selected_simple_baseline": "iid",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 0.0,
+              "persistence": 208.0,
+              "trend": 208.0,
+              "period_1": 224.0,
+              "period_4": 224.0,
+              "period_16": 224.0,
+              "period_64": 224.0,
+              "period_128": 224.0,
+              "history": 2288.0
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": 0.0,
+                  "bits_per_feature_forecast": 0.0,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3120.0,
+                  "pd_bits_saved_per_coefficient_bit": 0.0,
+                  "half_gain_bits": [
+                    0.0,
+                    0.0
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 45276,
+                  "forecasts": 141,
+                  "iid_gain_bits": 0.0,
+                  "incremental_over_history_bits": 0.0,
+                  "predictor_code_bits": 0.0,
+                  "baseline_code_bits": 0.0
+                },
+                "audit": {
+                  "gain_bits": 0.0,
+                  "bits_per_feature_forecast": 0.0,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3120.0,
+                  "pd_bits_saved_per_coefficient_bit": 0.0,
+                  "half_gain_bits": [
+                    0.0,
+                    0.0
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 45276,
+                  "forecasts": 141,
+                  "iid_gain_bits": 0.0,
+                  "incremental_over_history_bits": 0.0,
+                  "predictor_code_bits": 0.0,
+                  "baseline_code_bits": 0.0
+                },
+                "fixed_audit_probe_learning_progress_bits": 0.0
+              }
+            },
+            "synergy": {}
+          }
+        },
+        "units": "proper code lengths of quantized descriptors; not MI",
+        "elapsed_seconds": 0.0876134889840614
+      },
+      "diagnostics": {
+        "descriptor_entropy_bits_per_feature": [
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0
+        ],
+        "training_active_features": 0,
+        "descriptor_token_zlib_ratio": 0.002704326923076923,
+        "median_normalized_change": 0.0,
+        "last_quarter_normalized_change": 0.0,
+        "repeat_mean_square_by_lag": {
+          "1": 0.0,
+          "4": 0.0,
+          "16": 0.0,
+          "64": 0.0,
+          "128": 0.0
+        },
+        "not_waveform_compression": true
+      },
+      "raw_reward": {
+        "value": 0.0,
+        "components": [
+          {
+            "horizon_chunks": 1,
+            "persistent_net_bits": -3120.0,
+            "reward": 0.0
+          },
+          {
+            "horizon_chunks": 4,
+            "persistent_net_bits": -3120.0,
+            "reward": 0.0
+          },
+          {
+            "horizon_chunks": 16,
+            "persistent_net_bits": -3120.0,
+            "reward": 0.0
+          },
+          {
+            "horizon_chunks": 64,
+            "persistent_net_bits": -3120.0,
+            "reward": 0.0
+          }
+        ]
+      },
+      "eligible_reward": 0,
+      "naive_negative_persistence_mse": -0.0
+    },
+    "constant": {
+      "physical": {
+        "frames": 4194304,
+        "chunks": 1024,
+        "seconds": 87.38133333333333,
+        "rms": 0.15000000000000002,
+        "peak": 0.15,
+        "quiet_chunk_fraction": 0.0,
+        "top_three_fft_bins_median_power_fraction": 0.9719526418767738,
+        "clipping_sample_fraction": 0.0,
+        "descriptor_names": [
+          "log_mid_rms",
+          "log_side_rms",
+          "log_band_fraction_0",
+          "log_band_fraction_1",
+          "log_band_fraction_2",
+          "log_band_fraction_3",
+          "log_band_fraction_4",
+          "log_band_fraction_5",
+          "log_band_fraction_6",
+          "log_band_fraction_7",
+          "band_flux",
+          "stereo_correlation",
+          "level_balance"
+        ],
+        "eligible": false
+      },
+      "coding": {
+        "schema": 1,
+        "samples": 1024,
+        "sample_chunks": 1,
+        "split_boundaries": [
+          409,
+          614,
+          819
+        ],
+        "bins_per_target": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "horizons": {
+          "1": {
+            "supported": true,
+            "horizon_chunks": 1,
+            "horizon_seconds": 0.08533333333333333,
+            "selected_simple_baseline": "iid",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 0.0,
+              "persistence": 208.0,
+              "trend": 208.0,
+              "period_1": 224.0,
+              "period_4": 224.0,
+              "period_16": 224.0,
+              "period_64": 224.0,
+              "period_128": 224.0,
+              "history": 2288.0
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": 0.0,
+                  "bits_per_feature_forecast": 0.0,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3120.0,
+                  "pd_bits_saved_per_coefficient_bit": 0.0,
+                  "half_gain_bits": [
+                    0.0,
+                    0.0
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57624,
+                  "forecasts": 204,
+                  "iid_gain_bits": 0.0,
+                  "incremental_over_history_bits": 0.0,
+                  "predictor_code_bits": 0.0,
+                  "baseline_code_bits": 0.0
+                },
+                "audit": {
+                  "gain_bits": 0.0,
+                  "bits_per_feature_forecast": 0.0,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3120.0,
+                  "pd_bits_saved_per_coefficient_bit": 0.0,
+                  "half_gain_bits": [
+                    0.0,
+                    0.0
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57624,
+                  "forecasts": 204,
+                  "iid_gain_bits": 0.0,
+                  "incremental_over_history_bits": 0.0,
+                  "predictor_code_bits": 0.0,
+                  "baseline_code_bits": 0.0
+                },
+                "fixed_audit_probe_learning_progress_bits": 0.0
+              }
+            },
+            "synergy": {}
+          },
+          "4": {
+            "supported": true,
+            "horizon_chunks": 4,
+            "horizon_seconds": 0.3413333333333333,
+            "selected_simple_baseline": "iid",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 0.0,
+              "persistence": 208.0,
+              "trend": 208.0,
+              "period_1": 224.0,
+              "period_4": 224.0,
+              "period_16": 224.0,
+              "period_64": 224.0,
+              "period_128": 224.0,
+              "history": 2288.0
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": 0.0,
+                  "bits_per_feature_forecast": 0.0,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3120.0,
+                  "pd_bits_saved_per_coefficient_bit": 0.0,
+                  "half_gain_bits": [
+                    0.0,
+                    0.0
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57036,
+                  "forecasts": 201,
+                  "iid_gain_bits": 0.0,
+                  "incremental_over_history_bits": 0.0,
+                  "predictor_code_bits": 0.0,
+                  "baseline_code_bits": 0.0
+                },
+                "audit": {
+                  "gain_bits": 0.0,
+                  "bits_per_feature_forecast": 0.0,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3120.0,
+                  "pd_bits_saved_per_coefficient_bit": 0.0,
+                  "half_gain_bits": [
+                    0.0,
+                    0.0
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57036,
+                  "forecasts": 201,
+                  "iid_gain_bits": 0.0,
+                  "incremental_over_history_bits": 0.0,
+                  "predictor_code_bits": 0.0,
+                  "baseline_code_bits": 0.0
+                },
+                "fixed_audit_probe_learning_progress_bits": 0.0
+              }
+            },
+            "synergy": {}
+          },
+          "16": {
+            "supported": true,
+            "horizon_chunks": 16,
+            "horizon_seconds": 1.3653333333333333,
+            "selected_simple_baseline": "iid",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 0.0,
+              "persistence": 208.0,
+              "trend": 208.0,
+              "period_1": 224.0,
+              "period_4": 224.0,
+              "period_16": 224.0,
+              "period_64": 224.0,
+              "period_128": 224.0,
+              "history": 2288.0
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": 0.0,
+                  "bits_per_feature_forecast": 0.0,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3120.0,
+                  "pd_bits_saved_per_coefficient_bit": 0.0,
+                  "half_gain_bits": [
+                    0.0,
+                    0.0
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 54684,
+                  "forecasts": 189,
+                  "iid_gain_bits": 0.0,
+                  "incremental_over_history_bits": 0.0,
+                  "predictor_code_bits": 0.0,
+                  "baseline_code_bits": 0.0
+                },
+                "audit": {
+                  "gain_bits": 0.0,
+                  "bits_per_feature_forecast": 0.0,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3120.0,
+                  "pd_bits_saved_per_coefficient_bit": 0.0,
+                  "half_gain_bits": [
+                    0.0,
+                    0.0
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 54684,
+                  "forecasts": 189,
+                  "iid_gain_bits": 0.0,
+                  "incremental_over_history_bits": 0.0,
+                  "predictor_code_bits": 0.0,
+                  "baseline_code_bits": 0.0
+                },
+                "fixed_audit_probe_learning_progress_bits": 0.0
+              }
+            },
+            "synergy": {}
+          },
+          "64": {
+            "supported": true,
+            "horizon_chunks": 64,
+            "horizon_seconds": 5.461333333333333,
+            "selected_simple_baseline": "iid",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 0.0,
+              "persistence": 208.0,
+              "trend": 208.0,
+              "period_1": 224.0,
+              "period_4": 224.0,
+              "period_16": 224.0,
+              "period_64": 224.0,
+              "period_128": 224.0,
+              "history": 2288.0
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": 0.0,
+                  "bits_per_feature_forecast": 0.0,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3120.0,
+                  "pd_bits_saved_per_coefficient_bit": 0.0,
+                  "half_gain_bits": [
+                    0.0,
+                    0.0
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 45276,
+                  "forecasts": 141,
+                  "iid_gain_bits": 0.0,
+                  "incremental_over_history_bits": 0.0,
+                  "predictor_code_bits": 0.0,
+                  "baseline_code_bits": 0.0
+                },
+                "audit": {
+                  "gain_bits": 0.0,
+                  "bits_per_feature_forecast": 0.0,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3120.0,
+                  "pd_bits_saved_per_coefficient_bit": 0.0,
+                  "half_gain_bits": [
+                    0.0,
+                    0.0
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 45276,
+                  "forecasts": 141,
+                  "iid_gain_bits": 0.0,
+                  "incremental_over_history_bits": 0.0,
+                  "predictor_code_bits": 0.0,
+                  "baseline_code_bits": 0.0
+                },
+                "fixed_audit_probe_learning_progress_bits": 0.0
+              }
+            },
+            "synergy": {}
+          }
+        },
+        "units": "proper code lengths of quantized descriptors; not MI",
+        "elapsed_seconds": 0.07053651098976843
+      },
+      "diagnostics": {
+        "descriptor_entropy_bits_per_feature": [
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0
+        ],
+        "training_active_features": 0,
+        "descriptor_token_zlib_ratio": 0.002704326923076923,
+        "median_normalized_change": 0.0,
+        "last_quarter_normalized_change": 0.0,
+        "repeat_mean_square_by_lag": {
+          "1": 0.0,
+          "4": 0.0,
+          "16": 0.0,
+          "64": 0.0,
+          "128": 0.0
+        },
+        "not_waveform_compression": true
+      },
+      "raw_reward": {
+        "value": 0.0,
+        "components": [
+          {
+            "horizon_chunks": 1,
+            "persistent_net_bits": -3120.0,
+            "reward": 0.0
+          },
+          {
+            "horizon_chunks": 4,
+            "persistent_net_bits": -3120.0,
+            "reward": 0.0
+          },
+          {
+            "horizon_chunks": 16,
+            "persistent_net_bits": -3120.0,
+            "reward": 0.0
+          },
+          {
+            "horizon_chunks": 64,
+            "persistent_net_bits": -3120.0,
+            "reward": 0.0
+          }
+        ]
+      },
+      "eligible_reward": 0,
+      "naive_negative_persistence_mse": -0.0
+    },
+    "sinusoid": {
+      "physical": {
+        "frames": 4194304,
+        "chunks": 1024,
+        "seconds": 87.38133333333333,
+        "rms": 0.14142135623730953,
+        "peak": 0.2,
+        "quiet_chunk_fraction": 0.0,
+        "top_three_fft_bins_median_power_fraction": 0.9999999892867198,
+        "clipping_sample_fraction": 0.0,
+        "descriptor_names": [
+          "log_mid_rms",
+          "log_side_rms",
+          "log_band_fraction_0",
+          "log_band_fraction_1",
+          "log_band_fraction_2",
+          "log_band_fraction_3",
+          "log_band_fraction_4",
+          "log_band_fraction_5",
+          "log_band_fraction_6",
+          "log_band_fraction_7",
+          "band_flux",
+          "stereo_correlation",
+          "level_balance"
+        ],
+        "eligible": false
+      },
+      "coding": {
+        "schema": 1,
+        "samples": 1024,
+        "sample_chunks": 1,
+        "split_boundaries": [
+          409,
+          614,
+          819
+        ],
+        "bins_per_target": [
+          16,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "horizons": {
+          "1": {
+            "supported": true,
+            "horizon_chunks": 1,
+            "horizon_seconds": 0.08533333333333333,
+            "selected_simple_baseline": "iid",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 812.5649269546889,
+              "persistence": 2346.043899419932,
+              "trend": 2347.2772029454964,
+              "period_4": 2362.366992197616,
+              "period_13": 2362.954042246658,
+              "period_16": 2362.6612911126513,
+              "period_64": 2363.0853625045656,
+              "period_128": 2361.9760895583186,
+              "history": 4426.216354900342
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -1372.1065212074045,
+                  "bits_per_feature_forecast": -0.5173855660661405,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -4492.1065212074045,
+                  "pd_bits_saved_per_coefficient_bit": -0.4397777311562194,
+                  "half_gain_bits": [
+                    -714.519276839417,
+                    -657.5872443679874
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57624,
+                  "forecasts": 204,
+                  "iid_gain_bits": -1372.1065212074045,
+                  "incremental_over_history_bits": 1.390138489876236e-06,
+                  "predictor_code_bits": 2185.595770149237,
+                  "baseline_code_bits": 813.4892489418324
+                },
+                "audit": {
+                  "gain_bits": -1133.762886673248,
+                  "bits_per_feature_forecast": -0.42751240070635294,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -4253.762886673248,
+                  "pd_bits_saved_per_coefficient_bit": -0.3633855406004,
+                  "half_gain_bits": [
+                    -552.972193110937,
+                    -580.7906935623109
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57624,
+                  "forecasts": 204,
+                  "iid_gain_bits": -1133.762886673248,
+                  "incremental_over_history_bits": -9.98852251798965e-07,
+                  "predictor_code_bits": 1945.9648903411173,
+                  "baseline_code_bits": 812.2020036678693
+                },
+                "fixed_audit_probe_learning_progress_bits": 1.591212465395628
+              }
+            },
+            "synergy": {}
+          },
+          "4": {
+            "supported": true,
+            "horizon_chunks": 4,
+            "horizon_seconds": 0.3413333333333333,
+            "selected_simple_baseline": "iid",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 800.5170852541204,
+              "persistence": 2289.8599377240753,
+              "trend": 2290.395869941194,
+              "period_4": 2305.8599377240753,
+              "period_13": 2306.446987926219,
+              "period_16": 2306.1542366363374,
+              "period_64": 2306.578308115155,
+              "period_128": 2305.4690352108782,
+              "history": 4369.709299255248
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -1328.1178331809485,
+                  "bits_per_feature_forecast": -0.508273185296957,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -4448.117833180949,
+                  "pd_bits_saved_per_coefficient_bit": -0.42567879268620146,
+                  "half_gain_bits": [
+                    -664.5786225701956,
+                    -663.5392106107529
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57036,
+                  "forecasts": 201,
+                  "iid_gain_bits": -1328.1178331809485,
+                  "incremental_over_history_bits": 1.218402315261713e-06,
+                  "predictor_code_bits": 2129.732572025098,
+                  "baseline_code_bits": 801.6147388441495
+                },
+                "audit": {
+                  "gain_bits": -1090.9826684789923,
+                  "bits_per_feature_forecast": -0.41752111308036444,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -4210.982668478992,
+                  "pd_bits_saved_per_coefficient_bit": -0.34967393220480525,
+                  "half_gain_bits": [
+                    -530.7238817133032,
+                    -560.2587867656889
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57036,
+                  "forecasts": 201,
+                  "iid_gain_bits": -1090.9826684789923,
+                  "incremental_over_history_bits": 7.001497708269966e-07,
+                  "predictor_code_bits": 1891.2012276776254,
+                  "baseline_code_bits": 800.2185591986331
+                },
+                "fixed_audit_probe_learning_progress_bits": 1.591212507407521
+              }
+            },
+            "synergy": {}
+          },
+          "16": {
+            "supported": true,
+            "horizon_chunks": 16,
+            "horizon_seconds": 1.3653333333333333,
+            "selected_simple_baseline": "iid",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 752.6299003710269,
+              "persistence": 2198.4818301687133,
+              "trend": 2199.0975126567764,
+              "period_4": 2214.4818301687133,
+              "period_13": 2212.9410766480846,
+              "period_16": 2214.4818301687133,
+              "period_64": 2214.9059017092377,
+              "period_128": 2213.7966284553695,
+              "history": 4278.036894614176
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -1257.934995158872,
+                  "bits_per_feature_forecast": -0.5119800550097159,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -4377.934995158872,
+                  "pd_bits_saved_per_coefficient_bit": -0.40318429332015127,
+                  "half_gain_bits": [
+                    -682.168088092649,
+                    -575.7669070662229
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 54684,
+                  "forecasts": 189,
+                  "iid_gain_bits": -1257.934995158872,
+                  "incremental_over_history_bits": -3.0781648925337635e-06,
+                  "predictor_code_bits": 2011.7248904976304,
+                  "baseline_code_bits": 753.7898953387584
+                },
+                "audit": {
+                  "gain_bits": -1019.9552802731899,
+                  "bits_per_feature_forecast": -0.4151222141934025,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -4139.95528027319,
+                  "pd_bits_saved_per_coefficient_bit": -0.3269087436773045,
+                  "half_gain_bits": [
+                    -493.86729123346623,
+                    -526.0879890397237
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 54684,
+                  "forecasts": 189,
+                  "iid_gain_bits": -1019.9552802731899,
+                  "incremental_over_history_bits": -8.139045459820693e-08,
+                  "predictor_code_bits": 1772.28665458873,
+                  "baseline_code_bits": 752.3313743155398
+                },
+                "fixed_audit_probe_learning_progress_bits": 1.5912128755693231
+              }
+            },
+            "synergy": {}
+          },
+          "64": {
+            "supported": true,
+            "horizon_chunks": 64,
+            "horizon_seconds": 5.461333333333333,
+            "selected_simple_baseline": "iid",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 561.6137502617983,
+              "persistence": 1719.7388593967855,
+              "trend": 1719.9307801247242,
+              "period_4": 1735.7388593967855,
+              "period_13": 1735.1162494431246,
+              "period_16": 1735.7388593967855,
+              "period_64": 1735.7388593967855,
+              "period_128": 1735.06837542675,
+              "history": 3798.86985078004
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -946.5967959173855,
+                  "bits_per_feature_forecast": -0.5164194194857531,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -4066.5967959173854,
+                  "pd_bits_saved_per_coefficient_bit": -0.30339640894787995,
+                  "half_gain_bits": [
+                    -511.50681162206763,
+                    -435.0899842953179
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 45276,
+                  "forecasts": 141,
+                  "iid_gain_bits": -946.5967959173855,
+                  "incremental_over_history_bits": -2.4657352362122964e-06,
+                  "predictor_code_bits": 1508.5850081896833,
+                  "baseline_code_bits": 561.9882122722978
+                },
+                "audit": {
+                  "gain_bits": -813.7987345247655,
+                  "bits_per_feature_forecast": -0.4439709408209304,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3933.7987345247657,
+                  "pd_bits_saved_per_coefficient_bit": -0.2608329277322966,
+                  "half_gain_bits": [
+                    -404.18767544479965,
+                    -409.6110590799658
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 45276,
+                  "forecasts": 141,
+                  "iid_gain_bits": -813.7987345247655,
+                  "incremental_over_history_bits": 8.264185062945018e-07,
+                  "predictor_code_bits": 1375.6920186785408,
+                  "baseline_code_bits": 561.8932841537752
+                },
+                "fixed_audit_probe_learning_progress_bits": 1.060809779958187
+              }
+            },
+            "synergy": {}
+          }
+        },
+        "units": "proper code lengths of quantized descriptors; not MI",
+        "elapsed_seconds": 0.15618817700305954
+      },
+      "diagnostics": {
+        "descriptor_entropy_bits_per_feature": [
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0
+        ],
+        "training_active_features": 0,
+        "descriptor_token_zlib_ratio": 0.002704326923076923,
+        "median_normalized_change": 3.757134424467589e-09,
+        "last_quarter_normalized_change": 7.988895206148032e-09,
+        "repeat_mean_square_by_lag": {
+          "1": 5.715794856866209e-17,
+          "4": 4.593442682387666e-17,
+          "16": 3.5832809400701157e-17,
+          "64": 3.8088071580421147e-17,
+          "128": 4.557575223983544e-17
+        },
+        "not_waveform_compression": true
+      },
+      "raw_reward": {
+        "value": 0.0,
+        "components": [
+          {
+            "horizon_chunks": 1,
+            "persistent_net_bits": -4492.1065212074045,
+            "reward": 0.0
+          },
+          {
+            "horizon_chunks": 4,
+            "persistent_net_bits": -4448.117833180949,
+            "reward": 0.0
+          },
+          {
+            "horizon_chunks": 16,
+            "persistent_net_bits": -4377.934995158872,
+            "reward": 0.0
+          },
+          {
+            "horizon_chunks": 64,
+            "persistent_net_bits": -4066.5967959173854,
+            "reward": 0.0
+          }
+        ]
+      },
+      "eligible_reward": 0,
+      "naive_negative_persistence_mse": -5.715794856866209e-29
+    },
+    "amplitude_modulated_tone": {
+      "physical": {
+        "frames": 4194304,
+        "chunks": 1024,
+        "seconds": 87.38133333333333,
+        "rms": 0.10923020719501418,
+        "peak": 0.1999999999561351,
+        "quiet_chunk_fraction": 0.0,
+        "top_three_fft_bins_median_power_fraction": 0.9999976655143505,
+        "clipping_sample_fraction": 0.0,
+        "descriptor_names": [
+          "log_mid_rms",
+          "log_side_rms",
+          "log_band_fraction_0",
+          "log_band_fraction_1",
+          "log_band_fraction_2",
+          "log_band_fraction_3",
+          "log_band_fraction_4",
+          "log_band_fraction_5",
+          "log_band_fraction_6",
+          "log_band_fraction_7",
+          "band_flux",
+          "stereo_correlation",
+          "level_balance"
+        ],
+        "eligible": false
+      },
+      "coding": {
+        "schema": 1,
+        "samples": 1024,
+        "sample_chunks": 1,
+        "split_boundaries": [
+          409,
+          614,
+          819
+        ],
+        "bins_per_target": [
+          16,
+          1,
+          1,
+          1,
+          1,
+          16,
+          1,
+          1,
+          1,
+          1,
+          16,
+          1,
+          1
+        ],
+        "horizons": {
+          "1": {
+            "supported": true,
+            "horizon_chunks": 1,
+            "horizon_seconds": 0.08533333333333333,
+            "selected_simple_baseline": "iid",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 2447.6749029167077,
+              "persistence": 6479.687558424184,
+              "trend": 6292.458816791668,
+              "period_4": 6854.052778812318,
+              "period_16": 7113.464373192563,
+              "period_64": 6396.252629877343,
+              "period_95": 6306.945517851162,
+              "period_128": 6564.683933173836,
+              "history": 8386.78228984735
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -3608.4272170544264,
+                  "bits_per_feature_forecast": -1.3606437470039314,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -6728.427217054426,
+                  "pd_bits_saved_per_coefficient_bit": -1.1565471849533417,
+                  "half_gain_bits": [
+                    -1835.0860565258681,
+                    -1773.3411605285582
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57624,
+                  "forecasts": 204,
+                  "iid_gain_bits": -3608.4272170544264,
+                  "incremental_over_history_bits": 8.797556151662343,
+                  "predictor_code_bits": 6057.0455368851935,
+                  "baseline_code_bits": 2448.6183198307663
+                },
+                "audit": {
+                  "gain_bits": -3592.9199451343693,
+                  "bits_per_feature_forecast": -1.3547963594021,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -6712.919945134369,
+                  "pd_bits_saved_per_coefficient_bit": -1.151576905491785,
+                  "half_gain_bits": [
+                    -1786.7984644587452,
+                    -1806.1214806756243
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57624,
+                  "forecasts": 204,
+                  "iid_gain_bits": -3592.9199451343693,
+                  "incremental_over_history_bits": 5.278841175398187,
+                  "predictor_code_bits": 6040.872323614036,
+                  "baseline_code_bits": 2447.952378479666
+                },
+                "fixed_audit_probe_learning_progress_bits": 4.802459735879696
+              }
+            },
+            "synergy": {}
+          },
+          "4": {
+            "supported": true,
+            "horizon_chunks": 4,
+            "horizon_seconds": 0.3413333333333333,
+            "selected_simple_baseline": "iid",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 2411.780064621591,
+              "persistence": 6759.123336075803,
+              "trend": 6544.660878496561,
+              "period_4": 6775.123336075803,
+              "period_16": 7033.365628506379,
+              "period_64": 6326.242648340532,
+              "period_95": 6237.733621604628,
+              "period_128": 6491.17527330858,
+              "history": 8329.317167306148
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -3554.9666009029515,
+                  "bits_per_feature_forecast": -1.360492384578244,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -6674.9666009029515,
+                  "pd_bits_saved_per_coefficient_bit": -1.1394123720842793,
+                  "half_gain_bits": [
+                    -1797.4545837296553,
+                    -1757.512017173297
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57036,
+                  "forecasts": 201,
+                  "iid_gain_bits": -3554.9666009029515,
+                  "incremental_over_history_bits": 4.145471017241665,
+                  "predictor_code_bits": 5967.468101988235,
+                  "baseline_code_bits": 2412.501501085283
+                },
+                "audit": {
+                  "gain_bits": -3578.1576797641146,
+                  "bits_per_feature_forecast": -1.369367653947231,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -6698.157679764115,
+                  "pd_bits_saved_per_coefficient_bit": -1.1468454101808059,
+                  "half_gain_bits": [
+                    -1806.4574169769683,
+                    -1771.7002627871461
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57036,
+                  "forecasts": 201,
+                  "iid_gain_bits": -3578.1576797641146,
+                  "incremental_over_history_bits": 2.367888366685413,
+                  "predictor_code_bits": 5990.215219948664,
+                  "baseline_code_bits": 2412.057540184549
+                },
+                "fixed_audit_probe_learning_progress_bits": 22.55002338458859
+              }
+            },
+            "synergy": {}
+          },
+          "16": {
+            "supported": true,
+            "horizon_chunks": 16,
+            "horizon_seconds": 1.3653333333333333,
+            "selected_simple_baseline": "iid",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 2267.7567505403904,
+              "persistence": 6586.897662338497,
+              "trend": 6742.43301514261,
+              "period_4": 6602.897662338497,
+              "period_16": 6602.897662338497,
+              "period_64": 5944.822234554558,
+              "period_95": 5856.5200563907565,
+              "period_128": 6099.874264760583,
+              "history": 7961.397381215505
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -3372.0090711000535,
+                  "bits_per_feature_forecast": -1.3724090643467861,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -6492.009071100054,
+                  "pd_bits_saved_per_coefficient_bit": -1.0807721381730941,
+                  "half_gain_bits": [
+                    -1707.1938131191391,
+                    -1664.8152579809143
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 54684,
+                  "forecasts": 189,
+                  "iid_gain_bits": -3372.0090711000535,
+                  "incremental_over_history_bits": 0.019595689301583175,
+                  "predictor_code_bits": 5640.487258104136,
+                  "baseline_code_bits": 2268.4781870040833
+                },
+                "audit": {
+                  "gain_bits": -3345.177740545485,
+                  "bits_per_feature_forecast": -1.3614887018907142,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -6465.177740545485,
+                  "pd_bits_saved_per_coefficient_bit": -1.0721723527389375,
+                  "half_gain_bits": [
+                    -1675.81686382906,
+                    -1669.3608767164246
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 54684,
+                  "forecasts": 189,
+                  "iid_gain_bits": -3345.177740545485,
+                  "incremental_over_history_bits": -0.11888772425322336,
+                  "predictor_code_bits": 5612.934491085875,
+                  "baseline_code_bits": 2267.756750540391
+                },
+                "fixed_audit_probe_learning_progress_bits": 16.128984218141788
+              }
+            },
+            "synergy": {}
+          },
+          "64": {
+            "supported": true,
+            "horizon_chunks": 64,
+            "horizon_seconds": 5.461333333333333,
+            "selected_simple_baseline": "iid",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 1691.6079991029992,
+              "persistence": 4479.229138555094,
+              "trend": 5280.504135026416,
+              "period_4": 4495.229138555094,
+              "period_16": 4495.229138555094,
+              "period_64": 4495.229138555094,
+              "period_95": 4437.334490033949,
+              "period_128": 4614.087899171424,
+              "history": 6513.241923131371
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -2471.697828876384,
+                  "bits_per_feature_forecast": -1.3484439873848248,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -5591.697828876384,
+                  "pd_bits_saved_per_coefficient_bit": -0.7922108425885845,
+                  "half_gain_bits": [
+                    -1255.8776510283792,
+                    -1215.8201778480047
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 45276,
+                  "forecasts": 141,
+                  "iid_gain_bits": -2471.697828876384,
+                  "incremental_over_history_bits": 6.399126264991356,
+                  "predictor_code_bits": 4164.304740006033,
+                  "baseline_code_bits": 1692.60691112965
+                },
+                "audit": {
+                  "gain_bits": -2500.9429684681727,
+                  "bits_per_feature_forecast": -1.3643987825794723,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -5620.942968468173,
+                  "pd_bits_saved_per_coefficient_bit": -0.80158428476544,
+                  "half_gain_bits": [
+                    -1251.2293378030995,
+                    -1249.7136306650732
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 45276,
+                  "forecasts": 141,
+                  "iid_gain_bits": -2500.9429684681727,
+                  "incremental_over_history_bits": 4.672242378101659,
+                  "predictor_code_bits": 4193.2169089222725,
+                  "baseline_code_bits": 1692.2739404540998
+                },
+                "fixed_audit_probe_learning_progress_bits": 2.652276868995374
+              }
+            },
+            "synergy": {}
+          }
+        },
+        "units": "proper code lengths of quantized descriptors; not MI",
+        "elapsed_seconds": 0.34550812499946915
+      },
+      "diagnostics": {
+        "descriptor_entropy_bits_per_feature": [
+          3.999778782814574,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0
+        ],
+        "training_active_features": 1,
+        "descriptor_token_zlib_ratio": 0.013296274038461538,
+        "median_normalized_change": 0.054578006376362447,
+        "last_quarter_normalized_change": 0.04939322541103919,
+        "repeat_mean_square_by_lag": {
+          "1": 0.0030532306859106326,
+          "4": 0.046328567063229256,
+          "16": 0.30423567191457773,
+          "64": 0.0013138006701323157,
+          "128": 0.005229485215876214
+        },
+        "not_waveform_compression": true
+      },
+      "raw_reward": {
+        "value": 0.0,
+        "components": [
+          {
+            "horizon_chunks": 1,
+            "persistent_net_bits": -6728.427217054426,
+            "reward": 0.0
+          },
+          {
+            "horizon_chunks": 4,
+            "persistent_net_bits": -6674.9666009029515,
+            "reward": 0.0
+          },
+          {
+            "horizon_chunks": 16,
+            "persistent_net_bits": -6492.009071100054,
+            "reward": 0.0
+          },
+          {
+            "horizon_chunks": 64,
+            "persistent_net_bits": -5591.697828876384,
+            "reward": 0.0
+          }
+        ]
+      },
+      "eligible_reward": 0,
+      "naive_negative_persistence_mse": -0.0001815058446358734
+    },
+    "repeated_texture_37": {
+      "physical": {
+        "frames": 4194304,
+        "chunks": 1024,
+        "seconds": 87.38133333333333,
+        "rms": 0.08009499363506264,
+        "peak": 0.36239395800069546,
+        "quiet_chunk_fraction": 0.0,
+        "top_three_fft_bins_median_power_fraction": 0.01120860567372333,
+        "clipping_sample_fraction": 0.0,
+        "descriptor_names": [
+          "log_mid_rms",
+          "log_side_rms",
+          "log_band_fraction_0",
+          "log_band_fraction_1",
+          "log_band_fraction_2",
+          "log_band_fraction_3",
+          "log_band_fraction_4",
+          "log_band_fraction_5",
+          "log_band_fraction_6",
+          "log_band_fraction_7",
+          "band_flux",
+          "stereo_correlation",
+          "level_balance"
+        ],
+        "eligible": true
+      },
+      "coding": {
+        "schema": 1,
+        "samples": 1024,
+        "sample_chunks": 1,
+        "split_boundaries": [
+          409,
+          614,
+          819
+        ],
+        "bins_per_target": [
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16
+        ],
+        "horizons": {
+          "1": {
+            "supported": true,
+            "horizon_chunks": 1,
+            "horizon_seconds": 0.08533333333333333,
+            "selected_simple_baseline": "period_37",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 10536.82693632071,
+              "persistence": 12599.462770057002,
+              "trend": 14386.559574269508,
+              "period_4": 12517.199312797691,
+              "period_16": 12668.873878652743,
+              "period_37": 3656.8573671869954,
+              "period_64": 12694.357856891358,
+              "period_128": 12562.711373111244,
+              "history": 13037.224715567218
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -7095.394980515626,
+                  "bits_per_feature_forecast": -2.67548830336185,
+                  "coefficient_cost_bits": 2896,
+                  "net_gain_bits": -9991.394980515626,
+                  "pd_bits_saved_per_coefficient_bit": -2.450067327526114,
+                  "half_gain_bits": [
+                    -3537.6329201058716,
+                    -3557.7620604097547
+                  ],
+                  "extra_parameters": 181,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57624,
+                  "forecasts": 204,
+                  "iid_gain_bits": 23.32439679134948,
+                  "incremental_over_history_bits": 225.91416993258815,
+                  "predictor_code_bits": 10504.760620421443,
+                  "baseline_code_bits": 3409.3656399058177
+                },
+                "audit": {
+                  "gain_bits": -7078.0627255190175,
+                  "bits_per_feature_forecast": -2.668952762262073,
+                  "coefficient_cost_bits": 2896,
+                  "net_gain_bits": -9974.062725519017,
+                  "pd_bits_saved_per_coefficient_bit": -2.4440824328449646,
+                  "half_gain_bits": [
+                    -3533.871440435256,
+                    -3544.1912850837616
+                  ],
+                  "extra_parameters": 181,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57624,
+                  "forecasts": 204,
+                  "iid_gain_bits": 24.48485592089198,
+                  "incremental_over_history_bits": 234.31541606595695,
+                  "predictor_code_bits": 10516.917502952081,
+                  "baseline_code_bits": 3438.854777433063
+                },
+                "fixed_audit_probe_learning_progress_bits": 25.202021994058825
+              }
+            },
+            "synergy": {}
+          },
+          "4": {
+            "supported": true,
+            "horizon_chunks": 4,
+            "horizon_seconds": 0.3413333333333333,
+            "selected_simple_baseline": "period_37",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 10385.996874698802,
+              "persistence": 12321.037856413168,
+              "trend": 17105.980874162895,
+              "period_4": 12337.037856413168,
+              "period_16": 12481.011668678431,
+              "period_37": 3604.0865357316416,
+              "period_64": 12502.474282003579,
+              "period_128": 12380.808027692476,
+              "history": 12701.976821617218
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -6768.561192282839,
+                  "bits_per_feature_forecast": -2.5903410609578414,
+                  "coefficient_cost_bits": 2896,
+                  "net_gain_bits": -9664.56119228284,
+                  "pd_bits_saved_per_coefficient_bit": -2.3372103564512567,
+                  "half_gain_bits": [
+                    -3394.7975623055977,
+                    -3373.7636299772416
+                  ],
+                  "extra_parameters": 181,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57036,
+                  "forecasts": 201,
+                  "iid_gain_bits": 246.51117939399663,
+                  "incremental_over_history_bits": 261.8427032859909,
+                  "predictor_code_bits": 10126.617118228058,
+                  "baseline_code_bits": 3358.055925945218
+                },
+                "audit": {
+                  "gain_bits": -6762.63943049097,
+                  "bits_per_feature_forecast": -2.588074791615373,
+                  "coefficient_cost_bits": 2896,
+                  "net_gain_bits": -9658.63943049097,
+                  "pd_bits_saved_per_coefficient_bit": -2.335165549202683,
+                  "half_gain_bits": [
+                    -3392.7616596981634,
+                    -3369.8777707928075
+                  ],
+                  "extra_parameters": 181,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57036,
+                  "forecasts": 201,
+                  "iid_gain_bits": 230.39835111397053,
+                  "incremental_over_history_bits": 267.47318850913337,
+                  "predictor_code_bits": 10154.30427939685,
+                  "baseline_code_bits": 3391.6648489058807
+                },
+                "fixed_audit_probe_learning_progress_bits": 29.668432255764156
+              }
+            },
+            "synergy": {}
+          },
+          "16": {
+            "supported": true,
+            "horizon_chunks": 16,
+            "horizon_seconds": 1.3653333333333333,
+            "selected_simple_baseline": "period_37",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 9762.83158508101,
+              "persistence": 11743.667610443421,
+              "trend": 20097.206893114948,
+              "period_4": 11759.667610443421,
+              "period_16": 11759.667610443421,
+              "period_37": 3408.0426547040543,
+              "period_64": 11783.417153721373,
+              "period_128": 11643.513327936178,
+              "history": 12126.3544433387
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -6343.663151236675,
+                  "bits_per_feature_forecast": -2.581873484426811,
+                  "coefficient_cost_bits": 2896,
+                  "net_gain_bits": -9239.663151236675,
+                  "pd_bits_saved_per_coefficient_bit": -2.1904914196259235,
+                  "half_gain_bits": [
+                    -3205.2963976045676,
+                    -3138.3667536321072
+                  ],
+                  "extra_parameters": 181,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 54684,
+                  "forecasts": 189,
+                  "iid_gain_bits": 234.5953306711819,
+                  "incremental_over_history_bits": 311.71664250669187,
+                  "predictor_code_bits": 9523.399202643142,
+                  "baseline_code_bits": 3179.7360514064685
+                },
+                "audit": {
+                  "gain_bits": -6342.503555132125,
+                  "bits_per_feature_forecast": -2.581401528340303,
+                  "coefficient_cost_bits": 2896,
+                  "net_gain_bits": -9238.503555132125,
+                  "pd_bits_saved_per_coefficient_bit": -2.190091006606397,
+                  "half_gain_bits": [
+                    -3175.9358489285414,
+                    -3166.5677062035847
+                  ],
+                  "extra_parameters": 181,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 54684,
+                  "forecasts": 189,
+                  "iid_gain_bits": 239.11267019513218,
+                  "incremental_over_history_bits": 309.1253542870834,
+                  "predictor_code_bits": 9521.91317035912,
+                  "baseline_code_bits": 3179.409615226992
+                },
+                "fixed_audit_probe_learning_progress_bits": 22.639250701635877
+              }
+            },
+            "synergy": {}
+          },
+          "64": {
+            "supported": true,
+            "horizon_chunks": 64,
+            "horizon_seconds": 5.461333333333333,
+            "selected_simple_baseline": "period_37",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 7281.314461115942,
+              "persistence": 8828.252549618903,
+              "trend": 18104.481254350492,
+              "period_4": 8844.252549618903,
+              "period_16": 8844.252549618903,
+              "period_37": 2593.0162759672476,
+              "period_64": 8844.252549618903,
+              "period_128": 8749.575230446253,
+              "history": 9678.12160428919
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -4794.81121965931,
+                  "bits_per_feature_forecast": -2.615827179301315,
+                  "coefficient_cost_bits": 2896,
+                  "net_gain_bits": -7690.81121965931,
+                  "pd_bits_saved_per_coefficient_bit": -1.6556668576171651,
+                  "half_gain_bits": [
+                    -2401.818176032977,
+                    -2392.993043626332
+                  ],
+                  "extra_parameters": 181,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 45276,
+                  "forecasts": 141,
+                  "iid_gain_bits": 118.52068112176099,
+                  "incremental_over_history_bits": 218.44218865306772,
+                  "predictor_code_bits": 7161.626841605164,
+                  "baseline_code_bits": 2366.8156219458547
+                },
+                "audit": {
+                  "gain_bits": -4811.958368109524,
+                  "bits_per_feature_forecast": -2.6251818702179617,
+                  "coefficient_cost_bits": 2896,
+                  "net_gain_bits": -7707.958368109524,
+                  "pd_bits_saved_per_coefficient_bit": -1.6615878342919626,
+                  "half_gain_bits": [
+                    -2417.2253938231906,
+                    -2394.732974286333
+                  ],
+                  "extra_parameters": 181,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 45276,
+                  "forecasts": 141,
+                  "iid_gain_bits": 90.56140035315191,
+                  "incremental_over_history_bits": 209.4673577903198,
+                  "predictor_code_bits": 7194.689677177313,
+                  "baseline_code_bits": 2382.731309067789
+                },
+                "fixed_audit_probe_learning_progress_bits": 3.977262445212042
+              }
+            },
+            "synergy": {}
+          }
+        },
+        "units": "proper code lengths of quantized descriptors; not MI",
+        "elapsed_seconds": 1.3717134370235726
+      },
+      "diagnostics": {
+        "descriptor_entropy_bits_per_feature": [
+          3.971149004466743,
+          3.972884109873565,
+          3.9734426225998756,
+          3.9728757775369656,
+          3.971733134638699,
+          3.9734254406876848,
+          3.9723172648106546,
+          3.97290972731921,
+          3.9728927524280877,
+          3.9734084657965623,
+          3.9716993321419936,
+          3.9723342397017767,
+          3.9722830048104867
+        ],
+        "training_active_features": 13,
+        "descriptor_token_zlib_ratio": 0.02771935096153846,
+        "median_normalized_change": 1.3911558444204124,
+        "last_quarter_normalized_change": 1.3918474485843753,
+        "repeat_mean_square_by_lag": {
+          "1": 2.0188579821627335,
+          "4": 1.9229187122318672,
+          "16": 2.084761559262778,
+          "64": 2.1275255743911696,
+          "128": 1.9256969520893648
+        },
+        "not_waveform_compression": true
+      },
+      "raw_reward": {
+        "value": 0.0,
+        "components": [
+          {
+            "horizon_chunks": 1,
+            "persistent_net_bits": -9991.394980515626,
+            "reward": 0.0
+          },
+          {
+            "horizon_chunks": 4,
+            "persistent_net_bits": -9664.56119228284,
+            "reward": 0.0
+          },
+          {
+            "horizon_chunks": 16,
+            "persistent_net_bits": -9239.663151236675,
+            "reward": 0.0
+          },
+          {
+            "horizon_chunks": 64,
+            "persistent_net_bits": -7690.81121965931,
+            "reward": 0.0
+          }
+        ]
+      },
+      "eligible_reward": 0.0,
+      "naive_negative_persistence_mse": -0.15743513525028155
+    },
+    "white_noise": {
+      "physical": {
+        "frames": 4194304,
+        "chunks": 1024,
+        "seconds": 87.38133333333333,
+        "rms": 0.06997842686957513,
+        "peak": 0.3783060939638884,
+        "quiet_chunk_fraction": 0.0,
+        "top_three_fft_bins_median_power_fraction": 0.010516296809150356,
+        "clipping_sample_fraction": 0.0,
+        "descriptor_names": [
+          "log_mid_rms",
+          "log_side_rms",
+          "log_band_fraction_0",
+          "log_band_fraction_1",
+          "log_band_fraction_2",
+          "log_band_fraction_3",
+          "log_band_fraction_4",
+          "log_band_fraction_5",
+          "log_band_fraction_6",
+          "log_band_fraction_7",
+          "band_flux",
+          "stereo_correlation",
+          "level_balance"
+        ],
+        "eligible": true
+      },
+      "coding": {
+        "schema": 1,
+        "samples": 1024,
+        "sample_chunks": 1,
+        "split_boundaries": [
+          409,
+          614,
+          819
+        ],
+        "bins_per_target": [
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16
+        ],
+        "horizons": {
+          "1": {
+            "supported": true,
+            "horizon_chunks": 1,
+            "horizon_seconds": 0.08533333333333333,
+            "selected_simple_baseline": "iid",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 10606.850223164492,
+              "persistence": 11955.294187254889,
+              "trend": 13732.040935564291,
+              "period_4": 11942.369375574297,
+              "period_16": 12021.913127159998,
+              "period_64": 12047.65570277363,
+              "period_127": 12030.408675985977,
+              "period_128": 12046.098107580223,
+              "history": 12918.952878314547
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -75.07986923089399,
+                  "bits_per_feature_forecast": -0.02831065958932654,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3195.079869230894,
+                  "pd_bits_saved_per_coefficient_bit": -0.02406406065092756,
+                  "half_gain_bits": [
+                    -31.613807662311675,
+                    -43.46606156858232
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57624,
+                  "forecasts": 204,
+                  "iid_gain_bits": -75.07986923089399,
+                  "incremental_over_history_bits": -25.761457100095992,
+                  "predictor_code_bits": 10683.31747021018,
+                  "baseline_code_bits": 10608.237600979286
+                },
+                "audit": {
+                  "gain_bits": -136.5092662316317,
+                  "bits_per_feature_forecast": -0.05147408228945388,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3256.5092662316315,
+                  "pd_bits_saved_per_coefficient_bit": -0.0437529699460358,
+                  "half_gain_bits": [
+                    -70.06882089687494,
+                    -66.44044533475676
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57624,
+                  "forecasts": 204,
+                  "iid_gain_bits": -136.5092662316317,
+                  "incremental_over_history_bits": -51.31559277591968,
+                  "predictor_code_bits": 10744.080925859816,
+                  "baseline_code_bits": 10607.571659628185
+                },
+                "fixed_audit_probe_learning_progress_bits": 98.51025852455237
+              }
+            },
+            "synergy": {}
+          },
+          "4": {
+            "supported": true,
+            "horizon_chunks": 4,
+            "horizon_seconds": 0.3413333333333333,
+            "selected_simple_baseline": "iid",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 10450.732474388875,
+              "persistence": 11739.973159898793,
+              "trend": 16660.660005139565,
+              "period_4": 11755.973159898793,
+              "period_16": 11836.179611442296,
+              "period_64": 11861.85250741473,
+              "period_127": 11845.418806850892,
+              "period_128": 11868.089691422263,
+              "history": 12747.54154352734
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -80.07494735554886,
+                  "bits_per_feature_forecast": -0.03064483251264786,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3200.074947355549,
+                  "pd_bits_saved_per_coefficient_bit": -0.025665047229342583,
+                  "half_gain_bits": [
+                    -51.02214261634174,
+                    -29.05280473920712
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57036,
+                  "forecasts": 201,
+                  "iid_gain_bits": -80.07494735554886,
+                  "incremental_over_history_bits": -38.76670797830481,
+                  "predictor_code_bits": 10532.416780009582,
+                  "baseline_code_bits": 10452.341832654034
+                },
+                "audit": {
+                  "gain_bits": -116.74966922859224,
+                  "bits_per_feature_forecast": -0.04468031734733725,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3236.749669228592,
+                  "pd_bits_saved_per_coefficient_bit": -0.037419765778394946,
+                  "half_gain_bits": [
+                    -68.19957469185525,
+                    -48.55009453673699
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57036,
+                  "forecasts": 201,
+                  "iid_gain_bits": -116.74966922859224,
+                  "incremental_over_history_bits": -34.64517797473654,
+                  "predictor_code_bits": 10568.25907519375,
+                  "baseline_code_bits": 10451.509405965156
+                },
+                "fixed_audit_probe_learning_progress_bits": 39.944308647495276
+              }
+            },
+            "synergy": {}
+          },
+          "16": {
+            "supported": true,
+            "horizon_chunks": 16,
+            "horizon_seconds": 1.3653333333333333,
+            "selected_simple_baseline": "iid",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 9826.982915750088,
+              "persistence": 11144.62088002038,
+              "trend": 19707.001931157203,
+              "period_4": 11160.62088002038,
+              "period_16": 11160.62088002038,
+              "period_64": 11189.393331856747,
+              "period_127": 11167.9781418412,
+              "period_128": 11180.09043838909,
+              "history": 12162.512042811966
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -55.47006752343073,
+                  "bits_per_feature_forecast": -0.022576340058376367,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3175.4700675234308,
+                  "pd_bits_saved_per_coefficient_bit": -0.017778867795971386,
+                  "half_gain_bits": [
+                    -38.512260251149954,
+                    -16.95780727228077
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 54684,
+                  "forecasts": 189,
+                  "iid_gain_bits": -55.47006752343073,
+                  "incremental_over_history_bits": -18.83783352639676,
+                  "predictor_code_bits": 9883.673875750537,
+                  "baseline_code_bits": 9828.203808227106
+                },
+                "audit": {
+                  "gain_bits": -105.26615151809058,
+                  "bits_per_feature_forecast": -0.04284336651122938,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3225.2661515180907,
+                  "pd_bits_saved_per_coefficient_bit": -0.03373915112759313,
+                  "half_gain_bits": [
+                    -66.20221669783923,
+                    -39.06393482025133
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 54684,
+                  "forecasts": 189,
+                  "iid_gain_bits": -105.26615151809058,
+                  "incremental_over_history_bits": -32.67197890353772,
+                  "predictor_code_bits": 9932.30456238077,
+                  "baseline_code_bits": 9827.038410862679
+                },
+                "fixed_audit_probe_learning_progress_bits": 13.839735215688545
+              }
+            },
+            "synergy": {}
+          },
+          "64": {
+            "supported": true,
+            "horizon_chunks": 64,
+            "horizon_seconds": 5.461333333333333,
+            "selected_simple_baseline": "iid",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 7331.707205631987,
+              "persistence": 8378.7081365626,
+              "trend": 17971.123900351988,
+              "period_4": 8394.7081365626,
+              "period_16": 8394.7081365626,
+              "period_64": 8394.7081365626,
+              "period_127": 8419.195708219646,
+              "period_128": 8403.589741754742,
+              "history": 9688.327872249552
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -90.54524816951779,
+                  "bits_per_feature_forecast": -0.04939729851037523,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3210.545248169518,
+                  "pd_bits_saved_per_coefficient_bit": -0.029020912874845445,
+                  "half_gain_bits": [
+                    -41.7882699425812,
+                    -48.75697822693658
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 45276,
+                  "forecasts": 141,
+                  "iid_gain_bits": -90.54524816951779,
+                  "incremental_over_history_bits": -19.603425573498324,
+                  "predictor_code_bits": 7423.806316954072,
+                  "baseline_code_bits": 7333.2610687845545
+                },
+                "audit": {
+                  "gain_bits": -126.60426805333925,
+                  "bits_per_feature_forecast": -0.06906943156210543,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3246.604268053339,
+                  "pd_bits_saved_per_coefficient_bit": -0.04057829104273694,
+                  "half_gain_bits": [
+                    -27.463429248446953,
+                    -99.1408388048923
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 45276,
+                  "forecasts": 141,
+                  "iid_gain_bits": -126.60426805333925,
+                  "incremental_over_history_bits": -0.404672114178942,
+                  "predictor_code_bits": 7458.366968797918,
+                  "baseline_code_bits": 7331.762700744579
+                },
+                "fixed_audit_probe_learning_progress_bits": -18.056983154332357
+              }
+            },
+            "synergy": {}
+          }
+        },
+        "units": "proper code lengths of quantized descriptors; not MI",
+        "elapsed_seconds": 1.0476030730060302
+      },
+      "diagnostics": {
+        "descriptor_entropy_bits_per_feature": [
+          3.9763625206580375,
+          3.9860295999560176,
+          3.970833428647678,
+          3.989594469596026,
+          3.9890972833160463,
+          3.9858981432921032,
+          3.9853372914216187,
+          3.9907629010285084,
+          3.976167573938932,
+          3.982325320470788,
+          3.9846628332760385,
+          3.982987587192301,
+          3.983058668423085
+        ],
+        "training_active_features": 13,
+        "descriptor_token_zlib_ratio": 0.5788762019230769,
+        "median_normalized_change": 1.3213522159038331,
+        "last_quarter_normalized_change": 1.3413085242372873,
+        "repeat_mean_square_by_lag": {
+          "1": 1.9087835563746811,
+          "4": 1.9558271840595554,
+          "16": 1.9696227131709168,
+          "64": 1.985788749919654,
+          "128": 1.9839775434461278
+        },
+        "not_waveform_compression": true
+      },
+      "raw_reward": {
+        "value": 0.0,
+        "components": [
+          {
+            "horizon_chunks": 1,
+            "persistent_net_bits": -3195.079869230894,
+            "reward": 0.0
+          },
+          {
+            "horizon_chunks": 4,
+            "persistent_net_bits": -3200.074947355549,
+            "reward": 0.0
+          },
+          {
+            "horizon_chunks": 16,
+            "persistent_net_bits": -3175.4700675234308,
+            "reward": 0.0
+          },
+          {
+            "horizon_chunks": 64,
+            "persistent_net_bits": -3210.545248169518,
+            "reward": 0.0
+          }
+        ]
+      },
+      "eligible_reward": 0.0,
+      "naive_negative_persistence_mse": -0.18659774555209627
+    },
+    "colored_noise": {
+      "physical": {
+        "frames": 4194304,
+        "chunks": 1024,
+        "seconds": 87.38133333333333,
+        "rms": 0.06576588417219231,
+        "peak": 0.38831648325082324,
+        "quiet_chunk_fraction": 0.0,
+        "top_three_fft_bins_median_power_fraction": 0.026033931912917124,
+        "clipping_sample_fraction": 0.0,
+        "descriptor_names": [
+          "log_mid_rms",
+          "log_side_rms",
+          "log_band_fraction_0",
+          "log_band_fraction_1",
+          "log_band_fraction_2",
+          "log_band_fraction_3",
+          "log_band_fraction_4",
+          "log_band_fraction_5",
+          "log_band_fraction_6",
+          "log_band_fraction_7",
+          "band_flux",
+          "stereo_correlation",
+          "level_balance"
+        ],
+        "eligible": true
+      },
+      "coding": {
+        "schema": 1,
+        "samples": 1024,
+        "sample_chunks": 1,
+        "split_boundaries": [
+          409,
+          614,
+          819
+        ],
+        "bins_per_target": [
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16
+        ],
+        "horizons": {
+          "1": {
+            "supported": true,
+            "horizon_chunks": 1,
+            "horizon_seconds": 0.08533333333333333,
+            "selected_simple_baseline": "iid",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 10609.181017893345,
+              "persistence": 11866.596653117369,
+              "trend": 13591.696461984246,
+              "period_4": 11960.264758689791,
+              "period_16": 11997.880901243841,
+              "period_64": 11946.624471022285,
+              "period_128": 11997.069643858644,
+              "history": 12901.68192398782
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -58.27396923396775,
+                  "bits_per_feature_forecast": -0.021973593225478035,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3178.273969233968,
+                  "pd_bits_saved_per_coefficient_bit": -0.01867755424165633,
+                  "half_gain_bits": [
+                    -46.02426183873444,
+                    -12.249707395233314
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57624,
+                  "forecasts": 204,
+                  "iid_gain_bits": -58.27396923396775,
+                  "incremental_over_history_bits": -46.49310365097054,
+                  "predictor_code_bits": 10671.062169445773,
+                  "baseline_code_bits": 10612.788200211806
+                },
+                "audit": {
+                  "gain_bits": -130.11671570278583,
+                  "bits_per_feature_forecast": -0.04906361828913493,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3250.1167157027858,
+                  "pd_bits_saved_per_coefficient_bit": -0.04170407554576469,
+                  "half_gain_bits": [
+                    -54.777324621155415,
+                    -75.3393910816304
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57624,
+                  "forecasts": 204,
+                  "iid_gain_bits": -130.11671570278583,
+                  "incremental_over_history_bits": -17.344562086954273,
+                  "predictor_code_bits": 10738.853772695398,
+                  "baseline_code_bits": 10608.737056992612
+                },
+                "fixed_audit_probe_learning_progress_bits": 56.93671514859738
+              }
+            },
+            "synergy": {}
+          },
+          "4": {
+            "supported": true,
+            "horizon_chunks": 4,
+            "horizon_seconds": 0.3413333333333333,
+            "selected_simple_baseline": "iid",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 10453.063269117725,
+              "persistence": 11771.00430582889,
+              "trend": 16564.369343030736,
+              "period_4": 11787.00430582889,
+              "period_16": 11822.693439750583,
+              "period_64": 11762.703439419838,
+              "period_128": 11825.059206126703,
+              "history": 12736.135184628973
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -29.888775970355937,
+                  "bits_per_feature_forecast": -0.011438490612459218,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3149.8887759703557,
+                  "pd_bits_saved_per_coefficient_bit": -0.009579735887934595,
+                  "half_gain_bits": [
+                    -9.765192479631146,
+                    -20.123583490724787
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57036,
+                  "forecasts": 201,
+                  "iid_gain_bits": -29.888775970355937,
+                  "incremental_over_history_bits": -24.581654526107563,
+                  "predictor_code_bits": 10486.892198082092,
+                  "baseline_code_bits": 10457.003422111735
+                },
+                "audit": {
+                  "gain_bits": -140.68205576226865,
+                  "bits_per_feature_forecast": -0.05383928655272432,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3260.6820557622686,
+                  "pd_bits_saved_per_coefficient_bit": -0.04509040248790662,
+                  "half_gain_bits": [
+                    -65.80052950145944,
+                    -74.8815262608092
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 57036,
+                  "forecasts": 201,
+                  "iid_gain_bits": -140.68205576226865,
+                  "incremental_over_history_bits": -22.363110410951876,
+                  "predictor_code_bits": 10593.412354204444,
+                  "baseline_code_bits": 10452.730298442177
+                },
+                "fixed_audit_probe_learning_progress_bits": 35.46168358917461
+              }
+            },
+            "synergy": {}
+          },
+          "16": {
+            "supported": true,
+            "horizon_chunks": 16,
+            "horizon_seconds": 1.3653333333333333,
+            "selected_simple_baseline": "iid",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 9828.814254465615,
+              "persistence": 11105.223141782368,
+              "trend": 19504.937318987664,
+              "period_4": 11121.223141782368,
+              "period_16": 11121.223141782368,
+              "period_64": 11094.052291190557,
+              "period_128": 11132.744852224241,
+              "history": 12149.262050325495
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -53.720581060277766,
+                  "bits_per_feature_forecast": -0.021864298355831407,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3173.7205810602777,
+                  "pd_bits_saved_per_coefficient_bit": -0.01721813495521723,
+                  "half_gain_bits": [
+                    -38.10341987869194,
+                    -15.617161181585843
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 54684,
+                  "forecasts": 189,
+                  "iid_gain_bits": -53.720581060277766,
+                  "incremental_over_history_bits": -25.021741293810496,
+                  "predictor_code_bits": 9886.253008069536,
+                  "baseline_code_bits": 9832.532427009259
+                },
+                "audit": {
+                  "gain_bits": -132.61810414090502,
+                  "bits_per_feature_forecast": -0.053975622360970706,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3252.618104140905,
+                  "pd_bits_saved_per_coefficient_bit": -0.042505802609264426,
+                  "half_gain_bits": [
+                    -79.73681614183485,
+                    -52.88128799907015
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 54684,
+                  "forecasts": 189,
+                  "iid_gain_bits": -132.61810414090502,
+                  "incremental_over_history_bits": -21.087195360908098,
+                  "predictor_code_bits": 9961.376863493926,
+                  "baseline_code_bits": 9828.758759353022
+                },
+                "fixed_audit_probe_learning_progress_bits": -5.678970505782026
+              }
+            },
+            "synergy": {}
+          },
+          "64": {
+            "supported": true,
+            "horizon_chunks": 64,
+            "horizon_seconds": 5.461333333333333,
+            "selected_simple_baseline": "iid",
+            "baseline_calibration_bits_with_parameter_cost": {
+              "iid": 7332.872602996413,
+              "persistence": 8321.340101657139,
+              "trend": 17616.1830603244,
+              "period_4": 8337.340101657139,
+              "period_16": 8337.340101657139,
+              "period_64": 8337.340101657139,
+              "period_128": 8354.873410766886,
+              "history": 9628.30292640511
+            },
+            "probes": {
+              "output_slow": {
+                "parameters": 195,
+                "input_width": 13,
+                "selection": {
+                  "gain_bits": -52.320309321993975,
+                  "bits_per_feature_forecast": -0.028543540273864687,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3172.320309321994,
+                  "pd_bits_saved_per_coefficient_bit": -0.016769329910895504,
+                  "half_gain_bits": [
+                    -43.41789910690846,
+                    -8.902410215085526
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 45276,
+                  "forecasts": 141,
+                  "iid_gain_bits": -52.320309321993975,
+                  "incremental_over_history_bits": -17.169608031557463,
+                  "predictor_code_bits": 7388.134153285766,
+                  "baseline_code_bits": 7335.813843963772
+                },
+                "audit": {
+                  "gain_bits": -94.99018360333662,
+                  "bits_per_feature_forecast": -0.051822249647210376,
+                  "coefficient_cost_bits": 3120,
+                  "net_gain_bits": -3214.990183603337,
+                  "pd_bits_saved_per_coefficient_bit": -0.030445571667736097,
+                  "half_gain_bits": [
+                    -58.2155558741557,
+                    -36.77462772918092
+                  ],
+                  "extra_parameters": 195,
+                  "predict_multiply_adds_per_forecast": 182,
+                  "fit_multiply_add_proxy": 45276,
+                  "forecasts": 141,
+                  "iid_gain_bits": -94.99018360333662,
+                  "incremental_over_history_bits": -17.301360253838485,
+                  "predictor_code_bits": 7427.474320811607,
+                  "baseline_code_bits": 7332.484137208271
+                },
+                "fixed_audit_probe_learning_progress_bits": -5.494065356453149
+              }
+            },
+            "synergy": {}
+          }
+        },
+        "units": "proper code lengths of quantized descriptors; not MI",
+        "elapsed_seconds": 1.3122004689939786
+      },
+      "diagnostics": {
+        "descriptor_entropy_bits_per_feature": [
+          3.98220751873208,
+          3.973063053444063,
+          3.9880440463344216,
+          3.9862569699626333,
+          3.9912814945948663,
+          3.9918647087392087,
+          3.9889301959145538,
+          3.9814181404450673,
+          3.9775490850672446,
+          3.9823348103299514,
+          3.9952940125238823,
+          3.987134566167355,
+          3.979585104682969
+        ],
+        "training_active_features": 13,
+        "descriptor_token_zlib_ratio": 0.5791766826923077,
+        "median_normalized_change": 1.3280314187764115,
+        "last_quarter_normalized_change": 1.3611133670932234,
+        "repeat_mean_square_by_lag": {
+          "1": 1.9385780765211993,
+          "4": 1.9212762031386827,
+          "16": 2.030819269868501,
+          "64": 1.991859954041289,
+          "128": 2.009026272375823
+        },
+        "not_waveform_compression": true
+      },
+      "raw_reward": {
+        "value": 0.0,
+        "components": [
+          {
+            "horizon_chunks": 1,
+            "persistent_net_bits": -3178.273969233968,
+            "reward": 0.0
+          },
+          {
+            "horizon_chunks": 4,
+            "persistent_net_bits": -3149.8887759703557,
+            "reward": 0.0
+          },
+          {
+            "horizon_chunks": 16,
+            "persistent_net_bits": -3173.7205810602777,
+            "reward": 0.0
+          },
+          {
+            "horizon_chunks": 64,
+            "persistent_net_bits": -3172.320309321994,
+            "reward": 0.0
+          }
+        ]
+      },
+      "eligible_reward": 0.0,
+      "naive_negative_persistence_mse": -0.1670669885837721
+    }
+  },
+  "subjective_quality_not_measured": true,
+  "known_delayed_complementary_process": {
+    "schema": 1,
+    "samples": 1536,
+    "sample_chunks": 1,
+    "split_boundaries": [
+      614,
+      921,
+      1228
+    ],
+    "bins_per_target": [
+      16,
+      16
+    ],
+    "horizons": {
+      "4": {
+        "supported": true,
+        "horizon_chunks": 4,
+        "horizon_seconds": 0.3413333333333333,
+        "selected_simple_baseline": "iid",
+        "baseline_calibration_bits_with_parameter_cost": {
+          "iid": 2424.076757939575,
+          "persistence": 2693.2047924486387,
+          "trend": 3852.6183133897794,
+          "period_4": 2709.2047924486387,
+          "period_16": 2747.8424055244213,
+          "period_28": 2742.068023483236,
+          "period_64": 2754.668664955278,
+          "period_128": 2722.604843609899,
+          "history": 2769.321459382125
+        },
+        "probes": {
+          "output_slow": {
+            "parameters": 30,
+            "input_width": 13,
+            "selection": {
+              "gain_bits": -9.996861677611026,
+              "bits_per_feature_forecast": -0.016496471415199714,
+              "coefficient_cost_bits": 480,
+              "net_gain_bits": -489.99686167761104,
+              "pd_bits_saved_per_coefficient_bit": -0.020826795161689636,
+              "half_gain_bits": [
+                -6.060231320504785,
+                -3.9366303571062393
+              ],
+              "extra_parameters": 30,
+              "predict_multiply_adds_per_forecast": 28,
+              "fit_multiply_add_proxy": 97216,
+              "forecasts": 303,
+              "iid_gain_bits": -9.996861677611026,
+              "incremental_over_history_bits": -6.088007052801466,
+              "predictor_code_bits": 2434.776509559348,
+              "baseline_code_bits": 2424.7796478817368
+            },
+            "audit": {
+              "gain_bits": -22.076645165982065,
+              "bits_per_feature_forecast": -0.03631027165457577,
+              "coefficient_cost_bits": 480,
+              "net_gain_bits": -502.0766451659821,
+              "pd_bits_saved_per_coefficient_bit": -0.045993010762462636,
+              "half_gain_bits": [
+                -1.2248061976622378,
+                -20.85183896831983
+              ],
+              "extra_parameters": 30,
+              "predict_multiply_adds_per_forecast": 28,
+              "fit_multiply_add_proxy": 97216,
+              "forecasts": 304,
+              "iid_gain_bits": -22.076645165982065,
+              "incremental_over_history_bits": -6.068101982880963,
+              "predictor_code_bits": 2453.885417904571,
+              "baseline_code_bits": 2431.808772738589
+            },
+            "fixed_audit_probe_learning_progress_bits": 39.057290675297814
+          },
+          "gru": {
+            "parameters": 30,
+            "input_width": 13,
+            "selection": {
+              "gain_bits": 262.214672163263,
+              "bits_per_feature_forecast": 0.43269747881726567,
+              "coefficient_cost_bits": 480,
+              "net_gain_bits": -217.785327836737,
+              "pd_bits_saved_per_coefficient_bit": 0.546280567006798,
+              "half_gain_bits": [
+                125.94964864394858,
+                136.26502351931438
+              ],
+              "extra_parameters": 30,
+              "predict_multiply_adds_per_forecast": 28,
+              "fit_multiply_add_proxy": 97216,
+              "forecasts": 303,
+              "iid_gain_bits": 262.214672163263,
+              "incremental_over_history_bits": 266.1235267880725,
+              "predictor_code_bits": 2162.564975718474,
+              "baseline_code_bits": 2424.7796478817368
+            },
+            "audit": {
+              "gain_bits": 263.3810024680623,
+              "bits_per_feature_forecast": 0.43319243826983933,
+              "coefficient_cost_bits": 480,
+              "net_gain_bits": -216.61899753193768,
+              "pd_bits_saved_per_coefficient_bit": 0.5487104218084632,
+              "half_gain_bits": [
+                131.09398858852006,
+                132.28701387954223
+              ],
+              "extra_parameters": 30,
+              "predict_multiply_adds_per_forecast": 28,
+              "fit_multiply_add_proxy": 97216,
+              "forecasts": 304,
+              "iid_gain_bits": 263.3810024680623,
+              "incremental_over_history_bits": 279.3895456511634,
+              "predictor_code_bits": 2168.4277702705267,
+              "baseline_code_bits": 2431.808772738589
+            },
+            "fixed_audit_probe_learning_progress_bits": 2.97305424584237
+          },
+          "field_coarse": {
+            "parameters": 30,
+            "input_width": 13,
+            "selection": {
+              "gain_bits": 299.2334217214021,
+              "bits_per_feature_forecast": 0.4937845242927428,
+              "coefficient_cost_bits": 480,
+              "net_gain_bits": -180.76657827859788,
+              "pd_bits_saved_per_coefficient_bit": 0.6234029619195878,
+              "half_gain_bits": [
+                148.07849628763313,
+                151.15492543376902
+              ],
+              "extra_parameters": 30,
+              "predict_multiply_adds_per_forecast": 28,
+              "fit_multiply_add_proxy": 97216,
+              "forecasts": 303,
+              "iid_gain_bits": 299.2334217214021,
+              "incremental_over_history_bits": 303.1422763462117,
+              "predictor_code_bits": 2125.5462261603348,
+              "baseline_code_bits": 2424.7796478817368
+            },
+            "audit": {
+              "gain_bits": 291.1088978972431,
+              "bits_per_feature_forecast": 0.4787975294362551,
+              "coefficient_cost_bits": 480,
+              "net_gain_bits": -188.89110210275692,
+              "pd_bits_saved_per_coefficient_bit": 0.6064768706192564,
+              "half_gain_bits": [
+                144.86771983338477,
+                146.2411780638583
+              ],
+              "extra_parameters": 30,
+              "predict_multiply_adds_per_forecast": 28,
+              "fit_multiply_add_proxy": 97216,
+              "forecasts": 304,
+              "iid_gain_bits": 291.1088978972431,
+              "incremental_over_history_bits": 307.1174410803442,
+              "predictor_code_bits": 2140.699874841346,
+              "baseline_code_bits": 2431.808772738589
+            },
+            "fixed_audit_probe_learning_progress_bits": 56.71279218910708
+          },
+          "gru+field_coarse": {
+            "parameters": 38,
+            "input_width": 17,
+            "selection": {
+              "gain_bits": 1761.644786368458,
+              "bits_per_feature_forecast": 2.9070045979677523,
+              "coefficient_cost_bits": 608,
+              "net_gain_bits": 1153.644786368458,
+              "pd_bits_saved_per_coefficient_bit": 2.8974420828428586,
+              "half_gain_bits": [
+                882.1421430295927,
+                879.5026433388651
+              ],
+              "extra_parameters": 38,
+              "predict_multiply_adds_per_forecast": 36,
+              "fit_multiply_add_proxy": 162000,
+              "forecasts": 303,
+              "iid_gain_bits": 1761.644786368458,
+              "incremental_over_history_bits": 1765.5536409932674,
+              "predictor_code_bits": 663.1348615132792,
+              "baseline_code_bits": 2424.7796478817368
+            },
+            "audit": {
+              "gain_bits": 1765.6225576050022,
+              "bits_per_feature_forecast": 2.9039844697450694,
+              "coefficient_cost_bits": 608,
+              "net_gain_bits": 1157.6225576050022,
+              "pd_bits_saved_per_coefficient_bit": 2.9039844697450694,
+              "half_gain_bits": [
+                884.5017478151844,
+                881.1208097898177
+              ],
+              "extra_parameters": 38,
+              "predict_multiply_adds_per_forecast": 36,
+              "fit_multiply_add_proxy": 162000,
+              "forecasts": 304,
+              "iid_gain_bits": 1765.6225576050022,
+              "incremental_over_history_bits": 1781.6311007881031,
+              "predictor_code_bits": 666.1862151335869,
+              "baseline_code_bits": 2431.808772738589
+            },
+            "fixed_audit_probe_learning_progress_bits": 13.661253669225825
+          }
+        },
+        "synergy": {
+          "gru+field_coarse": {
+            "selection": {
+              "operational_joint_minus_sum_bits": 1200.196692483793,
+              "joint_beyond_best_individual_bits": 1462.411364647056,
+              "not_PID": true
+            },
+            "audit": {
+              "operational_joint_minus_sum_bits": 1211.132657239697,
+              "joint_beyond_best_individual_bits": 1474.513659707759,
+              "not_PID": true
+            }
+          }
+        }
+      }
+    },
+    "units": "proper code lengths of quantized descriptors; not MI",
+    "elapsed_seconds": 0.14442005200544372
+  },
+  "all_trivial_noise_rewards_zero": true,
+  "naive_control_degeneracy": "silence and constants tie at perfect persistence; not meaningful organization",
+  "initial_test_failure_fixed": "circular history padding leaked suffix into prefix normalization; causal padding and audit-mutation regression fixed it",
+  "elapsed_seconds": 11.86364228700404
+}
