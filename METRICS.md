@@ -158,6 +158,38 @@ by these internal metrics alone.
 
 ## Opt-in v10 metastable-regime measurements
 
+For msfield, `active_spatial_rings=0` and `far_ring_gain=0` mean that the
+legacy v9 dilated neural-CA ring mechanism is not used. They do not mean
+absence of spatial interaction: msfield has learned local advection,
+diffusion, reaction, and fine/meso/coarse exchange. All 64 channels at each
+scale remain active, so msfield reports full manifold depth 4 independently
+of Morphic depth. These are substrate flags, not learned dimensionality.
+
+`model_confidence` is the explicit 0.02..0.98-clamped heuristic from predictor
+error/calibration EMAs. The term "raw" in existing summaries means before
+the adaptive authority gate, not before that clamp. Saturation at 0.98 is
+not calibrated evidence of certainty. Opt-in frozen evaluation records
+`log_confidence_unclamped` and `confidence_unclamped` from the same EMAs.
+
+`clip_scale` is held at the most recent successful optimizer horizon and
+repeated on intermediate sampled rows. At startup it is 1 even though
+`grad_norm` is 0. For finite norms it is `min(1, 5 / max(norm, 1e-6))`, and
+it scales gradients before Adam, not the learning rate or parameter delta.
+A tiny positive scale can be valid for a huge finite gradient; exact zero
+cannot arise from the normal finite accepted update. Sparse trace rows must
+be deduplicated by cumulative optimizer update to estimate clipping rates.
+
+Frozen weight/world studies additionally support `--analysis-common-rng`,
+`--analysis-target-origin N`, `--analysis-active-depth N`, and
+`--analysis-evaluation-metrics`. These are msfield-only analysis flags. The
+first fixes controller/forcing seed and relative event phases across worlds;
+the second maps targets to a relative clock without changing native world
+timestamps; the third uses a fixed active prefix without changing tensors.
+The last scores strict held-out probes observationally, captures compact
+trajectory views, records predictor/action/health details, and checks exact
+parameter hashes before and after rollout. This standardized protocol is an
+artificial matched-state evaluation, not an exact replay of native training.
+
 `--regime-capture --regime-stride N` writes a run-ID-specific JSONL sidecar
 for the isolated msfield substrate only. It samples pooled signed and RMS
 spatial maps at all three scales, seeded orthogonal sketches of GRU and

@@ -1,0 +1,5232 @@
+{
+  "cells": {
+    "L16_WC_SC": {
+      "active_depth": 16,
+      "audio": {
+        "peak": 0.3118896484375,
+        "rms": 0.08675233540290982,
+        "side_mid_ratio": 0.24924638761264264,
+        "stereo_correlation": 0.8830779942215121
+      },
+      "bounded": true,
+      "clipping": 0.0,
+      "episode_metrics": {
+        "advantage": [
+          0.004211698141362932,
+          -0.004922116408124566,
+          -0.015606896951794624,
+          0.01333314017392695,
+          0.003505608532577753,
+          -0.006958453159313649
+        ],
+        "calibration_error": [
+          0.004298211178845829,
+          0.0029974230274092406,
+          0.0018309182050870731,
+          0.003193928307155147,
+          0.004676421711337753,
+          0.0032651059445925057
+        ],
+        "coarse_delta_rms": [
+          0.0002910450178508957,
+          0.0002923417487181723,
+          0.0003577631105144974,
+          0.00034729594699456356,
+          0.0002737121358222794,
+          0.0002551395537011558
+        ],
+        "coarse_near_bound_fraction": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "coarse_rms": [
+          0.6708938866666667,
+          0.6708885950000001,
+          0.6705795062500001,
+          0.6700624475,
+          0.67027046,
+          0.6706961175000001
+        ],
+        "confidence_unclamped": [
+          0.992917517820994,
+          0.9910699725151062,
+          0.9805470779538155,
+          0.9851916655898094,
+          0.9696139693260193,
+          0.9783525392413139
+        ],
+        "development_best_spectral": [
+          0.3363891277048323,
+          0.34929075092077255,
+          0.3424205221235752,
+          0.3262425363063812,
+          0.3615236282348633,
+          0.33076541870832443
+        ],
+        "development_mean_chroma": [
+          1.6872912115520902,
+          1.6662531793117523,
+          1.6420546770095825,
+          1.6757718622684479,
+          1.6715760827064514,
+          1.6325780004262924
+        ],
+        "development_mean_spectral": [
+          0.7844940821329752,
+          0.7452839091420174,
+          0.7721234858036041,
+          0.7891960442066193,
+          0.7704558372497559,
+          0.7902612537145615
+        ],
+        "development_stereo_correlation_mse": [
+          0.007119657006114721,
+          0.0070212731952778995,
+          0.0069340013433247805,
+          0.007100045855622739,
+          0.006924965477082878,
+          0.006918315077200532
+        ],
+        "development_stereo_level_mse": [
+          0.030078827300005488,
+          0.031064505456015468,
+          0.03125681076198816,
+          0.030039964010939002,
+          0.03193510393612087,
+          0.030708571895956993
+        ],
+        "development_stereo_side_mid_mse": [
+          1.0201194617483351,
+          1.0006788671016693,
+          0.9822263866662979,
+          0.9913615435361862,
+          0.978915348649025,
+          0.9484189078211784
+        ],
+        "fine_delta_rms": [
+          0.013266177847981453,
+          0.016680847271345556,
+          0.016436906531453133,
+          0.015447768499143422,
+          0.012036061263643205,
+          0.011698080808855593
+        ],
+        "health": [
+          0.7815354135301378,
+          0.7855255082249641,
+          0.7587282955646515,
+          0.789180725812912,
+          0.7906542867422104,
+          0.7674979269504547
+        ],
+        "log_confidence_unclamped": [
+          -0.007107708499663406,
+          -0.008971600502263755,
+          -0.019665035419166088,
+          -0.014945569564588368,
+          -0.030908643268048763,
+          -0.02193400776013732
+        ],
+        "macro_near_bound_fraction": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "macro_rms": [
+          0.37818758555555554,
+          0.37992739375,
+          0.38217691249999997,
+          0.38053466375,
+          0.378812735,
+          0.37813635625
+        ],
+        "meso_delta_rms": [
+          0.022532882893251047,
+          0.0060892662149854004,
+          0.007285164785571396,
+          0.0069950485485605896,
+          0.005828617664519697,
+          0.005537196760997176
+        ],
+        "micro_near_bound_fraction": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "micro_rms": [
+          0.5208667544444444,
+          0.52120984125,
+          0.5206112,
+          0.52059754,
+          0.52075187,
+          0.5208996324999999
+        ],
+        "motif_candidates": [
+          3810.3333333333335,
+          3814.5,
+          3818.5,
+          3822.5,
+          3826.5,
+          3830.5
+        ],
+        "motif_rejected_quality": [
+          657.0,
+          657.0,
+          657.0,
+          657.0,
+          657.0,
+          657.0
+        ],
+        "motif_rejected_similarity": [
+          3069.3333333333335,
+          3073.5,
+          3077.5,
+          3081.5,
+          3085.5,
+          3089.5
+        ],
+        "motif_stored_total": [
+          84.0,
+          84.0,
+          84.0,
+          84.0,
+          84.0,
+          84.0
+        ],
+        "output_low_band_ratio": [
+          0.0481074003295766,
+          0.054376716958358884,
+          0.047222450375556946,
+          0.044176915660500526,
+          0.05111227068118751,
+          0.042844924377277493
+        ],
+        "predictor_gaussian_nll": [
+          -2.8664118448893228,
+          -2.842065155506134,
+          -2.7651436030864716,
+          -2.825574606657028,
+          -2.705980211496353,
+          -2.8060131669044495
+        ],
+        "predictor_mse": [
+          0.0002770186357439444,
+          0.0023317252271226607,
+          0.006933354074135423,
+          0.0027060807078669313,
+          0.010118568025063723,
+          0.0044647706590694725
+        ],
+        "recurrent_proposed_delta_rms": [
+          4.789199564444444e-06,
+          5.0583201e-07,
+          3.1974987000000005e-07,
+          3.179525225e-07,
+          2.7031877625e-07,
+          2.2045529875e-07
+        ],
+        "recurrent_rms": [
+          0.9758963044444445,
+          0.97589860125,
+          0.9758996025,
+          0.9759002325,
+          0.97590099,
+          0.97590157
+        ],
+        "reward": [
+          -0.02834534976217482,
+          -0.040750063955783844,
+          -0.08926461450755596,
+          -0.051068440079689026,
+          0.002777356654405594,
+          -0.021635811775922775
+        ],
+        "stagnation": [
+          0.2678119374646081,
+          0.26152434945106506,
+          0.29287954047322273,
+          0.2723476104438305,
+          0.24884176440536976,
+          0.27350859344005585
+        ],
+        "target_chroma_mse": [
+          2.6015526983473034,
+          0.8424603939056396,
+          1.1519043147563934,
+          1.2206164598464966,
+          0.9028383940458298,
+          1.3396527655422688
+        ],
+        "target_low_band_ratio": [
+          0.002549957988473276,
+          0.1623161337338388,
+          0.03254008339717984,
+          0.018198933161329478,
+          0.03682815912179649,
+          0.07174092088826
+        ],
+        "target_spectral_robust": [
+          0.43952465057373047,
+          0.40781576558947563,
+          0.5644305013120174,
+          0.3866165280342102,
+          0.4084963724017143,
+          0.5664622113108635
+        ],
+        "target_stereo_correlation_mse": [
+          0.13962526793041738,
+          0.0020374940695546684,
+          0.010222608922049403,
+          0.06819239117612597,
+          0.07575950783211738,
+          0.005303074842430533
+        ],
+        "target_stereo_level_mse": [
+          0.02856357880712797,
+          0.027826573757920414,
+          0.007219918137707282,
+          0.0324336800549645,
+          0.19181634159758687,
+          0.022116422303952277
+        ],
+        "target_stereo_side_mid_mse": [
+          1.272438136796053,
+          0.49295997053559404,
+          5.704207897186279,
+          2.6831341050565243,
+          1.8602306060492992,
+          3.215862903809466
+        ],
+        "validation_best_spectral": [
+          0.3467981351746453,
+          0.38399986922740936,
+          0.3526752330362797,
+          0.3429717719554901,
+          0.37435635924339294,
+          0.33743466436862946
+        ],
+        "validation_mean_chroma": [
+          0.9896953768200345,
+          0.9884403496980667,
+          0.9541483297944069,
+          0.9896759763360023,
+          0.9849275276064873,
+          0.9311046078801155
+        ],
+        "validation_mean_spectral": [
+          0.78696119123035,
+          0.7672002613544464,
+          0.7786798104643822,
+          0.7875336334109306,
+          0.7820024117827415,
+          0.7959126979112625
+        ],
+        "validation_stereo_correlation_mse": [
+          0.013835385959181521,
+          0.014055311679840088,
+          0.014314491651020944,
+          0.014482581173069775,
+          0.014367478666827083,
+          0.015155001194216311
+        ],
+        "validation_stereo_level_mse": [
+          0.10794839180178112,
+          0.11345539800822735,
+          0.11339024361222982,
+          0.10811207164078951,
+          0.11714518908411264,
+          0.11019910778850317
+        ],
+        "validation_stereo_side_mid_mse": [
+          0.6319918367597792,
+          0.6390193626284599,
+          0.6493971422314644,
+          0.6670065596699715,
+          0.6524408459663391,
+          0.6983034163713455
+        ]
+      },
+      "episode_weighted_means": {
+        "advantage": -0.0010728366118942009,
+        "calibration_error": 0.0033770013957379248,
+        "coarse_delta_rms": 0.000302882918933594,
+        "coarse_near_bound_fraction": 0.0,
+        "coarse_rms": 0.6705651688194445,
+        "confidence_unclamped": 0.982948790407843,
+        "development_best_spectral": 0.34110533066645815,
+        "development_mean_chroma": 1.6625875022124361,
+        "development_mean_spectral": 0.7753024353749222,
+        "development_stereo_correlation_mse": 0.007003042992437258,
+        "development_stereo_level_mse": 0.030847297226837666,
+        "development_stereo_side_mid_mse": 0.986953419253782,
+        "fine_delta_rms": 0.01426097370373706,
+        "health": 0.7788536928042218,
+        "log_confidence_unclamped": -0.017255427502311283,
+        "macro_near_bound_fraction": 0.0,
+        "macro_rms": 0.37962927446759265,
+        "meso_delta_rms": 0.00904469614464755,
+        "micro_near_bound_fraction": 0.0,
+        "micro_rms": 0.5208228063657407,
+        "motif_candidates": 3820.4722222222226,
+        "motif_rejected_quality": 657.0,
+        "motif_rejected_similarity": 3079.4722222222226,
+        "motif_stored_total": 84.0,
+        "output_low_band_ratio": 0.047973446397076326,
+        "predictor_gaussian_nll": -2.801864764756626,
+        "predictor_mse": 0.004471919554833692,
+        "recurrent_proposed_delta_rms": 1.0705846736574074e-06,
+        "recurrent_rms": 0.9758995501157406,
+        "reward": -0.03804782057112014,
+        "stagnation": 0.2694856326130253,
+        "target_chroma_mse": 1.3431708377406553,
+        "target_low_band_ratio": 0.054029031381812975,
+        "target_spectral_robust": 0.4622243382036686,
+        "target_stereo_correlation_mse": 0.05019005746211589,
+        "target_stereo_level_mse": 0.051662752443209885,
+        "target_stereo_side_mid_mse": 2.5381389365722025,
+        "validation_best_spectral": 0.3563726721676412,
+        "validation_mean_chroma": 0.9729986946891854,
+        "validation_mean_spectral": 0.783048334359019,
+        "validation_stereo_correlation_mse": 0.014368375054025953,
+        "validation_stereo_level_mse": 0.11170840032260727,
+        "validation_stereo_side_mid_mse": 0.6563598606045599
+      },
+      "exploratory_archive": {
+        "calibration_sha256": "c4f12651dcc89418cd5f82aa3af7451511474569f29e4d3a1d0b0abc2c13f6ed",
+        "matched_gaussian": {
+          "candidate_regions": 1,
+          "mean_recurrence_rate": 0.8667714193970681,
+          "persistent_counter": 0,
+          "revisits": 0,
+          "transitions": 0,
+          "trap_events": 0
+        },
+        "observed": {
+          "candidate_regions": 1,
+          "mean_recurrence_rate": 0.7821908309664812,
+          "persistent_counter": 0,
+          "revisits": 0,
+          "transitions": 0,
+          "trap_events": 0
+        },
+        "persistent_discovery_not_estimable": true,
+        "time_shuffle": {
+          "candidate_regions": 1,
+          "mean_recurrence_rate": 0.79839680298861,
+          "persistent_counter": 0,
+          "revisits": 0,
+          "transitions": 0,
+          "trap_events": 0
+        }
+      },
+      "first_common_history_predictor": {
+        "gaussian_nll": -2.8655316829681396,
+        "mse": 0.00030063302256166935
+      },
+      "first_probe_scores": {
+        "development_mean_chroma": 1.7153733968734741,
+        "development_mean_spectral": 0.728026807308197,
+        "validation_mean_chroma": 1.057022213935852,
+        "validation_mean_spectral": 0.7433434724807739
+      },
+      "health_range": [
+        0.7521079778671265,
+        0.8024735450744629
+      ],
+      "initial_world_fingerprint": "3e72f3441066594cc7719dfd8315c28b35ece8ace60860a70b31ca6a1fe91434",
+      "motif_candidate_delta": 23,
+      "motif_quality_reject_delta": 0,
+      "motif_similarity_reject_delta": 23,
+      "motif_store_delta": 0,
+      "nonfinite": false,
+      "probes": {
+        "development": [
+          {
+            "file": "but it's me_014413347.wav",
+            "frame_48k": 2858785,
+            "frames": 4096
+          },
+          {
+            "file": "Chill of the Everyday_014349859.wav",
+            "frame_48k": 754614,
+            "frames": 4096
+          },
+          {
+            "file": "Cosmic Love Ascendancy_014435775.wav",
+            "frame_48k": 1627525,
+            "frames": 4096
+          },
+          {
+            "file": "Digital Tapestry remix v1_014341098.wav",
+            "frame_48k": 1828594,
+            "frames": 4096
+          }
+        ],
+        "probe_feedback": false,
+        "strict": true,
+        "validation": [
+          {
+            "file": "Behind the Billion-Dollar Smile ext v2_014408567.wav",
+            "frame_48k": 190023,
+            "frames": 4096
+          },
+          {
+            "file": "Cosmic Echoes 1_014432746.wav",
+            "frame_48k": 5962437,
+            "frames": 4096
+          },
+          {
+            "file": "Journey to the Unknown Particle Phs_014345397.wav",
+            "frame_48k": 2363885,
+            "frames": 4096
+          },
+          {
+            "file": "The Curiosity of Ones and Zeros_010314873.wav",
+            "frame_48k": 7577217,
+            "frames": 4096
+          }
+        ]
+      },
+      "receipt": {
+        "audio_sha256": "012e75ea5906dd40d1b725bee16bb5427d66a162db371c44ebb17003c7939cf3",
+        "no_op_exact": true,
+        "report_sha256": "75fddccbbb29b6b0e297699f607843f1672b671c3413e996897e32fe9512ae98",
+        "summary_sha256": "83ffc9b7a9425dd02760324c32f3d511c97a422b231ca31b10558fb2aecd553a"
+      },
+      "trajectory_views": {
+        "audio_behavior": {
+          "delta_participation_ratio": 9.194558312972447,
+          "trajectory_participation_ratio": 1.2406010191283499
+        },
+        "decoder_control": {
+          "delta_participation_ratio": 2.77418185943154,
+          "trajectory_participation_ratio": 2.8998980319245464
+        },
+        "field_coarse": {
+          "delta_participation_ratio": 2.157462860670715,
+          "final_rms_signedmean_railfraction_neighbor_delta": [
+            0.6708376407623291,
+            -0.06846757233142853,
+            0.0,
+            0.000666924228426069
+          ],
+          "trajectory_participation_ratio": 1.8276452952831355
+        },
+        "field_fine": {
+          "delta_participation_ratio": 2.0608780455744213,
+          "final_rms_signedmean_railfraction_neighbor_delta": [
+            0.5245141983032227,
+            0.3482837378978729,
+            0.0,
+            0.013379420153796673
+          ],
+          "trajectory_participation_ratio": 2.6199116801778373
+        },
+        "field_meso": {
+          "delta_participation_ratio": 2.0282234805089403,
+          "final_rms_signedmean_railfraction_neighbor_delta": [
+            0.3758869469165802,
+            -0.04295169934630394,
+            0.0,
+            0.025967299938201904
+          ],
+          "trajectory_participation_ratio": 2.223030792780847
+        },
+        "gru": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_delta_l01": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_delta_l04": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_delta_l08": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_delta_l12": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_delta_l16": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_l01": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_l04": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_l08": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_l12": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_l16": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_output": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        }
+      },
+      "weights_hash": "f8b0fb100f44779eae411fae0c2fc823c709f06e7a76e5dade66ac9ba6d1789c"
+    },
+    "L16_WC_SP": {
+      "active_depth": 16,
+      "audio": {
+        "peak": 0.312774658203125,
+        "rms": 0.08728944706377782,
+        "side_mid_ratio": 0.2510292945055218,
+        "stereo_correlation": 0.8815064883654861
+      },
+      "bounded": true,
+      "clipping": 0.0,
+      "episode_metrics": {
+        "advantage": [
+          0.013447063871555857,
+          -0.002628420479595661,
+          -0.014327156823128462,
+          0.021701880265027285,
+          0.007290807232493535,
+          -0.0016227653250098228
+        ],
+        "calibration_error": [
+          0.003484414347137014,
+          0.0019238815875723958,
+          0.0030764577677473426,
+          0.0038122142723295838,
+          0.006750772736268118,
+          0.004806742712389678
+        ],
+        "coarse_delta_rms": [
+          0.000338974534921969,
+          0.0002845492745109368,
+          0.0003662269809865393,
+          0.00036928604095010087,
+          0.00027608002710621804,
+          0.00024964689328044187
+        ],
+        "coarse_near_bound_fraction": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "coarse_rms": [
+          0.6707400411111112,
+          0.6708113637500001,
+          0.67059557875,
+          0.6699965175,
+          0.6701653575,
+          0.67065330125
+        ],
+        "confidence_unclamped": [
+          0.9913348952929179,
+          0.9890908971428871,
+          0.97462098300457,
+          0.9820689931511879,
+          0.9613707959651947,
+          0.9705361798405647
+        ],
+        "development_best_spectral": [
+          0.36397814750671387,
+          0.3326600529253483,
+          0.3273126743733883,
+          0.34587740898132324,
+          0.3266266770660877,
+          0.348172377794981
+        ],
+        "development_mean_chroma": [
+          1.6161416239208646,
+          1.6556655317544937,
+          1.6845666766166687,
+          1.6874882131814957,
+          1.663805142045021,
+          1.653084248304367
+        ],
+        "development_mean_spectral": [
+          0.7709301445219252,
+          0.7788469269871712,
+          0.7862868309020996,
+          0.7741975113749504,
+          0.7884980365633965,
+          0.7914000153541565
+        ],
+        "development_stereo_correlation_mse": [
+          0.006968026773797141,
+          0.007477218518033624,
+          0.006977993296459317,
+          0.006993373099248856,
+          0.0070809138705953956,
+          0.006843204260803759
+        ],
+        "development_stereo_level_mse": [
+          0.030529371980163787,
+          0.03026090725325048,
+          0.03091789036989212,
+          0.02982713095843792,
+          0.030611859634518623,
+          0.02986053260974586
+        ],
+        "development_stereo_side_mid_mse": [
+          0.9861484236187406,
+          1.103450059890747,
+          0.974794402718544,
+          0.9997191205620766,
+          1.017437182366848,
+          0.9558559358119965
+        ],
+        "fine_delta_rms": [
+          0.014215032259623209,
+          0.016084476956166327,
+          0.016101638437248766,
+          0.016584324301220477,
+          0.012058329419232905,
+          0.011214066296815872
+        ],
+        "health": [
+          0.7961787978808085,
+          0.7967073991894722,
+          0.7713123857975006,
+          0.7859174981713295,
+          0.7881534621119499,
+          0.7820464745163918
+        ],
+        "log_confidence_unclamped": [
+          -0.008703295037978225,
+          -0.010970525443553925,
+          -0.025731944013386965,
+          -0.018146884627640247,
+          -0.039493903052061796,
+          -0.030003277119249105
+        ],
+        "macro_near_bound_fraction": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "macro_rms": [
+          0.3784963911111111,
+          0.37952672374999996,
+          0.38212517625,
+          0.38192890625,
+          0.37848382125,
+          0.37826666750000004
+        ],
+        "meso_delta_rms": [
+          0.025939426126165524,
+          0.005858016025740653,
+          0.007439266599249095,
+          0.007354866247624159,
+          0.005867328785825521,
+          0.005443305242806673
+        ],
+        "micro_near_bound_fraction": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "micro_rms": [
+          0.5215559133333333,
+          0.52121357625,
+          0.52068302,
+          0.52045411,
+          0.52071542125,
+          0.52094211875
+        ],
+        "motif_candidates": [
+          3634.3333333333335,
+          3638.5,
+          3642.5,
+          3646.5,
+          3650.5,
+          3654.5
+        ],
+        "motif_rejected_quality": [
+          649.0,
+          649.0,
+          649.0,
+          649.0,
+          649.0,
+          649.0
+        ],
+        "motif_rejected_similarity": [
+          2902.3333333333335,
+          2906.5,
+          2910.5,
+          2914.25,
+          2917.5,
+          2921.5
+        ],
+        "motif_stored_total": [
+          83.0,
+          83.0,
+          83.0,
+          83.25,
+          84.0,
+          84.0
+        ],
+        "output_low_band_ratio": [
+          0.05456022173166275,
+          0.03654547035694122,
+          0.04200223949737847,
+          0.043670629151165485,
+          0.03153730509802699,
+          0.037814760114997625
+        ],
+        "predictor_gaussian_nll": [
+          -2.8455415036943226,
+          -2.8222084641456604,
+          -2.7233750224113464,
+          -2.819459944963455,
+          -2.6670207381248474,
+          -2.773215174674988
+        ],
+        "predictor_mse": [
+          0.0015273628596332856,
+          0.003494765009236289,
+          0.00864287739386782,
+          0.003217179582861718,
+          0.012680117506533861,
+          0.0061447599036910105
+        ],
+        "recurrent_proposed_delta_rms": [
+          1.8902605466666668e-05,
+          1.1141700262499998e-06,
+          7.0352912625e-07,
+          5.738978175e-07,
+          4.58010485e-07,
+          4.1220430375e-07
+        ],
+        "recurrent_rms": [
+          0.9760004288888889,
+          0.9759837225000001,
+          0.9759801124999999,
+          0.975978005,
+          0.97597674375,
+          0.97597560875
+        ],
+        "reward": [
+          -0.015758626990848117,
+          -0.019568532705307007,
+          -0.07501332834362984,
+          -0.052455635741353035,
+          0.0054348185658454895,
+          -0.004054795950651169
+        ],
+        "stagnation": [
+          0.25494537088606095,
+          0.25010511465370655,
+          0.26893612183630466,
+          0.27839366905391216,
+          0.2498632650822401,
+          0.25743162631988525
+        ],
+        "target_chroma_mse": [
+          2.707720226711697,
+          0.8617051281034946,
+          1.2344319820404053,
+          1.1851406544446945,
+          0.8888118267059326,
+          1.3763403072953224
+        ],
+        "target_low_band_ratio": [
+          0.002549957988473276,
+          0.1623161337338388,
+          0.03254008339717984,
+          0.018198933161329478,
+          0.03682815912179649,
+          0.07174092088826
+        ],
+        "target_spectral_robust": [
+          0.4411573674943712,
+          0.4053381271660328,
+          0.5600021854043007,
+          0.4034791886806488,
+          0.3775034099817276,
+          0.5676193907856941
+        ],
+        "target_stereo_correlation_mse": [
+          0.13442201979662766,
+          0.0036871320866396218,
+          0.010342310910345986,
+          0.06830674175580498,
+          0.07252809236524627,
+          0.005810456495282779
+        ],
+        "target_stereo_level_mse": [
+          0.0320021004946385,
+          0.022760981028113747,
+          0.009422589244422852,
+          0.03705083082604688,
+          0.16956509789451957,
+          0.01902424602303654
+        ],
+        "target_stereo_side_mid_mse": [
+          1.151279352670018,
+          0.695875271310797,
+          5.808674469590187,
+          2.8222997188568115,
+          1.703360166400671,
+          3.4322899079706986
+        ],
+        "validation_best_spectral": [
+          0.3584964374701182,
+          0.3493310324847698,
+          0.33753401041030884,
+          0.3751671724021435,
+          0.3457721099257469,
+          0.36552872136235237
+        ],
+        "validation_mean_chroma": [
+          0.9131398333443536,
+          0.9549048617482185,
+          0.9933262169361115,
+          1.030977062880993,
+          0.9807666465640068,
+          0.9749361202120781
+        ],
+        "validation_mean_spectral": [
+          0.7809381484985352,
+          0.7855594381690025,
+          0.7908753752708435,
+          0.7838637307286263,
+          0.7985710799694061,
+          0.8078450858592987
+        ],
+        "validation_stereo_correlation_mse": [
+          0.014299008063971996,
+          0.01262787904124707,
+          0.014596723718568683,
+          0.014028748497366905,
+          0.013787661795504391,
+          0.01473679463379085
+        ],
+        "validation_stereo_level_mse": [
+          0.1111760205692715,
+          0.1059278380125761,
+          0.11316852737218142,
+          0.10711427126079798,
+          0.11041822377592325,
+          0.10851660370826721
+        ],
+        "validation_stereo_side_mid_mse": [
+          0.650659355852339,
+          0.5800115838646889,
+          0.6680643260478973,
+          0.6358947157859802,
+          0.6261193305253983,
+          0.6682282537221909
+        ]
+      },
+      "episode_weighted_means": {
+        "advantage": 0.003976901456890455,
+        "calibration_error": 0.003975747237240688,
+        "coarse_delta_rms": 0.00031412729195936763,
+        "coarse_near_bound_fraction": 0.0,
+        "coarse_rms": 0.6704936933101852,
+        "confidence_unclamped": 0.9781704573995537,
+        "development_best_spectral": 0.34077122310797375,
+        "development_mean_chroma": 1.6601252393038184,
+        "development_mean_spectral": 0.7816932442839498,
+        "development_stereo_correlation_mse": 0.007056788303156349,
+        "development_stereo_level_mse": 0.030334615467668132,
+        "development_stereo_side_mid_mse": 1.0062341874948253,
+        "fine_delta_rms": 0.01437631127838459,
+        "health": 0.7867193362779087,
+        "log_confidence_unclamped": -0.02217497154897838,
+        "macro_near_bound_fraction": 0.0,
+        "macro_rms": 0.37980461435185187,
+        "meso_delta_rms": 0.00965036817123527,
+        "micro_near_bound_fraction": 0.0,
+        "micro_rms": 0.5209273599305555,
+        "motif_candidates": 3644.4722222222226,
+        "motif_rejected_quality": 649.0,
+        "motif_rejected_similarity": 2912.0972222222226,
+        "motif_stored_total": 83.375,
+        "output_low_band_ratio": 0.041021770991695426,
+        "predictor_gaussian_nll": -2.7751368080024363,
+        "predictor_mse": 0.0059511770426373305,
+        "recurrent_proposed_delta_rms": 3.6940695375694444e-06,
+        "recurrent_rms": 0.975982436898148,
+        "reward": -0.02690268352765728,
+        "stagnation": 0.25994586130535163,
+        "target_chroma_mse": 1.3756916875502576,
+        "target_low_band_ratio": 0.054029031381812975,
+        "target_spectral_robust": 0.45918327825212923,
+        "target_stereo_correlation_mse": 0.04918279223499122,
+        "target_stereo_level_mse": 0.04830430758512968,
+        "target_stereo_side_mid_mse": 2.6022964811331972,
+        "validation_best_spectral": 0.35530491400923997,
+        "validation_mean_chroma": 0.9746751236142935,
+        "validation_mean_spectral": 0.7912754764159521,
+        "validation_stereo_correlation_mse": 0.014012802625074983,
+        "validation_stereo_level_mse": 0.10938691411650292,
+        "validation_stereo_side_mid_mse": 0.6381629276330824
+      },
+      "exploratory_archive": {
+        "calibration_sha256": "c4f12651dcc89418cd5f82aa3af7451511474569f29e4d3a1d0b0abc2c13f6ed",
+        "matched_gaussian": {
+          "candidate_regions": 1,
+          "mean_recurrence_rate": 0.7075661910307747,
+          "persistent_counter": 0,
+          "revisits": 0,
+          "transitions": 0,
+          "trap_events": 0
+        },
+        "observed": {
+          "candidate_regions": 1,
+          "mean_recurrence_rate": 0.3889847771806109,
+          "persistent_counter": 0,
+          "revisits": 0,
+          "transitions": 0,
+          "trap_events": 0
+        },
+        "persistent_discovery_not_estimable": true,
+        "time_shuffle": {
+          "candidate_regions": 2,
+          "mean_recurrence_rate": 0.6622705636820019,
+          "persistent_counter": 0,
+          "revisits": 0,
+          "transitions": 1,
+          "trap_events": 0
+        }
+      },
+      "first_common_history_predictor": {
+        "gaussian_nll": -2.82494854927063,
+        "mse": 0.0032460803631693125
+      },
+      "first_probe_scores": {
+        "development_mean_chroma": 1.498661756515503,
+        "development_mean_spectral": 0.7352898120880127,
+        "validation_mean_chroma": 0.8145115375518799,
+        "validation_mean_spectral": 0.7554750442504883
+      },
+      "health_range": [
+        0.750072181224823,
+        0.8150720000267029
+      ],
+      "initial_world_fingerprint": "5f2faf33911ec856d7a3360324c3b67d4184a1b4ec4923eb20d95d373a783100",
+      "motif_candidate_delta": 23,
+      "motif_quality_reject_delta": 0,
+      "motif_similarity_reject_delta": 22,
+      "motif_store_delta": 1,
+      "nonfinite": false,
+      "probes": {
+        "development": [
+          {
+            "file": "but it's me_014413347.wav",
+            "frame_48k": 2858785,
+            "frames": 4096
+          },
+          {
+            "file": "Chill of the Everyday_014349859.wav",
+            "frame_48k": 754614,
+            "frames": 4096
+          },
+          {
+            "file": "Cosmic Love Ascendancy_014435775.wav",
+            "frame_48k": 1627525,
+            "frames": 4096
+          },
+          {
+            "file": "Digital Tapestry remix v1_014341098.wav",
+            "frame_48k": 1828594,
+            "frames": 4096
+          }
+        ],
+        "probe_feedback": false,
+        "strict": true,
+        "validation": [
+          {
+            "file": "Behind the Billion-Dollar Smile ext v2_014408567.wav",
+            "frame_48k": 190023,
+            "frames": 4096
+          },
+          {
+            "file": "Cosmic Echoes 1_014432746.wav",
+            "frame_48k": 5962437,
+            "frames": 4096
+          },
+          {
+            "file": "Journey to the Unknown Particle Phs_014345397.wav",
+            "frame_48k": 2363885,
+            "frames": 4096
+          },
+          {
+            "file": "The Curiosity of Ones and Zeros_010314873.wav",
+            "frame_48k": 7577217,
+            "frames": 4096
+          }
+        ]
+      },
+      "receipt": {
+        "audio_sha256": "88b546e5f4defda902937e7fa46644af235a6fedc291407dc71c995bd747dfc2",
+        "no_op_exact": true,
+        "report_sha256": "3917c515910fd8a134608bb8ecaa331a1e79b81641ba7f3c9d76eaa0f2320999",
+        "summary_sha256": "6daa67af24231aae177afabd2914357d145204f924a6a9c674ce0254b82134bd"
+      },
+      "trajectory_views": {
+        "audio_behavior": {
+          "delta_participation_ratio": 7.638957176490035,
+          "trajectory_participation_ratio": 1.1966289270046013
+        },
+        "decoder_control": {
+          "delta_participation_ratio": 2.4909743874653607,
+          "trajectory_participation_ratio": 2.8327187886866048
+        },
+        "field_coarse": {
+          "delta_participation_ratio": 2.354941056689465,
+          "final_rms_signedmean_railfraction_neighbor_delta": [
+            0.6708426475524902,
+            -0.06854713708162308,
+            0.0,
+            0.0004323175235185772
+          ],
+          "trajectory_participation_ratio": 1.286184981727188
+        },
+        "field_fine": {
+          "delta_participation_ratio": 2.067157437636338,
+          "final_rms_signedmean_railfraction_neighbor_delta": [
+            0.52482008934021,
+            0.348177045583725,
+            0.0,
+            0.012701839208602905
+          ],
+          "trajectory_participation_ratio": 2.8378577858310097
+        },
+        "field_meso": {
+          "delta_participation_ratio": 2.0177368033205085,
+          "final_rms_signedmean_railfraction_neighbor_delta": [
+            0.37988442182540894,
+            -0.04339924454689026,
+            0.0,
+            0.024079009890556335
+          ],
+          "trajectory_participation_ratio": 2.2104449015183842
+        },
+        "gru": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_delta_l01": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_delta_l04": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_delta_l08": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_delta_l12": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_delta_l16": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_l01": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_l04": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_l08": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_l12": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_l16": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_output": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        }
+      },
+      "weights_hash": "f8b0fb100f44779eae411fae0c2fc823c709f06e7a76e5dade66ac9ba6d1789c"
+    },
+    "L16_WE_SC": {
+      "active_depth": 16,
+      "audio": {
+        "peak": 0.210693359375,
+        "rms": 0.06392470453704344,
+        "side_mid_ratio": 0.38073477891232943,
+        "stereo_correlation": 0.7470307613170717
+      },
+      "bounded": true,
+      "clipping": 0.0,
+      "episode_metrics": {
+        "advantage": [
+          0.05574595928192139,
+          -0.021653273841366172,
+          -0.009835706790909171,
+          0.009730328572914004,
+          0.0006897719285916537,
+          0.008470834349282086
+        ],
+        "calibration_error": [
+          0.03434976089435319,
+          0.05989455617964268,
+          0.06074476195499301,
+          0.05885391030460596,
+          0.06359007814899087,
+          0.06361256632953882
+        ],
+        "coarse_delta_rms": [
+          0.005095586077206665,
+          0.002800705493427813,
+          0.0016125796973938122,
+          0.0010245740704704076,
+          0.0006746460785507225,
+          0.0005945469456491992
+        ],
+        "coarse_near_bound_fraction": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "coarse_rms": [
+          0.5143376111111111,
+          0.31214199249999997,
+          0.25391622125,
+          0.24876516625,
+          0.256343965,
+          0.26396847749999997
+        ],
+        "confidence_unclamped": [
+          0.7519070506095886,
+          0.6507223770022392,
+          0.6480258405208588,
+          0.6523496732115746,
+          0.6400561034679413,
+          0.6396436095237732
+        ],
+        "development_best_spectral": [
+          0.3795916007624732,
+          0.38515961170196533,
+          0.3605118691921234,
+          0.3794010132551193,
+          0.3892059288918972,
+          0.3882688544690609
+        ],
+        "development_mean_chroma": [
+          1.0785499148898654,
+          1.1126550734043121,
+          1.159472480416298,
+          1.1948778927326202,
+          1.2047485262155533,
+          1.1929249614477158
+        ],
+        "development_mean_spectral": [
+          0.8915201822916666,
+          0.9074426367878914,
+          0.8876745030283928,
+          0.8959203138947487,
+          0.8853600919246674,
+          0.8879489898681641
+        ],
+        "development_stereo_correlation_mse": [
+          0.03995921338597933,
+          0.03396592242643237,
+          0.03843484655953944,
+          0.03890680137556046,
+          0.037501977290958166,
+          0.047536341357044876
+        ],
+        "development_stereo_level_mse": [
+          0.032469513101710215,
+          0.03763181040994823,
+          0.04642810835503042,
+          0.04155889106914401,
+          0.05275939730927348,
+          0.051977743627503514
+        ],
+        "development_stereo_side_mid_mse": [
+          2.6926721334457397,
+          2.507560446858406,
+          2.674577459692955,
+          2.5564972162246704,
+          2.562791630625725,
+          2.6958610862493515
+        ],
+        "fine_delta_rms": [
+          0.016161924745473597,
+          0.014692242257297039,
+          0.01574788906145841,
+          0.019700100412592292,
+          0.03144302009604871,
+          0.02061707549728453
+        ],
+        "health": [
+          0.7954430513911777,
+          0.6540222689509392,
+          0.6150860637426376,
+          0.6659489199519157,
+          0.6582202017307281,
+          0.6884694993495941
+        ],
+        "log_confidence_unclamped": [
+          -0.29314440944128567,
+          -0.4296915791928768,
+          -0.43383466824889183,
+          -0.4271961450576782,
+          -0.4462120980024338,
+          -0.4468455985188484
+        ],
+        "macro_near_bound_fraction": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "macro_rms": [
+          0.32393210666666666,
+          0.3413201775,
+          0.34840248500000004,
+          0.35265964375000003,
+          0.34682402,
+          0.35718356500000004
+        ],
+        "meso_delta_rms": [
+          0.02246843899289767,
+          0.003748938295757398,
+          0.003764703404158354,
+          0.0048989346250891685,
+          0.004134630260523409,
+          0.005278139520669356
+        ],
+        "micro_near_bound_fraction": [
+          0.08481131555555556,
+          0.062678813625,
+          0.031673907875,
+          0.025856017874999998,
+          0.026447773,
+          0.02416229225
+        ],
+        "micro_rms": [
+          0.5513464255555556,
+          0.56601669375,
+          0.5738194675,
+          0.57559678625,
+          0.57517376625,
+          0.5722623075
+        ],
+        "motif_candidates": [
+          3810.3333333333335,
+          3814.5,
+          3818.5,
+          3822.5,
+          3826.5,
+          3830.5
+        ],
+        "motif_rejected_quality": [
+          657.0,
+          657.0,
+          657.0,
+          657.0,
+          657.0,
+          657.0
+        ],
+        "motif_rejected_similarity": [
+          3067.6666666666665,
+          3070.5,
+          3073.75,
+          3077.5,
+          3081.0,
+          3084.5
+        ],
+        "motif_stored_total": [
+          85.66666666666667,
+          87.0,
+          87.75,
+          88.0,
+          88.5,
+          89.0
+        ],
+        "output_low_band_ratio": [
+          0.07639141008257866,
+          0.061153269838541746,
+          0.07377932127565145,
+          0.0989848105236888,
+          0.11502600274980068,
+          0.12657929304987192
+        ],
+        "predictor_gaussian_nll": [
+          -0.3514837324619293,
+          -0.24786631390452385,
+          -0.26775937154889107,
+          -0.22183283604681492,
+          -0.12775162793695927,
+          -0.11912388075143099
+        ],
+        "predictor_mse": [
+          0.11441785842180252,
+          0.1240690229460597,
+          0.12229631189256907,
+          0.12457077484577894,
+          0.12945934012532234,
+          0.12873004004359245
+        ],
+        "recurrent_proposed_delta_rms": [
+          0.08918861811111109,
+          0.00132141291875,
+          0.0006687256375000001,
+          0.00039864468375,
+          0.0002712956675,
+          0.0002134505075
+        ],
+        "recurrent_rms": [
+          0.8449608877777777,
+          0.85048351625,
+          0.85182927125,
+          0.85187416125,
+          0.8507464175,
+          0.8484076
+        ],
+        "reward": [
+          0.11434877581066555,
+          0.0380401536822319,
+          -0.021963030099868774,
+          0.011683870106935501,
+          0.0028505735099315643,
+          0.027587473392486572
+        ],
+        "stagnation": [
+          0.23682903084490034,
+          0.32892948016524315,
+          0.4030551463365555,
+          0.3736847750842571,
+          0.36525435373187065,
+          0.3456362187862396
+        ],
+        "target_chroma_mse": [
+          2.198356111844381,
+          0.5799652151763439,
+          0.9223929326981306,
+          0.864423232153058,
+          0.5014552380889654,
+          0.9732481800019741
+        ],
+        "target_low_band_ratio": [
+          0.002549957988473276,
+          0.1623161337338388,
+          0.03254008339717984,
+          0.018198933161329478,
+          0.03682815912179649,
+          0.07174092088826
+        ],
+        "target_spectral_robust": [
+          0.45211798283788895,
+          0.39883383363485336,
+          0.5479997619986534,
+          0.34599313884973526,
+          0.2343129776418209,
+          0.46297837421298027
+        ],
+        "target_stereo_correlation_mse": [
+          0.10963932991338272,
+          0.031183329643681645,
+          0.07179291406646371,
+          0.06453875620354665,
+          0.05867126036901027,
+          0.05664338346105069
+        ],
+        "target_stereo_level_mse": [
+          0.03643846787357082,
+          0.0325508338992222,
+          0.012613749335287139,
+          0.03860147838713601,
+          0.25806240539532155,
+          0.049648104402876925
+        ],
+        "target_stereo_side_mid_mse": [
+          1.167239036824968,
+          1.8008779287338257,
+          11.193367809057236,
+          3.3194844604004174,
+          1.6957380957901478,
+          6.644948011264205
+        ],
+        "validation_best_spectral": [
+          0.12879332982831532,
+          0.1331530585885048,
+          0.14128624461591244,
+          0.1412957590073347,
+          0.14942418597638607,
+          0.14548313058912754
+        ],
+        "validation_mean_chroma": [
+          0.37863047255410087,
+          0.37599144130945206,
+          0.45006371289491653,
+          0.4713871031999588,
+          0.4877743422985077,
+          0.4793730489909649
+        ],
+        "validation_mean_spectral": [
+          0.8200731409920586,
+          0.8385373577475548,
+          0.8159560114145279,
+          0.8103764206171036,
+          0.803025096654892,
+          0.8038118928670883
+        ],
+        "validation_stereo_correlation_mse": [
+          0.023673098327385053,
+          0.02009866526350379,
+          0.022436131141148508,
+          0.024515796802006662,
+          0.023078384110704064,
+          0.03135561884846538
+        ],
+        "validation_stereo_level_mse": [
+          0.11531117061773936,
+          0.13499075919389725,
+          0.15623396635055542,
+          0.1467026937752962,
+          0.17121031694114208,
+          0.16850117407739162
+        ],
+        "validation_stereo_side_mid_mse": [
+          0.9932344290945265,
+          0.9059932976961136,
+          0.9748115614056587,
+          0.9685521796345711,
+          0.9552223160862923,
+          1.0426566898822784
+        ]
+      },
+      "episode_weighted_means": {
+        "advantage": 0.007191318916738965,
+        "calibration_error": 0.056840938968687416,
+        "coarse_delta_rms": 0.001967106393783103,
+        "coarse_near_bound_fraction": 0.0,
+        "coarse_rms": 0.30824557226851856,
+        "confidence_unclamped": 0.6637841090559959,
+        "development_best_spectral": 0.38035647971210657,
+        "development_mean_chroma": 1.1572048081843942,
+        "development_mean_spectral": 0.8926444529659218,
+        "development_stereo_correlation_mse": 0.03938418373258577,
+        "development_stereo_level_mse": 0.04380424397876831,
+        "development_stereo_side_mid_mse": 2.6149933288494744,
+        "fine_delta_rms": 0.01972704201169243,
+        "health": 0.6795316675194988,
+        "log_confidence_unclamped": -0.4128207497436691,
+        "macro_near_bound_fraction": 0.0,
+        "macro_rms": 0.3450536663194445,
+        "meso_delta_rms": 0.007382297516515893,
+        "micro_near_bound_fraction": 0.04260502003009259,
+        "micro_rms": 0.5690359078009259,
+        "motif_candidates": 3820.4722222222226,
+        "motif_rejected_quality": 657.0,
+        "motif_rejected_similarity": 3075.819444444444,
+        "motif_stored_total": 87.65277777777779,
+        "output_low_band_ratio": 0.09198568458668888,
+        "predictor_gaussian_nll": -0.22263629377509156,
+        "predictor_mse": 0.12392389137918751,
+        "recurrent_proposed_delta_rms": 0.015343691254351852,
+        "recurrent_rms": 0.8497169756712962,
+        "reward": 0.028757969400397054,
+        "stagnation": 0.3422315008248444,
+        "target_chroma_mse": 1.0066401516604755,
+        "target_low_band_ratio": 0.054029031381812975,
+        "target_spectral_robust": 0.4070393448626553,
+        "target_stereo_correlation_mse": 0.06541149560952261,
+        "target_stereo_level_mse": 0.07131917321556912,
+        "target_stereo_side_mid_mse": 4.303609223678467,
+        "validation_best_spectral": 0.13990595143426346,
+        "validation_mean_chroma": 0.44053668687465014,
+        "validation_mean_spectral": 0.8152966533822043,
+        "validation_stereo_correlation_mse": 0.024192949082202247,
+        "validation_stereo_level_mse": 0.14882501349267033,
+        "validation_stereo_side_mid_mse": 0.9734117456332401
+      },
+      "exploratory_archive": {
+        "calibration_sha256": "c4f12651dcc89418cd5f82aa3af7451511474569f29e4d3a1d0b0abc2c13f6ed",
+        "matched_gaussian": {
+          "candidate_regions": 0,
+          "mean_recurrence_rate": 0.025357373590313897,
+          "persistent_counter": 0,
+          "revisits": 0,
+          "transitions": 0,
+          "trap_events": 0
+        },
+        "observed": {
+          "candidate_regions": 1,
+          "mean_recurrence_rate": 0.1833336780758566,
+          "persistent_counter": 0,
+          "revisits": 0,
+          "transitions": 0,
+          "trap_events": 0
+        },
+        "persistent_discovery_not_estimable": true,
+        "time_shuffle": {
+          "candidate_regions": 1,
+          "mean_recurrence_rate": 0.3772819570026658,
+          "persistent_counter": 0,
+          "revisits": 0,
+          "transitions": 0,
+          "trap_events": 0
+        }
+      },
+      "first_common_history_predictor": {
+        "gaussian_nll": -0.29890570044517517,
+        "mse": 0.12090959399938583
+      },
+      "first_probe_scores": {
+        "development_mean_chroma": 1.08646821975708,
+        "development_mean_spectral": 0.8592867851257324,
+        "validation_mean_chroma": 0.4084882140159607,
+        "validation_mean_spectral": 0.7819596529006958
+      },
+      "health_range": [
+        0.6041999459266663,
+        0.8193686604499817
+      ],
+      "initial_world_fingerprint": "3e72f3441066594cc7719dfd8315c28b35ece8ace60860a70b31ca6a1fe91434",
+      "motif_candidate_delta": 23,
+      "motif_quality_reject_delta": 0,
+      "motif_similarity_reject_delta": 19,
+      "motif_store_delta": 4,
+      "nonfinite": false,
+      "probes": {
+        "development": [
+          {
+            "file": "but it's me_014413347.wav",
+            "frame_48k": 2858785,
+            "frames": 4096
+          },
+          {
+            "file": "Chill of the Everyday_014349859.wav",
+            "frame_48k": 754614,
+            "frames": 4096
+          },
+          {
+            "file": "Cosmic Love Ascendancy_014435775.wav",
+            "frame_48k": 1627525,
+            "frames": 4096
+          },
+          {
+            "file": "Digital Tapestry remix v1_014341098.wav",
+            "frame_48k": 1828594,
+            "frames": 4096
+          }
+        ],
+        "probe_feedback": false,
+        "strict": true,
+        "validation": [
+          {
+            "file": "Behind the Billion-Dollar Smile ext v2_014408567.wav",
+            "frame_48k": 190023,
+            "frames": 4096
+          },
+          {
+            "file": "Cosmic Echoes 1_014432746.wav",
+            "frame_48k": 5962437,
+            "frames": 4096
+          },
+          {
+            "file": "Journey to the Unknown Particle Phs_014345397.wav",
+            "frame_48k": 2363885,
+            "frames": 4096
+          },
+          {
+            "file": "The Curiosity of Ones and Zeros_010314873.wav",
+            "frame_48k": 7577217,
+            "frames": 4096
+          }
+        ]
+      },
+      "receipt": {
+        "audio_sha256": "36c06cd88540e55db4a3b737d99404152bc15a56878846a97afc9e074dd8be20",
+        "no_op_exact": true,
+        "report_sha256": "baccc92bd5bccdccd5a4823c99d030f4fba452d2bf9a7e090e9eae2d4e189430",
+        "summary_sha256": "7661846764d538109f7a3b8614f1206403eac7b83f3f13a9e7316cbd8a521613"
+      },
+      "trajectory_views": {
+        "audio_behavior": {
+          "delta_participation_ratio": 4.7187688647261234,
+          "trajectory_participation_ratio": 3.0155948599128903
+        },
+        "decoder_control": {
+          "delta_participation_ratio": 2.8845869133795925,
+          "trajectory_participation_ratio": 3.091363642001524
+        },
+        "field_coarse": {
+          "delta_participation_ratio": 1.00333134781855,
+          "final_rms_signedmean_railfraction_neighbor_delta": [
+            0.2665043771266937,
+            0.0046488381922245026,
+            0.0,
+            0.005488306283950806
+          ],
+          "trajectory_participation_ratio": 1.0061598449294502
+        },
+        "field_fine": {
+          "delta_participation_ratio": 1.5011060500364362,
+          "final_rms_signedmean_railfraction_neighbor_delta": [
+            0.5611158609390259,
+            -0.04088776186108589,
+            0.12583160400390625,
+            0.031992074102163315
+          ],
+          "trajectory_participation_ratio": 1.1457074974833743
+        },
+        "field_meso": {
+          "delta_participation_ratio": 2.0301926836337394,
+          "final_rms_signedmean_railfraction_neighbor_delta": [
+            0.34155160188674927,
+            0.013190669938921928,
+            0.0,
+            0.08612693846225739
+          ],
+          "trajectory_participation_ratio": 2.56740638003526
+        },
+        "gru": {
+          "delta_participation_ratio": 1.188477955764884,
+          "trajectory_participation_ratio": 1.3131732199993986
+        },
+        "morphic_delta_l01": {
+          "delta_participation_ratio": 1.2177863071079404,
+          "trajectory_participation_ratio": 1.6680072903912082
+        },
+        "morphic_delta_l04": {
+          "delta_participation_ratio": 1.1391393997621302,
+          "trajectory_participation_ratio": 1.6662363538709235
+        },
+        "morphic_delta_l08": {
+          "delta_participation_ratio": 1.1553902490075945,
+          "trajectory_participation_ratio": 1.590740378480554
+        },
+        "morphic_delta_l12": {
+          "delta_participation_ratio": 1.1167502131557792,
+          "trajectory_participation_ratio": 1.7427007800265804
+        },
+        "morphic_delta_l16": {
+          "delta_participation_ratio": 1.1575734135062263,
+          "trajectory_participation_ratio": 1.722673188678512
+        },
+        "morphic_l01": {
+          "delta_participation_ratio": 1.1257653835014285,
+          "trajectory_participation_ratio": 1.7983475589806786
+        },
+        "morphic_l04": {
+          "delta_participation_ratio": 1.1404619988378473,
+          "trajectory_participation_ratio": 1.4674163414898773
+        },
+        "morphic_l08": {
+          "delta_participation_ratio": 1.1793557994769148,
+          "trajectory_participation_ratio": 1.8219366152662388
+        },
+        "morphic_l12": {
+          "delta_participation_ratio": 1.1007291852841357,
+          "trajectory_participation_ratio": 1.6765019741659084
+        },
+        "morphic_l16": {
+          "delta_participation_ratio": 1.2226921923783463,
+          "trajectory_participation_ratio": 1.6157867207526109
+        },
+        "morphic_output": {
+          "delta_participation_ratio": 1.1271375356616227,
+          "trajectory_participation_ratio": 1.7308769706070197
+        }
+      },
+      "weights_hash": "cd1081b273910087186828990e2c7fbcb576cb6f667010225c23eafd661506ae"
+    },
+    "L16_WE_SP": {
+      "active_depth": 16,
+      "audio": {
+        "peak": 0.1978759765625,
+        "rms": 0.06453424268887381,
+        "side_mid_ratio": 0.3639336805587625,
+        "stereo_correlation": 0.7669215101565601
+      },
+      "bounded": true,
+      "clipping": 0.0,
+      "episode_metrics": {
+        "advantage": [
+          0.05483085951871342,
+          -0.019588846946135163,
+          -0.0065216965158469975,
+          0.002265957184135914,
+          -0.014648342621512711,
+          -0.0008284031646326184
+        ],
+        "calibration_error": [
+          0.037037060854749546,
+          0.06435304135084152,
+          0.06445338390767574,
+          0.062366480473428965,
+          0.06588089372962713,
+          0.06741507723927498
+        ],
+        "coarse_delta_rms": [
+          0.0050662904719097745,
+          0.0027787689468823373,
+          0.0015948723739711568,
+          0.0009990996768465266,
+          0.000677330739563331,
+          0.0005300138509483077
+        ],
+        "coarse_near_bound_fraction": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "coarse_rms": [
+          0.5152872144444444,
+          0.31322296125,
+          0.2530630375,
+          0.2457053625,
+          0.25170925875,
+          0.2582572425
+        ],
+        "confidence_unclamped": [
+          0.7453224460283915,
+          0.6404396221041679,
+          0.6389948055148125,
+          0.6434336602687836,
+          0.634437806904316,
+          0.6305318102240562
+        ],
+        "development_best_spectral": [
+          0.3745158910751343,
+          0.37355539575219154,
+          0.37275055423378944,
+          0.386977706104517,
+          0.372333399951458,
+          0.3807307593524456
+        ],
+        "development_mean_chroma": [
+          1.0896018743515015,
+          1.1374687999486923,
+          1.1519360393285751,
+          1.1421179175376892,
+          1.1246813535690308,
+          1.125307559967041
+        ],
+        "development_mean_spectral": [
+          0.8817378679911295,
+          0.8902469500899315,
+          0.8862646967172623,
+          0.8939284980297089,
+          0.884951576590538,
+          0.8852601125836372
+        ],
+        "development_stereo_correlation_mse": [
+          0.032713847855726876,
+          0.02555273217149079,
+          0.03279399953316897,
+          0.029559975606389344,
+          0.02222909650299698,
+          0.02814100356772542
+        ],
+        "development_stereo_level_mse": [
+          0.04106043237778875,
+          0.04895644821226597,
+          0.04901706054806709,
+          0.05035682232119143,
+          0.05454304441809654,
+          0.04637809470295906
+        ],
+        "development_stereo_side_mid_mse": [
+          2.4810853004455566,
+          2.268014594912529,
+          2.443455994129181,
+          2.2736511528491974,
+          2.1194210797548294,
+          2.34934301674366
+        ],
+        "fine_delta_rms": [
+          0.016659766539103456,
+          0.01577902166172862,
+          0.014593452448025346,
+          0.019612454576417804,
+          0.03081737901084125,
+          0.0191686418838799
+        ],
+        "health": [
+          0.7930862771140205,
+          0.6315078064799309,
+          0.6428021937608719,
+          0.6726549789309502,
+          0.6627445071935654,
+          0.6509087234735489
+        ],
+        "log_confidence_unclamped": [
+          -0.3024354705380069,
+          -0.44561850652098656,
+          -0.4478657767176628,
+          -0.4409407116472721,
+          -0.45503608882427216,
+          -0.4611999839544296
+        ],
+        "macro_near_bound_fraction": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "macro_rms": [
+          0.32548516111111114,
+          0.3423859,
+          0.34846439625,
+          0.3536633825,
+          0.34627255,
+          0.35251506624999995
+        ],
+        "meso_delta_rms": [
+          0.025545363624890644,
+          0.003768563416088,
+          0.003736939193913713,
+          0.004728197323856875,
+          0.004065922374138609,
+          0.00450408214237541
+        ],
+        "micro_near_bound_fraction": [
+          0.078300899,
+          0.059821128749999994,
+          0.046194553124999996,
+          0.034697532625,
+          0.034006118875,
+          0.033171176875
+        ],
+        "micro_rms": [
+          0.5518658377777778,
+          0.5662491837500001,
+          0.57631963375,
+          0.5741073125,
+          0.5740012237500001,
+          0.57208157125
+        ],
+        "motif_candidates": [
+          3634.3333333333335,
+          3638.5,
+          3642.5,
+          3646.5,
+          3650.5,
+          3654.5
+        ],
+        "motif_rejected_quality": [
+          649.0,
+          649.0,
+          649.0,
+          649.0,
+          649.0,
+          649.0
+        ],
+        "motif_rejected_similarity": [
+          2900.6666666666665,
+          2903.5,
+          2906.75,
+          2910.5,
+          2914.0,
+          2917.5
+        ],
+        "motif_stored_total": [
+          84.66666666666667,
+          86.0,
+          86.75,
+          87.0,
+          87.5,
+          88.0
+        ],
+        "output_low_band_ratio": [
+          0.08002479333016607,
+          0.07131546270102262,
+          0.10408413130789995,
+          0.1335634058341384,
+          0.14058358035981655,
+          0.15968960337340832
+        ],
+        "predictor_gaussian_nll": [
+          -0.30511806905269623,
+          -0.15295893512666225,
+          -0.13462005089968443,
+          -0.17315080016851425,
+          -0.07453824277035892,
+          -0.05692713940516114
+        ],
+        "predictor_mse": [
+          0.11679945637782414,
+          0.12718606553971767,
+          0.12805940210819244,
+          0.125348761677742,
+          0.13060685340315104,
+          0.13158669881522655
+        ],
+        "recurrent_proposed_delta_rms": [
+          0.08867568679999999,
+          0.00139513161875,
+          0.0006900114924999999,
+          0.00040478436125,
+          0.00027411849875,
+          0.0002118491775
+        ],
+        "recurrent_rms": [
+          0.8427969066666666,
+          0.8478811374999999,
+          0.85038965,
+          0.85136410625,
+          0.85092928375,
+          0.8492806374999999
+        ],
+        "reward": [
+          0.10627732343143886,
+          0.02231055125594139,
+          -0.002341262996196747,
+          0.02267170324921608,
+          -0.0010467767715454102,
+          -0.007989704608917236
+        ],
+        "stagnation": [
+          0.23935320145554012,
+          0.35154905915260315,
+          0.38303324580192566,
+          0.3618805333971977,
+          0.3561800830066204,
+          0.37425385415554047
+        ],
+        "target_chroma_mse": [
+          2.157656841807895,
+          0.530618648044765,
+          0.9231818607077003,
+          0.7938097566366196,
+          0.43312943913042545,
+          0.8937064073979855
+        ],
+        "target_low_band_ratio": [
+          0.002549957988473276,
+          0.1623161337338388,
+          0.03254008339717984,
+          0.018198933161329478,
+          0.03682815912179649,
+          0.07174092088826
+        ],
+        "target_spectral_robust": [
+          0.4581355055173238,
+          0.39701402746140957,
+          0.5488690715283155,
+          0.35031554475426674,
+          0.24025562219321728,
+          0.4701040983200073
+        ],
+        "target_stereo_correlation_mse": [
+          0.11730104803832041,
+          0.02529983059503138,
+          0.0626938696950674,
+          0.05971224093809724,
+          0.048918093380052596,
+          0.03802430658834055
+        ],
+        "target_stereo_level_mse": [
+          0.056865171839793525,
+          0.06092615218949504,
+          0.008012534505724034,
+          0.040454159083310515,
+          0.2632904869169579,
+          0.0526448326636455
+        ],
+        "target_stereo_side_mid_mse": [
+          1.156139761209488,
+          1.8353877551853657,
+          10.672118872404099,
+          3.525693482719362,
+          1.3693484796676785,
+          6.2768786028027534
+        ],
+        "validation_best_spectral": [
+          0.12578087051709494,
+          0.1354048876091838,
+          0.1286263121291995,
+          0.13276508543640375,
+          0.1217606095597148,
+          0.12574451975524426
+        ],
+        "validation_mean_chroma": [
+          0.3828994168175591,
+          0.41939710825681686,
+          0.446935448795557,
+          0.4443182647228241,
+          0.4306587278842926,
+          0.4276363477110863
+        ],
+        "validation_mean_spectral": [
+          0.8063545823097229,
+          0.8152880296111107,
+          0.7962877005338669,
+          0.8008293807506561,
+          0.7878002300858498,
+          0.7879876643419266
+        ],
+        "validation_stereo_correlation_mse": [
+          0.01918226635704438,
+          0.014804131933487952,
+          0.019866367452777922,
+          0.01893638970796019,
+          0.013522899593226612,
+          0.016368988319300115
+        ],
+        "validation_stereo_level_mse": [
+          0.1439040427406629,
+          0.1646842136979103,
+          0.15803835727274418,
+          0.16644097678363323,
+          0.17606685683131218,
+          0.15877690725028515
+        ],
+        "validation_stereo_side_mid_mse": [
+          0.889854007297092,
+          0.781243272125721,
+          0.8879624083638191,
+          0.8394498601555824,
+          0.7299463376402855,
+          0.8221736028790474
+        ]
+      },
+      "episode_weighted_means": {
+        "advantage": 0.002584921242453641,
+        "calibration_error": 0.06025098959259965,
+        "coarse_delta_rms": 0.0019410626766869056,
+        "coarse_near_bound_fraction": 0.0,
+        "coarse_rms": 0.3062075128240741,
+        "confidence_unclamped": 0.6555266918407546,
+        "development_best_spectral": 0.37681061774492264,
+        "development_mean_chroma": 1.1285189241170883,
+        "development_mean_spectral": 0.8870649503337011,
+        "development_stereo_correlation_mse": 0.02849844253958306,
+        "development_stereo_level_mse": 0.04838531709672814,
+        "development_stereo_side_mid_mse": 2.3224951898058257,
+        "fine_delta_rms": 0.019438452686666063,
+        "health": 0.675617414492148,
+        "log_confidence_unclamped": -0.42551608970043836,
+        "macro_near_bound_fraction": 0.0,
+        "macro_rms": 0.3447977426851852,
+        "meso_delta_rms": 0.007724844679210541,
+        "micro_near_bound_fraction": 0.047698568208333327,
+        "micro_rms": 0.5691041271296297,
+        "motif_candidates": 3644.4722222222226,
+        "motif_rejected_quality": 649.0,
+        "motif_rejected_similarity": 2908.819444444444,
+        "motif_stored_total": 86.65277777777779,
+        "output_low_band_ratio": 0.11487682948440865,
+        "predictor_gaussian_nll": -0.14955220623717955,
+        "predictor_mse": 0.12659787298697564,
+        "recurrent_proposed_delta_rms": 0.015275263658124998,
+        "recurrent_rms": 0.8487736202777777,
+        "reward": 0.023313638926656156,
+        "stagnation": 0.34437499616157125,
+        "target_chroma_mse": 0.9553504922875652,
+        "target_low_band_ratio": 0.054029031381812975,
+        "target_spectral_robust": 0.41078231162909,
+        "target_stereo_correlation_mse": 0.0586582315391516,
+        "target_stereo_level_mse": 0.0803655561998211,
+        "target_stereo_side_mid_mse": 4.139261158998124,
+        "validation_best_spectral": 0.12834704750114018,
+        "validation_mean_chroma": 0.42530755236468937,
+        "validation_mean_spectral": 0.7990912646055222,
+        "validation_stereo_correlation_mse": 0.01711350722729953,
+        "validation_stereo_level_mse": 0.16131855909609133,
+        "validation_stereo_side_mid_mse": 0.8251049147435913
+      },
+      "exploratory_archive": {
+        "calibration_sha256": "c4f12651dcc89418cd5f82aa3af7451511474569f29e4d3a1d0b0abc2c13f6ed",
+        "matched_gaussian": {
+          "candidate_regions": 0,
+          "mean_recurrence_rate": 0.00208967970573006,
+          "persistent_counter": 0,
+          "revisits": 0,
+          "transitions": 0,
+          "trap_events": 0
+        },
+        "observed": {
+          "candidate_regions": 1,
+          "mean_recurrence_rate": 0.20492842067434713,
+          "persistent_counter": 0,
+          "revisits": 0,
+          "transitions": 0,
+          "trap_events": 0
+        },
+        "persistent_discovery_not_estimable": true,
+        "time_shuffle": {
+          "candidate_regions": 1,
+          "mean_recurrence_rate": 0.33458204972559474,
+          "persistent_counter": 0,
+          "revisits": 0,
+          "transitions": 0,
+          "trap_events": 0
+        }
+      },
+      "first_common_history_predictor": {
+        "gaussian_nll": -0.2870763838291168,
+        "mse": 0.1221269890666008
+      },
+      "first_probe_scores": {
+        "development_mean_chroma": 1.118399739265442,
+        "development_mean_spectral": 0.8330791592597961,
+        "validation_mean_chroma": 0.42775553464889526,
+        "validation_mean_spectral": 0.7702516317367554
+      },
+      "health_range": [
+        0.6078212857246399,
+        0.8256807327270508
+      ],
+      "initial_world_fingerprint": "5f2faf33911ec856d7a3360324c3b67d4184a1b4ec4923eb20d95d373a783100",
+      "motif_candidate_delta": 23,
+      "motif_quality_reject_delta": 0,
+      "motif_similarity_reject_delta": 19,
+      "motif_store_delta": 4,
+      "nonfinite": false,
+      "probes": {
+        "development": [
+          {
+            "file": "but it's me_014413347.wav",
+            "frame_48k": 2858785,
+            "frames": 4096
+          },
+          {
+            "file": "Chill of the Everyday_014349859.wav",
+            "frame_48k": 754614,
+            "frames": 4096
+          },
+          {
+            "file": "Cosmic Love Ascendancy_014435775.wav",
+            "frame_48k": 1627525,
+            "frames": 4096
+          },
+          {
+            "file": "Digital Tapestry remix v1_014341098.wav",
+            "frame_48k": 1828594,
+            "frames": 4096
+          }
+        ],
+        "probe_feedback": false,
+        "strict": true,
+        "validation": [
+          {
+            "file": "Behind the Billion-Dollar Smile ext v2_014408567.wav",
+            "frame_48k": 190023,
+            "frames": 4096
+          },
+          {
+            "file": "Cosmic Echoes 1_014432746.wav",
+            "frame_48k": 5962437,
+            "frames": 4096
+          },
+          {
+            "file": "Journey to the Unknown Particle Phs_014345397.wav",
+            "frame_48k": 2363885,
+            "frames": 4096
+          },
+          {
+            "file": "The Curiosity of Ones and Zeros_010314873.wav",
+            "frame_48k": 7577217,
+            "frames": 4096
+          }
+        ]
+      },
+      "receipt": {
+        "audio_sha256": "d8f3ad36bd56f17510dda3ae49ee77369b5a5ec59190e2a9d973eebcee712283",
+        "no_op_exact": true,
+        "report_sha256": "3f5676a72fe3628f04436a463e09c03cf6eca479fec8a1c0e5d549410a45a4c0",
+        "summary_sha256": "69d80687ca2ad2aefad4fdd59aae1eb3e7e4fa303b3ee4efd9d5b3f9503d4cf1"
+      },
+      "trajectory_views": {
+        "audio_behavior": {
+          "delta_participation_ratio": 8.562168027431747,
+          "trajectory_participation_ratio": 3.467938947492053
+        },
+        "decoder_control": {
+          "delta_participation_ratio": 3.010895697497355,
+          "trajectory_participation_ratio": 3.305721652635922
+        },
+        "field_coarse": {
+          "delta_participation_ratio": 1.003541398035799,
+          "final_rms_signedmean_railfraction_neighbor_delta": [
+            0.26058241724967957,
+            -0.006986401509493589,
+            0.0,
+            0.005156663712114096
+          ],
+          "trajectory_participation_ratio": 1.0047989229349648
+        },
+        "field_fine": {
+          "delta_participation_ratio": 1.448726109988617,
+          "final_rms_signedmean_railfraction_neighbor_delta": [
+            0.561820387840271,
+            -0.043385960161685944,
+            0.13855361938476562,
+            0.025273537263274193
+          ],
+          "trajectory_participation_ratio": 1.1675880370695666
+        },
+        "field_meso": {
+          "delta_participation_ratio": 2.0321311811423963,
+          "final_rms_signedmean_railfraction_neighbor_delta": [
+            0.3373861014842987,
+            0.012376081198453903,
+            0.0,
+            0.04883188754320145
+          ],
+          "trajectory_participation_ratio": 2.5848109465040605
+        },
+        "gru": {
+          "delta_participation_ratio": 1.1745462600619432,
+          "trajectory_participation_ratio": 1.3249280422782577
+        },
+        "morphic_delta_l01": {
+          "delta_participation_ratio": 1.2545277273385675,
+          "trajectory_participation_ratio": 1.6570569438276734
+        },
+        "morphic_delta_l04": {
+          "delta_participation_ratio": 1.113622391206262,
+          "trajectory_participation_ratio": 1.8267574162552624
+        },
+        "morphic_delta_l08": {
+          "delta_participation_ratio": 1.150800208338397,
+          "trajectory_participation_ratio": 1.5480376171922883
+        },
+        "morphic_delta_l12": {
+          "delta_participation_ratio": 1.0924019291903062,
+          "trajectory_participation_ratio": 1.7429771064577495
+        },
+        "morphic_delta_l16": {
+          "delta_participation_ratio": 1.1652441365815722,
+          "trajectory_participation_ratio": 1.5958505995493328
+        },
+        "morphic_l01": {
+          "delta_participation_ratio": 1.1277670897052543,
+          "trajectory_participation_ratio": 1.8183012080392065
+        },
+        "morphic_l04": {
+          "delta_participation_ratio": 1.1287624375083665,
+          "trajectory_participation_ratio": 1.5199396669381493
+        },
+        "morphic_l08": {
+          "delta_participation_ratio": 1.161312544267294,
+          "trajectory_participation_ratio": 1.7727541275762022
+        },
+        "morphic_l12": {
+          "delta_participation_ratio": 1.0836605925256544,
+          "trajectory_participation_ratio": 1.6686284641554987
+        },
+        "morphic_l16": {
+          "delta_participation_ratio": 1.2164170040316942,
+          "trajectory_participation_ratio": 1.4833901923147519
+        },
+        "morphic_output": {
+          "delta_participation_ratio": 1.1255839276584239,
+          "trajectory_participation_ratio": 1.716788840607799
+        }
+      },
+      "weights_hash": "cd1081b273910087186828990e2c7fbcb576cb6f667010225c23eafd661506ae"
+    },
+    "L16_WP_SC": {
+      "active_depth": 16,
+      "audio": {
+        "peak": 0.300140380859375,
+        "rms": 0.0852442490861069,
+        "side_mid_ratio": 0.26326720126611863,
+        "stereo_correlation": 0.870416293391716
+      },
+      "bounded": true,
+      "clipping": 0.0,
+      "episode_metrics": {
+        "advantage": [
+          -0.0034182589087221357,
+          -0.00281355157494545,
+          -0.008299069944769144,
+          0.007797728758305311,
+          0.005007457220926881,
+          -0.008932883385568857
+        ],
+        "calibration_error": [
+          0.003948991316267186,
+          0.0034720760013442487,
+          0.0031839517469052225,
+          0.0034894722048193216,
+          0.005037241266109049,
+          0.002782992451102473
+        ],
+        "coarse_delta_rms": [
+          0.0003347245154954079,
+          0.00030204056383809075,
+          0.0003480549821688328,
+          0.0003435215839999728,
+          0.00032359322358388454,
+          0.0003282131801825017
+        ],
+        "coarse_near_bound_fraction": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "coarse_rms": [
+          0.6710190399999999,
+          0.67116983125,
+          0.671148655,
+          0.67087092375,
+          0.6708935137500001,
+          0.6709592474999999
+        ],
+        "confidence_unclamped": [
+          0.9909260206752353,
+          0.9898023381829262,
+          0.9894007593393326,
+          0.9898242428898811,
+          0.9919710531830788,
+          0.9888465106487274
+        ],
+        "development_best_spectral": [
+          0.35620350970162284,
+          0.37444406747817993,
+          0.380014106631279,
+          0.3623936399817467,
+          0.3489886038005352,
+          0.3653235137462616
+        ],
+        "development_mean_chroma": [
+          1.573319183455573,
+          1.5152249485254288,
+          1.5751859545707703,
+          1.5956127345561981,
+          1.564831405878067,
+          1.5405422896146774
+        ],
+        "development_mean_spectral": [
+          0.7768582436773512,
+          0.755488932132721,
+          0.7960418611764908,
+          0.8074876219034195,
+          0.7851476892828941,
+          0.7941608354449272
+        ],
+        "development_stereo_correlation_mse": [
+          0.0076906174007389284,
+          0.007434703118633479,
+          0.007064683246426284,
+          0.007016974966973066,
+          0.007077322399709374,
+          0.007497804763261229
+        ],
+        "development_stereo_level_mse": [
+          0.03541711179746522,
+          0.03456991212442517,
+          0.03591765370219946,
+          0.034003723645582795,
+          0.0331692963372916,
+          0.035823913058266044
+        ],
+        "development_stereo_side_mid_mse": [
+          1.1223290496402316,
+          1.0801058933138847,
+          1.0113797709345818,
+          1.0052706971764565,
+          1.0274441838264465,
+          1.0918132215738297
+        ],
+        "fine_delta_rms": [
+          0.013797478439907232,
+          0.015280443127267063,
+          0.015301831881515682,
+          0.014964321977458894,
+          0.01414668036159128,
+          0.014921522000804543
+        ],
+        "health": [
+          0.7761109073956808,
+          0.7902680560946465,
+          0.7707926779985428,
+          0.7853488773107529,
+          0.7827383801341057,
+          0.7688229084014893
+        ],
+        "log_confidence_unclamped": [
+          -0.009116241190996435,
+          -0.010251035913825035,
+          -0.010656155995093286,
+          -0.010228483704850078,
+          -0.008061392756644636,
+          -0.011217492399737239
+        ],
+        "macro_near_bound_fraction": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "macro_rms": [
+          0.3774437677777777,
+          0.37782647375,
+          0.37987036875,
+          0.37896124500000006,
+          0.3788583725,
+          0.37913115875
+        ],
+        "meso_delta_rms": [
+          0.022914809847457543,
+          0.0060017905198037624,
+          0.006936971505638212,
+          0.006745044549461454,
+          0.006462005781941116,
+          0.006500486517325044
+        ],
+        "micro_near_bound_fraction": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "micro_rms": [
+          0.5229123888888889,
+          0.52473325125,
+          0.5239723199999999,
+          0.52369242375,
+          0.5239532149999999,
+          0.5239058
+        ],
+        "motif_candidates": [
+          3810.3333333333335,
+          3814.5,
+          3818.5,
+          3822.5,
+          3826.5,
+          3830.5
+        ],
+        "motif_rejected_quality": [
+          657.0,
+          657.0,
+          657.0,
+          657.0,
+          657.0,
+          657.0
+        ],
+        "motif_rejected_similarity": [
+          3069.3333333333335,
+          3073.5,
+          3077.5,
+          3081.5,
+          3085.5,
+          3089.5
+        ],
+        "motif_stored_total": [
+          84.0,
+          84.0,
+          84.0,
+          84.0,
+          84.0,
+          84.0
+        ],
+        "output_low_band_ratio": [
+          0.0591077854235967,
+          0.05019837198778987,
+          0.037284120451658964,
+          0.03760137525387108,
+          0.03895392408594489,
+          0.03622840903699398
+        ],
+        "predictor_gaussian_nll": [
+          -2.8414848115709095,
+          -2.848380923271179,
+          -2.8399586379528046,
+          -2.840304881334305,
+          -2.8682947158813477,
+          -2.822845071554184
+        ],
+        "predictor_mse": [
+          0.0015713297567951183,
+          0.0016609793528914452,
+          0.0025279364926973358,
+          0.001567184182931669,
+          0.00022693782921123784,
+          0.003192391581251286
+        ],
+        "recurrent_proposed_delta_rms": [
+          4.884235888888889e-05,
+          6.28923555e-06,
+          4.031498662499999e-06,
+          2.5993427375000003e-06,
+          1.5963766000000001e-06,
+          1.0227200575e-06
+        ],
+        "recurrent_rms": [
+          0.9759068555555555,
+          0.9758876137500001,
+          0.97587542375,
+          0.97586766625,
+          0.9758629525,
+          0.9758600962499999
+        ],
+        "reward": [
+          -0.0370403163962894,
+          -0.02874157950282097,
+          -0.06024065986275673,
+          -0.04966827481985092,
+          -0.028010070323944092,
+          -0.0621800571680069
+        ],
+        "stagnation": [
+          0.2742456528875563,
+          0.25856630876660347,
+          0.27583784982562065,
+          0.2726706676185131,
+          0.2633628025650978,
+          0.27881188690662384
+        ],
+        "target_chroma_mse": [
+          2.5292919079462686,
+          0.7059632837772369,
+          1.287641517817974,
+          1.0533610098063946,
+          0.8025241121649742,
+          1.282875619828701
+        ],
+        "target_low_band_ratio": [
+          0.002549957988473276,
+          0.1623161337338388,
+          0.03254008339717984,
+          0.018198933161329478,
+          0.03682815912179649,
+          0.07174092088826
+        ],
+        "target_spectral_robust": [
+          0.4390388098027971,
+          0.4087924100458622,
+          0.575005829334259,
+          0.39256536588072777,
+          0.3946218714118004,
+          0.5811630599200726
+        ],
+        "target_stereo_correlation_mse": [
+          0.13781604538982922,
+          0.0031346952232524927,
+          0.011040106532163918,
+          0.0672562897161697,
+          0.07352863607229665,
+          0.0071011469581208075
+        ],
+        "target_stereo_level_mse": [
+          0.048245167126879096,
+          0.032211238589297864,
+          0.006537018548897322,
+          0.03777680399707606,
+          0.19745225738734007,
+          0.035443542001303285
+        ],
+        "target_stereo_side_mid_mse": [
+          1.232177638940306,
+          0.610566744690459,
+          5.843641445040703,
+          2.726834362372756,
+          1.7665497362613678,
+          3.699762428412214
+        ],
+        "validation_best_spectral": [
+          0.3522159953912099,
+          0.3559703268110752,
+          0.33525602519512177,
+          0.3301362097263336,
+          0.3422987535595894,
+          0.32533829659223557
+        ],
+        "validation_mean_chroma": [
+          0.8851465980211893,
+          0.8727176934480667,
+          0.9079508036375046,
+          0.9429381117224693,
+          0.9161842167377472,
+          0.8641397655010223
+        ],
+        "validation_mean_spectral": [
+          0.7796315948168436,
+          0.766665443778038,
+          0.7946414574980736,
+          0.8069483190774918,
+          0.7950741201639175,
+          0.7973763421177864
+        ],
+        "validation_stereo_correlation_mse": [
+          0.012547895415789552,
+          0.01300088141579181,
+          0.013893053168430924,
+          0.013929026084952056,
+          0.013530634343624115,
+          0.012889845878817141
+        ],
+        "validation_stereo_level_mse": [
+          0.1312162611219618,
+          0.1286310637369752,
+          0.1326837232336402,
+          0.1262756921350956,
+          0.12278826627880335,
+          0.12900167983025312
+        ],
+        "validation_stereo_side_mid_mse": [
+          0.5825350615713332,
+          0.5967325046658516,
+          0.6327033191919327,
+          0.6326946541666985,
+          0.6131717264652252,
+          0.5926279351115227
+        ]
+      },
+      "episode_weighted_means": {
+        "advantage": -0.0017764296391288993,
+        "calibration_error": 0.003652454164424583,
+        "coarse_delta_rms": 0.0003300246748781151,
+        "coarse_near_bound_fraction": 0.0,
+        "coarse_rms": 0.671010201875,
+        "confidence_unclamped": 0.9901284874865303,
+        "development_best_spectral": 0.3645612402232709,
+        "development_mean_chroma": 1.5607860861001193,
+        "development_mean_spectral": 0.785864197269634,
+        "development_stereo_correlation_mse": 0.0072970176492903925,
+        "development_stereo_level_mse": 0.034816935110871715,
+        "development_stereo_side_mid_mse": 1.0563904694109052,
+        "fine_delta_rms": 0.014735379631424114,
+        "health": 0.7790136345558697,
+        "log_confidence_unclamped": -0.009921800326857785,
+        "macro_near_bound_fraction": 0.0,
+        "macro_rms": 0.37868189775462957,
+        "meso_delta_rms": 0.009260184786937855,
+        "micro_near_bound_fraction": 0.0,
+        "micro_rms": 0.5238615664814815,
+        "motif_candidates": 3820.4722222222226,
+        "motif_rejected_quality": 657.0,
+        "motif_rejected_similarity": 3079.4722222222226,
+        "motif_stored_total": 84.0,
+        "output_low_band_ratio": 0.04322899770664259,
+        "predictor_gaussian_nll": -2.843544840260788,
+        "predictor_mse": 0.0017911265326296822,
+        "recurrent_proposed_delta_rms": 1.0730255416064813e-05,
+        "recurrent_rms": 0.9758767680092593,
+        "reward": -0.04431349301227817,
+        "stagnation": 0.27058252809500255,
+        "target_chroma_mse": 1.2769429085569248,
+        "target_low_band_ratio": 0.054029031381812975,
+        "target_spectral_robust": 0.46519789106591986,
+        "target_stereo_correlation_mse": 0.0499794866486388,
+        "target_stereo_level_mse": 0.05961100460846561,
+        "target_stereo_side_mid_mse": 2.646588725952968,
+        "validation_best_spectral": 0.3402026012125942,
+        "validation_mean_chroma": 0.8981795315113331,
+        "validation_mean_spectral": 0.7900562129086918,
+        "validation_stereo_correlation_mse": 0.013298556051234265,
+        "validation_stereo_level_mse": 0.12843278105612155,
+        "validation_stereo_side_mid_mse": 0.6084108668620939
+      },
+      "exploratory_archive": {
+        "calibration_sha256": "c4f12651dcc89418cd5f82aa3af7451511474569f29e4d3a1d0b0abc2c13f6ed",
+        "matched_gaussian": {
+          "candidate_regions": 1,
+          "mean_recurrence_rate": 0.545281594029311,
+          "persistent_counter": 0,
+          "revisits": 0,
+          "transitions": 0,
+          "trap_events": 0
+        },
+        "observed": {
+          "candidate_regions": 1,
+          "mean_recurrence_rate": 0.448933609315607,
+          "persistent_counter": 0,
+          "revisits": 0,
+          "transitions": 0,
+          "trap_events": 0
+        },
+        "persistent_discovery_not_estimable": true,
+        "time_shuffle": {
+          "candidate_regions": 1,
+          "mean_recurrence_rate": 0.5878386082590271,
+          "persistent_counter": 0,
+          "revisits": 0,
+          "transitions": 0,
+          "trap_events": 0
+        }
+      },
+      "first_common_history_predictor": {
+        "gaussian_nll": -2.861032724380493,
+        "mse": 0.00012584173236973584
+      },
+      "first_probe_scores": {
+        "development_mean_chroma": 1.5556906461715698,
+        "development_mean_spectral": 0.7624901533126831,
+        "validation_mean_chroma": 0.8981927037239075,
+        "validation_mean_spectral": 0.7662526369094849
+      },
+      "health_range": [
+        0.7623904347419739,
+        0.8079138994216919
+      ],
+      "initial_world_fingerprint": "3e72f3441066594cc7719dfd8315c28b35ece8ace60860a70b31ca6a1fe91434",
+      "motif_candidate_delta": 23,
+      "motif_quality_reject_delta": 0,
+      "motif_similarity_reject_delta": 23,
+      "motif_store_delta": 0,
+      "nonfinite": false,
+      "probes": {
+        "development": [
+          {
+            "file": "but it's me_014413347.wav",
+            "frame_48k": 2858785,
+            "frames": 4096
+          },
+          {
+            "file": "Chill of the Everyday_014349859.wav",
+            "frame_48k": 754614,
+            "frames": 4096
+          },
+          {
+            "file": "Cosmic Love Ascendancy_014435775.wav",
+            "frame_48k": 1627525,
+            "frames": 4096
+          },
+          {
+            "file": "Digital Tapestry remix v1_014341098.wav",
+            "frame_48k": 1828594,
+            "frames": 4096
+          }
+        ],
+        "probe_feedback": false,
+        "strict": true,
+        "validation": [
+          {
+            "file": "Behind the Billion-Dollar Smile ext v2_014408567.wav",
+            "frame_48k": 190023,
+            "frames": 4096
+          },
+          {
+            "file": "Cosmic Echoes 1_014432746.wav",
+            "frame_48k": 5962437,
+            "frames": 4096
+          },
+          {
+            "file": "Journey to the Unknown Particle Phs_014345397.wav",
+            "frame_48k": 2363885,
+            "frames": 4096
+          },
+          {
+            "file": "The Curiosity of Ones and Zeros_010314873.wav",
+            "frame_48k": 7577217,
+            "frames": 4096
+          }
+        ]
+      },
+      "receipt": {
+        "audio_sha256": "31de727f58157cf5f7d22114afadeea0eba13a379f948e4f97c506c8d424833b",
+        "no_op_exact": true,
+        "report_sha256": "d6754c739a8ee508eff64a0dd3fd08d41a2efdbbdb133464a0d9e7a77342b02c",
+        "summary_sha256": "2801a8afd7a7c757bd559cde1389947f0c6ddb98a22db744ccf4f4ce7952fe7a"
+      },
+      "trajectory_views": {
+        "audio_behavior": {
+          "delta_participation_ratio": 7.65042909766807,
+          "trajectory_participation_ratio": 2.0218194431502168
+        },
+        "decoder_control": {
+          "delta_participation_ratio": 2.839569531570388,
+          "trajectory_participation_ratio": 2.8739424054008618
+        },
+        "field_coarse": {
+          "delta_participation_ratio": 2.123048719099827,
+          "final_rms_signedmean_railfraction_neighbor_delta": [
+            0.6709446907043457,
+            -0.07069972902536392,
+            0.0,
+            0.0009754316415637732
+          ],
+          "trajectory_participation_ratio": 1.2823948889415286
+        },
+        "field_fine": {
+          "delta_participation_ratio": 2.060457562848931,
+          "final_rms_signedmean_railfraction_neighbor_delta": [
+            0.5268756151199341,
+            0.3422330319881439,
+            0.0,
+            0.02459392324090004
+          ],
+          "trajectory_participation_ratio": 2.5323945354011417
+        },
+        "field_meso": {
+          "delta_participation_ratio": 2.0221161326791015,
+          "final_rms_signedmean_railfraction_neighbor_delta": [
+            0.37801435589790344,
+            -0.03930245712399483,
+            0.0,
+            0.03751775994896889
+          ],
+          "trajectory_participation_ratio": 2.215810364103369
+        },
+        "gru": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 1.0076022465341945
+        },
+        "morphic_delta_l01": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_delta_l04": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_delta_l08": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_delta_l12": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_delta_l16": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_l01": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 1.0083501028990418
+        },
+        "morphic_l04": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 1.007929104826907
+        },
+        "morphic_l08": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 1.009547731461188
+        },
+        "morphic_l12": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 1.0075123410283615
+        },
+        "morphic_l16": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 1.0063468634499324
+        },
+        "morphic_output": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 1.0054792028913262
+        }
+      },
+      "weights_hash": "4ea38a0e65aa6a454a7428a91096dfe5bcbf462c769a4bb125a23112de8a7a9d"
+    },
+    "L16_WP_SP": {
+      "active_depth": 16,
+      "audio": {
+        "peak": 0.292755126953125,
+        "rms": 0.08519916789562441,
+        "side_mid_ratio": 0.26364034722941887,
+        "stereo_correlation": 0.8700661009211796
+      },
+      "bounded": true,
+      "clipping": 0.0,
+      "episode_metrics": {
+        "advantage": [
+          -0.00489743881755405,
+          0.016804972663521767,
+          -0.006199703551828861,
+          -0.00045318901538848877,
+          0.005441241431981325,
+          0.002436284441500902
+        ],
+        "calibration_error": [
+          0.0032258796660850444,
+          0.003436208382481709,
+          0.004161332413787022,
+          0.0034735777298919857,
+          0.0022721809218637645,
+          0.004851887002587318
+        ],
+        "coarse_delta_rms": [
+          0.00035544000113279454,
+          0.0003427733026910573,
+          0.0003305759637441952,
+          0.0003314061432320159,
+          0.00034725885052466765,
+          0.00032447500416310504
+        ],
+        "coarse_near_bound_fraction": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "coarse_rms": [
+          0.6708958700000001,
+          0.670672385,
+          0.6707735887499999,
+          0.67084774375,
+          0.6708503975,
+          0.67083461375
+        ],
+        "confidence_unclamped": [
+          0.9894711309009128,
+          0.989750973880291,
+          0.9907556995749474,
+          0.9898030459880829,
+          0.9881392121315002,
+          0.9917140528559685
+        ],
+        "development_best_spectral": [
+          0.39825979206297135,
+          0.3731646127998829,
+          0.35413680225610733,
+          0.3915429823100567,
+          0.3654952198266983,
+          0.38026829808950424
+        ],
+        "development_mean_chroma": [
+          1.541591034995185,
+          1.5685714930295944,
+          1.5670193582773209,
+          1.5528143644332886,
+          1.5654242038726807,
+          1.5539372712373734
+        ],
+        "development_mean_spectral": [
+          0.7834174169434441,
+          0.7833263799548149,
+          0.8134754449129105,
+          0.7804036736488342,
+          0.8009074926376343,
+          0.8086201548576355
+        ],
+        "development_stereo_correlation_mse": [
+          0.007940243153522411,
+          0.007846449152566493,
+          0.007062206626869738,
+          0.0072735800058580935,
+          0.007071934174746275,
+          0.007305616047233343
+        ],
+        "development_stereo_level_mse": [
+          0.037893783301115036,
+          0.03681374667212367,
+          0.0352783864364028,
+          0.040173801593482494,
+          0.03381331590935588,
+          0.036750970873981714
+        ],
+        "development_stereo_side_mid_mse": [
+          1.1564703782399495,
+          1.13522507250309,
+          1.017766386270523,
+          1.0643575266003609,
+          1.0165208280086517,
+          1.0607855916023254
+        ],
+        "fine_delta_rms": [
+          0.01581492492308219,
+          0.016988115501590073,
+          0.014706344110891223,
+          0.014741886057890952,
+          0.015503703849390149,
+          0.01452992798294872
+        ],
+        "health": [
+          0.7697203159332275,
+          0.8028027042746544,
+          0.7705437242984772,
+          0.7796080708503723,
+          0.7800737395882607,
+          0.7727729454636574
+        ],
+        "log_confidence_unclamped": [
+          -0.010584964209960567,
+          -0.010302574140951037,
+          -0.009287359775044024,
+          -0.010250189458020031,
+          -0.011932564433664083,
+          -0.008320499095134437
+        ],
+        "macro_near_bound_fraction": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "macro_rms": [
+          0.3791858633333333,
+          0.37928558875,
+          0.37861707375,
+          0.37928657125,
+          0.3793791875,
+          0.37886166
+        ],
+        "meso_delta_rms": [
+          0.026602184969104,
+          0.006868960801512003,
+          0.006617042643483728,
+          0.006501356547232717,
+          0.006831575650721788,
+          0.006415254378225654
+        ],
+        "micro_near_bound_fraction": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "micro_rms": [
+          0.5237162477777777,
+          0.5242393649999999,
+          0.5238483375,
+          0.52388388875,
+          0.523808565,
+          0.5237380737499999
+        ],
+        "motif_candidates": [
+          3634.3333333333335,
+          3638.5,
+          3642.5,
+          3646.5,
+          3650.5,
+          3654.5
+        ],
+        "motif_rejected_quality": [
+          649.0,
+          649.0,
+          649.0,
+          649.0,
+          649.0,
+          649.0
+        ],
+        "motif_rejected_similarity": [
+          2902.3333333333335,
+          2906.5,
+          2910.5,
+          2914.5,
+          2918.5,
+          2922.5
+        ],
+        "motif_stored_total": [
+          83.0,
+          83.0,
+          83.0,
+          83.0,
+          83.0,
+          83.0
+        ],
+        "output_low_band_ratio": [
+          0.056869128718972206,
+          0.060690078185871243,
+          0.03403735673055053,
+          0.04906070022843778,
+          0.04706049431115389,
+          0.03594849887304008
+        ],
+        "predictor_gaussian_nll": [
+          -2.8434854083591037,
+          -2.8338577449321747,
+          -2.8534356355667114,
+          -2.8342619240283966,
+          -2.8273369669914246,
+          -2.864901304244995
+        ],
+        "predictor_mse": [
+          0.0023802639787188834,
+          0.0016652395715937018,
+          0.0011214844780624844,
+          0.0024135222483891994,
+          0.002733519497269299,
+          0.00038040078743506456
+        ],
+        "recurrent_proposed_delta_rms": [
+          2.7479298666666663e-06,
+          3.0526119625e-06,
+          4.1477751625e-06,
+          4.2418659875000005e-06,
+          4.352519762500001e-06,
+          4.410283525e-06
+        ],
+        "recurrent_rms": [
+          0.97606589,
+          0.97605492875,
+          0.9760420187500001,
+          0.9760278474999999,
+          0.97601322625,
+          0.9759978625
+        ],
+        "reward": [
+          -0.06349173188209534,
+          -0.03631968796253204,
+          -0.04924903064966202,
+          -0.055651694536209106,
+          -0.05701997131109238,
+          -0.047708116471767426
+        ],
+        "stagnation": [
+          0.2811748484770457,
+          0.25937620364129543,
+          0.2681296095252037,
+          0.27659186720848083,
+          0.2729199342429638,
+          0.2784440368413925
+        ],
+        "target_chroma_mse": [
+          2.6343733999464245,
+          0.7374695278704166,
+          1.2366413660347462,
+          0.9639368429780006,
+          0.8481154516339302,
+          1.260147511959076
+        ],
+        "target_low_band_ratio": [
+          0.002549957988473276,
+          0.1623161337338388,
+          0.03254008339717984,
+          0.018198933161329478,
+          0.03682815912179649,
+          0.07174092088826
+        ],
+        "target_spectral_robust": [
+          0.44944047265582615,
+          0.4241764470934868,
+          0.5804280154407024,
+          0.36821041256189346,
+          0.4054793454706669,
+          0.5602034330368042
+        ],
+        "target_stereo_correlation_mse": [
+          0.1299390109715609,
+          0.003667216430130793,
+          0.011194613412953913,
+          0.06503837381023914,
+          0.07417909381911159,
+          0.008056058834753799
+        ],
+        "target_stereo_level_mse": [
+          0.05305064981803298,
+          0.03448808297980577,
+          0.008493326282405178,
+          0.04490625104517676,
+          0.19894737959839404,
+          0.03209852100383159
+        ],
+        "target_stereo_side_mid_mse": [
+          1.0426972018790872,
+          0.6735142373363487,
+          5.857857704162598,
+          2.742776089347899,
+          1.8095507957041264,
+          3.908146091389426
+        ],
+        "validation_best_spectral": [
+          0.34826593266593087,
+          0.3355014808475971,
+          0.31930259987711906,
+          0.35117480903863907,
+          0.3506001681089401,
+          0.3210825026035309
+        ],
+        "validation_mean_chroma": [
+          0.8576739297972785,
+          0.9021847397089005,
+          0.9022906050086021,
+          0.8785946294665337,
+          0.9362227022647858,
+          0.8530823588371277
+        ],
+        "validation_mean_spectral": [
+          0.7794529398282369,
+          0.7736550122499466,
+          0.8191052600741386,
+          0.7793122828006744,
+          0.8072572275996208,
+          0.807738371193409
+        ],
+        "validation_stereo_correlation_mse": [
+          0.012258129401339425,
+          0.012516199611127377,
+          0.01373001781757921,
+          0.013104812474921346,
+          0.013782048248685896,
+          0.013218786451034248
+        ],
+        "validation_stereo_level_mse": [
+          0.1385422001282374,
+          0.13293515052646399,
+          0.12977178767323494,
+          0.14459202624857426,
+          0.12542236130684614,
+          0.1351134581491351
+        ],
+        "validation_stereo_side_mid_mse": [
+          0.5750890639093187,
+          0.5808562338352203,
+          0.6229390352964401,
+          0.597488634288311,
+          0.6270651593804359,
+          0.6045911461114883
+        ]
+      },
+      "episode_weighted_means": {
+        "advantage": 0.0021886945253720993,
+        "calibration_error": 0.0035701776861161404,
+        "coarse_delta_rms": 0.00033865487758130594,
+        "coarse_near_bound_fraction": 0.0,
+        "coarse_rms": 0.670812433125,
+        "confidence_unclamped": 0.9899390192219505,
+        "development_best_spectral": 0.3771446178908701,
+        "development_mean_chroma": 1.5582262876409072,
+        "development_mean_spectral": 0.7950250938258789,
+        "development_stereo_correlation_mse": 0.007416671526799392,
+        "development_stereo_level_mse": 0.03678733413107693,
+        "development_stereo_side_mid_mse": 1.0751876305374835,
+        "fine_delta_rms": 0.015380817070965551,
+        "health": 0.7792535834014416,
+        "log_confidence_unclamped": -0.010113025185462364,
+        "macro_near_bound_fraction": 0.0,
+        "macro_rms": 0.37910265743055555,
+        "meso_delta_rms": 0.009972729165046648,
+        "micro_near_bound_fraction": 0.0,
+        "micro_rms": 0.5238724129629629,
+        "motif_candidates": 3644.4722222222226,
+        "motif_rejected_quality": 649.0,
+        "motif_rejected_similarity": 2912.4722222222226,
+        "motif_stored_total": 83.0,
+        "output_low_band_ratio": 0.047277709508004286,
+        "predictor_gaussian_nll": -2.8428798306871346,
+        "predictor_mse": 0.0017824050935781055,
+        "recurrent_proposed_delta_rms": 3.825497711111112e-06,
+        "recurrent_rms": 0.9760336289583335,
+        "reward": -0.051573372135559716,
+        "stagnation": 0.272772749989397,
+        "target_chroma_mse": 1.280114016737099,
+        "target_low_band_ratio": 0.054029031381812975,
+        "target_spectral_robust": 0.46465635437656333,
+        "target_stereo_correlation_mse": 0.04867906121312502,
+        "target_stereo_level_mse": 0.06199736845460772,
+        "target_stereo_side_mid_mse": 2.6724236866365807,
+        "validation_best_spectral": 0.3376545821902928,
+        "validation_mean_chroma": 0.888341494180538,
+        "validation_mean_spectral": 0.7944201822910045,
+        "validation_stereo_correlation_mse": 0.013101665667447917,
+        "validation_stereo_level_mse": 0.1343961640054153,
+        "validation_stereo_side_mid_mse": 0.6013382121368691
+      },
+      "exploratory_archive": {
+        "calibration_sha256": "c4f12651dcc89418cd5f82aa3af7451511474569f29e4d3a1d0b0abc2c13f6ed",
+        "matched_gaussian": {
+          "candidate_regions": 1,
+          "mean_recurrence_rate": 0.9067461832253902,
+          "persistent_counter": 0,
+          "revisits": 0,
+          "transitions": 0,
+          "trap_events": 0
+        },
+        "observed": {
+          "candidate_regions": 1,
+          "mean_recurrence_rate": 0.6956548196005807,
+          "persistent_counter": 0,
+          "revisits": 0,
+          "transitions": 0,
+          "trap_events": 0
+        },
+        "persistent_discovery_not_estimable": true,
+        "time_shuffle": {
+          "candidate_regions": 1,
+          "mean_recurrence_rate": 0.7467851934704084,
+          "persistent_counter": 0,
+          "revisits": 0,
+          "transitions": 0,
+          "trap_events": 0
+        }
+      },
+      "first_common_history_predictor": {
+        "gaussian_nll": -2.8545501232147217,
+        "mse": 0.002077888697385788
+      },
+      "first_probe_scores": {
+        "development_mean_chroma": 1.4502054452896118,
+        "development_mean_spectral": 0.7900963425636292,
+        "validation_mean_chroma": 0.807989239692688,
+        "validation_mean_spectral": 0.8007763624191284
+      },
+      "health_range": [
+        0.7568303942680359,
+        0.825370192527771
+      ],
+      "initial_world_fingerprint": "5f2faf33911ec856d7a3360324c3b67d4184a1b4ec4923eb20d95d373a783100",
+      "motif_candidate_delta": 23,
+      "motif_quality_reject_delta": 0,
+      "motif_similarity_reject_delta": 23,
+      "motif_store_delta": 0,
+      "nonfinite": false,
+      "probes": {
+        "development": [
+          {
+            "file": "but it's me_014413347.wav",
+            "frame_48k": 2858785,
+            "frames": 4096
+          },
+          {
+            "file": "Chill of the Everyday_014349859.wav",
+            "frame_48k": 754614,
+            "frames": 4096
+          },
+          {
+            "file": "Cosmic Love Ascendancy_014435775.wav",
+            "frame_48k": 1627525,
+            "frames": 4096
+          },
+          {
+            "file": "Digital Tapestry remix v1_014341098.wav",
+            "frame_48k": 1828594,
+            "frames": 4096
+          }
+        ],
+        "probe_feedback": false,
+        "strict": true,
+        "validation": [
+          {
+            "file": "Behind the Billion-Dollar Smile ext v2_014408567.wav",
+            "frame_48k": 190023,
+            "frames": 4096
+          },
+          {
+            "file": "Cosmic Echoes 1_014432746.wav",
+            "frame_48k": 5962437,
+            "frames": 4096
+          },
+          {
+            "file": "Journey to the Unknown Particle Phs_014345397.wav",
+            "frame_48k": 2363885,
+            "frames": 4096
+          },
+          {
+            "file": "The Curiosity of Ones and Zeros_010314873.wav",
+            "frame_48k": 7577217,
+            "frames": 4096
+          }
+        ]
+      },
+      "receipt": {
+        "audio_sha256": "bce35de2935738e1d5544a37fc46e4f903aab636eef3dc4a6d21169d573878d3",
+        "no_op_exact": true,
+        "report_sha256": "e8b438b27a953637f14b81cec9527292599db475c5b60afb0e854ed27bdb4da2",
+        "summary_sha256": "79b2534cb6de85b2c2349311ef5578f3a0d699e7c1927fcc29b7540bfab90a37"
+      },
+      "trajectory_views": {
+        "audio_behavior": {
+          "delta_participation_ratio": 7.9272577277554435,
+          "trajectory_participation_ratio": 5.610612222351683
+        },
+        "decoder_control": {
+          "delta_participation_ratio": 2.8016618177296797,
+          "trajectory_participation_ratio": 2.84047973363042
+        },
+        "field_coarse": {
+          "delta_participation_ratio": 2.074104253457314,
+          "final_rms_signedmean_railfraction_neighbor_delta": [
+            0.6709033250808716,
+            -0.07078462839126587,
+            0.0,
+            0.0008506345911882818
+          ],
+          "trajectory_participation_ratio": 3.7956150684191217
+        },
+        "field_fine": {
+          "delta_participation_ratio": 2.059984440949039,
+          "final_rms_signedmean_railfraction_neighbor_delta": [
+            0.5272495746612549,
+            0.3418984115123749,
+            0.0,
+            0.021832570433616638
+          ],
+          "trajectory_participation_ratio": 2.4490586686443825
+        },
+        "field_meso": {
+          "delta_participation_ratio": 2.0242045644121345,
+          "final_rms_signedmean_railfraction_neighbor_delta": [
+            0.3798160254955292,
+            -0.04016865789890289,
+            0.0,
+            0.031006136909127235
+          ],
+          "trajectory_participation_ratio": 2.206378041054818
+        },
+        "gru": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 1.0007489668171767
+        },
+        "morphic_delta_l01": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_delta_l04": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_delta_l08": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_delta_l12": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_delta_l16": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_l01": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 1.0005832751722952
+        },
+        "morphic_l04": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 1.000902858093899
+        },
+        "morphic_l08": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 1.0007922175930837
+        },
+        "morphic_l12": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 1.0006224684531593
+        },
+        "morphic_l16": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 1.0007718855671648
+        },
+        "morphic_output": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 1.0006318486341899
+        }
+      },
+      "weights_hash": "4ea38a0e65aa6a454a7428a91096dfe5bcbf462c769a4bb125a23112de8a7a9d"
+    },
+    "L1_WE_SP": {
+      "active_depth": 1,
+      "audio": {
+        "peak": 0.20947265625,
+        "rms": 0.06313704743584499,
+        "side_mid_ratio": 0.38319968523743264,
+        "stereo_correlation": 0.7446336525813309
+      },
+      "bounded": true,
+      "clipping": 0.0,
+      "episode_metrics": {
+        "advantage": [
+          0.050738648821910225,
+          -0.015030145645141602,
+          -0.013444066629745066,
+          0.008200920681701973,
+          0.008417365374043584,
+          0.0026500921230763197
+        ],
+        "calibration_error": [
+          0.03734875227221184,
+          0.06310494896024466,
+          0.06319577898830175,
+          0.061866090167313814,
+          0.06344116991385818,
+          0.06374670471996069
+        ],
+        "coarse_delta_rms": [
+          0.005066457644311918,
+          0.002781130198854953,
+          0.0015984761121217161,
+          0.0009645423124311492,
+          0.0006106602522777393,
+          0.0004713925955002196
+        ],
+        "coarse_near_bound_fraction": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "coarse_rms": [
+          0.5152847322222223,
+          0.31320429375000003,
+          0.25306409125,
+          0.24571923875,
+          0.2519437,
+          0.2585677875
+        ],
+        "confidence_unclamped": [
+          0.7443354328473409,
+          0.6436239555478096,
+          0.6420326977968216,
+          0.6452831923961639,
+          0.6410557180643082,
+          0.6406008377671242
+        ],
+        "development_best_spectral": [
+          0.3779217667049832,
+          0.37184402719140053,
+          0.38318878784775734,
+          0.3787984549999237,
+          0.39093102887272835,
+          0.3928847573697567
+        ],
+        "development_mean_chroma": [
+          1.102889617284139,
+          1.135156124830246,
+          1.1479281187057495,
+          1.1317718625068665,
+          1.1261895298957825,
+          1.153469517827034
+        ],
+        "development_mean_spectral": [
+          0.8920095761617025,
+          0.8878461048007011,
+          0.8778923004865646,
+          0.8723868131637573,
+          0.8876739218831062,
+          0.8960860669612885
+        ],
+        "development_stereo_correlation_mse": [
+          0.033075336573852435,
+          0.037199888844043016,
+          0.024720713030546904,
+          0.04269629647023976,
+          0.03759996802546084,
+          0.035613421467132866
+        ],
+        "development_stereo_level_mse": [
+          0.042942733193437256,
+          0.05192079907283187,
+          0.04633692069910467,
+          0.05521988729014993,
+          0.04583220090717077,
+          0.04467299347743392
+        ],
+        "development_stereo_side_mid_mse": [
+          2.5140776369306774,
+          2.5314691364765167,
+          2.1700682193040848,
+          2.8005346953868866,
+          2.6201028674840927,
+          2.389814630150795
+        ],
+        "fine_delta_rms": [
+          0.01677083886331982,
+          0.016561039839871228,
+          0.016032185056246817,
+          0.015779678127728403,
+          0.027872027945704758,
+          0.016032420215196908
+        ],
+        "health": [
+          0.7886597315470377,
+          0.6452010050415993,
+          0.6511833146214485,
+          0.6417110934853554,
+          0.6772043034434319,
+          0.6821306124329567
+        ],
+        "log_confidence_unclamped": [
+          -0.3038566687868701,
+          -0.44064225256443024,
+          -0.4431185685098171,
+          -0.4380674846470356,
+          -0.4446451738476753,
+          -0.44535131752491
+        ],
+        "macro_near_bound_fraction": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "macro_rms": [
+          0.32558427333333334,
+          0.34407106625,
+          0.34903717,
+          0.34702580499999996,
+          0.3468390225,
+          0.34939480625
+        ],
+        "meso_delta_rms": [
+          0.025551059645497136,
+          0.00395534627023153,
+          0.00392640769132413,
+          0.004079894919414073,
+          0.0032824964146129787,
+          0.0035202053550165147
+        ],
+        "micro_near_bound_fraction": [
+          0.07803853333333334,
+          0.05866527537499999,
+          0.0443639755,
+          0.035997390375,
+          0.041433811125,
+          0.039594173375
+        ],
+        "micro_rms": [
+          0.5518496811111111,
+          0.56613963125,
+          0.5760942975000001,
+          0.57470025,
+          0.57418652375,
+          0.57199420125
+        ],
+        "motif_candidates": [
+          3634.3333333333335,
+          3638.5,
+          3642.5,
+          3646.5,
+          3650.5,
+          3654.5
+        ],
+        "motif_rejected_quality": [
+          649.0,
+          649.0,
+          649.0,
+          649.0,
+          649.0,
+          649.0
+        ],
+        "motif_rejected_similarity": [
+          2900.6666666666665,
+          2903.5,
+          2906.75,
+          2910.5,
+          2914.5,
+          2917.75
+        ],
+        "motif_stored_total": [
+          84.66666666666667,
+          86.0,
+          86.75,
+          87.0,
+          87.0,
+          87.75
+        ],
+        "output_low_band_ratio": [
+          0.07877285571561919,
+          0.07653158577159047,
+          0.1175247048959136,
+          0.1572650857269764,
+          0.16997841745615005,
+          0.17593330517411232
+        ],
+        "predictor_gaussian_nll": [
+          -0.3017941365639369,
+          -0.17873698845505714,
+          -0.13752305414527655,
+          -0.14461900852620602,
+          -0.11258060508407652,
+          -0.12528679764363915
+        ],
+        "predictor_mse": [
+          0.1169599915544192,
+          0.12481815926730633,
+          0.12817060574889183,
+          0.12557950243353844,
+          0.12759993318468332,
+          0.12784934137016535
+        ],
+        "recurrent_proposed_delta_rms": [
+          0.08867920201111111,
+          0.0013950977,
+          0.00069107635,
+          0.00040298150125,
+          0.00027435301000000004,
+          0.00021089485749999998
+        ],
+        "recurrent_rms": [
+          0.8428200344444444,
+          0.8478830424999999,
+          0.85039269875,
+          0.8513558887499999,
+          0.85096870125,
+          0.8493495875000001
+        ],
+        "reward": [
+          0.0987089839246538,
+          0.033763233572244644,
+          0.0012427456676959991,
+          0.014036353677511215,
+          0.03969511017203331,
+          0.0331498458981514
+        ],
+        "stagnation": [
+          0.24245702061388227,
+          0.3447933867573738,
+          0.37142520770430565,
+          0.3814049996435642,
+          0.35407597571611404,
+          0.34010396525263786
+        ],
+        "target_chroma_mse": [
+          2.170407944255405,
+          0.551864517852664,
+          0.8847686434164643,
+          0.8157736584544182,
+          0.4146122932434082,
+          0.9150585811585188
+        ],
+        "target_low_band_ratio": [
+          0.002549957988473276,
+          0.1623161337338388,
+          0.03254008339717984,
+          0.018198933161329478,
+          0.03682815912179649,
+          0.07174092088826
+        ],
+        "target_spectral_robust": [
+          0.45596221420500016,
+          0.3947957456111908,
+          0.5473055094480515,
+          0.35910268872976303,
+          0.2514529302716255,
+          0.4739800114184618
+        ],
+        "target_stereo_correlation_mse": [
+          0.11421979394637877,
+          0.03664704895345494,
+          0.04945074557326734,
+          0.0754016285391117,
+          0.050667085641180165,
+          0.045992022001883015
+        ],
+        "target_stereo_level_mse": [
+          0.060729527949459024,
+          0.056943865813082084,
+          0.01081138452121877,
+          0.05453158522141166,
+          0.2437949471641332,
+          0.04962242581314058
+        ],
+        "target_stereo_side_mid_mse": [
+          1.1222637063927121,
+          2.018586026970297,
+          9.733325392007828,
+          4.279982367588673,
+          1.5414989925920963,
+          6.404994767624885
+        ],
+        "validation_best_spectral": [
+          0.11985151800844404,
+          0.1364992754533887,
+          0.12653050012886524,
+          0.13113002758473158,
+          0.12211935874074697,
+          0.1261450657621026
+        ],
+        "validation_mean_chroma": [
+          0.389501068327162,
+          0.4246819168329239,
+          0.4391395151615143,
+          0.4358621872961521,
+          0.41181299835443497,
+          0.4338214434683323
+        ],
+        "validation_mean_spectral": [
+          0.8107756508721246,
+          0.8112771138548851,
+          0.7825335413217545,
+          0.7788023129105568,
+          0.7885095253586769,
+          0.7958568781614304
+        ],
+        "validation_stereo_correlation_mse": [
+          0.019119636466105778,
+          0.023111221264116466,
+          0.015321857645176351,
+          0.02512098732404411,
+          0.022354328306391835,
+          0.023315110942348838
+        ],
+        "validation_stereo_level_mse": [
+          0.1477679337064425,
+          0.16760177072137594,
+          0.15552793256938457,
+          0.1778382547199726,
+          0.15742386877536774,
+          0.15591816417872906
+        ],
+        "validation_stereo_side_mid_mse": [
+          0.8966597649786208,
+          0.9356933534145355,
+          0.7667030841112137,
+          1.036678709089756,
+          0.9604364410042763,
+          0.893893301486969
+        ]
+      },
+      "episode_weighted_means": {
+        "advantage": 0.006922135787640906,
+        "calibration_error": 0.05878390750364849,
+        "coarse_delta_rms": 0.0019154431859162825,
+        "coarse_near_bound_fraction": 0.0,
+        "coarse_rms": 0.30629730724537035,
+        "confidence_unclamped": 0.659488639069928,
+        "development_best_spectral": 0.3825948038310916,
+        "development_mean_chroma": 1.1329007951749694,
+        "development_mean_spectral": 0.8856491305761868,
+        "development_stereo_correlation_mse": 0.0351509374018793,
+        "development_stereo_level_mse": 0.047820922440021396,
+        "development_stereo_side_mid_mse": 2.504344530955509,
+        "fine_delta_rms": 0.018174698341344653,
+        "health": 0.6810150100953049,
+        "log_confidence_unclamped": -0.4192802443134564,
+        "macro_near_bound_fraction": 0.0,
+        "macro_rms": 0.3436586905555556,
+        "meso_delta_rms": 0.00738590171601606,
+        "micro_near_bound_fraction": 0.04968219318055555,
+        "micro_rms": 0.5691607641435185,
+        "motif_candidates": 3644.4722222222226,
+        "motif_rejected_quality": 649.0,
+        "motif_rejected_similarity": 2908.944444444444,
+        "motif_stored_total": 86.52777777777779,
+        "output_low_band_ratio": 0.12933432579006035,
+        "predictor_gaussian_nll": -0.16675676506969872,
+        "predictor_mse": 0.12516292225983408,
+        "recurrent_proposed_delta_rms": 0.015275600904976852,
+        "recurrent_rms": 0.848794992199074,
+        "reward": 0.036766045485381725,
+        "stagnation": 0.3390434259479796,
+        "target_chroma_mse": 0.9587476063968131,
+        "target_low_band_ratio": 0.054029031381812975,
+        "target_spectral_robust": 0.4137665166140154,
+        "target_stereo_correlation_mse": 0.06206305410921265,
+        "target_stereo_level_mse": 0.07940562274707422,
+        "target_stereo_side_mid_mse": 4.183441875529415,
+        "validation_best_spectral": 0.12704595761304652,
+        "validation_mean_chroma": 0.4224698549067532,
+        "validation_mean_spectral": 0.7946258370799048,
+        "validation_stereo_correlation_mse": 0.02139052365803056,
+        "validation_stereo_level_mse": 0.1603463207785454,
+        "validation_stereo_side_mid_mse": 0.9150107756808952
+      },
+      "first_common_history_predictor": {
+        "gaussian_nll": -0.2870763838291168,
+        "mse": 0.1221269890666008
+      },
+      "first_probe_scores": {
+        "development_mean_chroma": 1.1151889562606812,
+        "development_mean_spectral": 0.8483259677886963,
+        "validation_mean_chroma": 0.41215282678604126,
+        "validation_mean_spectral": 0.7694144248962402
+      },
+      "health_range": [
+        0.6192355751991272,
+        0.821095883846283
+      ],
+      "initial_world_fingerprint": "3048b0e2a64f39a47b66bb79470aa5762a2dd488ed2f6485982775d6e1432610",
+      "motif_candidate_delta": 23,
+      "motif_quality_reject_delta": 0,
+      "motif_similarity_reject_delta": 19,
+      "motif_store_delta": 4,
+      "nonfinite": false,
+      "probes": {
+        "development": [
+          {
+            "file": "but it's me_014413347.wav",
+            "frame_48k": 2858785,
+            "frames": 4096
+          },
+          {
+            "file": "Chill of the Everyday_014349859.wav",
+            "frame_48k": 754614,
+            "frames": 4096
+          },
+          {
+            "file": "Cosmic Love Ascendancy_014435775.wav",
+            "frame_48k": 1627525,
+            "frames": 4096
+          },
+          {
+            "file": "Digital Tapestry remix v1_014341098.wav",
+            "frame_48k": 1828594,
+            "frames": 4096
+          }
+        ],
+        "probe_feedback": false,
+        "strict": true,
+        "validation": [
+          {
+            "file": "Behind the Billion-Dollar Smile ext v2_014408567.wav",
+            "frame_48k": 190023,
+            "frames": 4096
+          },
+          {
+            "file": "Cosmic Echoes 1_014432746.wav",
+            "frame_48k": 5962437,
+            "frames": 4096
+          },
+          {
+            "file": "Journey to the Unknown Particle Phs_014345397.wav",
+            "frame_48k": 2363885,
+            "frames": 4096
+          },
+          {
+            "file": "The Curiosity of Ones and Zeros_010314873.wav",
+            "frame_48k": 7577217,
+            "frames": 4096
+          }
+        ]
+      },
+      "receipt": {
+        "audio_sha256": "ad5567d4f1c96ebb2601d0dc85cd8151a775ca9b2f098a34bc95ea4974d68ec1",
+        "no_op_exact": true,
+        "report_sha256": "70e223ce234ce2ae8aadc070b330222ab3b939caafd39b860db9e583f767ae43",
+        "summary_sha256": "77b5022e12b3e10b50ed8ac30220222f8a4453814deb32ad846b2065fb356936"
+      },
+      "trajectory_views": {
+        "audio_behavior": {
+          "delta_participation_ratio": 6.979271194065014,
+          "trajectory_participation_ratio": 4.06109053978747
+        },
+        "decoder_control": {
+          "delta_participation_ratio": 2.960248595409308,
+          "trajectory_participation_ratio": 3.1959219551977966
+        },
+        "field_coarse": {
+          "delta_participation_ratio": 1.0033160046084038,
+          "final_rms_signedmean_railfraction_neighbor_delta": [
+            0.26083606481552124,
+            -0.006809385959059,
+            0.0,
+            0.0020056695211678743
+          ],
+          "trajectory_participation_ratio": 1.0048184426100082
+        },
+        "field_fine": {
+          "delta_participation_ratio": 1.4431261875883683,
+          "final_rms_signedmean_railfraction_neighbor_delta": [
+            0.5614146590232849,
+            -0.04526415839791298,
+            0.14146041870117188,
+            0.0266267079859972
+          ],
+          "trajectory_participation_ratio": 1.165607504366811
+        },
+        "field_meso": {
+          "delta_participation_ratio": 2.0415822481810193,
+          "final_rms_signedmean_railfraction_neighbor_delta": [
+            0.3513757884502411,
+            0.012116520665585995,
+            0.0,
+            0.04257923737168312
+          ],
+          "trajectory_participation_ratio": 2.6563694387249313
+        },
+        "gru": {
+          "delta_participation_ratio": 1.174964022003906,
+          "trajectory_participation_ratio": 1.3247519226307938
+        },
+        "morphic_delta_l01": {
+          "delta_participation_ratio": 1.2555681579673754,
+          "trajectory_participation_ratio": 1.6575527166750952
+        },
+        "morphic_l01": {
+          "delta_participation_ratio": 1.127830533895827,
+          "trajectory_participation_ratio": 1.8185046836382548
+        },
+        "morphic_output": {
+          "delta_participation_ratio": 1.1274600497002085,
+          "trajectory_participation_ratio": 1.6963835726595273
+        }
+      },
+      "weights_hash": "cd1081b273910087186828990e2c7fbcb576cb6f667010225c23eafd661506ae"
+    },
+    "L1_WP_SP": {
+      "active_depth": 1,
+      "audio": {
+        "peak": 0.29443359375,
+        "rms": 0.08518801440930407,
+        "side_mid_ratio": 0.26399157936105444,
+        "stereo_correlation": 0.8697525614919256
+      },
+      "bounded": true,
+      "clipping": 0.0,
+      "episode_metrics": {
+        "advantage": [
+          -0.0015851619342962902,
+          0.010155946481972933,
+          -0.0013478021137416363,
+          -0.001558469608426094,
+          0.002109863329678774,
+          -0.012687548995018005
+        ],
+        "calibration_error": [
+          0.00348847905277378,
+          0.003964499424910173,
+          0.005149272503331304,
+          0.0048510179040022194,
+          0.004600952728651464,
+          0.003594880079617724
+        ],
+        "coarse_delta_rms": [
+          0.00035631802489256696,
+          0.00034821495501091704,
+          0.0003176707978127524,
+          0.00032385901067755185,
+          0.00032667578852851875,
+          0.0003356275010446552
+        ],
+        "coarse_near_bound_fraction": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "coarse_rms": [
+          0.6708923033333333,
+          0.6706905912500001,
+          0.67078764375,
+          0.6709164025000001,
+          0.67102588125,
+          0.6710028862499999
+        ],
+        "confidence_unclamped": [
+          0.9898344675699869,
+          0.9904827103018761,
+          0.9921267479658127,
+          0.991712749004364,
+          0.9913653656840324,
+          0.9899698793888092
+        ],
+        "development_best_spectral": [
+          0.3945529858271281,
+          0.36520176008343697,
+          0.35862981528043747,
+          0.39034707471728325,
+          0.36135362461209297,
+          0.36890648677945137
+        ],
+        "development_mean_chroma": [
+          1.5532478756374783,
+          1.5541668385267258,
+          1.5478188395500183,
+          1.5580988228321075,
+          1.5822798013687134,
+          1.5332627445459366
+        ],
+        "development_mean_spectral": [
+          0.794252011511061,
+          0.7513797730207443,
+          0.793585978448391,
+          0.7754123359918594,
+          0.7949234545230865,
+          0.802805595099926
+        ],
+        "development_stereo_correlation_mse": [
+          0.008058518533491425,
+          0.007796158839482814,
+          0.007309543725568801,
+          0.0073463773005642,
+          0.007506206457037479,
+          0.007433820050209761
+        ],
+        "development_stereo_level_mse": [
+          0.03689665678474638,
+          0.03877898654900491,
+          0.033950846176594496,
+          0.040872310753911734,
+          0.03595357807353139,
+          0.03672424191609025
+        ],
+        "development_stereo_side_mid_mse": [
+          1.1742227209938898,
+          1.114247627556324,
+          1.0670617371797562,
+          1.053984358906746,
+          1.1115742921829224,
+          1.086009420454502
+        ],
+        "fine_delta_rms": [
+          0.01588311946640412,
+          0.017269708099775016,
+          0.014191717491485178,
+          0.014281619573011994,
+          0.014701989246532321,
+          0.015338412951678038
+        ],
+        "health": [
+          0.7795799308353,
+          0.7882908433675766,
+          0.7715373784303665,
+          0.7829974889755249,
+          0.7857758924365044,
+          0.7747755497694016
+        ],
+        "log_confidence_unclamped": [
+          -0.010217579392095407,
+          -0.009563506580889225,
+          -0.007904415717348456,
+          -0.008321883215103298,
+          -0.008672139374539256,
+          -0.010081132175400853
+        ],
+        "macro_near_bound_fraction": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "macro_rms": [
+          0.3792599277777778,
+          0.37947332874999995,
+          0.3781895375,
+          0.37897394250000005,
+          0.37883778,
+          0.37961225750000005
+        ],
+        "meso_delta_rms": [
+          0.026663815654400323,
+          0.006980223814025521,
+          0.006434364360757172,
+          0.006455410446505994,
+          0.006517716508824378,
+          0.00669832358835265
+        ],
+        "micro_near_bound_fraction": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "micro_rms": [
+          0.5237316466666667,
+          0.52426858875,
+          0.52387510625,
+          0.5239142,
+          0.523850945,
+          0.52389949625
+        ],
+        "motif_candidates": [
+          3634.3333333333335,
+          3638.5,
+          3642.5,
+          3646.5,
+          3650.5,
+          3654.5
+        ],
+        "motif_rejected_quality": [
+          649.0,
+          649.0,
+          649.0,
+          649.0,
+          649.0,
+          649.0
+        ],
+        "motif_rejected_similarity": [
+          2902.3333333333335,
+          2906.5,
+          2910.5,
+          2914.5,
+          2918.5,
+          2922.5
+        ],
+        "motif_stored_total": [
+          83.0,
+          83.0,
+          83.0,
+          83.0,
+          83.0,
+          83.0
+        ],
+        "output_low_band_ratio": [
+          0.05693324324157503,
+          0.06338203931227326,
+          0.04354569409042597,
+          0.05218752543441951,
+          0.04590433067642152,
+          0.03654723451472819
+        ],
+        "predictor_gaussian_nll": [
+          -2.852070834901598,
+          -2.8586655855178833,
+          -2.8686975836753845,
+          -2.8647237420082092,
+          -2.8508231043815613,
+          -2.8457835018634796
+        ],
+        "predictor_mse": [
+          0.0019295898447227147,
+          0.0010810523126565386,
+          0.00018922551407740684,
+          0.0006607818395423237,
+          0.0008416105702053756,
+          0.002045242887106724
+        ],
+        "recurrent_proposed_delta_rms": [
+          2.7354314999999996e-06,
+          3.0153819125e-06,
+          4.0583513249999995e-06,
+          4.0892992625e-06,
+          4.0946085375e-06,
+          4.0626389125e-06
+        ],
+        "recurrent_rms": [
+          0.976065901111111,
+          0.97605517,
+          0.976042525,
+          0.97602894875,
+          0.97601527125,
+          0.9760013425
+        ],
+        "reward": [
+          -0.054179754522111684,
+          -0.04088122770190239,
+          -0.03777695074677467,
+          -0.042492035776376724,
+          -0.03571559116244316,
+          -0.06174466758966446
+        ],
+        "stagnation": [
+          0.2730468677149879,
+          0.2657896317541599,
+          0.2705828882753849,
+          0.27338552474975586,
+          0.2644663490355015,
+          0.2730545215308666
+        ],
+        "target_chroma_mse": [
+          2.6370584434933133,
+          0.7583998329937458,
+          1.197094138711691,
+          0.9873567298054695,
+          0.837411891669035,
+          1.2627360969781876
+        ],
+        "target_low_band_ratio": [
+          0.002549957988473276,
+          0.1623161337338388,
+          0.03254008339717984,
+          0.018198933161329478,
+          0.03682815912179649,
+          0.07174092088826
+        ],
+        "target_spectral_robust": [
+          0.44205470548735726,
+          0.41736413910984993,
+          0.5799691714346409,
+          0.3855307213962078,
+          0.38694530352950096,
+          0.567044336348772
+        ],
+        "target_stereo_correlation_mse": [
+          0.1297583216678504,
+          0.0028620537668757606,
+          0.012727836612612009,
+          0.06584579207265051,
+          0.06732467940310016,
+          0.008247426749221631
+        ],
+        "target_stereo_level_mse": [
+          0.051787561271339655,
+          0.038820908521302044,
+          0.005117773464945685,
+          0.04707525718549732,
+          0.1995830130763352,
+          0.03438007622935402
+        ],
+        "target_stereo_side_mid_mse": [
+          1.038624914301585,
+          0.544903875561431,
+          6.1739354729652405,
+          2.6891791864763945,
+          1.5494356006383896,
+          3.890854338183999
+        ],
+        "validation_best_spectral": [
+          0.34443967541058856,
+          0.3555431552231312,
+          0.32753032073378563,
+          0.3537442274391651,
+          0.34115394949913025,
+          0.32038212940096855
+        ],
+        "validation_mean_chroma": [
+          0.8690974116325378,
+          0.8901116847991943,
+          0.8735766336321831,
+          0.8761258721351624,
+          0.9231306314468384,
+          0.8469418361783028
+        ],
+        "validation_mean_spectral": [
+          0.7863534688949585,
+          0.764195628464222,
+          0.8036296665668488,
+          0.776890829205513,
+          0.7979443967342377,
+          0.8060501515865326
+        ],
+        "validation_stereo_correlation_mse": [
+          0.012078196741640568,
+          0.012902022572234273,
+          0.013073585578240454,
+          0.013492795755155385,
+          0.012491406523622572,
+          0.012887866352684796
+        ],
+        "validation_stereo_level_mse": [
+          0.13583158370521334,
+          0.14056638907641172,
+          0.1260244892910123,
+          0.14713268168270588,
+          0.12765238527208567,
+          0.13568322081118822
+        ],
+        "validation_stereo_side_mid_mse": [
+          0.5701036055882772,
+          0.5996420979499817,
+          0.5973530933260918,
+          0.6205406934022903,
+          0.5737361535429955,
+          0.5919279828667641
+        ]
+      },
+      "episode_weighted_means": {
+        "advantage": -0.0008188621399717197,
+        "calibration_error": 0.004274850282214444,
+        "coarse_delta_rms": 0.00033472767966116036,
+        "coarse_near_bound_fraction": 0.0,
+        "coarse_rms": 0.6708859513888888,
+        "confidence_unclamped": 0.9909153199858135,
+        "development_best_spectral": 0.3731652912166384,
+        "development_mean_chroma": 1.5548124870768298,
+        "development_mean_spectral": 0.7853931914325113,
+        "development_stereo_correlation_mse": 0.00757510415105908,
+        "development_stereo_level_mse": 0.03719610337564653,
+        "development_stereo_side_mid_mse": 1.1011833595456901,
+        "fine_delta_rms": 0.015277761138147779,
+        "health": 0.7804928473024457,
+        "log_confidence_unclamped": -0.009126776075896082,
+        "macro_near_bound_fraction": 0.0,
+        "macro_rms": 0.3790577956712963,
+        "meso_delta_rms": 0.009958309062144339,
+        "micro_near_bound_fraction": 0.0,
+        "micro_rms": 0.5239233304861111,
+        "motif_candidates": 3644.4722222222226,
+        "motif_rejected_quality": 649.0,
+        "motif_rejected_similarity": 2912.4722222222226,
+        "motif_stored_total": 83.0,
+        "output_low_band_ratio": 0.04975001121164058,
+        "predictor_gaussian_nll": -2.856794058724686,
+        "predictor_mse": 0.001124583828051847,
+        "recurrent_proposed_delta_rms": 3.675951908333333e-06,
+        "recurrent_rms": 0.9760348597685184,
+        "reward": -0.04546503791654551,
+        "stagnation": 0.2700542971767761,
+        "target_chroma_mse": 1.2800095222752403,
+        "target_low_band_ratio": 0.054029031381812975,
+        "target_spectral_robust": 0.46315139621772144,
+        "target_stereo_correlation_mse": 0.04779435171205174,
+        "target_stereo_level_mse": 0.06279409829146232,
+        "target_stereo_side_mid_mse": 2.647822231354507,
+        "validation_best_spectral": 0.3404655762844615,
+        "validation_mean_chroma": 0.8798306783040365,
+        "validation_mean_spectral": 0.7891773569087187,
+        "validation_stereo_correlation_mse": 0.01282097892059634,
+        "validation_stereo_level_mse": 0.1354817916397695,
+        "validation_stereo_side_mid_mse": 0.5922172711127335
+      },
+      "first_common_history_predictor": {
+        "gaussian_nll": -2.8545501232147217,
+        "mse": 0.002077888697385788
+      },
+      "first_probe_scores": {
+        "development_mean_chroma": 1.4544655084609985,
+        "development_mean_spectral": 0.7930133938789368,
+        "validation_mean_chroma": 0.8167039155960083,
+        "validation_mean_spectral": 0.8045722842216492
+      },
+      "health_range": [
+        0.7472779750823975,
+        0.7982514500617981
+      ],
+      "initial_world_fingerprint": "3048b0e2a64f39a47b66bb79470aa5762a2dd488ed2f6485982775d6e1432610",
+      "motif_candidate_delta": 23,
+      "motif_quality_reject_delta": 0,
+      "motif_similarity_reject_delta": 23,
+      "motif_store_delta": 0,
+      "nonfinite": false,
+      "probes": {
+        "development": [
+          {
+            "file": "but it's me_014413347.wav",
+            "frame_48k": 2858785,
+            "frames": 4096
+          },
+          {
+            "file": "Chill of the Everyday_014349859.wav",
+            "frame_48k": 754614,
+            "frames": 4096
+          },
+          {
+            "file": "Cosmic Love Ascendancy_014435775.wav",
+            "frame_48k": 1627525,
+            "frames": 4096
+          },
+          {
+            "file": "Digital Tapestry remix v1_014341098.wav",
+            "frame_48k": 1828594,
+            "frames": 4096
+          }
+        ],
+        "probe_feedback": false,
+        "strict": true,
+        "validation": [
+          {
+            "file": "Behind the Billion-Dollar Smile ext v2_014408567.wav",
+            "frame_48k": 190023,
+            "frames": 4096
+          },
+          {
+            "file": "Cosmic Echoes 1_014432746.wav",
+            "frame_48k": 5962437,
+            "frames": 4096
+          },
+          {
+            "file": "Journey to the Unknown Particle Phs_014345397.wav",
+            "frame_48k": 2363885,
+            "frames": 4096
+          },
+          {
+            "file": "The Curiosity of Ones and Zeros_010314873.wav",
+            "frame_48k": 7577217,
+            "frames": 4096
+          }
+        ]
+      },
+      "receipt": {
+        "audio_sha256": "4589c2c5ecd465dfb9fbc529b047e147857bccaa9753486c10f967555d082b9b",
+        "no_op_exact": true,
+        "report_sha256": "0dd94505cd1904ced06b18d1e2ab74c8421a6a6a25aa569245f6db8f52d4bb6a",
+        "summary_sha256": "693f6f3067ab76446b2541423c5e1be22213679ae34fdf70c275c4784961f8b9"
+      },
+      "trajectory_views": {
+        "audio_behavior": {
+          "delta_participation_ratio": 8.630316331017644,
+          "trajectory_participation_ratio": 6.298410151213412
+        },
+        "decoder_control": {
+          "delta_participation_ratio": 2.5206099457971045,
+          "trajectory_participation_ratio": 2.6229821517526775
+        },
+        "field_coarse": {
+          "delta_participation_ratio": 2.077982166145891,
+          "final_rms_signedmean_railfraction_neighbor_delta": [
+            0.6709684133529663,
+            -0.07078815996646881,
+            0.0,
+            0.0010348961222916842
+          ],
+          "trajectory_participation_ratio": 4.016341174593158
+        },
+        "field_fine": {
+          "delta_participation_ratio": 2.0598499407761226,
+          "final_rms_signedmean_railfraction_neighbor_delta": [
+            0.5273725390434265,
+            0.3413892388343811,
+            0.0,
+            0.024946216493844986
+          ],
+          "trajectory_participation_ratio": 2.4697869128727152
+        },
+        "field_meso": {
+          "delta_participation_ratio": 2.02178982735619,
+          "final_rms_signedmean_railfraction_neighbor_delta": [
+            0.3835279643535614,
+            -0.039820969104766846,
+            0.0,
+            0.039780620485544205
+          ],
+          "trajectory_participation_ratio": 2.210984308768193
+        },
+        "gru": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 1.0007487225051073
+        },
+        "morphic_delta_l01": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 0.0
+        },
+        "morphic_l01": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 1.0005703772856038
+        },
+        "morphic_output": {
+          "delta_participation_ratio": 0.0,
+          "trajectory_participation_ratio": 1.0005928568074829
+        }
+      },
+      "weights_hash": "4ea38a0e65aa6a454a7428a91096dfe5bcbf462c769a4bb125a23112de8a7a9d"
+    }
+  },
+  "factorial_effects": {
+    "advantage": {
+      "interaction": -0.0010846139042836572,
+      "mean_weight_effect": 0.0012458999793765269,
+      "mean_world_effect": -0.004507431116642827,
+      "relative_weight_effect": 6.044172186139353,
+      "weight_effect_in_child_world": 0.0007035930272346984,
+      "weight_effect_in_parent_world": 0.0017882069315183556,
+      "world_effect_with_child_weights": -0.005049738068784656,
+      "world_effect_with_parent_weights": -0.003965124164500998
+    },
+    "calibration_error": {
+      "interaction": -0.000681022319811206,
+      "mean_weight_effect": 6.505839121894461e-05,
+      "mean_world_effect": -0.0002582346815971602,
+      "relative_weight_effect": 0.018015148097040003,
+      "weight_effect_in_child_world": -0.0002754527686866584,
+      "weight_effect_in_parent_world": 0.00040556955112454763,
+      "world_effect_with_child_weights": -0.0005987458415027632,
+      "world_effect_with_parent_weights": 8.227647830844282e-05
+    },
+    "coarse_delta_rms": {
+      "interaction": -2.6141703225827646e-06,
+      "mean_weight_effect": -2.5834670783229685e-05,
+      "mean_world_effect": -9.937287864482234e-06,
+      "relative_weight_effect": -0.07727070668815604,
+      "weight_effect_in_child_world": -2.7141755944521068e-05,
+      "weight_effect_in_parent_world": -2.4527585621938303e-05,
+      "world_effect_with_child_weights": -1.1244373025773617e-05,
+      "world_effect_with_parent_weights": -8.630202703190852e-06
+    },
+    "coarse_near_bound_fraction": {
+      "interaction": 0.0,
+      "mean_weight_effect": 0.0,
+      "mean_world_effect": 0.0,
+      "relative_weight_effect": 0.0,
+      "weight_effect_in_child_world": 0.0,
+      "weight_effect_in_parent_world": 0.0,
+      "world_effect_with_child_weights": 0.0,
+      "world_effect_with_parent_weights": 0.0
+    },
+    "coarse_rms": {
+      "interaction": -0.00012629324074064918,
+      "mean_weight_effect": -0.00038188643518521914,
+      "mean_world_effect": 0.00013462212962966902,
+      "relative_weight_effect": -0.0005692055346572971,
+      "weight_effect_in_child_world": -0.00044503305555554373,
+      "weight_effect_in_parent_world": -0.00031873981481489455,
+      "world_effect_with_child_weights": 7.147550925934443e-05,
+      "world_effect_with_parent_weights": 0.0001977687499999936
+    },
+    "confidence_unclamped": {
+      "interaction": 0.004588864743709564,
+      "mean_weight_effect": -0.009474129450542046,
+      "mean_world_effect": 0.002483900636434555,
+      "relative_weight_effect": -0.009569501462393213,
+      "weight_effect_in_child_world": -0.007179697078687264,
+      "weight_effect_in_parent_world": -0.011768561822396828,
+      "world_effect_with_child_weights": 0.004778333008289337,
+      "world_effect_with_parent_weights": 0.00018946826457977295
+    },
+    "development_best_spectral": {
+      "interaction": 0.012917485226083603,
+      "mean_weight_effect": -0.02991465216985456,
+      "mean_world_effect": -0.0061246350545574035,
+      "relative_weight_effect": -0.08066446244853846,
+      "weight_effect_in_child_world": -0.02345590955681276,
+      "weight_effect_in_parent_world": -0.03637339478289636,
+      "world_effect_with_child_weights": 0.00033410755848439777,
+      "world_effect_with_parent_weights": -0.012583377667599205
+    },
+    "development_mean_chroma": {
+      "interaction": -9.753555059432983e-05,
+      "mean_weight_effect": 0.10185018388761402,
+      "mean_world_effect": 0.0025110306839148944,
+      "relative_weight_effect": 0.06530925285522494,
+      "weight_effect_in_child_world": 0.10180141611231686,
+      "weight_effect_in_parent_world": 0.10189895166291119,
+      "world_effect_with_child_weights": 0.0024622629086177295,
+      "world_effect_with_parent_weights": 0.0025597984592120593
+    },
+    "development_mean_spectral": {
+      "interaction": 0.002770087647217312,
+      "mean_weight_effect": -0.011946805718320463,
+      "mean_world_effect": -0.0077758527326363125,
+      "relative_weight_effect": -0.01511403206487869,
+      "weight_effect_in_child_world": -0.010561761894711807,
+      "weight_effect_in_parent_world": -0.01333184954192912,
+      "world_effect_with_child_weights": -0.0063908089090276565,
+      "world_effect_with_parent_weights": -0.009160896556244968
+    },
+    "development_stereo_correlation_mse": {
+      "interaction": 6.590856678990922e-05,
+      "mean_weight_effect": -0.0003269289402480888,
+      "mean_world_effect": -8.669959411404483e-05,
+      "relative_weight_effect": -0.04443874494499432,
+      "weight_effect_in_child_world": -0.0002939746568531342,
+      "weight_effect_in_parent_world": -0.0003598832236430434,
+      "world_effect_with_child_weights": -5.374531071909022e-05,
+      "world_effect_with_parent_weights": -0.00011965387750899944
+    },
+    "development_stereo_level_mse": {
+      "interaction": 0.002483080779374751,
+      "mean_weight_effect": -0.005211178273721424,
+      "mean_world_effect": -0.0007288586305178417,
+      "relative_weight_effect": -0.14555496002935275,
+      "weight_effect_in_child_world": -0.003969637884034049,
+      "weight_effect_in_parent_world": -0.0064527186634088,
+      "world_effect_with_child_weights": 0.0005126817591695337,
+      "world_effect_with_parent_weights": -0.001970399020205217
+    },
+    "development_stereo_side_mid_mse": {
+      "interaction": -0.00048360711446504556,
+      "mean_weight_effect": -0.06919524659989068,
+      "mean_world_effect": -0.019038964683810777,
+      "relative_weight_effect": -0.06492396089222918,
+      "weight_effect_in_child_world": -0.0694370501571232,
+      "weight_effect_in_parent_world": -0.06895344304265816,
+      "world_effect_with_child_weights": -0.0192807682410433,
+      "world_effect_with_parent_weights": -0.018797161126578255
+    },
+    "fine_delta_rms": {
+      "interaction": 0.0005300998648939056,
+      "mean_weight_effect": -0.0007394558601340074,
+      "mean_world_effect": -0.00038038750709448385,
+      "relative_weight_effect": -0.04910685551972988,
+      "weight_effect_in_child_world": -0.00047440592768705457,
+      "weight_effect_in_parent_world": -0.0010045057925809602,
+      "world_effect_with_child_weights": -0.00011533757464753103,
+      "world_effect_with_parent_weights": -0.0006454374395414367
+    },
+    "health": {
+      "interaction": -0.007625694628115021,
+      "mean_weight_effect": 0.003652905562409603,
+      "mean_world_effect": -0.0040527961596293904,
+      "relative_weight_effect": 0.004688419958161084,
+      "weight_effect_in_child_world": -0.00015994175164790736,
+      "weight_effect_in_parent_world": 0.007465752876467113,
+      "world_effect_with_child_weights": -0.0078656434736869,
+      "world_effect_with_parent_weights": -0.00023994884557188012
+    },
+    "log_confidence_unclamped": {
+      "interaction": 0.004728319188062517,
+      "mean_weight_effect": -0.009697786769484757,
+      "mean_world_effect": 0.0025553844526358368,
+      "relative_weight_effect": -0.9680929602827069,
+      "weight_effect_in_child_world": -0.007333627175453498,
+      "weight_effect_in_parent_world": -0.012061946363516015,
+      "world_effect_with_child_weights": 0.004919544046667095,
+      "world_effect_with_parent_weights": 0.00019122485860457832
+    },
+    "macro_near_bound_fraction": {
+      "interaction": 0.0,
+      "mean_weight_effect": 0.0,
+      "mean_world_effect": 0.0,
+      "relative_weight_effect": 0.0,
+      "weight_effect_in_child_world": 0.0,
+      "weight_effect_in_parent_world": 0.0,
+      "world_effect_with_child_weights": 0.0,
+      "world_effect_with_parent_weights": 0.0
+    },
+    "macro_rms": {
+      "interaction": 0.00024541979166675665,
+      "mean_weight_effect": 0.0008246668171296989,
+      "mean_world_effect": -0.0002980497800925963,
+      "relative_weight_effect": 0.0021765205202108383,
+      "weight_effect_in_child_world": 0.0009473767129630772,
+      "weight_effect_in_parent_world": 0.0007019569212963206,
+      "world_effect_with_child_weights": -0.00017533988425921798,
+      "world_effect_with_parent_weights": -0.00042075967592597463
+    },
+    "meso_delta_rms": {
+      "interaction": 0.00010687235152107358,
+      "mean_weight_effect": -0.00026892481805084086,
+      "mean_world_effect": -0.0006591082023482565,
+      "relative_weight_effect": -0.027965062259647087,
+      "weight_effect_in_child_world": -0.00021548864229030407,
+      "weight_effect_in_parent_world": -0.00032236099381137764,
+      "world_effect_with_child_weights": -0.0006056720265877197,
+      "world_effect_with_parent_weights": -0.0007125443781087933
+    },
+    "micro_near_bound_fraction": {
+      "interaction": 0.0,
+      "mean_weight_effect": 0.0,
+      "mean_world_effect": 0.0,
+      "relative_weight_effect": 0.0,
+      "weight_effect_in_child_world": 0.0,
+      "weight_effect_in_parent_world": 0.0,
+      "world_effect_with_child_weights": 0.0,
+      "world_effect_with_parent_weights": 0.0
+    },
+    "micro_rms": {
+      "interaction": -9.370708333333866e-05,
+      "mean_weight_effect": -0.00299190657407411,
+      "mean_world_effect": -5.770002314808842e-05,
+      "relative_weight_effect": -0.005711195079614681,
+      "weight_effect_in_child_world": -0.0030387601157407795,
+      "weight_effect_in_parent_world": -0.002945053032407441,
+      "world_effect_with_child_weights": -0.00010455356481475775,
+      "world_effect_with_parent_weights": -1.084648148141909e-05
+    },
+    "motif_candidates": {
+      "interaction": 0.0,
+      "mean_weight_effect": 0.0,
+      "mean_world_effect": 176.0,
+      "relative_weight_effect": 0.0,
+      "weight_effect_in_child_world": 0.0,
+      "weight_effect_in_parent_world": 0.0,
+      "world_effect_with_child_weights": 176.0,
+      "world_effect_with_parent_weights": 176.0
+    },
+    "motif_rejected_quality": {
+      "interaction": 0.0,
+      "mean_weight_effect": 0.0,
+      "mean_world_effect": 8.0,
+      "relative_weight_effect": 0.0,
+      "weight_effect_in_child_world": 0.0,
+      "weight_effect_in_parent_world": 0.0,
+      "world_effect_with_child_weights": 8.0,
+      "world_effect_with_parent_weights": 8.0
+    },
+    "motif_rejected_similarity": {
+      "interaction": 0.375,
+      "mean_weight_effect": -0.1875,
+      "mean_world_effect": 167.1875,
+      "relative_weight_effect": -6.258402484817579e-05,
+      "weight_effect_in_child_world": 0.0,
+      "weight_effect_in_parent_world": -0.375,
+      "world_effect_with_child_weights": 167.375,
+      "world_effect_with_parent_weights": 167.0
+    },
+    "motif_stored_total": {
+      "interaction": -0.375,
+      "mean_weight_effect": 0.1875,
+      "mean_world_effect": 0.8125,
+      "relative_weight_effect": 0.002245508982035928,
+      "weight_effect_in_child_world": 0.0,
+      "weight_effect_in_parent_world": 0.375,
+      "world_effect_with_child_weights": 0.625,
+      "world_effect_with_parent_weights": 1.0
+    },
+    "output_low_band_ratio": {
+      "interaction": 0.011000387206742596,
+      "mean_weight_effect": -0.0007557449129375615,
+      "mean_world_effect": 0.001451481802009602,
+      "relative_weight_effect": -0.01670030732960436,
+      "weight_effect_in_child_world": 0.004744448690433736,
+      "weight_effect_in_parent_world": -0.006255938516308859,
+      "world_effect_with_child_weights": 0.0069516754053809,
+      "world_effect_with_parent_weights": -0.004048711801361696
+    },
+    "predictor_gaussian_nll": {
+      "interaction": -0.026062947180536256,
+      "mean_weight_effect": 0.0547115490944301,
+      "mean_world_effect": -0.013696483163921691,
+      "relative_weight_effect": 0.01924286428129531,
+      "weight_effect_in_child_world": 0.04168007550416197,
+      "weight_effect_in_parent_world": 0.06774302268469823,
+      "world_effect_with_child_weights": -0.02672795675418982,
+      "world_effect_with_parent_weights": -0.0006650095736535633
+    },
+    "predictor_mse": {
+      "interaction": -0.001487978926855215,
+      "mean_weight_effect": 0.0034247824856316177,
+      "mean_world_effect": -0.0007352680243760307,
+      "relative_weight_effect": 1.9167495037764524,
+      "weight_effect_in_child_world": 0.0026807930222040102,
+      "weight_effect_in_parent_world": 0.004168771949059225,
+      "world_effect_with_child_weights": -0.001479257487803638,
+      "world_effect_with_parent_weights": 8.721439051576725e-06
+    },
+    "recurrent_proposed_delta_rms": {
+      "interaction": -9.528242568865738e-06,
+      "mean_weight_effect": -4.895549457974536e-06,
+      "mean_world_effect": 2.140636420520832e-06,
+      "relative_weight_effect": -0.6726617874322742,
+      "weight_effect_in_child_world": -9.659670742407405e-06,
+      "weight_effect_in_parent_world": -1.3142817354166756e-07,
+      "world_effect_with_child_weights": -2.623484863912037e-06,
+      "world_effect_with_parent_weights": 6.904757704953701e-06
+    },
+    "recurrent_rms": {
+      "interaction": 7.397416666676815e-05,
+      "mean_weight_effect": -1.4204976852061346e-05,
+      "mean_world_effect": -0.00011987386574080494,
+      "relative_weight_effect": -1.4554947680108278e-05,
+      "weight_effect_in_child_world": 2.2782106481322728e-05,
+      "weight_effect_in_parent_world": -5.119206018544542e-05,
+      "world_effect_with_child_weights": -8.288678240742087e-05,
+      "world_effect_with_parent_weights": -0.00015686094907418902
+    },
+    "reward": {
+      "interaction": -0.01840501616674441,
+      "mean_weight_effect": 0.015468180524530232,
+      "mean_world_effect": -0.0019426289600906563,
+      "relative_weight_effect": 0.32263398121695747,
+      "weight_effect_in_child_world": 0.006265672441158027,
+      "weight_effect_in_parent_world": 0.024670688607902436,
+      "world_effect_with_child_weights": -0.011145137043462861,
+      "world_effect_with_parent_weights": 0.0072598791232815485
+    },
+    "stagnation": {
+      "interaction": 0.011729993202068134,
+      "mean_weight_effect": -0.00696189208301129,
+      "mean_world_effect": 0.0036747747066396275,
+      "relative_weight_effect": -0.02562556163089262,
+      "weight_effect_in_child_world": -0.0010968954819772225,
+      "weight_effect_in_parent_world": -0.012826888684045357,
+      "world_effect_with_child_weights": 0.009539771307673695,
+      "world_effect_with_parent_weights": -0.0021902218943944396
+    },
+    "target_chroma_mse": {
+      "interaction": -0.02934974162942816,
+      "mean_weight_effect": 0.08090279999844452,
+      "mean_world_effect": -0.017845978994888267,
+      "relative_weight_effect": 0.06327805939567958,
+      "weight_effect_in_child_world": 0.06622792918373044,
+      "weight_effect_in_parent_world": 0.0955776708131586,
+      "world_effect_with_child_weights": -0.03252084980960235,
+      "world_effect_with_parent_weights": -0.003171108180174187
+    },
+    "target_low_band_ratio": {
+      "interaction": 0.0,
+      "mean_weight_effect": 0.0,
+      "mean_world_effect": 0.0,
+      "relative_weight_effect": 0.0,
+      "weight_effect_in_child_world": 0.0,
+      "weight_effect_in_parent_world": 0.0,
+      "world_effect_with_child_weights": 0.0,
+      "world_effect_with_parent_weights": 0.0
+    },
+    "target_spectral_robust": {
+      "interaction": 0.0024995232621828345,
+      "mean_weight_effect": -0.004223314493342678,
+      "mean_world_effect": 0.0017912983204479427,
+      "relative_weight_effect": -0.009083820424636464,
+      "weight_effect_in_child_world": -0.002973552862251261,
+      "weight_effect_in_parent_world": -0.005473076124434095,
+      "world_effect_with_child_weights": 0.00304105995153936,
+      "world_effect_with_parent_weights": 0.0005415366893565254
+    },
+    "target_stereo_correlation_mse": {
+      "interaction": -0.0002931602083891052,
+      "mean_weight_effect": 0.00035715091767164406,
+      "mean_world_effect": 0.001153845331319226,
+      "relative_weight_effect": 0.007240141384851292,
+      "weight_effect_in_child_world": 0.00021057081347709145,
+      "weight_effect_in_parent_world": 0.0005037310218661967,
+      "world_effect_with_child_weights": 0.0010072652271246735,
+      "world_effect_with_parent_weights": 0.0013004254355137787
+    },
+    "target_stereo_level_mse": {
+      "interaction": 0.0057448087042223095,
+      "mean_weight_effect": -0.010820656517366883,
+      "mean_world_effect": 0.00048604050596905146,
+      "relative_weight_effect": -0.1779590704951648,
+      "weight_effect_in_child_world": -0.007948252165255729,
+      "weight_effect_in_parent_world": -0.013693060869478038,
+      "world_effect_with_child_weights": 0.003358444858080206,
+      "world_effect_with_parent_weights": -0.0023863638461421033
+    },
+    "target_stereo_side_mid_mse": {
+      "interaction": -0.038322583877381966,
+      "mean_weight_effect": -0.08928849744207445,
+      "mean_world_effect": -0.04499625262230378,
+      "relative_weight_effect": -0.0335733367460237,
+      "weight_effect_in_child_world": -0.10844978938076544,
+      "weight_effect_in_parent_world": -0.07012720550338347,
+      "world_effect_with_child_weights": -0.06415754456099476,
+      "world_effect_with_parent_weights": -0.025834960683612795
+    },
+    "validation_best_spectral": {
+      "interaction": -0.0014802608639001846,
+      "mean_weight_effect": 0.01691020138699706,
+      "mean_world_effect": 0.0018078885903513031,
+      "relative_weight_effect": 0.04989310964326365,
+      "weight_effect_in_child_world": 0.016170070955046967,
+      "weight_effect_in_parent_world": 0.01765033181894715,
+      "world_effect_with_child_weights": 0.0010677581584012108,
+      "world_effect_with_parent_weights": 0.0025480190223013954
+    },
+    "validation_mean_chroma": {
+      "interaction": -0.011514466255903244,
+      "mean_weight_effect": 0.08057639630580393,
+      "mean_world_effect": 0.004080804202843513,
+      "relative_weight_effect": 0.09020481163897735,
+      "weight_effect_in_child_world": 0.07481916317785231,
+      "weight_effect_in_parent_world": 0.08633362943375555,
+      "world_effect_with_child_weights": -0.0016764289251081088,
+      "world_effect_with_parent_weights": 0.009838037330795135
+    },
+    "validation_mean_spectral": {
+      "interaction": -0.00386317267462033,
+      "mean_weight_effect": -0.00507629221236261,
+      "mean_world_effect": -0.006295555719622925,
+      "relative_weight_effect": -0.0064075327694898595,
+      "weight_effect_in_child_world": -0.007007878549672775,
+      "weight_effect_in_parent_world": -0.003144705875052445,
+      "world_effect_with_child_weights": -0.00822714205693309,
+      "world_effect_with_parent_weights": -0.00436396938231276
+    },
+    "validation_stereo_correlation_mse": {
+      "interaction": 0.0001586820451646223,
+      "mean_weight_effect": 0.0009904779802093772,
+      "mean_world_effect": 0.00027623140636865925,
+      "relative_weight_effect": 0.07503558044048267,
+      "weight_effect_in_child_world": 0.0010698190027916884,
+      "weight_effect_in_parent_world": 0.0009111369576270661,
+      "world_effect_with_child_weights": 0.0003555724289509704,
+      "world_effect_with_parent_weights": 0.0001968903837863481
+    },
+    "validation_stereo_level_mse": {
+      "interaction": 0.008284869155398097,
+      "mean_weight_effect": -0.020866815311213323,
+      "mean_world_effect": -0.0018209483715946953,
+      "relative_weight_effect": -0.1587862806079271,
+      "weight_effect_in_child_world": -0.016724380733514274,
+      "weight_effect_in_parent_world": -0.02500924988891237,
+      "world_effect_with_child_weights": 0.0023214862061043534,
+      "world_effect_with_parent_weights": -0.005963382949293744
+    },
+    "validation_stereo_side_mid_mse": {
+      "interaction": 0.011124278246252728,
+      "mean_weight_effect": 0.04238685461933961,
+      "mean_world_effect": 0.012634793848351145,
+      "relative_weight_effect": 0.07007544846310389,
+      "weight_effect_in_child_world": 0.04794899374246597,
+      "weight_effect_in_parent_world": 0.036824715496213245,
+      "world_effect_with_child_weights": 0.01819693297147751,
+      "world_effect_with_parent_weights": 0.007072654725224781
+    }
+  },
+  "fixed_probes_matched_all_cells": true,
+  "initial_state_matched_across_weights": true,
+  "limitations": [
+    "one lineage, two mature worlds; temporal blocks are correlated observations, not model seeds",
+    "fixed probe distance is distributional support, not reconstruction of uniquely identified phrases",
+    "early L16 activates previously untrained upper blocks; L1 sensitivity changes the mature decoder coordinate context",
+    "persistent region discovery is not estimable in 384 chunks with the original observer residence window",
+    "predictor offset-1 scores share identical history within a world; later predictor scores use each model own trajectory"
+  ],
+  "paired_audio_distances": {
+    "L16_WC_SP__L16_WC_SC": {
+      "average_log_spectral_rms": 0.03695832046774704,
+      "final_compact_view_rms_differences": {
+        "audio_behavior": 0.015368768092497827,
+        "decoder_control": 0.9378777027997262,
+        "field_coarse": 0.00022149396360829295,
+        "field_fine": 0.005760809316923465,
+        "field_meso": 0.06087663554036034,
+        "gru": 0.0017998995587615895,
+        "morphic_delta_l01": 0.0002811888082025477,
+        "morphic_delta_l04": 7.25538266484349e-06,
+        "morphic_delta_l08": 9.608479087975331e-06,
+        "morphic_delta_l12": 2.133606764502625e-06,
+        "morphic_delta_l16": 6.726448330288887e-06,
+        "morphic_l01": 0.0017789941594754776,
+        "morphic_l04": 0.0017850549806880769,
+        "morphic_l08": 0.0017799015560874289,
+        "morphic_l12": 0.0016674323713483277,
+        "morphic_l16": 0.0016999538252886986,
+        "morphic_output": 0.001600566846906604
+      },
+      "waveform_correlation": 0.1376470286622263,
+      "waveform_rms_difference": 0.11428356673209812
+    },
+    "L16_WE_SC__L16_WP_SC": {
+      "average_log_spectral_rms": 0.6870621004445507,
+      "final_compact_view_rms_differences": {
+        "audio_behavior": 0.1436485756134465,
+        "decoder_control": 10.070589099448434,
+        "field_coarse": 0.2879821104105368,
+        "field_fine": 0.27081271835452014,
+        "field_meso": 0.10118725390450029,
+        "gru": 1.0577222471355148,
+        "morphic_delta_l01": 5.539972486552071,
+        "morphic_delta_l04": 0.39816362141651623,
+        "morphic_delta_l08": 0.7765108013523576,
+        "morphic_delta_l12": 0.19743351495044356,
+        "morphic_delta_l16": 0.5076501117935729,
+        "morphic_l01": 6.971741274329344,
+        "morphic_l04": 11.302753771411707,
+        "morphic_l08": 10.156902294835625,
+        "morphic_l12": 14.913656380666634,
+        "morphic_l16": 13.932907263735888,
+        "morphic_output": 14.686578047652826
+      },
+      "waveform_correlation": 0.006343900461777427,
+      "waveform_rms_difference": 0.10622528554685338
+    },
+    "L16_WE_SP__L16_WP_SP": {
+      "average_log_spectral_rms": 0.681626858356959,
+      "final_compact_view_rms_differences": {
+        "audio_behavior": 0.1362581300334583,
+        "decoder_control": 10.071586150004014,
+        "field_coarse": 0.2909392631746924,
+        "field_fine": 0.27133620900424094,
+        "field_meso": 0.10775427463872585,
+        "gru": 1.0635604627468545,
+        "morphic_delta_l01": 5.5395633398452375,
+        "morphic_delta_l04": 0.39690365632460695,
+        "morphic_delta_l08": 0.7758474260701477,
+        "morphic_delta_l12": 0.19782212217490758,
+        "morphic_delta_l16": 0.5078418343823167,
+        "morphic_l01": 6.9373085667110646,
+        "morphic_l04": 11.261525774020253,
+        "morphic_l08": 10.145374809447713,
+        "morphic_l12": 14.918016164186394,
+        "morphic_l16": 13.883558071555353,
+        "morphic_output": 14.66864897372978
+      },
+      "waveform_correlation": 0.030682873980347802,
+      "waveform_rms_difference": 0.10529084306406629
+    },
+    "L16_WP_SC__L16_WC_SC": {
+      "average_log_spectral_rms": 0.12748217937822895,
+      "final_compact_view_rms_differences": {
+        "audio_behavior": 0.04076581140536114,
+        "decoder_control": 1.580640783463521,
+        "field_coarse": 0.0019286714756844025,
+        "field_fine": 0.005880509876340577,
+        "field_meso": 0.017173878563733553,
+        "gru": 0.0017926964091773284,
+        "morphic_delta_l01": 0.6098092906273668,
+        "morphic_delta_l04": 0.11088491958109864,
+        "morphic_delta_l08": 0.11856524753143445,
+        "morphic_delta_l12": 0.03178271440227644,
+        "morphic_delta_l16": 0.17792498118289415,
+        "morphic_l01": 0.637597835032432,
+        "morphic_l04": 0.9804695551527972,
+        "morphic_l08": 0.9763395632871986,
+        "morphic_l12": 1.2935939767261349,
+        "morphic_l16": 1.7127950372428506,
+        "morphic_output": 1.3456092360070235
+      },
+      "waveform_correlation": 0.023087202424851246,
+      "waveform_rms_difference": 0.12021265990297365
+    },
+    "L16_WP_SP__L16_WC_SP": {
+      "average_log_spectral_rms": 0.1422831320046892,
+      "final_compact_view_rms_differences": {
+        "audio_behavior": 0.02353563690846959,
+        "decoder_control": 1.5054646038378627,
+        "field_coarse": 0.0019255866373131137,
+        "field_fine": 0.005719068238070436,
+        "field_meso": 0.016859909867919725,
+        "gru": 0.0017191852383066058,
+        "morphic_delta_l01": 0.6097777007342529,
+        "morphic_delta_l04": 0.1108853715607042,
+        "morphic_delta_l08": 0.11856792875691984,
+        "morphic_delta_l12": 0.031782956717637256,
+        "morphic_delta_l16": 0.17792618367232244,
+        "morphic_l01": 0.6377098304791267,
+        "morphic_l04": 0.9803438458605648,
+        "morphic_l08": 0.9764387686134183,
+        "morphic_l12": 1.2936903906456607,
+        "morphic_l16": 1.7128271534019932,
+        "morphic_output": 1.3458005039909475
+      },
+      "waveform_correlation": 0.020981371843552296,
+      "waveform_rms_difference": 0.120690800519187
+    },
+    "L16_WP_SP__L16_WP_SC": {
+      "average_log_spectral_rms": 0.03422469501672055,
+      "final_compact_view_rms_differences": {
+        "audio_behavior": 0.03769007718219949,
+        "decoder_control": 0.6771425669511189,
+        "field_coarse": 0.0002314804848064874,
+        "field_fine": 0.008089457734897755,
+        "field_meso": 0.0839021770613655,
+        "gru": 0.0021465948008796416,
+        "morphic_delta_l01": 0.00034679151478214854,
+        "morphic_delta_l04": 1.0742265598309135e-05,
+        "morphic_delta_l08": 1.593879564768863e-05,
+        "morphic_delta_l12": 3.0188014975464646e-06,
+        "morphic_delta_l16": 5.8563252489381155e-06,
+        "morphic_l01": 0.0024057401916155476,
+        "morphic_l04": 0.002373722291584307,
+        "morphic_l08": 0.0020138644569622417,
+        "morphic_l12": 0.0020861676312123297,
+        "morphic_l16": 0.0020769642370189766,
+        "morphic_output": 0.0021243754473527
+      },
+      "waveform_correlation": 0.20203512982514601,
+      "waveform_rms_difference": 0.1076606861859501
+    },
+    "L1_WE_SP__L1_WP_SP": {
+      "average_log_spectral_rms": 0.6874812685895063,
+      "final_compact_view_rms_differences": {
+        "audio_behavior": 0.14102179954195193,
+        "decoder_control": 5.187870468594414,
+        "field_coarse": 0.2908239712173408,
+        "field_fine": 0.27228339098802323,
+        "field_meso": 0.06666119508173259,
+        "gru": 1.0640231053094222,
+        "morphic_delta_l01": 5.539586521010112,
+        "morphic_l01": 6.937716246093079,
+        "morphic_output": 7.287029470333335
+      },
+      "waveform_correlation": -0.009110822883141306,
+      "waveform_rms_difference": 0.10649549299716962
+    }
+  },
+  "schema": 1
+}

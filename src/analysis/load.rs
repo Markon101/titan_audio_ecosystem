@@ -78,6 +78,12 @@ pub(crate) struct CorpusProvenance {
 }
 
 pub(crate) struct LoadedOrigin {
+    pub common_rng: bool,
+    pub target_origin: Option<u64>,
+    pub active_depth: Option<usize>,
+    pub evaluation_metrics: bool,
+    pub evaluation_stride: usize,
+    pub capture_root: Option<PathBuf>,
     pub substrate: super::super::SubstrateMode,
     pub coarse: Option<Vec<f32>>,
     pub warmup_chunks: usize,
@@ -162,6 +168,12 @@ pub(crate) fn load_origin(request: &AnalysisRequest) -> Result<LoadedOrigin> {
         anyhow::bail!("analysis substrate does not match the model schema marker");
     }
     let architecture = infer_architecture(&paths.model)?;
+    if request
+        .active_depth
+        .is_some_and(|depth| depth > architecture.morph_blocks)
+    {
+        anyhow::bail!("requested active depth exceeds physical checkpoint depth");
+    }
     let needs_world = !request.frozen_rollouts.is_empty()
         || request.dynamics_ablation.is_some()
         || request.perturbation_analysis.is_some()
@@ -201,6 +213,12 @@ pub(crate) fn load_origin(request: &AnalysisRequest) -> Result<LoadedOrigin> {
     }
     let canonical_before = super::super::provenance::identify_files(&canonical_paths)?;
     Ok(LoadedOrigin {
+        common_rng: request.common_rng,
+        target_origin: request.target_origin,
+        active_depth: request.active_depth,
+        evaluation_metrics: request.evaluation_metrics,
+        evaluation_stride: request.analysis_stride,
+        capture_root: request.analysis_dir.clone(),
         substrate: request.substrate,
         coarse,
         warmup_chunks: request.warmup_chunks,

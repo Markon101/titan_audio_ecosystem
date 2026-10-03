@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "sources": {
+    "58107": {
+      "root": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/frozen_step_58107",
+      "receipt_sha256": "bb3a4d9b8309c0e1f8e19391358c5b0765268d8d3ae289d6311877d625c408b0",
+      "model_sha256": "1728fa868ac1203c92c696fe81e3f353cafaf03895dfd5dc60e9534d539b2960",
+      "world_sha256": "681ab112d414f74347d36e3601c814c7c41478c0d1ccea916ddffe6a3dd4c855"
+    },
+    "703": {
+      "root": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/frozen_703",
+      "receipt_sha256": "319ce9100a0019ea1a22a99e28cf97b1c7d218bdc7ecf0f4574bb8a9dae97074",
+      "model_sha256": "0b6dc0f0738203468abd68dd951fc9435086ef06adb298a7d6aefeeaa2206bb9",
+      "world_sha256": "265086eb6841ae44ab6f37586215b06a71849d2f67b2aa7ef5a6c7f9083d06ca"
+    },
+    "60919": {
+      "root": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/frozen_60919",
+      "receipt_sha256": "ef8cc3454bb526034c26c74cdebb3fb3d75049fd55aeec454ac7f9dcbedec163",
+      "model_sha256": "3c1016333034f0c218914e758d17ebe7538a69ad35240a4dd2b40dd26b4dd856",
+      "world_sha256": "8edc0e9b9577ea2c7213d652a8a9e1301e9c911fbcc81711981fe6bacc018bc9"
+    }
+  },
+  "schedule_sha256": "5d3348cfb7cf1c3321796934da75f87957f5fd1ea31b1f18c5c19898fb244efc",
+  "historical_source_manifest_sha256": "0708ede659328f928f76db792d091b5b1eaaaed219754fb9820986f4d81f8228",
+  "heldout_audio_hashes_verified": 11,
+  "cells": [
+    "L16_WP_SP",
+    "L16_WC_SP",
+    "L16_WP_SC",
+    "L16_WC_SC",
+    "L16_WE_SP",
+    "L16_WE_SC",
+    "L1_WE_SP",
+    "L1_WP_SP"
+  ],
+  "chunks": 384,
+  "stride": 8,
+  "analysis_seed": 20261002,
+  "optimizer_steps": 0
+}

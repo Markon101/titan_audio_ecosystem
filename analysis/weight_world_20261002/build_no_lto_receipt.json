@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "command": [
+    "cargo",
+    "rustc",
+    "--release",
+    "--locked",
+    "--offline",
+    "-j1",
+    "--",
+    "-C",
+    "lto=off",
+    "-C",
+    "codegen-units=1"
+  ],
+  "exit_code": -15,
+  "safety_stop": true,
+  "elapsed_seconds": 109.81302089500241,
+  "initial_available_mib": 2131.80078125,
+  "minimum_available_mib": 1011.1796875,
+  "peak_tree_rss_mib": 1122.46875,
+  "prior_binary_sha256": "e4e52288deec4dacd53404c4f29d8b83bfb9ecfa68848df86f4d8225c70f97f6"
+}

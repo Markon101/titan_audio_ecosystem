@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "exit_code": -15,
+  "safety_stop": true,
+  "elapsed_seconds": 190.8679638330068,
+  "initial_available_mib": 2149.2421875,
+  "minimum_available_mib": 1015.58984375,
+  "peak_tree_rss_mib": 0,
+  "prior_binary_sha256": "e4e52288deec4dacd53404c4f29d8b83bfb9ecfa68848df86f4d8225c70f97f6"
+}

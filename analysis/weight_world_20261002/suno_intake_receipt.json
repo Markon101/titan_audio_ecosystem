@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "public_directory": "/sdcard/Download/TITAN_Suno_Pilot_20261002",
+  "public_inputs": {
+    "schema": 1,
+    "duration_seconds": 21.845333333333333,
+    "sample_rate": 48000,
+    "inputs": {
+      "S01": {
+        "file": "anonymous_inputs/S01.wav",
+        "sha256": "472f3c0ce47d236e9fbea0a3fda17ab0487b2f3bfd53c3ea7f357646285df680"
+      },
+      "S02": {
+        "file": "anonymous_inputs/S02.wav",
+        "sha256": "ebe91d791bee061002c14136b101fe2e61025fd05f2add155d09e20617d69cfb"
+      },
+      "S03": {
+        "file": "anonymous_inputs/S03.wav",
+        "sha256": "6b6147183937c281cb756e87514e02428d2f0517997406146c6ddb9461cd9a2c"
+      }
+    }
+  },
+  "private_answer_key_sha256": "724d54ab00fe8f92475f81bfb330891c7b1c934ef829233b6452d954d02e2997",
+  "generation_outputs_recorded": 0
+}

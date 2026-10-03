@@ -5,6 +5,12 @@ use rand::SeedableRng;
 use std::collections::{BTreeMap, HashMap, VecDeque};
 
 pub(crate) struct AnalysisWorld {
+    pub common_rng: bool,
+    pub evaluation_offset: u64,
+    pub target_origin: Option<u64>,
+    pub evaluation_stride: usize,
+    pub evaluation: Option<super::evaluation::Evaluation>,
+    pub capture: Option<super::super::regime_capture::RegimeCapture>,
     pub bundle: ModelBundle,
     pub micro: Tensor,
     pub macro_t: Tensor,
@@ -61,6 +67,9 @@ impl AnalysisWorld {
             !fresh_world,
         )?;
         bundle.model.set_depth(checkpoint.active_depth);
+        if let Some(depth) = origin.active_depth {
+            bundle.model.set_depth(depth);
+        }
         let target_loader =
             read_only_target_loader(&origin.paths.wav_dir, &origin.paths.corpus_manifest)?;
         let target_feedback_available = target_loader.is_some();
@@ -76,7 +85,7 @@ impl AnalysisWorld {
                 )
             })
             .transpose()?;
-        let forcing_seed = if fresh_world {
+        let forcing_seed = if fresh_world || origin.common_rng {
             initialization_seed ^ 0xF0C1_6A11
         } else {
             super::super::checkpoint_checksum(&bincode::serialize(&checkpoint.rng)?)
@@ -106,6 +115,19 @@ impl AnalysisWorld {
                 &device,
             )?)?;
             return Ok(Self {
+                common_rng: origin.common_rng,
+                evaluation_offset: 0,
+                target_origin: origin.target_origin,
+                evaluation_stride: origin.evaluation_stride,
+                evaluation: if origin.evaluation_metrics {
+                    Some(super::evaluation::Evaluation::new(
+                        target_loader.as_ref(),
+                        &device,
+                    )?)
+                } else {
+                    None
+                },
+                capture: None,
                 coarse: if origin.coarse.is_some() {
                     Some(Tensor::zeros(
                         (
@@ -169,6 +191,19 @@ impl AnalysisWorld {
         let mut movement_monitor = super::super::MovementCoherenceMonitor::new(20);
         movement_monitor.restore_history(&checkpoint.movement_history);
         Ok(Self {
+            common_rng: origin.common_rng,
+            evaluation_offset: 0,
+            target_origin: origin.target_origin,
+            evaluation_stride: origin.evaluation_stride,
+            evaluation: if origin.evaluation_metrics {
+                Some(super::evaluation::Evaluation::new(
+                    target_loader.as_ref(),
+                    &device,
+                )?)
+            } else {
+                None
+            },
+            capture: None,
             coarse: origin
                 .coarse
                 .as_ref()
@@ -221,7 +256,11 @@ impl AnalysisWorld {
             energy: checkpoint.energy_state,
             rad_amp: checkpoint.rad_amp,
             shear_phase: checkpoint.shear_phase,
-            controller_rng: checkpoint.rng.clone(),
+            controller_rng: if origin.common_rng {
+                super::super::RuntimeRng::seed_from_u64(forcing_seed ^ 0xC017_2011)
+            } else {
+                checkpoint.rng.clone()
+            },
             target_rng: super::super::RuntimeRng::seed_from_u64(forcing_seed ^ 0x7A26_E700),
             forcing_seed,
             absolute_step: checkpoint.global_step,
@@ -312,6 +351,10 @@ impl AnalysisWorld {
         bytes.extend(bincode::serialize(&self.coarse_values()?)?);
         bytes.extend(bincode::serialize(&self.target_rng)?);
         bytes.extend(self.forcing_seed.to_le_bytes());
+        if self.common_rng || self.target_origin.is_some() {
+            bytes.extend(self.evaluation_offset.to_le_bytes());
+            bytes.extend(bincode::serialize(&self.target_origin)?);
+        }
         if let Some(loader) = &self.target_loader {
             bytes.extend(bincode::serialize(&loader.episode_info())?);
         }

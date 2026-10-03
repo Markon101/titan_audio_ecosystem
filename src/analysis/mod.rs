@@ -3,6 +3,7 @@ mod attribution;
 mod benchmark;
 pub(crate) mod config;
 mod controls;
+mod evaluation;
 mod load;
 mod metrics;
 mod perturbation;
@@ -24,6 +25,10 @@ pub(crate) fn is_analysis_flag(argument: &str) -> bool {
     matches!(
         argument,
         "--analysis-only"
+            | "--analysis-common-rng"
+            | "--analysis-target-origin"
+            | "--analysis-active-depth"
+            | "--analysis-evaluation-metrics"
             | "--analysis-substrate"
             | "--analysis-warmup"
             | "--analysis-target-schedule"

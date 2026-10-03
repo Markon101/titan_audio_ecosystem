@@ -34,6 +34,16 @@ pub(crate) struct HorizonSummary {
 
 #[derive(Clone, Debug, Serialize)]
 pub(crate) struct RolloutSummary {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub evaluation_protocol: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub probe_manifest: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub weights_hash_before: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub weights_hash_after: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub regime_capture_path: Option<String>,
     pub condition: String,
     pub subsystem_class: String,
     pub horizon_chunks: usize,
@@ -90,13 +100,35 @@ pub(crate) fn run(
         fresh_world,
     )?;
     if let Some(schedule) = &world.target_schedule {
-        schedule.validate_interval(world.absolute_step, origin.warmup_chunks + maximum_horizon)?;
+        schedule.validate_interval(
+            origin.target_origin.unwrap_or(world.absolute_step),
+            origin.warmup_chunks + maximum_horizon,
+        )?;
     }
     for offset in 1..=origin.warmup_chunks {
         step::step(&mut world, offset, &Intervention::full())?;
     }
     if let Some(transform) = initial_transform {
         transform(&mut world)?;
+    }
+    let weights_hash_before = if origin.evaluation_metrics {
+        Some(super::load::model_inventory_hash(&world.bundle.varmap)?)
+    } else {
+        None
+    };
+    if origin.evaluation_metrics {
+        let directory = origin
+            .capture_root
+            .as_ref()
+            .unwrap()
+            .join("trajectory")
+            .join(condition);
+        std::fs::create_dir_all(&directory)?;
+        world.capture = Some(super::super::regime_capture::RegimeCapture::new(
+            &directory.display().to_string(),
+            condition,
+            stride,
+        )?);
     }
     let checkpoint_start_step = world.absolute_step;
     let initial_world_fingerprint = world.fingerprint()?;
@@ -203,8 +235,29 @@ pub(crate) fn run(
     } else {
         "target_independent_no_read_only_target_available"
     };
+    if let Some(capture) = world.capture.as_mut() {
+        capture.flush()?;
+    }
+    let weights_hash_after = if origin.evaluation_metrics {
+        Some(super::load::model_inventory_hash(&world.bundle.varmap)?)
+    } else {
+        None
+    };
+    anyhow::ensure!(
+        weights_hash_before == weights_hash_after,
+        "frozen model parameters changed during rollout"
+    );
     Ok(RolloutRun {
         summary: RolloutSummary {
+            evaluation_protocol: if origin.common_rng || origin.target_origin.is_some() || origin.active_depth.is_some() {
+                Some(serde_json::json!({"common_rng":origin.common_rng,
+                    "event_clock":if origin.common_rng { "relative_evaluation_clock" } else { "native_absolute_step" },
+                    "target_origin":origin.target_origin, "active_depth_override":origin.active_depth,
+                    "native_world_chronology_preserved":true}))
+            } else { None },
+            probe_manifest: world.evaluation.as_ref().map(|evaluation| evaluation.manifest.clone()),
+            weights_hash_before, weights_hash_after,
+            regime_capture_path: world.capture.as_ref().map(|capture| capture.path().to_string()),
             condition: condition.to_string(),
             subsystem_class: intervention.subsystem_class().to_string(),
             horizon_chunks: maximum_horizon,
@@ -275,7 +328,7 @@ pub(crate) fn comparison(baseline: &RolloutRun, intervention: &RolloutRun) -> se
         "condition": intervention.summary.condition,
         "subsystem_class": intervention.summary.subsystem_class,
         "initial_state_equal": baseline.frames.first().zip(intervention.frames.first()).is_some_and(|(left, right)| {
-            left.micro == right.micro && left.macro_t == right.macro_t && left.hidden == right.hidden
+            left.micro == right.micro && left.macro_t == right.macro_t && left.coarse == right.coarse && left.hidden == right.hidden
         }),
         "points": points,
         "interpretation_constraint": "closed-loop compensation may mask or amplify a direct subsystem effect"

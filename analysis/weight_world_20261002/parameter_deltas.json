@@ -1,0 +1,176 @@
+{
+  "58107_to_60919": {
+    "gru": {
+      "parameters": 986112,
+      "relative_l2_change": 0.001176197054820999
+    },
+    "host_auxiliary": {
+      "parameters": 157579,
+      "relative_l2_change": 0.008026360294226868
+    },
+    "morphic_l01": {
+      "parameters": 525824,
+      "relative_l2_change": 0.009536232341279588
+    },
+    "morphic_l02": {
+      "parameters": 525824,
+      "relative_l2_change": 0.012228174837086292
+    },
+    "morphic_l03": {
+      "parameters": 525824,
+      "relative_l2_change": 0.02305990997853529
+    },
+    "morphic_l04": {
+      "parameters": 525824,
+      "relative_l2_change": 0.03660961628824754
+    },
+    "morphic_l05": {
+      "parameters": 525824,
+      "relative_l2_change": 0.03145785296068402
+    },
+    "morphic_l06": {
+      "parameters": 525824,
+      "relative_l2_change": 0.03512346150020215
+    },
+    "morphic_l07": {
+      "parameters": 525824,
+      "relative_l2_change": 0.03802105241189718
+    },
+    "morphic_l08": {
+      "parameters": 525824,
+      "relative_l2_change": 0.028708740019817252
+    },
+    "morphic_l09": {
+      "parameters": 525824,
+      "relative_l2_change": 0.02906750339987502
+    },
+    "morphic_l10": {
+      "parameters": 525824,
+      "relative_l2_change": 0.02804016075206834
+    },
+    "morphic_l11": {
+      "parameters": 525824,
+      "relative_l2_change": 0.027799073661771385
+    },
+    "morphic_l12": {
+      "parameters": 525824,
+      "relative_l2_change": 0.025860339187247686
+    },
+    "morphic_l13": {
+      "parameters": 525824,
+      "relative_l2_change": 0.03431397220887909
+    },
+    "morphic_l14": {
+      "parameters": 525824,
+      "relative_l2_change": 0.030419148986331117
+    },
+    "morphic_l15": {
+      "parameters": 525824,
+      "relative_l2_change": 0.03400257775584073
+    },
+    "morphic_l16": {
+      "parameters": 525824,
+      "relative_l2_change": 0.039636617382056885
+    },
+    "msfield": {
+      "parameters": 168532,
+      "relative_l2_change": 0.024438406689233944
+    },
+    "synthesis_heads": {
+      "parameters": 65680,
+      "relative_l2_change": 0.010268925330460421
+    },
+    "temporal_decoder": {
+      "parameters": 7035084,
+      "relative_l2_change": 0.0896050515344275
+    }
+  },
+  "703_to_58107": {
+    "gru": {
+      "parameters": 986112,
+      "relative_l2_change": 0.14830250474826692
+    },
+    "host_auxiliary": {
+      "parameters": 157579,
+      "relative_l2_change": 0.38300486479938867
+    },
+    "morphic_l01": {
+      "parameters": 525824,
+      "relative_l2_change": 0.14247357703973976
+    },
+    "morphic_l02": {
+      "parameters": 525824,
+      "relative_l2_change": 0.18680197298538267
+    },
+    "morphic_l03": {
+      "parameters": 525824,
+      "relative_l2_change": 0.23460593818925582
+    },
+    "morphic_l04": {
+      "parameters": 525824,
+      "relative_l2_change": 0.3266134979248281
+    },
+    "morphic_l05": {
+      "parameters": 525824,
+      "relative_l2_change": 0.32165914956695457
+    },
+    "morphic_l06": {
+      "parameters": 525824,
+      "relative_l2_change": 0.35409968478396847
+    },
+    "morphic_l07": {
+      "parameters": 525824,
+      "relative_l2_change": 0.33961004543621487
+    },
+    "morphic_l08": {
+      "parameters": 525824,
+      "relative_l2_change": 0.3912209946412398
+    },
+    "morphic_l09": {
+      "parameters": 525824,
+      "relative_l2_change": 0.3614225651371534
+    },
+    "morphic_l10": {
+      "parameters": 525824,
+      "relative_l2_change": 0.38213891526010746
+    },
+    "morphic_l11": {
+      "parameters": 525824,
+      "relative_l2_change": 0.36900174887530635
+    },
+    "morphic_l12": {
+      "parameters": 525824,
+      "relative_l2_change": 0.3883081117144972
+    },
+    "morphic_l13": {
+      "parameters": 525824,
+      "relative_l2_change": 0.41274173642613443
+    },
+    "morphic_l14": {
+      "parameters": 525824,
+      "relative_l2_change": 0.4231414343036863
+    },
+    "morphic_l15": {
+      "parameters": 525824,
+      "relative_l2_change": 0.3705737564874207
+    },
+    "morphic_l16": {
+      "parameters": 525824,
+      "relative_l2_change": 0.363015722693352
+    },
+    "msfield": {
+      "parameters": 168532,
+      "relative_l2_change": 0.30370466924943357
+    },
+    "synthesis_heads": {
+      "parameters": 65680,
+      "relative_l2_change": 0.40103856259531223
+    },
+    "temporal_decoder": {
+      "parameters": 7035084,
+      "relative_l2_change": 0.5068402035977626
+    }
+  },
+  "schema": 1,
+  "scope": "net parameter movement does not establish beneficial learning"
+}

@@ -148,6 +148,8 @@ impl Intervention {
 #[derive(Clone, Debug, Serialize)]
 pub(crate) struct StepRecord {
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub evaluation: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub coarse_rms: Option<f32>,
     pub rollout_offset: usize,
     pub absolute_step: u64,
@@ -233,6 +235,13 @@ pub(crate) fn step(
     };
     let device = world.micro.device().clone();
     let absolute_step = world.absolute_step;
+    let event_step = if world.common_rng {
+        world.evaluation_offset
+    } else {
+        absolute_step
+    };
+    let measure = world.evaluation.is_some()
+        && (rollout_offset == 1 || rollout_offset.is_multiple_of(world.evaluation_stride));
     let escape_strength = world.adaptive.escape_strength();
     let curiosity =
         super::super::ecological_curiosity(&world.adaptive, world.host.stagnation_ticks);
@@ -253,7 +262,7 @@ pub(crate) fn step(
     } else {
         None
     };
-    if absolute_step.is_multiple_of(super::super::PLAN_EVERY as u64) {
+    if event_step.is_multiple_of(super::super::PLAN_EVERY as u64) {
         if intervention.planner_model_zero {
             world.controller.cached_model_scores = [0.0; super::super::ACTION_COUNT];
         } else {
@@ -323,8 +332,8 @@ pub(crate) fn step(
         + 0.10 * world.controller.meta.surprise()
         + 0.32 * escape_strength)
         .clamp(0.05, 0.98);
-    let mut macro_rng = forcing_rng(world.forcing_seed, absolute_step, 0x4D41_4352);
-    let force_macro = absolute_step.is_multiple_of(super::super::MACRO_UPDATE_EVERY)
+    let mut macro_rng = forcing_rng(world.forcing_seed, event_step, 0x4D41_4352);
+    let force_macro = event_step.is_multiple_of(super::super::MACRO_UPDATE_EVERY)
         && macro_rng.gen_range(0.0f32..1.0) < force_probability;
     let force_macro = replay.map(|frame| frame.force_macro).unwrap_or(force_macro);
     let episodic_out = if intervention.episodic_read_zero {
@@ -362,6 +371,54 @@ pub(crate) fn step(
     let raw = raw_stereo.to_vec2::<f32>()?;
     let raw_left = raw[0].clone();
     let raw_right = raw[1].clone();
+    let captured_views = if measure {
+        world
+            .capture
+            .as_ref()
+            .map(|capture| {
+                capture.internal_views(
+                    &world.bundle.model,
+                    [
+                        &output.next_micro,
+                        &output.next_macro,
+                        output.next_coarse.as_ref().expect("msfield"),
+                    ],
+                    &output.next_hidden,
+                    &output.refined_hidden,
+                    control,
+                    world.phases,
+                )
+            })
+            .transpose()?
+    } else {
+        None
+    };
+    let predictor_metrics = if measure {
+        world
+            .last_observation
+            .as_ref()
+            .zip(prediction.as_ref())
+            .map(|(actual, (mean, log_variance))| {
+                let mse = actual
+                    .values
+                    .iter()
+                    .zip(mean)
+                    .map(|(a, m)| (a - m).powi(2))
+                    .sum::<f32>()
+                    / super::super::OBS_DIM as f32;
+                let nll = actual
+                    .values
+                    .iter()
+                    .zip(mean)
+                    .zip(log_variance)
+                    .map(|((a, m), v)| 0.5 * ((a - m).powi(2) * (-v).exp() + v))
+                    .sum::<f32>()
+                    / super::super::OBS_DIM as f32;
+                serde_json::json!({"mse":mse, "gaussian_nll":nll})
+            })
+    } else {
+        None
+    };
     let movement = output.movement_t.to_scalar::<f32>()?;
     let synergy =
         super::super::calculate_cross_layer_synergy_tensor(&output.next_micro, &output.next_macro)?
@@ -448,11 +505,16 @@ pub(crate) fn step(
         *right = next_right;
     }
 
+    let mut evaluation_metrics = None;
     let target_feedback = if intervention.target_feedback_disabled {
         None
     } else if let Some(loader) = world.target_loader.as_mut() {
         let targets = if let Some(schedule) = &world.target_schedule {
-            schedule.sample_at(loader, absolute_step, super::super::TARGET_K, &device)?
+            let target_step = world
+                .target_origin
+                .map(|start| start + world.evaluation_offset)
+                .unwrap_or(absolute_step);
+            schedule.sample_at(loader, target_step, super::super::TARGET_K, &device)?
         } else {
             loader.sample_chunks(super::super::TARGET_K, &mut world.target_rng, &device)?
         };
@@ -460,6 +522,15 @@ pub(crate) fn step(
         let target = targets
             .narrow(0, 0, 1)?
             .reshape((2, super::super::CHUNK_SIZE))?;
+        if measure {
+            evaluation_metrics = Some(
+                world
+                    .evaluation
+                    .as_ref()
+                    .expect("measurement enabled")
+                    .measure(&raw_stereo, &target)?,
+            );
+        }
         let output_spectrum = world.target_projector.log_mag(&raw_stereo)?;
         let target_spectrum = world.target_projector.log_mag(&target)?.detach();
         // Frozen analysis keeps the historical unweighted feedback scale.
@@ -523,11 +594,12 @@ pub(crate) fn step(
         world.controller.meta.confidence,
         world.controller.action_age,
     );
+    let reward_advantage = (reward - world.controller.bandit.reward_ema).clamp(-1.0, 1.0);
     if !intervention.bandit_zero {
         world.controller.bandit.update(action, reward);
     }
     world.adaptive.observe_reward(reward);
-    if absolute_step.is_multiple_of(super::super::MOTIF_EVERY as u64) {
+    if event_step.is_multiple_of(super::super::MOTIF_EVERY as u64) {
         world.motifs.maybe_store(
             &post.observation,
             control,
@@ -584,7 +656,7 @@ pub(crate) fn step(
         output.next_hidden.detach()
     };
     world.coarse = if intervention.coarse_hold {
-        old_coarse
+        old_coarse.clone()
     } else {
         output.next_coarse.map(|state| state.detach())
     };
@@ -606,7 +678,7 @@ pub(crate) fn step(
         .unwrap_or_else(|| {
             super::super::reference_window_probability_to_chunk(radiation_window_probability)
         });
-    let mut radiation_rng = forcing_rng(world.forcing_seed, absolute_step, 0x5241_4449);
+    let mut radiation_rng = forcing_rng(world.forcing_seed, event_step, 0x5241_4449);
     let radiation_draw = radiation_rng.gen::<f32>();
     let radiation_realized = !intervention.radiation_disabled
         && replay
@@ -634,7 +706,7 @@ pub(crate) fn step(
             .unwrap_or_else(|| (pot.shear_amp * control.shear_mult).clamp(0.0, 0.75))
             * if intervention.shear_half { 0.5 } else { 1.0 }
     };
-    if absolute_step.is_multiple_of(super::super::MACRO_UPDATE_EVERY) {
+    if event_step.is_multiple_of(super::super::MACRO_UPDATE_EVERY) {
         world.shear_phase += super::super::SHEAR_PHASE_VEL
             * super::super::MACRO_UPDATE_EVERY as f32
             * (0.82 + 0.28 * control.shear_mult);
@@ -665,7 +737,7 @@ pub(crate) fn step(
             .unwrap_or_else(|| (pot.micro_kick * control.kick_mult).clamp(0.0, 0.10))
     };
     if controlled_kick > 1e-3 {
-        let mut kick_rng = forcing_rng(world.forcing_seed, absolute_step, 0x4B49_434B);
+        let mut kick_rng = forcing_rng(world.forcing_seed, event_step, 0x4B49_434B);
         let kick = super::super::randn_t(
             &mut kick_rng,
             &[
@@ -691,7 +763,7 @@ pub(crate) fn step(
         .affine(micro_gain as f64, 0.0)?
         .clamp(-1.0f32, 1.0f32)?;
     if !intervention.episodic_empty
-        && absolute_step.is_multiple_of(super::super::EPI_SNAP_EVERY as u64)
+        && event_step.is_multiple_of(super::super::EPI_SNAP_EVERY as u64)
         && absolute_step > 0
     {
         world.bundle.episodic.snapshot(&output.refined_hidden);
@@ -715,6 +787,56 @@ pub(crate) fn step(
         .as_ref()
         .map(super::super::TargetAudioLoader::episode_info);
     let post_metrics = audio_metrics(&left, &right);
+    if let Some(metrics) = evaluation_metrics.as_mut() {
+        let delta = |current: &Tensor, old: &Tensor| -> Result<f32> {
+            Ok(current
+                .sub(old)?
+                .sqr()?
+                .mean_all()?
+                .sqrt()?
+                .to_scalar::<f32>()?)
+        };
+        metrics["predictor"] = serde_json::to_value(predictor_metrics)?;
+        metrics["health"] = serde_json::json!(world.adaptive.activity_health);
+        metrics["stagnation"] = serde_json::json!(world.adaptive.stagnation);
+        metrics["reward"] = serde_json::json!(reward);
+        metrics["advantage"] = serde_json::json!(reward_advantage);
+        let log_confidence =
+            -2.8 * world.controller.meta.error_ema - 1.4 * world.controller.meta.calibration_error;
+        metrics["log_confidence_unclamped"] = serde_json::json!(log_confidence);
+        metrics["confidence_unclamped"] = serde_json::json!(log_confidence.exp());
+        metrics["calibration_error"] = serde_json::json!(world.controller.meta.calibration_error);
+        metrics["fine_delta_rms"] = serde_json::json!(delta(&world.micro, &old_micro)?);
+        metrics["meso_delta_rms"] = serde_json::json!(delta(&world.macro_t, &old_macro)?);
+        metrics["coarse_delta_rms"] = serde_json::json!(delta(
+            world.coarse.as_ref().unwrap(),
+            old_coarse.as_ref().unwrap()
+        )?);
+        metrics["coarse_near_bound_fraction"] =
+            serde_json::json!(world.coarse_values()?.map(|v| signature(&v).1));
+        metrics["motif_candidates"] = serde_json::json!(world.motif_diagnostics.candidates);
+        metrics["motif_stored_total"] = serde_json::json!(world.motif_diagnostics.stored_total);
+        metrics["motif_rejected_similarity"] =
+            serde_json::json!(world.motif_diagnostics.rejected_similarity);
+        metrics["motif_rejected_quality"] =
+            serde_json::json!(world.motif_diagnostics.rejected_quality);
+        metrics["evaluation_clock"] = serde_json::json!(world.evaluation_offset);
+    }
+    if let Some(views) = captured_views {
+        world.capture.as_mut().unwrap().record(
+            absolute_step,
+            views,
+            &left,
+            &right,
+            world.last_observation.as_ref().unwrap(),
+            post_metrics.stereo_correlation.unwrap_or(0.0),
+            &world.motif_diagnostics,
+            &world.adaptive,
+            world.controller.meta.confidence,
+            world.bundle.model.depth(),
+            0,
+        )?;
+    }
     let mut warnings = Vec::new();
     if target_feedback.is_some() {
         warnings.push(
@@ -732,6 +854,7 @@ pub(crate) fn step(
         );
     }
     let record = StepRecord {
+        evaluation: evaluation_metrics,
         coarse_rms,
         rollout_offset,
         absolute_step,
@@ -774,6 +897,7 @@ pub(crate) fn step(
         warnings,
     };
     world.absolute_step = world.absolute_step.saturating_add(1);
+    world.evaluation_offset = world.evaluation_offset.saturating_add(1);
     Ok(StepOutput {
         control_energy: ControlEnergyFrame {
             control,

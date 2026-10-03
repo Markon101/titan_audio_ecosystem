@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "scope": "external measurement controls, never injected into Titan",
+  "files": {
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/audio_nulls/parent_raw.wav": {
+      "identity": "parent_raw",
+      "sha256": "9e69f879c6629ffbc145809afd882973f55b2b3d658241c7f82748f7985e30ac"
+    },
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/audio_nulls/parent_covariance_gaussian.wav": {
+      "identity": "parent_covariance_gaussian",
+      "sha256": "ef968448299584e0dfe61f7b93a0b236fbd0b877ae71b740a6d6114f6d642d92",
+      "peak_safety_gain": 1,
+      "rms_ratio_to_source": 0.9999696122299102,
+      "stereo_correlation": 0.8697848139608874,
+      "source_stereo_correlation": 0.8697848107418039,
+      "preencoding_covariance_max_error": 2.6020852139652106e-17
+    },
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/audio_nulls/parent_shared_phase.wav": {
+      "identity": "parent_shared_phase",
+      "sha256": "70a10230f8348678f111f9dbf27cab047e610b733ba20c9f6b086c02ac8352c3",
+      "peak_safety_gain": 1,
+      "rms_ratio_to_source": 0.9999694996687438,
+      "stereo_correlation": 0.8697847975938858,
+      "source_stereo_correlation": 0.8697848107418039,
+      "preencoding_covariance_max_error": 2.42861286636753e-17
+    },
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/audio_nulls/child_raw.wav": {
+      "identity": "child_raw",
+      "sha256": "4f08edec682fb7f4b493bf8e4472a277ac84eff9e4b4af98615de4f0898d894e"
+    },
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/audio_nulls/early_raw.wav": {
+      "identity": "early_raw",
+      "sha256": "464bfeb13f3f9fa9cf45c363d663272f1e5afd4a2751ae2fcd83a0c457f2f9f3"
+    },
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/audio_nulls/early_covariance_gaussian.wav": {
+      "identity": "early_covariance_gaussian",
+      "sha256": "65d0acfaa9b28c8fbe265912ebdcf4822132e80cfb7790dda7ce0f6f7d266235",
+      "peak_safety_gain": 1,
+      "rms_ratio_to_source": 0.9999693965210068,
+      "stereo_correlation": 0.7652160290696771,
+      "source_stereo_correlation": 0.765215921718578,
+      "preencoding_covariance_max_error": 1.5178830414797062e-18
+    },
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/audio_nulls/early_shared_phase.wav": {
+      "identity": "early_shared_phase",
+      "sha256": "f011431fe2fc93abfe097f7812e0b248ef78aaf6473ffc17ad2c1b247e744723",
+      "peak_safety_gain": 1,
+      "rms_ratio_to_source": 0.9999694561359445,
+      "stereo_correlation": 0.7652159824814493,
+      "source_stereo_correlation": 0.765215921718578,
+      "preencoding_covariance_max_error": 8.131516293641283e-18
+    }
+  }
+}

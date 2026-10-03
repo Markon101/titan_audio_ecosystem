@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "command": [
+    "cargo",
+    "build",
+    "--release",
+    "--locked",
+    "--offline",
+    "-j1"
+  ],
+  "exit_code": 0,
+  "safety_stop": false,
+  "cargo_lto_override": "thin",
+  "elapsed_seconds": 558.2972149440029,
+  "initial_available_mib": 2280.62890625,
+  "minimum_available_mib": 1235.7734375,
+  "peak_tree_rss_mib": 1084.86328125,
+  "prior_binary_sha256": "e4e52288deec4dacd53404c4f29d8b83bfb9ecfa68848df86f4d8225c70f97f6",
+  "binary_sha256": "bc16b221193a0254e12f2f1b288103939e9b17b89542578435db626a4575f9c1"
+}

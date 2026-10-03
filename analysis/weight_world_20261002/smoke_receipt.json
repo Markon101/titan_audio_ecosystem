@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "cells": {
+    "smoke16": {
+      "report_sha256": "26a49be3f767b5c206b9b3e8b7022c58a49cf7be16230fe22c6ca39833340236",
+      "summary_sha256": "c806a04dae30fa3092f39fe3744b3365c9ea284bbc5bb2f57eff470face5e8d3",
+      "audio_sha256": "28352789953ca2b64dfc6bdb5b04bcef419ce5b2954cdde1f46a88acb6ed4c1e",
+      "no_op_exact": true,
+      "resource": {
+        "initial": {
+          "MemAvailable": 2160.9921875,
+          "SwapFree": 0.0
+        },
+        "minimum_available_mib": 1777.21484375,
+        "peak_rss_mib": 392.26953125,
+        "elapsed_seconds": 21.03412264797953,
+        "exit_code": 0,
+        "safety_stop": false
+      },
+      "command": [
+        "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/target/release/titan",
+        "--analysis-only",
+        "--analysis-substrate",
+        "msfield",
+        "--base-dir",
+        "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/frozen_step_58107",
+        "--model",
+        "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/frozen_step_58107/titan_model_v10_msfield_v10-msfield-fresh-20260930-02.safetensors",
+        "--state",
+        "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/frozen_step_58107/titan_world_v10_msfield_v10-msfield-fresh-20260930-02.bin",
+        "--run-tag",
+        "v10-msfield-fresh-20260930-02",
+        "--corpus-dir",
+        "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/corpus/a",
+        "--corpus-manifest",
+        "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/corpus/a_manifest.json",
+        "--analysis-target-schedule",
+        "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/schedule.json",
+        "--analysis-seed",
+        "20261002",
+        "--dynamics-ablation",
+        "16",
+        "--ablation",
+        "none",
+        "--analysis-stride",
+        "8",
+        "--analysis-dir",
+        "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/smoke16",
+        "--analysis-terminal",
+        "quiet",
+        "--threads",
+        "2",
+        "--analysis-common-rng",
+        "--analysis-target-origin",
+        "0",
+        "--analysis-active-depth",
+        "16",
+        "--analysis-evaluation-metrics"
+      ]
+    }
+  }
+}
