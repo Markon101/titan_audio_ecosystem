@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "prior_frozen_audio_receipts_match": true,
+  "episodes": 11,
+  "parent_unchanged": true,
+  "fixed_probe_files_unchanged": true,
+  "source_v2_parity": true,
+  "saved_probe_restoration_exact": true,
+  "variance_decompositions_verified": 352,
+  "new_tests_passed": 6,
+  "prior_tests_passed": 9,
+  "archive_verified": true,
+  "no_titan_build_render_training_or_model_optimizer_update": true
+}

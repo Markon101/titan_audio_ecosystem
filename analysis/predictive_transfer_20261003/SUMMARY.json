@@ -1,0 +1,3989 @@
+{
+  "schema": 1,
+  "no_training_reward_promoted": true,
+  "episodes": {
+    "source_audit": {
+      "scope": "source chronological holdout",
+      "source_fit_calibration_chunk_overlap": 614,
+      "state_gain_over_history": {
+        "8": {
+          "field_fine": {
+            "gain_bits": -11.047395296220358,
+            "mean_only_bits": -12.274338103717305,
+            "mse_improvement_percent": -4.297382021998042,
+            "null_gain_bits": [
+              1.8998528358485465,
+              -16.66141520036045,
+              -20.570679204548917
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -843.0473952962203
+          },
+          "field_meso": {
+            "gain_bits": -5.326513346460402,
+            "mean_only_bits": -3.7927152923946172,
+            "mse_improvement_percent": -1.627793760039584,
+            "null_gain_bits": [
+              -2.3849252022422114,
+              -22.406050849682973,
+              -14.386324615791874
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -837.3265133464604
+          },
+          "field_coarse": {
+            "gain_bits": -31.057518873041708,
+            "mean_only_bits": -30.845275157200632,
+            "mse_improvement_percent": -15.39860187661285,
+            "null_gain_bits": [
+              -1.8032811246114808,
+              -17.538412387478836,
+              -39.789989311523655
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -863.0575188730417
+          },
+          "gru": {
+            "gain_bits": -193.0542530622492,
+            "mean_only_bits": -349.9721674711793,
+            "mse_improvement_percent": -154.79604151718982,
+            "null_gain_bits": [
+              -275.5985218749054,
+              -149.51186739362646,
+              -67.30594575637468
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1025.0542530622492
+          },
+          "host": {
+            "gain_bits": -33.929103571168454,
+            "mean_only_bits": -35.90879980951556,
+            "mse_improvement_percent": -12.704082536557662,
+            "null_gain_bits": [
+              -22.821480446242,
+              -11.329431595768401,
+              -3.6227511673357413
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -865.9291035711684
+          },
+          "synthesis_phase": {
+            "gain_bits": -36.624262786871014,
+            "mean_only_bits": -37.94780451975011,
+            "mse_improvement_percent": -14.17759801253562,
+            "null_gain_bits": [
+              -45.82693200008801,
+              -45.99287929707091,
+              -16.856599831422223
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -868.624262786871
+          }
+        },
+        "128": {
+          "field_fine": {
+            "gain_bits": -5.135541434086484,
+            "mean_only_bits": 4.870572287744768,
+            "mse_improvement_percent": 1.6956875348223355,
+            "null_gain_bits": [
+              8.853585396944764,
+              -1.4347213136262642,
+              -14.010927092562225
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -837.1355414340865
+          },
+          "field_meso": {
+            "gain_bits": -4.663450331957508,
+            "mean_only_bits": -1.6417507767211914,
+            "mse_improvement_percent": -4.669263131578737,
+            "null_gain_bits": [
+              -1.7277738678306835,
+              10.308940538018092,
+              12.303848721013564
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -836.6634503319575
+          },
+          "field_coarse": {
+            "gain_bits": -4.827629089684354,
+            "mean_only_bits": 1.0602933552080867,
+            "mse_improvement_percent": -5.0410070796334665,
+            "null_gain_bits": [
+              2.390943161679397,
+              -5.955290094173504,
+              7.450589279034084
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -836.8276290896844
+          },
+          "gru": {
+            "gain_bits": -64.49489232503737,
+            "mean_only_bits": -123.43137818870453,
+            "mse_improvement_percent": -208.3164142840147,
+            "null_gain_bits": [
+              -12.863192175679004,
+              -44.33030353505376,
+              -67.0279839955359
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -896.4948923250374
+          },
+          "host": {
+            "gain_bits": 1.1687542419396948,
+            "mean_only_bits": -0.70700548476609,
+            "mse_improvement_percent": -4.110386112286348,
+            "null_gain_bits": [
+              3.3848864265463137,
+              -1.6715634805269142,
+              -13.89157719153081
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -830.8312457580603
+          },
+          "synthesis_phase": {
+            "gain_bits": 4.0420086453827615,
+            "mean_only_bits": -4.012084617302217,
+            "mse_improvement_percent": -4.726379374787055,
+            "null_gain_bits": [
+              -18.624274835165608,
+              -49.3977682647635,
+              7.5866693129741485
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -827.9579913546172
+          }
+        },
+        "16": {
+          "field_fine": {
+            "gain_bits": -12.141142190887601,
+            "mean_only_bits": -11.893374828769208,
+            "mse_improvement_percent": -5.334975034971449,
+            "null_gain_bits": [
+              -21.034237146669593,
+              -29.543957621068774,
+              -10.571397340332064
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -844.1411421908876
+          },
+          "field_meso": {
+            "gain_bits": -15.750114647220808,
+            "mean_only_bits": -14.852778947991478,
+            "mse_improvement_percent": -6.848933582873285,
+            "null_gain_bits": [
+              -15.734231866083197,
+              -30.119700610070232,
+              -11.458617692896683
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -847.7501146472208
+          },
+          "field_coarse": {
+            "gain_bits": -2.3138470665175532,
+            "mean_only_bits": -2.252716770901151,
+            "mse_improvement_percent": -0.43821459826562403,
+            "null_gain_bits": [
+              -22.93449298956894,
+              -14.276614112059008,
+              -29.870507246424012
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -834.3138470665176
+          },
+          "gru": {
+            "gain_bits": -223.00673890202836,
+            "mean_only_bits": -425.3608952902424,
+            "mse_improvement_percent": -184.19027692411754,
+            "null_gain_bits": [
+              -365.53346415005353,
+              -204.57994774369675,
+              -157.29829634296564
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1055.0067389020282
+          },
+          "host": {
+            "gain_bits": -8.279167276437752,
+            "mean_only_bits": -8.440302495141406,
+            "mse_improvement_percent": -3.501651880697716,
+            "null_gain_bits": [
+              -19.740332877784308,
+              -18.736159653773093,
+              -25.45824731960987
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -840.2791672764378
+          },
+          "synthesis_phase": {
+            "gain_bits": -25.96840893254611,
+            "mean_only_bits": -34.37176744593921,
+            "mse_improvement_percent": -15.309899505649511,
+            "null_gain_bits": [
+              -3.8217478599414667,
+              -30.728028817657254,
+              -30.47947233642817
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -857.9684089325461
+          }
+        },
+        "64": {
+          "field_fine": {
+            "gain_bits": 1.7118503764749406,
+            "mean_only_bits": -1.1500562020044993,
+            "mse_improvement_percent": 0.2974365366627228,
+            "null_gain_bits": [
+              -16.028630277574905,
+              -6.95454884132845,
+              2.9291599285172065
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -830.2881496235251
+          },
+          "field_meso": {
+            "gain_bits": 2.6394622619437356,
+            "mean_only_bits": 0.2765450457768044,
+            "mse_improvement_percent": 1.268287969572002,
+            "null_gain_bits": [
+              13.479872558506065,
+              -3.623985587484374,
+              -9.45948506827579
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -829.3605377380562
+          },
+          "field_coarse": {
+            "gain_bits": 10.379299835694388,
+            "mean_only_bits": 9.202701027344714,
+            "mse_improvement_percent": 4.911944658993339,
+            "null_gain_bits": [
+              -5.829788619708344,
+              -1.117253493447047,
+              -12.617157922421036
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -821.6207001643056
+          },
+          "gru": {
+            "gain_bits": -166.4882439014259,
+            "mean_only_bits": -430.1295633867567,
+            "mse_improvement_percent": -288.1198938708657,
+            "null_gain_bits": [
+              -364.70581898398905,
+              -190.71132371218448,
+              -79.53767409786079
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -998.4882439014259
+          },
+          "host": {
+            "gain_bits": -2.8959835335906057,
+            "mean_only_bits": -3.5231290331522827,
+            "mse_improvement_percent": -1.7802680434493285,
+            "null_gain_bits": [
+              -10.796885667911926,
+              0.4877364293411548,
+              12.277858774253398
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -834.8959835335907
+          },
+          "synthesis_phase": {
+            "gain_bits": -35.26234636413825,
+            "mean_only_bits": -38.493825976934964,
+            "mse_improvement_percent": -20.973753492173863,
+            "null_gain_bits": [
+              -8.359478664579992,
+              -29.024595152989015,
+              -5.342283954703866
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -867.2623463641382
+          }
+        }
+      },
+      "adaptation": {}
+    },
+    "overlap_w128": {
+      "scope": "known overlapping reference",
+      "source_fit_calibration_chunk_overlap": 486,
+      "state_gain_over_history": {
+        "8": {
+          "field_fine": {
+            "gain_bits": -10.270271483015229,
+            "mean_only_bits": -17.018961165381203,
+            "mse_improvement_percent": -1.3118418143012205,
+            "null_gain_bits": [
+              -14.035882370359278,
+              -74.13518310252293,
+              -49.21366730663068
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -842.2702714830152
+          },
+          "field_meso": {
+            "gain_bits": -4.600599825058046,
+            "mean_only_bits": -2.7983861050610024,
+            "mse_improvement_percent": -0.40833164339362055,
+            "null_gain_bits": [
+              -51.361180373546574,
+              -54.93570363968769,
+              -66.84737612299264
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -836.600599825058
+          },
+          "field_coarse": {
+            "gain_bits": -122.48831337439172,
+            "mean_only_bits": -140.76779981976668,
+            "mse_improvement_percent": -14.711316600076083,
+            "null_gain_bits": [
+              -34.74259929771457,
+              -82.81327760394755,
+              -99.64644015877289
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -954.4883133743917
+          },
+          "gru": {
+            "gain_bits": -689.9367351583268,
+            "mean_only_bits": -1213.90204612807,
+            "mse_improvement_percent": -109.65317288577278,
+            "null_gain_bits": [
+              -977.942995886412,
+              -586.3128401487864,
+              -399.9734488369186
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1521.9367351583269
+          },
+          "host": {
+            "gain_bits": -75.06313275461667,
+            "mean_only_bits": -78.20985871681025,
+            "mse_improvement_percent": -5.243699295038086,
+            "null_gain_bits": [
+              -44.71196806120751,
+              -33.9461725055373,
+              -108.3398229685939
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -907.0631327546166
+          },
+          "synthesis_phase": {
+            "gain_bits": -9.759192049874311,
+            "mean_only_bits": -11.704778981769966,
+            "mse_improvement_percent": -1.804542157118083,
+            "null_gain_bits": [
+              -90.5823862821664,
+              -142.96310128996018,
+              -81.72711175214695
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -841.7591920498743
+          }
+        },
+        "128": {
+          "field_fine": {
+            "gain_bits": -105.53929011981118,
+            "mean_only_bits": -5.24877519823103,
+            "mse_improvement_percent": -1.9599259185397258,
+            "null_gain_bits": [
+              -24.20019647046047,
+              0.13245241808812125,
+              -14.718177587068766
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -937.5392901198112
+          },
+          "field_meso": {
+            "gain_bits": -40.30409769385828,
+            "mean_only_bits": -7.25273560002884,
+            "mse_improvement_percent": -2.2530290459936886,
+            "null_gain_bits": [
+              42.45197555607416,
+              30.929564656841258,
+              24.208362558296912
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -872.3040976938582
+          },
+          "field_coarse": {
+            "gain_bits": -101.3119939714482,
+            "mean_only_bits": -45.3042744897086,
+            "mse_improvement_percent": -6.029255982407959,
+            "null_gain_bits": [
+              -31.94390695840339,
+              -78.07299220924352,
+              10.894072778168503
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -933.3119939714481
+          },
+          "gru": {
+            "gain_bits": -429.2067148426836,
+            "mean_only_bits": -796.3244862476517,
+            "mse_improvement_percent": -104.94524629664942,
+            "null_gain_bits": [
+              -132.51822511323147,
+              -436.45390998883687,
+              -505.7695024238355
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1261.2067148426836
+          },
+          "host": {
+            "gain_bits": 12.084783365988706,
+            "mean_only_bits": -6.29774281560268,
+            "mse_improvement_percent": 0.015720356461172046,
+            "null_gain_bits": [
+              -29.150105303952003,
+              -67.84237660051365,
+              -69.09969682326624
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -819.9152166340112
+          },
+          "synthesis_phase": {
+            "gain_bits": 30.898611805357,
+            "mean_only_bits": -71.67420973415045,
+            "mse_improvement_percent": -4.810052071717844,
+            "null_gain_bits": [
+              -83.96785772602436,
+              -553.2887062417394,
+              -50.52184955655619
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -801.101388194643
+          }
+        },
+        "16": {
+          "field_fine": {
+            "gain_bits": -6.337191253631687,
+            "mean_only_bits": -8.785047464638232,
+            "mse_improvement_percent": -1.135163766362911,
+            "null_gain_bits": [
+              -45.202847142924554,
+              -84.82738633673898,
+              -81.68986136132807
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -838.3371912536317
+          },
+          "field_meso": {
+            "gain_bits": -27.81496356333579,
+            "mean_only_bits": -29.327360544101868,
+            "mse_improvement_percent": -3.055815575144279,
+            "null_gain_bits": [
+              -91.90949630872038,
+              -18.346722593200273,
+              -60.42963972695803
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -859.8149635633358
+          },
+          "field_coarse": {
+            "gain_bits": -23.34900075524763,
+            "mean_only_bits": -27.37386458118839,
+            "mse_improvement_percent": -2.7597220893623273,
+            "null_gain_bits": [
+              -46.91927193969664,
+              -61.30196542262638,
+              -81.8150650217909
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -855.3490007552476
+          },
+          "gru": {
+            "gain_bits": -800.9148831475322,
+            "mean_only_bits": -1498.9981735889019,
+            "mse_improvement_percent": -124.63248564100228,
+            "null_gain_bits": [
+              -1223.3444055672821,
+              -915.8496352280838,
+              -651.075894273408
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1632.9148831475322
+          },
+          "host": {
+            "gain_bits": -21.62555079018243,
+            "mean_only_bits": -25.459907349316403,
+            "mse_improvement_percent": -1.310817627421703,
+            "null_gain_bits": [
+              -74.25037718768877,
+              -29.867918981056157,
+              -81.63836525652042
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -853.6255507901824
+          },
+          "synthesis_phase": {
+            "gain_bits": -26.008507791403616,
+            "mean_only_bits": -39.57546447973117,
+            "mse_improvement_percent": -3.921592944264327,
+            "null_gain_bits": [
+              -141.5890780410615,
+              -145.83642394556887,
+              -70.3647475683551
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -858.0085077914036
+          }
+        },
+        "64": {
+          "field_fine": {
+            "gain_bits": -5.759292753903331,
+            "mean_only_bits": -13.317009723083174,
+            "mse_improvement_percent": -0.9364321071121381,
+            "null_gain_bits": [
+              -36.94260838800035,
+              -29.890001714866393,
+              -31.58582060545835
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -837.7592927539033
+          },
+          "field_meso": {
+            "gain_bits": -19.346750580890507,
+            "mean_only_bits": -24.944820124830137,
+            "mse_improvement_percent": -1.7557003462786671,
+            "null_gain_bits": [
+              -9.491351944633749,
+              -39.13186560775186,
+              -53.02290696027083
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -851.3467505808906
+          },
+          "field_coarse": {
+            "gain_bits": -12.557897431874094,
+            "mean_only_bits": -17.32697588257297,
+            "mse_improvement_percent": -1.7114751474390093,
+            "null_gain_bits": [
+              -46.579583021233304,
+              -88.81771011220201,
+              -48.99563913031261
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -844.557897431874
+          },
+          "gru": {
+            "gain_bits": -800.7449915136142,
+            "mean_only_bits": -1875.0670644845711,
+            "mse_improvement_percent": -198.57485842492642,
+            "null_gain_bits": [
+              -1201.8739416752428,
+              -810.3460322668792,
+              -515.8188010207024
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1632.7449915136142
+          },
+          "host": {
+            "gain_bits": 23.010585637581958,
+            "mean_only_bits": 16.692265913336442,
+            "mse_improvement_percent": 2.1326810239923257,
+            "null_gain_bits": [
+              -41.96020549404346,
+              -38.678397405506814,
+              -1.23429949225984
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -808.9894143624181
+          },
+          "synthesis_phase": {
+            "gain_bits": -47.34375341869024,
+            "mean_only_bits": -61.51746667424163,
+            "mse_improvement_percent": -5.9591554690308355,
+            "null_gain_bits": [
+              -27.80396851287648,
+              -66.0077063181688,
+              -31.693971782443732
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -879.3437534186902
+          }
+        }
+      },
+      "adaptation": {
+        "8": {
+          "gru": {
+            "strict_history_gain_bits": -679.8702050970851,
+            "adapted_history_gain_bits": -1827.5778091787079,
+            "scaled_mse_unchanged": 2.1969721573768455,
+            "strict_mean_only_bits": -1226.6148242195577,
+            "adapted_mean_only_bits": -1561.1225922627323
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -130.1396529526745,
+            "adapted_history_gain_bits": -374.33985870423686,
+            "scaled_mse_unchanged": 1.1529738336042896,
+            "strict_mean_only_bits": -155.53030499936983,
+            "adapted_mean_only_bits": -223.3339529625064
+          },
+          "host": {
+            "strict_history_gain_bits": -96.73428676055681,
+            "adapted_history_gain_bits": -153.4512071225472,
+            "scaled_mse_unchanged": 1.0532299123574969,
+            "strict_mean_only_bits": -99.36391277824401,
+            "adapted_mean_only_bits": -76.2831575351907
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": -26.937310036074315,
+            "adapted_history_gain_bits": -133.444674385558,
+            "scaled_mse_unchanged": 1.0104790970094941,
+            "strict_mean_only_bits": -29.221551968833886,
+            "adapted_mean_only_bits": -42.99381389610699
+          }
+        },
+        "16": {
+          "gru": {
+            "strict_history_gain_bits": -781.5894494724229,
+            "adapted_history_gain_bits": -2592.836768884718,
+            "scaled_mse_unchanged": 2.483112810348501,
+            "strict_mean_only_bits": -1510.1945960824496,
+            "adapted_mean_only_bits": -2184.1394641091038
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -27.18196658788748,
+            "adapted_history_gain_bits": -82.71506532338475,
+            "scaled_mse_unchanged": 1.0693578973567528,
+            "strict_mean_only_bits": -34.0720234871173,
+            "adapted_mean_only_bits": -47.19748095081154
+          },
+          "host": {
+            "strict_history_gain_bits": -39.88164334124838,
+            "adapted_history_gain_bits": -207.06176660389565,
+            "scaled_mse_unchanged": 1.0661057196165884,
+            "strict_mean_only_bits": -42.90540520128867,
+            "adapted_mean_only_bits": -33.891660077510636
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": -28.99870038296558,
+            "adapted_history_gain_bits": -70.0732110438802,
+            "scaled_mse_unchanged": 1.0822930772719936,
+            "strict_mean_only_bits": -44.574452258375466,
+            "adapted_mean_only_bits": -61.86211068260163
+          }
+        },
+        "64": {
+          "gru": {
+            "strict_history_gain_bits": -769.4552905823693,
+            "adapted_history_gain_bits": -4162.877387248592,
+            "scaled_mse_unchanged": 3.5606795223132384,
+            "strict_mean_only_bits": -1865.3731736516722,
+            "adapted_mean_only_bits": -3651.144270722703
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -20.470765971977706,
+            "adapted_history_gain_bits": -202.2126590572495,
+            "scaled_mse_unchanged": 1.1208387776232984,
+            "strict_mean_only_bits": -27.43462422611348,
+            "adapted_mean_only_bits": -41.69615476865808
+          },
+          "host": {
+            "strict_history_gain_bits": 6.452938068392626,
+            "adapted_history_gain_bits": 6.751515512970348,
+            "scaled_mse_unchanged": 1.077982374522284,
+            "strict_mean_only_bits": 2.118260569272974,
+            "adapted_mean_only_bits": 45.55270637192187
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": -58.72445980637707,
+            "adapted_history_gain_bits": -229.90036523523207,
+            "scaled_mse_unchanged": 1.1760297966319069,
+            "strict_mean_only_bits": -70.967803652416,
+            "adapted_mean_only_bits": -114.21511227838971
+          }
+        }
+      }
+    },
+    "L16_WP_SP": {
+      "scope": "primary different RNG, same parent weights/world",
+      "source_fit_calibration_chunk_overlap": 1,
+      "state_gain_over_history": {
+        "8": {
+          "field_fine": {
+            "gain_bits": -1.810185885459795,
+            "mean_only_bits": -3.437804350752487,
+            "mse_improvement_percent": -1.6683331349295,
+            "null_gain_bits": [
+              -5.556544769275505,
+              -7.937033923131447,
+              -10.84699284117588
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -833.8101858854598
+          },
+          "field_meso": {
+            "gain_bits": -9.461859787867894,
+            "mean_only_bits": -6.132592566992415,
+            "mse_improvement_percent": -2.3033814136037827,
+            "null_gain_bits": [
+              -19.702598813540064,
+              6.651373642205569,
+              -3.7306846742524375
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -841.4618597878679
+          },
+          "field_coarse": {
+            "gain_bits": -83.56993763530369,
+            "mean_only_bits": -87.80943075311848,
+            "mse_improvement_percent": -24.942890340759845,
+            "null_gain_bits": [
+              -17.18888453338406,
+              -62.68145103158963,
+              -21.531782217200494
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -915.5699376353036
+          },
+          "gru": {
+            "gain_bits": -34.5000924138201,
+            "mean_only_bits": -18.96034819566977,
+            "mse_improvement_percent": -5.090538520323938,
+            "null_gain_bits": [
+              -3.5957618176302413,
+              -16.48931421781808,
+              -10.624845477642047
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -866.5000924138201
+          },
+          "host": {
+            "gain_bits": -39.6939749187152,
+            "mean_only_bits": -41.032371297456194,
+            "mse_improvement_percent": -11.546683346170052,
+            "null_gain_bits": [
+              -42.875265745872525,
+              -25.15151032990436,
+              -12.74136425191895
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -871.6939749187152
+          },
+          "synthesis_phase": {
+            "gain_bits": -16.39297283883533,
+            "mean_only_bits": -21.37537495908788,
+            "mse_improvement_percent": -6.676971987740285,
+            "null_gain_bits": [
+              -14.572122661022759,
+              -68.97493584268068,
+              -30.49920505488853
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -848.3929728388354
+          }
+        },
+        "128": {
+          "field_fine": {
+            "gain_bits": -28.70558068483463,
+            "mean_only_bits": -2.963753382927071,
+            "mse_improvement_percent": -2.852782983684426,
+            "null_gain_bits": [
+              -12.889958674545182,
+              -7.931522505541391,
+              0.44510065540390364
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -860.7055806848347
+          },
+          "field_meso": {
+            "gain_bits": -12.09307300702644,
+            "mean_only_bits": -3.285910616004645,
+            "mse_improvement_percent": -3.11425274862102,
+            "null_gain_bits": [
+              3.521098760427496,
+              12.07855559014217,
+              1.3110642391962766
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -844.0930730070264
+          },
+          "field_coarse": {
+            "gain_bits": -21.421377913707367,
+            "mean_only_bits": -8.942501103137747,
+            "mse_improvement_percent": -6.510428732534689,
+            "null_gain_bits": [
+              -4.257034421535927,
+              -26.466670382720018,
+              5.51620985791261
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -853.4213779137074
+          },
+          "gru": {
+            "gain_bits": -12.885579395456851,
+            "mean_only_bits": 0.18383968541737528,
+            "mse_improvement_percent": 0.6981976142924802,
+            "null_gain_bits": [
+              -8.913122662847625,
+              -5.665160450785801,
+              6.042166504085228
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -844.8855793954568
+          },
+          "host": {
+            "gain_bits": 0.37053509999942613,
+            "mean_only_bits": -3.845164886376535,
+            "mse_improvement_percent": -3.0226465269565344,
+            "null_gain_bits": [
+              -6.687848907579595,
+              -15.130276332326602,
+              -6.0586901671187885
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -831.6294649000006
+          },
+          "synthesis_phase": {
+            "gain_bits": 18.267881422708527,
+            "mean_only_bits": -1.2584403647035751,
+            "mse_improvement_percent": -1.5244883728256002,
+            "null_gain_bits": [
+              -3.5334450281460925,
+              -113.22838442134933,
+              -24.953606546447062
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -813.7321185772914
+          }
+        },
+        "16": {
+          "field_fine": {
+            "gain_bits": -15.781394662942802,
+            "mean_only_bits": -11.008169453278752,
+            "mse_improvement_percent": -3.8716953942778316,
+            "null_gain_bits": [
+              -13.610552335286174,
+              -42.50471882503966,
+              -20.77026206390442
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -847.7813946629428
+          },
+          "field_meso": {
+            "gain_bits": -15.58939080794352,
+            "mean_only_bits": -12.652526367526656,
+            "mse_improvement_percent": -4.4756772767031965,
+            "null_gain_bits": [
+              -2.220594303780273,
+              -27.632073302128866,
+              -13.2770193848672
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -847.5893908079436
+          },
+          "field_coarse": {
+            "gain_bits": -0.030633710274951653,
+            "mean_only_bits": -1.9173337638619383,
+            "mse_improvement_percent": -1.4629309606497607,
+            "null_gain_bits": [
+              -10.49228117634246,
+              -27.27658199854835,
+              -12.40216192700261
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -832.030633710275
+          },
+          "gru": {
+            "gain_bits": -23.269040722626286,
+            "mean_only_bits": -18.43491502268053,
+            "mse_improvement_percent": -4.748119923800175,
+            "null_gain_bits": [
+              -0.3924275703420932,
+              -18.962045813344453,
+              -29.639882202084387
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -855.2690407226263
+          },
+          "host": {
+            "gain_bits": -13.042098545863368,
+            "mean_only_bits": -13.077881338495404,
+            "mse_improvement_percent": -4.586340527752342,
+            "null_gain_bits": [
+              -19.433461608048457,
+              -23.82013102958841,
+              -54.874014199090716
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -845.0420985458634
+          },
+          "synthesis_phase": {
+            "gain_bits": 3.2093892918862377,
+            "mean_only_bits": -3.787682296449721,
+            "mse_improvement_percent": -1.2109485932914428,
+            "null_gain_bits": [
+              -18.009299377002318,
+              -40.199481589904046,
+              -7.304729774627621
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -828.7906107081137
+          }
+        },
+        "64": {
+          "field_fine": {
+            "gain_bits": 2.070594651233478,
+            "mean_only_bits": 4.076236059720674,
+            "mse_improvement_percent": 2.44266110987432,
+            "null_gain_bits": [
+              -14.440178547140942,
+              -8.622627749153025,
+              1.9132384000073357
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -829.9294053487665
+          },
+          "field_meso": {
+            "gain_bits": -5.8670280123300875,
+            "mean_only_bits": -6.968935777157023,
+            "mse_improvement_percent": -2.175911719046389,
+            "null_gain_bits": [
+              4.5712794929405405,
+              -22.266898315927378,
+              -14.271215163502408
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -837.8670280123301
+          },
+          "field_coarse": {
+            "gain_bits": -9.462567484188032,
+            "mean_only_bits": -12.448903345663267,
+            "mse_improvement_percent": -6.139988978816386,
+            "null_gain_bits": [
+              -2.2636423783993607,
+              18.314454697003804,
+              -29.253870127768234
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -841.4625674841881
+          },
+          "gru": {
+            "gain_bits": -39.56220331607869,
+            "mean_only_bits": -8.145511206904365,
+            "mse_improvement_percent": -3.515425132872951,
+            "null_gain_bits": [
+              -22.593218188835984,
+              -6.358406389807323,
+              -2.856138797121016
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -871.5622033160787
+          },
+          "host": {
+            "gain_bits": -14.812702226234114,
+            "mean_only_bits": -16.28422076827604,
+            "mse_improvement_percent": -6.952967917169794,
+            "null_gain_bits": [
+              -28.87832694323563,
+              -3.7249715416864793,
+              13.926813190947286
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -846.8127022262341
+          },
+          "synthesis_phase": {
+            "gain_bits": 8.005563247529938,
+            "mean_only_bits": 5.844286811413382,
+            "mse_improvement_percent": 1.3714912818823155,
+            "null_gain_bits": [
+              4.526817139567568,
+              -14.673420165829334,
+              -4.698073255906255
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -823.99443675247
+          }
+        }
+      },
+      "adaptation": {
+        "8": {
+          "gru": {
+            "strict_history_gain_bits": -17.560792150020717,
+            "adapted_history_gain_bits": -6.348893921437931,
+            "scaled_mse_unchanged": 1.0798898191120885,
+            "strict_mean_only_bits": -5.104645684698767,
+            "adapted_mean_only_bits": -4.139416975947309
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -26.071569744750388,
+            "adapted_history_gain_bits": -21.205245488030712,
+            "scaled_mse_unchanged": 1.2130198286133265,
+            "strict_mean_only_bits": -26.28665578056129,
+            "adapted_mean_only_bits": -27.97185242614544
+          },
+          "host": {
+            "strict_history_gain_bits": -15.719833724599324,
+            "adapted_history_gain_bits": -9.047959376764673,
+            "scaled_mse_unchanged": 1.137821043443173,
+            "strict_mean_only_bits": -16.075441513417005,
+            "adapted_mean_only_bits": -10.518010060584121
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": 3.2542411209695317,
+            "adapted_history_gain_bits": -0.5577846308991994,
+            "scaled_mse_unchanged": 1.0664833651034888,
+            "strict_mean_only_bits": 0.5663848631457888,
+            "adapted_mean_only_bits": 0.13712987212169736
+          }
+        },
+        "16": {
+          "gru": {
+            "strict_history_gain_bits": -7.045560822600706,
+            "adapted_history_gain_bits": -1.863131532924439,
+            "scaled_mse_unchanged": 1.158064952296464,
+            "strict_mean_only_bits": -5.5373255885121395,
+            "adapted_mean_only_bits": -3.9830188317164885
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -7.097774265180416,
+            "adapted_history_gain_bits": -9.113106015961849,
+            "scaled_mse_unchanged": 1.2066093794061257,
+            "strict_mean_only_bits": -9.236943182924296,
+            "adapted_mean_only_bits": -6.5256410219643515
+          },
+          "host": {
+            "strict_history_gain_bits": -4.673106825697078,
+            "adapted_history_gain_bits": -3.625043743222921,
+            "scaled_mse_unchanged": 1.16381022481962,
+            "strict_mean_only_bits": -5.7817794856325975,
+            "adapted_mean_only_bits": -6.880772951396955
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": 4.876346399533252,
+            "adapted_history_gain_bits": 3.954399307039668,
+            "scaled_mse_unchanged": 1.1136817240221217,
+            "strict_mean_only_bits": 1.8615307667717071,
+            "adapted_mean_only_bits": 1.1055489949010573
+          }
+        },
+        "64": {
+          "gru": {
+            "strict_history_gain_bits": -11.162437841788053,
+            "adapted_history_gain_bits": 7.004972518933979,
+            "scaled_mse_unchanged": 1.2040488021212405,
+            "strict_mean_only_bits": -1.5879561392578365,
+            "adapted_mean_only_bits": -1.3741496688814374
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -8.519593073310002,
+            "adapted_history_gain_bits": -14.678219222506042,
+            "scaled_mse_unchanged": 1.3740936659141914,
+            "strict_mean_only_bits": -11.67687489977433,
+            "adapted_mean_only_bits": -14.76455890941713
+          },
+          "host": {
+            "strict_history_gain_bits": -7.323609869712557,
+            "adapted_history_gain_bits": -7.124105774189867,
+            "scaled_mse_unchanged": 1.315175443780859,
+            "strict_mean_only_bits": -8.09920054821485,
+            "adapted_mean_only_bits": -9.807351720205222
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": 3.4141157155277178,
+            "adapted_history_gain_bits": -14.76575644166865,
+            "scaled_mse_unchanged": 1.1848101576941263,
+            "strict_mean_only_bits": 2.5079437676984964,
+            "adapted_mean_only_bits": 3.0454987554879045
+          }
+        }
+      }
+    },
+    "L16_WP_SC": {
+      "scope": "world-state transfer, parent weights",
+      "source_fit_calibration_chunk_overlap": 0,
+      "state_gain_over_history": {
+        "8": {
+          "field_fine": {
+            "gain_bits": -1.6287370146737894,
+            "mean_only_bits": -5.796209623668162,
+            "mse_improvement_percent": -1.7681281714768358,
+            "null_gain_bits": [
+              -6.524657237734668,
+              -34.972912117511726,
+              -9.272281331680428
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -833.6287370146738
+          },
+          "field_meso": {
+            "gain_bits": -2.245519959433887,
+            "mean_only_bits": -1.9800028901435267,
+            "mse_improvement_percent": -1.4821083501242924,
+            "null_gain_bits": [
+              -15.93238846968211,
+              -11.750668464344916,
+              -7.875002340854232
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -834.2455199594339
+          },
+          "field_coarse": {
+            "gain_bits": -1423.6389529407597,
+            "mean_only_bits": -1662.4810544771003,
+            "mse_improvement_percent": -619.7396152389426,
+            "null_gain_bits": [
+              -1040.4497400706105,
+              -2382.7394923900174,
+              -1912.0107310624562
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -2255.6389529407597
+          },
+          "gru": {
+            "gain_bits": -2697.1241054745833,
+            "mean_only_bits": -3173.20673717388,
+            "mse_improvement_percent": -1093.4414156223131,
+            "null_gain_bits": [
+              -5753.641135949689,
+              -4011.788028688507,
+              -3626.7445036516574
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -3529.1241054745833
+          },
+          "host": {
+            "gain_bits": -35.098481445865225,
+            "mean_only_bits": -34.90532018512644,
+            "mse_improvement_percent": -8.979258506876002,
+            "null_gain_bits": [
+              -40.98244384258568,
+              -14.94209626868419,
+              -9.204277213210503
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -867.0984814458652
+          },
+          "synthesis_phase": {
+            "gain_bits": -21.074073537046083,
+            "mean_only_bits": -20.923790419044234,
+            "mse_improvement_percent": -7.721544058923956,
+            "null_gain_bits": [
+              -27.458046828114554,
+              -86.54001583560434,
+              4.534934333405604
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -853.074073537046
+          }
+        },
+        "128": {
+          "field_fine": {
+            "gain_bits": -10.836410145369811,
+            "mean_only_bits": 3.4830512542033603,
+            "mse_improvement_percent": 0.8633935788913852,
+            "null_gain_bits": [
+              -4.7491299383171,
+              -2.478934219594343,
+              -5.708723880070922
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -842.8364101453698
+          },
+          "field_meso": {
+            "gain_bits": -7.955177277927678,
+            "mean_only_bits": -2.9820175667561393,
+            "mse_improvement_percent": -3.6293954542697455,
+            "null_gain_bits": [
+              14.553959282337978,
+              -3.9751028047162733,
+              -2.1164529243398014
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -839.9551772779276
+          },
+          "field_coarse": {
+            "gain_bits": -1138.2538619181869,
+            "mean_only_bits": -1125.5206164927422,
+            "mse_improvement_percent": -649.8733662473727,
+            "null_gain_bits": [
+              -1112.1049297187199,
+              -1383.5986027220006,
+              -830.5972242943205
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1970.2538619181869
+          },
+          "gru": {
+            "gain_bits": -660.4817487983569,
+            "mean_only_bits": -956.591371556785,
+            "mse_improvement_percent": -935.6355542760158,
+            "null_gain_bits": [
+              -559.9125588758734,
+              -2573.3871654628188,
+              -1060.48184604879
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1492.4817487983569
+          },
+          "host": {
+            "gain_bits": -12.921248674947622,
+            "mean_only_bits": -16.39932104319739,
+            "mse_improvement_percent": -5.8249250793040295,
+            "null_gain_bits": [
+              4.560228548804503,
+              -26.328730242234656,
+              -9.446656311206919
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -844.9212486749476
+          },
+          "synthesis_phase": {
+            "gain_bits": 0.5399100439081739,
+            "mean_only_bits": -7.032128820430883,
+            "mse_improvement_percent": -4.9429514512524255,
+            "null_gain_bits": [
+              -11.500694991795728,
+              -80.01286143081964,
+              10.669107764574527
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -831.4600899560918
+          }
+        },
+        "16": {
+          "field_fine": {
+            "gain_bits": -21.652095483239393,
+            "mean_only_bits": -19.807623560113946,
+            "mse_improvement_percent": -7.066762701767413,
+            "null_gain_bits": [
+              -20.080039109979133,
+              -27.175276441409675,
+              -9.359762616109668
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -853.6520954832393
+          },
+          "field_meso": {
+            "gain_bits": -14.674882326252447,
+            "mean_only_bits": -13.99947247490133,
+            "mse_improvement_percent": -5.162175270673024,
+            "null_gain_bits": [
+              -16.5205447807247,
+              -17.749902801173434,
+              -17.240933687645732
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -846.6748823262525
+          },
+          "field_coarse": {
+            "gain_bits": -329.4038128972097,
+            "mean_only_bits": -381.45965343536704,
+            "mse_improvement_percent": -126.49981228800424,
+            "null_gain_bits": [
+              -762.5683738238178,
+              -1938.6787934980287,
+              -863.4255072576864
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1161.4038128972097
+          },
+          "gru": {
+            "gain_bits": -3292.9714078877846,
+            "mean_only_bits": -4674.682891678398,
+            "mse_improvement_percent": -2224.3732582557054,
+            "null_gain_bits": [
+              -2820.8410631781635,
+              -4265.058253758887,
+              -2154.9830419276327
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -4124.971407887784
+          },
+          "host": {
+            "gain_bits": -22.569623207950293,
+            "mean_only_bits": -18.26807214635826,
+            "mse_improvement_percent": -4.618840672455575,
+            "null_gain_bits": [
+              -55.59089624018468,
+              -4.832143639468324,
+              -39.30705147050195
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -854.5696232079503
+          },
+          "synthesis_phase": {
+            "gain_bits": -9.272740897745242,
+            "mean_only_bits": -14.093158148038365,
+            "mse_improvement_percent": -5.024502019151203,
+            "null_gain_bits": [
+              -17.056288503547947,
+              -60.879627451270295,
+              -13.522406633812981
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -841.2727408977453
+          }
+        },
+        "64": {
+          "field_fine": {
+            "gain_bits": 3.385881613276819,
+            "mean_only_bits": 3.905150320977408,
+            "mse_improvement_percent": 1.4971162369022035,
+            "null_gain_bits": [
+              -11.344151831114212,
+              -11.671869432332628,
+              -5.3910168582354885
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -828.6141183867231
+          },
+          "field_meso": {
+            "gain_bits": -0.6309534225390179,
+            "mean_only_bits": -1.1935147460815365,
+            "mse_improvement_percent": -1.0250543272622963,
+            "null_gain_bits": [
+              11.348008349738528,
+              -10.003605697946023,
+              -11.704053086385546
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -832.630953422539
+          },
+          "field_coarse": {
+            "gain_bits": -610.2710081912188,
+            "mean_only_bits": -681.8669494578006,
+            "mse_improvement_percent": -219.6068414328431,
+            "null_gain_bits": [
+              -569.4553983992823,
+              -1478.4358449611836,
+              -2039.7112090147093
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1442.2710081912187
+          },
+          "gru": {
+            "gain_bits": -1628.1416614679915,
+            "mean_only_bits": -2957.5641007089725,
+            "mse_improvement_percent": -1276.288452411556,
+            "null_gain_bits": [
+              -2254.692613202983,
+              -3753.2758366540033,
+              -2211.5293366493447
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -2460.1416614679915
+          },
+          "host": {
+            "gain_bits": -4.11910685713381,
+            "mean_only_bits": -4.907288257193957,
+            "mse_improvement_percent": -1.0034064110330847,
+            "null_gain_bits": [
+              -10.402869588326222,
+              -11.88950603358468,
+              4.3927844880524685
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -836.1191068571338
+          },
+          "synthesis_phase": {
+            "gain_bits": -2.6658726090364713,
+            "mean_only_bits": -11.336011443530966,
+            "mse_improvement_percent": -6.003455516038027,
+            "null_gain_bits": [
+              14.55915702685111,
+              -25.374700917912893,
+              -5.431662045324912
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -834.6658726090365
+          }
+        }
+      },
+      "adaptation": {
+        "8": {
+          "gru": {
+            "strict_history_gain_bits": -1265.7532126868914,
+            "adapted_history_gain_bits": -200.8358764090184,
+            "scaled_mse_unchanged": 11.965028860590037,
+            "strict_mean_only_bits": -1473.3758101481021,
+            "adapted_mean_only_bits": -1643.2735105548518
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -260.67336155261114,
+            "adapted_history_gain_bits": -121.15448259661827,
+            "scaled_mse_unchanged": 3.3016722970496186,
+            "strict_mean_only_bits": -318.39045427902533,
+            "adapted_mean_only_bits": -383.7280613899282
+          },
+          "host": {
+            "strict_history_gain_bits": -17.481002282342136,
+            "adapted_history_gain_bits": -9.325967574518401,
+            "scaled_mse_unchanged": 1.0990892874940423,
+            "strict_mean_only_bits": -18.533212110833336,
+            "adapted_mean_only_bits": -11.039554956125894
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": -1.0060874737292396,
+            "adapted_history_gain_bits": 3.758002507378542,
+            "scaled_mse_unchanged": 1.0202861797269325,
+            "strict_mean_only_bits": 0.18006777595111512,
+            "adapted_mean_only_bits": -3.31039607551603
+          }
+        },
+        "16": {
+          "gru": {
+            "strict_history_gain_bits": -1425.6958567471502,
+            "adapted_history_gain_bits": -228.5988048532531,
+            "scaled_mse_unchanged": 23.71198638680009,
+            "strict_mean_only_bits": -1991.5224254527402,
+            "adapted_mean_only_bits": -2089.232017275218
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -58.74286818908735,
+            "adapted_history_gain_bits": -23.856162491943586,
+            "scaled_mse_unchanged": 1.5847042468843917,
+            "strict_mean_only_bits": -64.58384660238985,
+            "adapted_mean_only_bits": -62.63866838788731
+          },
+          "host": {
+            "strict_history_gain_bits": 0.7650164285608776,
+            "adapted_history_gain_bits": 2.9979593575613577,
+            "scaled_mse_unchanged": 1.0457664167108645,
+            "strict_mean_only_bits": -2.1537264283199473,
+            "adapted_mean_only_bits": -7.530048816148358
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": 0.40027636434099456,
+            "adapted_history_gain_bits": 3.63014273403998,
+            "scaled_mse_unchanged": 1.035978915311296,
+            "strict_mean_only_bits": -1.3450389360975645,
+            "adapted_mean_only_bits": 2.627679838249665
+          }
+        },
+        "64": {
+          "gru": {
+            "strict_history_gain_bits": -574.5058940711377,
+            "adapted_history_gain_bits": -130.23303767499428,
+            "scaled_mse_unchanged": 18.82038384690814,
+            "strict_mean_only_bits": -1042.552831917016,
+            "adapted_mean_only_bits": -1243.1423316476316
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -69.6493631585737,
+            "adapted_history_gain_bits": -51.99858299441046,
+            "scaled_mse_unchanged": 2.1460033235692113,
+            "strict_mean_only_bits": -76.79015348145357,
+            "adapted_mean_only_bits": -79.86261424048836
+          },
+          "host": {
+            "strict_history_gain_bits": -0.05111591472168442,
+            "adapted_history_gain_bits": -2.749594869333419,
+            "scaled_mse_unchanged": 1.1619346717328858,
+            "strict_mean_only_bits": -0.8404242458709459,
+            "adapted_mean_only_bits": 0.169668033007075
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": -11.408259477738426,
+            "adapted_history_gain_bits": -21.832202960698453,
+            "scaled_mse_unchanged": 1.3403290068135865,
+            "strict_mean_only_bits": -10.33103018369013,
+            "adapted_mean_only_bits": -16.545240808394563
+          }
+        }
+      }
+    },
+    "L16_WC_SP": {
+      "scope": "weight shift, parent world",
+      "source_fit_calibration_chunk_overlap": 0,
+      "state_gain_over_history": {
+        "8": {
+          "field_fine": {
+            "gain_bits": -27.36631237352897,
+            "mean_only_bits": -25.275938825163042,
+            "mse_improvement_percent": -1.0848185622743696,
+            "null_gain_bits": [
+              46.07551366760411,
+              -84.78784138085693,
+              -161.92691725572848
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -859.366312373529
+          },
+          "field_meso": {
+            "gain_bits": -33.385423799448354,
+            "mean_only_bits": -35.833649630187,
+            "mse_improvement_percent": -10.168261243940094,
+            "null_gain_bits": [
+              27.867340468298448,
+              53.863438730029145,
+              30.913625237954985
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -865.3854237994484
+          },
+          "field_coarse": {
+            "gain_bits": -7267.431707631353,
+            "mean_only_bits": -7332.287703235076,
+            "mse_improvement_percent": -2584.873226671868,
+            "null_gain_bits": [
+              -3423.3105105682116,
+              -5585.359859089539,
+              -4673.975250713676
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -8099.431707631353
+          },
+          "gru": {
+            "gain_bits": -1465.7771756899135,
+            "mean_only_bits": -2042.6633971490774,
+            "mse_improvement_percent": -297.8325187648932,
+            "null_gain_bits": [
+              -5668.689283763228,
+              -4436.224983370208,
+              -4101.211198000561
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -2297.7771756899137
+          },
+          "host": {
+            "gain_bits": -487.77675516646144,
+            "mean_only_bits": -499.87620594045285,
+            "mse_improvement_percent": -106.09319963227398,
+            "null_gain_bits": [
+              -513.6264281593081,
+              -511.2009245171651,
+              -1228.8954186159442
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1319.7767551664615
+          },
+          "synthesis_phase": {
+            "gain_bits": -44.55205307505249,
+            "mean_only_bits": -44.360714912602674,
+            "mse_improvement_percent": -7.206353584985655,
+            "null_gain_bits": [
+              -31.970054604088993,
+              -24.26457792916065,
+              -4.119868694188179
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -876.5520530750525
+          }
+        },
+        "128": {
+          "field_fine": {
+            "gain_bits": -130.18766679893662,
+            "mean_only_bits": -80.92974484243862,
+            "mse_improvement_percent": -9.066230493771405,
+            "null_gain_bits": [
+              -34.963634329627396,
+              -36.99853711797458,
+              -56.83370125996771
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -962.1876667989366
+          },
+          "field_meso": {
+            "gain_bits": -9.647051072826805,
+            "mean_only_bits": -2.264142135577563,
+            "mse_improvement_percent": 7.801706689303568,
+            "null_gain_bits": [
+              -44.1308978286102,
+              9.556168374736878,
+              -11.715340540736543
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -841.6470510728268
+          },
+          "field_coarse": {
+            "gain_bits": -2840.740244832541,
+            "mean_only_bits": -2932.2910524289127,
+            "mse_improvement_percent": -1888.790155881612,
+            "null_gain_bits": [
+              -1847.6360323497734,
+              -2299.275001416167,
+              -927.3413402882062
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -3672.740244832541
+          },
+          "gru": {
+            "gain_bits": -204.40835255449775,
+            "mean_only_bits": -371.70370492652125,
+            "mse_improvement_percent": -219.41742464962763,
+            "null_gain_bits": [
+              -828.7745075781495,
+              -1610.608486838495,
+              -944.9425281120075
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1036.4083525544977
+          },
+          "host": {
+            "gain_bits": -19.030978287057856,
+            "mean_only_bits": -24.047348026666782,
+            "mse_improvement_percent": -9.131517565179506,
+            "null_gain_bits": [
+              -171.030863377149,
+              -175.79634593568025,
+              -206.99871404957423
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -851.0309782870579
+          },
+          "synthesis_phase": {
+            "gain_bits": 3.098694024205167,
+            "mean_only_bits": -20.311187028030698,
+            "mse_improvement_percent": -4.639579080504442,
+            "null_gain_bits": [
+              -8.824001034191063,
+              -106.21215936242831,
+              4.9901324930497
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -828.9013059757948
+          }
+        },
+        "16": {
+          "field_fine": {
+            "gain_bits": -30.01975170908893,
+            "mean_only_bits": -17.339177244424,
+            "mse_improvement_percent": -1.9802129779159332,
+            "null_gain_bits": [
+              -76.79536587942404,
+              -41.50843337004735,
+              -229.86938871518788
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -862.019751709089
+          },
+          "field_meso": {
+            "gain_bits": -112.83857881115661,
+            "mean_only_bits": -104.8214208214818,
+            "mse_improvement_percent": -18.80136297958443,
+            "null_gain_bits": [
+              93.14777701697966,
+              -44.35296317637085,
+              -41.56653873868244
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -944.8385788111566
+          },
+          "field_coarse": {
+            "gain_bits": -1877.3909522931715,
+            "mean_only_bits": -2105.1912050614274,
+            "mse_improvement_percent": -366.5632683145761,
+            "null_gain_bits": [
+              -2551.9661635197062,
+              -5905.598306611846,
+              -1745.9550707446742
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -2709.3909522931717
+          },
+          "gru": {
+            "gain_bits": -2910.3929220021155,
+            "mean_only_bits": -4303.342184157015,
+            "mse_improvement_percent": -844.5812250351139,
+            "null_gain_bits": [
+              -1106.3498512323426,
+              -4455.86939885184,
+              -2330.9899345110884
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -3742.3929220021155
+          },
+          "host": {
+            "gain_bits": -541.0706229241111,
+            "mean_only_bits": -508.0163015443403,
+            "mse_improvement_percent": -102.15407479589382,
+            "null_gain_bits": [
+              -1333.4642699742756,
+              -308.4522346319332,
+              -874.8736202022806
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1373.0706229241111
+          },
+          "synthesis_phase": {
+            "gain_bits": -11.230561093192957,
+            "mean_only_bits": -20.56410505211646,
+            "mse_improvement_percent": -1.4441665702785371,
+            "null_gain_bits": [
+              -9.176390693782668,
+              8.99937500948997,
+              -43.32295035189145
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -843.2305610931929
+          }
+        },
+        "64": {
+          "field_fine": {
+            "gain_bits": -26.437889555254586,
+            "mean_only_bits": -47.64626324882148,
+            "mse_improvement_percent": -14.846692305137438,
+            "null_gain_bits": [
+              -62.886243146758005,
+              50.009294147103326,
+              34.210631816820694
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -858.4378895552546
+          },
+          "field_meso": {
+            "gain_bits": 85.31882923966552,
+            "mean_only_bits": 79.68427005840375,
+            "mse_improvement_percent": 10.104910454649337,
+            "null_gain_bits": [
+              181.58737051724756,
+              128.9634540379958,
+              86.92527423503547
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -746.6811707603345
+          },
+          "field_coarse": {
+            "gain_bits": -2860.440621892622,
+            "mean_only_bits": -3151.6750037876723,
+            "mse_improvement_percent": -698.5772701379982,
+            "null_gain_bits": [
+              -1605.14618660505,
+              -3008.6777292738248,
+              -5139.503801193085
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -3692.440621892622
+          },
+          "gru": {
+            "gain_bits": -255.58399241628518,
+            "mean_only_bits": -1092.072124896416,
+            "mse_improvement_percent": -265.5485873120974,
+            "null_gain_bits": [
+              -681.1595596067049,
+              -2718.910721471888,
+              -1896.5885040629594
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1087.5839924162851
+          },
+          "host": {
+            "gain_bits": -1340.0637865455692,
+            "mean_only_bits": -1293.2920912741947,
+            "mse_improvement_percent": -219.4689510954214,
+            "null_gain_bits": [
+              -36.299014925668885,
+              -498.47354335041723,
+              -632.4293028192574
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -2172.063786545569
+          },
+          "synthesis_phase": {
+            "gain_bits": 73.55488143825252,
+            "mean_only_bits": 61.487461921100326,
+            "mse_improvement_percent": 8.439258059129656,
+            "null_gain_bits": [
+              0.49652863636327726,
+              73.53551441916731,
+              -0.7112525447763871
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -758.4451185617474
+          }
+        }
+      },
+      "adaptation": {
+        "8": {
+          "gru": {
+            "strict_history_gain_bits": -703.9022718733663,
+            "adapted_history_gain_bits": -83.84067890408105,
+            "scaled_mse_unchanged": 7.718066162473097,
+            "strict_mean_only_bits": -973.9618722208055,
+            "adapted_mean_only_bits": -964.6730293242261
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -3497.6535906122126,
+            "adapted_history_gain_bits": -311.4634428020173,
+            "scaled_mse_unchanged": 51.37262401088972,
+            "strict_mean_only_bits": -3524.105468126717,
+            "adapted_mean_only_bits": -3374.7695127159614
+          },
+          "host": {
+            "strict_history_gain_bits": -343.81611054578104,
+            "adapted_history_gain_bits": -93.99505254921635,
+            "scaled_mse_unchanged": 4.956026542519309,
+            "strict_mean_only_bits": -357.9413566023697,
+            "adapted_mean_only_bits": -228.14258391128124
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": -25.029334749340983,
+            "adapted_history_gain_bits": -16.638304013508666,
+            "scaled_mse_unchanged": 2.155452208639212,
+            "strict_mean_only_bits": -25.252377569266365,
+            "adapted_mean_only_bits": -20.26081912248035
+          }
+        },
+        "16": {
+          "gru": {
+            "strict_history_gain_bits": -1337.6219403398977,
+            "adapted_history_gain_bits": -107.92815591086178,
+            "scaled_mse_unchanged": 22.580634264316043,
+            "strict_mean_only_bits": -1959.0375997260123,
+            "adapted_mean_only_bits": -1759.4624868792905
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -818.804853768376,
+            "adapted_history_gain_bits": -83.31201838170252,
+            "scaled_mse_unchanged": 10.926288981605646,
+            "strict_mean_only_bits": -928.9286314497783,
+            "adapted_mean_only_bits": -1131.6304920417153
+          },
+          "host": {
+            "strict_history_gain_bits": -360.84398602288036,
+            "adapted_history_gain_bits": -148.99333070761662,
+            "scaled_mse_unchanged": 6.200996390827803,
+            "strict_mean_only_bits": -342.387195463064,
+            "adapted_mean_only_bits": -353.6988729495491
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": 2.833590340060716,
+            "adapted_history_gain_bits": 3.4174143474731764,
+            "scaled_mse_unchanged": 2.4485820251059978,
+            "strict_mean_only_bits": -2.517140756364494,
+            "adapted_mean_only_bits": -16.46999311987824
+          }
+        },
+        "64": {
+          "gru": {
+            "strict_history_gain_bits": -46.15367241877739,
+            "adapted_history_gain_bits": 2.7118124288507985,
+            "scaled_mse_unchanged": 9.294601501793409,
+            "strict_mean_only_bits": -330.0726610213107,
+            "adapted_mean_only_bits": -365.4987823100564
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -876.7424070690471,
+            "adapted_history_gain_bits": -47.22062889620713,
+            "scaled_mse_unchanged": 18.77733236509323,
+            "strict_mean_only_bits": -969.6617598779999,
+            "adapted_mean_only_bits": -503.46483074664127
+          },
+          "host": {
+            "strict_history_gain_bits": -839.0633550722084,
+            "adapted_history_gain_bits": -115.39679038430035,
+            "scaled_mse_unchanged": 13.243540934025276,
+            "strict_mean_only_bits": -812.3924863633819,
+            "adapted_mean_only_bits": -486.36592107276886
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": 28.939033300302864,
+            "adapted_history_gain_bits": -1.2211637767539458,
+            "scaled_mse_unchanged": 2.4251536257968693,
+            "strict_mean_only_bits": 25.16307078515468,
+            "adapted_mean_only_bits": 6.090714451127408
+          }
+        }
+      }
+    },
+    "L16_WC_SC": {
+      "scope": "weight and world shift",
+      "source_fit_calibration_chunk_overlap": 0,
+      "state_gain_over_history": {
+        "8": {
+          "field_fine": {
+            "gain_bits": -11.211343466978368,
+            "mean_only_bits": -15.113644812042187,
+            "mse_improvement_percent": 0.1566844817643399,
+            "null_gain_bits": [
+              35.901369309603126,
+              -105.38638636536825,
+              -159.17046705789767
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -843.2113434669784
+          },
+          "field_meso": {
+            "gain_bits": -31.21809262711001,
+            "mean_only_bits": -36.9464790372943,
+            "mse_improvement_percent": -9.549288629841369,
+            "null_gain_bits": [
+              42.763306510135635,
+              74.35865149559717,
+              -44.623514148306526
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -863.21809262711
+          },
+          "field_coarse": {
+            "gain_bits": -7004.780525496589,
+            "mean_only_bits": -7066.268720729127,
+            "mse_improvement_percent": -2584.370737352094,
+            "null_gain_bits": [
+              -3985.6150842369316,
+              -5979.770851243499,
+              -5563.325797879265
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -7836.780525496589
+          },
+          "gru": {
+            "gain_bits": -3021.6030319879583,
+            "mean_only_bits": -3765.0502205332004,
+            "mse_improvement_percent": -662.4304426612928,
+            "null_gain_bits": [
+              -5955.373136037942,
+              -3244.443386567551,
+              -3287.521778901149
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -3853.6030319879583
+          },
+          "host": {
+            "gain_bits": -305.2138068925298,
+            "mean_only_bits": -314.77760882353533,
+            "mse_improvement_percent": -59.75129917831652,
+            "null_gain_bits": [
+              -249.02041540795625,
+              -247.1004267293174,
+              -658.4262518241666
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1137.2138068925299
+          },
+          "synthesis_phase": {
+            "gain_bits": -64.8306472283021,
+            "mean_only_bits": -57.27627554331488,
+            "mse_improvement_percent": -8.903135391383051,
+            "null_gain_bits": [
+              -21.644085317957128,
+              -71.23633438861997,
+              -9.905260761430064
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -896.830647228302
+          }
+        },
+        "128": {
+          "field_fine": {
+            "gain_bits": -104.28317206992372,
+            "mean_only_bits": -57.45069579014752,
+            "mse_improvement_percent": -10.619036327156193,
+            "null_gain_bits": [
+              -46.56250053254357,
+              -37.50346211311229,
+              -45.03126278637174
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -936.2831720699237
+          },
+          "field_meso": {
+            "gain_bits": -5.246072722468678,
+            "mean_only_bits": 4.35609599452305,
+            "mse_improvement_percent": 9.255167375750627,
+            "null_gain_bits": [
+              -37.40857440268098,
+              14.954585068669552,
+              6.4742373480386854
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -837.2460727224686
+          },
+          "field_coarse": {
+            "gain_bits": -2947.481430406286,
+            "mean_only_bits": -3074.616638033285,
+            "mse_improvement_percent": -2328.397587282724,
+            "null_gain_bits": [
+              -2149.3334467424384,
+              -2799.731556223381,
+              -1087.8733561551267
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -3779.481430406286
+          },
+          "gru": {
+            "gain_bits": -804.6915319885079,
+            "mean_only_bits": -963.3534368177525,
+            "mse_improvement_percent": -697.9886830247697,
+            "null_gain_bits": [
+              -661.1669534285371,
+              -2740.0208904771252,
+              -670.6337420689399
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1636.691531988508
+          },
+          "host": {
+            "gain_bits": -15.631468153208022,
+            "mean_only_bits": -20.776640234238137,
+            "mse_improvement_percent": -9.435113189999424,
+            "null_gain_bits": [
+              -7.204413840414808,
+              -50.094956142629975,
+              -70.04581891679956
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -847.6314681532081
+          },
+          "synthesis_phase": {
+            "gain_bits": 24.723201882148715,
+            "mean_only_bits": 12.803532476919045,
+            "mse_improvement_percent": 1.964956269853969,
+            "null_gain_bits": [
+              -21.709200527676092,
+              -81.90606212924646,
+              -2.305250961689871
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -807.2767981178513
+          }
+        },
+        "16": {
+          "field_fine": {
+            "gain_bits": 22.139913925486738,
+            "mean_only_bits": 25.663855657432556,
+            "mse_improvement_percent": 5.741230207095487,
+            "null_gain_bits": [
+              -60.480818259775646,
+              -21.407734549798604,
+              -144.33098956893357
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -809.8600860745132
+          },
+          "field_meso": {
+            "gain_bits": -63.561747782496056,
+            "mean_only_bits": -64.56619015717719,
+            "mse_improvement_percent": -13.346981825876208,
+            "null_gain_bits": [
+              67.28453307673408,
+              16.511080094754128,
+              -31.95049396388395
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -895.561747782496
+          },
+          "field_coarse": {
+            "gain_bits": -1870.3974576362352,
+            "mean_only_bits": -2122.555072828386,
+            "mse_improvement_percent": -381.94369219437806,
+            "null_gain_bits": [
+              -2879.6206667839124,
+              -6036.7827656360105,
+              -1799.5397743739209
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -2702.3974576362352
+          },
+          "gru": {
+            "gain_bits": -3248.598238595756,
+            "mean_only_bits": -4757.312709188034,
+            "mse_improvement_percent": -1035.3430513703252,
+            "null_gain_bits": [
+              -2060.6131125540714,
+              -2972.035251265399,
+              -1779.5508387043158
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -4080.598238595756
+          },
+          "host": {
+            "gain_bits": -290.92833645539787,
+            "mean_only_bits": -267.01082800574517,
+            "mse_improvement_percent": -54.99311332434883,
+            "null_gain_bits": [
+              -459.8445146123768,
+              -149.5886610711829,
+              -563.6702234290927
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1122.9283364553978
+          },
+          "synthesis_phase": {
+            "gain_bits": 5.868786801357243,
+            "mean_only_bits": -4.02559276131149,
+            "mse_improvement_percent": 1.7394962978750084,
+            "null_gain_bits": [
+              -19.131456861711197,
+              -15.325693476435957,
+              -4.373183501290431
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -826.1312131986427
+          }
+        },
+        "64": {
+          "field_fine": {
+            "gain_bits": -43.663114806050004,
+            "mean_only_bits": -75.85058538215866,
+            "mse_improvement_percent": -20.26141668059905,
+            "null_gain_bits": [
+              -79.52689122495676,
+              27.68966733060876,
+              17.324136885679973
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -875.66311480605
+          },
+          "field_meso": {
+            "gain_bits": 90.46048207756945,
+            "mean_only_bits": 78.07516194680107,
+            "mse_improvement_percent": 11.991344302136628,
+            "null_gain_bits": [
+              132.6658269844162,
+              82.83303083248293,
+              63.44210268024839
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -741.5395179224306
+          },
+          "field_coarse": {
+            "gain_bits": -3142.984395711133,
+            "mean_only_bits": -3423.5822578687003,
+            "mse_improvement_percent": -799.4560822901024,
+            "null_gain_bits": [
+              -1570.703602394999,
+              -3719.933529367185,
+              -5475.366996230177
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -3974.984395711133
+          },
+          "gru": {
+            "gain_bits": -1810.1625766008524,
+            "mean_only_bits": -3026.5422440800694,
+            "mse_improvement_percent": -731.1106287107839,
+            "null_gain_bits": [
+              -2325.696946458027,
+              -3312.838032767948,
+              -1645.54037498149
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -2642.1625766008524
+          },
+          "host": {
+            "gain_bits": -659.4575760186056,
+            "mean_only_bits": -641.4211707102835,
+            "mse_improvement_percent": -124.82413315558823,
+            "null_gain_bits": [
+              -21.15627377660849,
+              -217.34214950353947,
+              -285.94311982818715
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1491.4575760186056
+          },
+          "synthesis_phase": {
+            "gain_bits": 45.95930877111308,
+            "mean_only_bits": 38.56700082967827,
+            "mse_improvement_percent": 4.167571466273014,
+            "null_gain_bits": [
+              28.21007031311736,
+              52.2123085909933,
+              27.756049575094558
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -786.0406912288869
+          }
+        }
+      },
+      "adaptation": {
+        "8": {
+          "gru": {
+            "strict_history_gain_bits": -1468.1447486202396,
+            "adapted_history_gain_bits": -213.79228691084606,
+            "scaled_mse_unchanged": 14.249816037120874,
+            "strict_mean_only_bits": -1837.629617099311,
+            "adapted_mean_only_bits": -1503.3765432477142
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -3473.0052761979828,
+            "adapted_history_gain_bits": -335.0237248109184,
+            "scaled_mse_unchanged": 51.10579483295268,
+            "strict_mean_only_bits": -3504.4239216860456,
+            "adapted_mean_only_bits": -3225.137639824755
+          },
+          "host": {
+            "strict_history_gain_bits": -235.29908388994178,
+            "adapted_history_gain_bits": -122.38709049101392,
+            "scaled_mse_unchanged": 3.562606108052547,
+            "strict_mean_only_bits": -245.17715428638965,
+            "adapted_mean_only_bits": -235.80555798996915
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": -37.721808018428135,
+            "adapted_history_gain_bits": -23.888206493300775,
+            "scaled_mse_unchanged": 2.018452965649664,
+            "strict_mean_only_bits": -34.17274196008996,
+            "adapted_mean_only_bits": -25.01908651599645
+          }
+        },
+        "16": {
+          "gru": {
+            "strict_history_gain_bits": -1604.0942491023407,
+            "adapted_history_gain_bits": -210.27766612327258,
+            "scaled_mse_unchanged": 25.900898433694227,
+            "strict_mean_only_bits": -2332.29300243983,
+            "adapted_mean_only_bits": -2218.0285866000127
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -847.251210956881,
+            "adapted_history_gain_bits": -108.16485528546954,
+            "scaled_mse_unchanged": 10.530987598038637,
+            "strict_mean_only_bits": -956.4836258620214,
+            "adapted_mean_only_bits": -1006.2596872316639
+          },
+          "host": {
+            "strict_history_gain_bits": -204.91948527546654,
+            "adapted_history_gain_bits": -117.75136781801045,
+            "scaled_mse_unchanged": 4.1773867238131235,
+            "strict_mean_only_bits": -189.3328892022834,
+            "adapted_mean_only_bits": -275.5271982922575
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": 9.76918827904396,
+            "adapted_history_gain_bits": -1.5734554054652685,
+            "scaled_mse_unchanged": 2.1704264360016827,
+            "strict_mean_only_bits": 6.550600394661764,
+            "adapted_mean_only_bits": -9.48089323181235
+          }
+        },
+        "64": {
+          "gru": {
+            "strict_history_gain_bits": -612.4224606032994,
+            "adapted_history_gain_bits": -97.8670959976595,
+            "scaled_mse_unchanged": 17.983018959774338,
+            "strict_mean_only_bits": -1006.5784044158914,
+            "adapted_mean_only_bits": -458.8242864944272
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -1058.107282746531,
+            "adapted_history_gain_bits": -80.34840609887016,
+            "scaled_mse_unchanged": 20.221972849121222,
+            "strict_mean_only_bits": -1145.9137491887514,
+            "adapted_mean_only_bits": -573.2419449322181
+          },
+          "host": {
+            "strict_history_gain_bits": -500.60780079356294,
+            "adapted_history_gain_bits": -134.57798107477873,
+            "scaled_mse_unchanged": 8.728839670804112,
+            "strict_mean_only_bits": -488.35885189161445,
+            "adapted_mean_only_bits": -220.55268697647185
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": 12.78206316325347,
+            "adapted_history_gain_bits": 3.2979973237505478,
+            "scaled_mse_unchanged": 2.1155893701072035,
+            "strict_mean_only_bits": 12.910892150695153,
+            "adapted_mean_only_bits": 3.6863176248765717
+          }
+        }
+      }
+    },
+    "L16_WE_SP": {
+      "scope": "distant early-weight OOD; upper depth was untrained",
+      "source_fit_calibration_chunk_overlap": 0,
+      "state_gain_over_history": {
+        "8": {
+          "field_fine": {
+            "gain_bits": -3812.935844315171,
+            "mean_only_bits": -3795.2656599201564,
+            "mse_improvement_percent": -51.47565387560089,
+            "null_gain_bits": [
+              -2704.668018500539,
+              -3980.7755660823887,
+              -1538.3069664816019
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -4644.9358443151705
+          },
+          "field_meso": {
+            "gain_bits": -75.90588777012235,
+            "mean_only_bits": -60.098180717637774,
+            "mse_improvement_percent": 0.24699109277890405,
+            "null_gain_bits": [
+              -372.18420592491736,
+              527.9940806271208,
+              -537.0668965951295
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -907.9058877701224
+          },
+          "field_coarse": {
+            "gain_bits": -3997.089040137683,
+            "mean_only_bits": -4229.043856879087,
+            "mse_improvement_percent": -54.897969300585245,
+            "null_gain_bits": [
+              -2796.515753015534,
+              -2914.7661001968513,
+              -2206.9461713451296
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -4829.089040137683
+          },
+          "gru": {
+            "gain_bits": 339.218136191858,
+            "mean_only_bits": -90.20329536013239,
+            "mse_improvement_percent": 20.64658125668367,
+            "null_gain_bits": [
+              -3376.1907804316315,
+              -3336.899510473257,
+              -2378.811161897514
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -492.781863808142
+          },
+          "host": {
+            "gain_bits": -1112.3282852360544,
+            "mean_only_bits": -1053.8516377190072,
+            "mse_improvement_percent": 8.877917861264903,
+            "null_gain_bits": [
+              -462.25056573542474,
+              -3727.8243920911295,
+              -644.0361579923511
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1944.3282852360544
+          },
+          "synthesis_phase": {
+            "gain_bits": -300.1686260984461,
+            "mean_only_bits": -319.73715210474006,
+            "mse_improvement_percent": -3.5317641199595506,
+            "null_gain_bits": [
+              304.16265937850244,
+              -1162.2841555396615,
+              -209.11609764490748
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1132.168626098446
+          }
+        },
+        "128": {
+          "field_fine": {
+            "gain_bits": 695.6371402218689,
+            "mean_only_bits": 703.4692128942087,
+            "mse_improvement_percent": 36.4594089533326,
+            "null_gain_bits": [
+              -73.84959250081205,
+              190.8710197262748,
+              831.7547718074312
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -136.3628597781311
+          },
+          "field_meso": {
+            "gain_bits": 590.983899441671,
+            "mean_only_bits": 599.9267231364277,
+            "mse_improvement_percent": 10.071913271177836,
+            "null_gain_bits": [
+              -22.586312487666348,
+              357.055547200518,
+              6.291983856272733
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -241.01610055832896
+          },
+          "field_coarse": {
+            "gain_bits": -795.7688020529912,
+            "mean_only_bits": -913.8387863727305,
+            "mse_improvement_percent": -69.13593027959159,
+            "null_gain_bits": [
+              259.30393889187485,
+              -1077.361749574498,
+              -192.7459265263376
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1627.7688020529913
+          },
+          "gru": {
+            "gain_bits": 1.439573470884696,
+            "mean_only_bits": -368.90381134861565,
+            "mse_improvement_percent": -4.219307444114415,
+            "null_gain_bits": [
+              -366.9574200138543,
+              -1288.88906866791,
+              -130.0177476380802
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -830.5604265291153
+          },
+          "host": {
+            "gain_bits": 559.2940216326667,
+            "mean_only_bits": 484.6230476633748,
+            "mse_improvement_percent": 7.15873414510514,
+            "null_gain_bits": [
+              -912.1158066881228,
+              36.59441207110619,
+              -1062.5355988419426
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -272.7059783673333
+          },
+          "synthesis_phase": {
+            "gain_bits": 371.75027555343695,
+            "mean_only_bits": 5.532248864284654,
+            "mse_improvement_percent": 2.9098188985272424,
+            "null_gain_bits": [
+              45.52764402291595,
+              236.83033662245646,
+              731.8812848999279
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -460.24972444656305
+          }
+        },
+        "16": {
+          "field_fine": {
+            "gain_bits": -2701.3298520347907,
+            "mean_only_bits": -2681.339561623595,
+            "mse_improvement_percent": -41.999918904913095,
+            "null_gain_bits": [
+              -1062.7595862676308,
+              -765.315711645275,
+              -1434.18641995623
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -3533.3298520347907
+          },
+          "field_meso": {
+            "gain_bits": -338.51504108198765,
+            "mean_only_bits": -272.2362035541944,
+            "mse_improvement_percent": -1.3270728346450305,
+            "null_gain_bits": [
+              18.555014314740504,
+              443.90260438530254,
+              -368.17712079712555
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1170.5150410819876
+          },
+          "field_coarse": {
+            "gain_bits": -834.1135044027949,
+            "mean_only_bits": -985.8187556829132,
+            "mse_improvement_percent": 0.8462636343287541,
+            "null_gain_bits": [
+              -3310.3684984844213,
+              -4858.195089200217,
+              -1372.5061077933615
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1666.113504402795
+          },
+          "gru": {
+            "gain_bits": 1961.5068335575615,
+            "mean_only_bits": 1373.9842745637966,
+            "mse_improvement_percent": 23.9922362110429,
+            "null_gain_bits": [
+              1390.4172294275368,
+              66.81084000342676,
+              -1642.2007535864755
+            ],
+            "net_bits_after_16bit_added_parameter_cost": 1129.5068335575615
+          },
+          "host": {
+            "gain_bits": -457.19776763508656,
+            "mean_only_bits": -457.48681665451915,
+            "mse_improvement_percent": 10.733426054038908,
+            "null_gain_bits": [
+              -2576.539739562648,
+              -8.818697809582332,
+              357.4262973098423
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1289.1977676350866
+          },
+          "synthesis_phase": {
+            "gain_bits": 600.1061633595599,
+            "mean_only_bits": 527.0158057243177,
+            "mse_improvement_percent": 6.635751284261419,
+            "null_gain_bits": [
+              57.56047052779856,
+              504.19382946931785,
+              302.57092558743926
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -231.8938366404401
+          }
+        },
+        "64": {
+          "field_fine": {
+            "gain_bits": -2906.5450203550217,
+            "mean_only_bits": -3014.6457613663656,
+            "mse_improvement_percent": -25.498691560308664,
+            "null_gain_bits": [
+              -1917.5163403271633,
+              -2539.7189003799153,
+              -2687.9676198273055
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -3738.5450203550217
+          },
+          "field_meso": {
+            "gain_bits": -190.75538372754116,
+            "mean_only_bits": -192.47698868739383,
+            "mse_improvement_percent": -6.5826645480769415,
+            "null_gain_bits": [
+              213.6206249133522,
+              -484.16302135690006,
+              -180.91614759196864
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1022.7553837275411
+          },
+          "field_coarse": {
+            "gain_bits": -654.1669879063056,
+            "mean_only_bits": -738.6150738172473,
+            "mse_improvement_percent": 7.965242485056387,
+            "null_gain_bits": [
+              -1761.9665254666106,
+              -2328.584187879189,
+              -2245.712177939682
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1486.1669879063056
+          },
+          "gru": {
+            "gain_bits": -541.1128877058474,
+            "mean_only_bits": -1332.4799124685212,
+            "mse_improvement_percent": -1.9224067908399352,
+            "null_gain_bits": [
+              -767.9303040048615,
+              -1997.7751978578642,
+              -774.6820234052515
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1373.1128877058472
+          },
+          "host": {
+            "gain_bits": -1711.505682055125,
+            "mean_only_bits": -1676.5345011099994,
+            "mse_improvement_percent": -30.575018109491495,
+            "null_gain_bits": [
+              -32.57377037035123,
+              -822.4998290593949,
+              -1294.875860704988
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -2543.505682055125
+          },
+          "synthesis_phase": {
+            "gain_bits": -1010.248022054314,
+            "mean_only_bits": -960.8246418609692,
+            "mse_improvement_percent": -12.028855074376718,
+            "null_gain_bits": [
+              326.7110579384375,
+              -153.07498587571288,
+              -401.4356873893594
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1842.2480220543139
+          }
+        }
+      },
+      "adaptation": {
+        "8": {
+          "gru": {
+            "strict_history_gain_bits": 220.58100377531994,
+            "adapted_history_gain_bits": -16.554141677779274,
+            "scaled_mse_unchanged": 146.80961572886534,
+            "strict_mean_only_bits": 39.87320110890244,
+            "adapted_mean_only_bits": -103.0743865245856
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -2092.7105754799627,
+            "adapted_history_gain_bits": -43.18849732939371,
+            "scaled_mse_unchanged": 289.9622530318948,
+            "strict_mean_only_bits": -2201.7639565589434,
+            "adapted_mean_only_bits": -811.4404919068711
+          },
+          "host": {
+            "strict_history_gain_bits": -558.3153692679214,
+            "adapted_history_gain_bits": -8.158974787793982,
+            "scaled_mse_unchanged": 172.8103178006979,
+            "strict_mean_only_bits": -523.4149017679426,
+            "adapted_mean_only_bits": -40.27749689295152
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": -158.82820225045168,
+            "adapted_history_gain_bits": -15.22300587397927,
+            "scaled_mse_unchanged": 193.21117969484143,
+            "strict_mean_only_bits": -169.09343387898528,
+            "adapted_mean_only_bits": -22.96521608371232
+          }
+        },
+        "16": {
+          "gru": {
+            "strict_history_gain_bits": 1058.1927066276494,
+            "adapted_history_gain_bits": 43.98813526089072,
+            "scaled_mse_unchanged": 161.3040420288043,
+            "strict_mean_only_bits": 810.715102153222,
+            "adapted_mean_only_bits": -1.652409275440606
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -348.9262451499625,
+            "adapted_history_gain_bits": -14.174271780348032,
+            "scaled_mse_unchanged": 213.1703346765874,
+            "strict_mean_only_bits": -432.6785986695885,
+            "adapted_mean_only_bits": -67.95884274490102
+          },
+          "host": {
+            "strict_history_gain_bits": -188.77629207186152,
+            "adapted_history_gain_bits": 1.8907125756652494,
+            "scaled_mse_unchanged": 195.46090662292465,
+            "strict_mean_only_bits": -194.83786382402184,
+            "adapted_mean_only_bits": -25.021586355856662
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": 289.32623840540214,
+            "adapted_history_gain_bits": 9.36730114554833,
+            "scaled_mse_unchanged": 202.34766255104117,
+            "strict_mean_only_bits": 244.50569992841417,
+            "adapted_mean_only_bits": 6.16871511048711
+          }
+        },
+        "64": {
+          "gru": {
+            "strict_history_gain_bits": -116.38458591326378,
+            "adapted_history_gain_bits": -16.891287824376246,
+            "scaled_mse_unchanged": 164.96308738909252,
+            "strict_mean_only_bits": -386.62588456445195,
+            "adapted_mean_only_bits": -115.59600503867695
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -164.0165410767271,
+            "adapted_history_gain_bits": 3.8917982375389264,
+            "scaled_mse_unchanged": 150.1025822641413,
+            "strict_mean_only_bits": -186.4632223825039,
+            "adapted_mean_only_bits": -42.11569114527765
+          },
+          "host": {
+            "strict_history_gain_bits": -528.2763739129306,
+            "adapted_history_gain_bits": -12.168096258861777,
+            "scaled_mse_unchanged": 213.9780351984919,
+            "strict_mean_only_bits": -514.5465269847732,
+            "adapted_mean_only_bits": -59.021315261290276
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": -388.4767344550343,
+            "adapted_history_gain_bits": -11.556342826216328,
+            "scaled_mse_unchanged": 184.3113224184117,
+            "strict_mean_only_bits": -364.074527168636,
+            "adapted_mean_only_bits": -33.63155207477852
+          }
+        }
+      }
+    },
+    "w0_energy01": {
+      "scope": "host energy intervention transfer",
+      "source_fit_calibration_chunk_overlap": 0,
+      "state_gain_over_history": {
+        "8": {
+          "field_fine": {
+            "gain_bits": -24.15205807726513,
+            "mean_only_bits": -38.975660695157764,
+            "mse_improvement_percent": -3.4957925022349983,
+            "null_gain_bits": [
+              -35.363579239857025,
+              -93.7934523215046,
+              -34.86997296064774
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -856.1520580772651
+          },
+          "field_meso": {
+            "gain_bits": 1.6461671840737377,
+            "mean_only_bits": -4.4665104800342705,
+            "mse_improvement_percent": -0.4873676744223102,
+            "null_gain_bits": [
+              -11.584039644642523,
+              -81.76534602608463,
+              -37.9307976042324
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -830.3538328159262
+          },
+          "field_coarse": {
+            "gain_bits": -323.84626683436306,
+            "mean_only_bits": -399.9631000371115,
+            "mse_improvement_percent": -36.50987307539057,
+            "null_gain_bits": [
+              -120.89181253101681,
+              -147.86905435976,
+              -63.08729551599025
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1155.8462668343632
+          },
+          "gru": {
+            "gain_bits": -514.8703944164293,
+            "mean_only_bits": -995.7111122317757,
+            "mse_improvement_percent": -83.06124549389321,
+            "null_gain_bits": [
+              -538.17522211708,
+              -320.72540673003107,
+              -232.75029144964057
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1346.8703944164295
+          },
+          "host": {
+            "gain_bits": -61.09927138386173,
+            "mean_only_bits": -70.00344935351283,
+            "mse_improvement_percent": -4.980150593248794,
+            "null_gain_bits": [
+              -113.69086651760016,
+              -62.31815204277186,
+              -43.64807749999831
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -893.0992713838617
+          },
+          "synthesis_phase": {
+            "gain_bits": -81.46860951838426,
+            "mean_only_bits": -72.03120301796301,
+            "mse_improvement_percent": -5.622441351351749,
+            "null_gain_bits": [
+              -62.20729715463929,
+              -120.85729270046727,
+              -61.34663556960043
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -913.4686095183843
+          }
+        },
+        "128": {
+          "field_fine": {
+            "gain_bits": -157.71822987085426,
+            "mean_only_bits": -47.613141488128015,
+            "mse_improvement_percent": -4.449969104382012,
+            "null_gain_bits": [
+              -39.520968418991586,
+              -12.89120562502281,
+              -7.151751414670818
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -989.7182298708542
+          },
+          "field_meso": {
+            "gain_bits": -65.29852426616188,
+            "mean_only_bits": -27.33826938197987,
+            "mse_improvement_percent": -2.899913160307801,
+            "null_gain_bits": [
+              27.25632856920219,
+              19.37395212801743,
+              12.363480620543436
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -897.2985242661618
+          },
+          "field_coarse": {
+            "gain_bits": -229.97967241189102,
+            "mean_only_bits": -161.55116762240502,
+            "mse_improvement_percent": -12.541170669527489,
+            "null_gain_bits": [
+              -164.2449393872696,
+              -154.70473402223774,
+              8.384952522891338
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1061.979672411891
+          },
+          "gru": {
+            "gain_bits": -338.7978409673908,
+            "mean_only_bits": -633.19960502884,
+            "mse_improvement_percent": -76.34982449722516,
+            "null_gain_bits": [
+              -34.26589351993712,
+              -297.02744336576427,
+              -338.26018693653236
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1170.7978409673908
+          },
+          "host": {
+            "gain_bits": 4.108952676930635,
+            "mean_only_bits": -5.486825924947345,
+            "mse_improvement_percent": 0.017188105977893154,
+            "null_gain_bits": [
+              -41.56086949093605,
+              -38.8115659724417,
+              -64.77872537764645
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -827.8910473230694
+          },
+          "synthesis_phase": {
+            "gain_bits": 35.86719099931649,
+            "mean_only_bits": -55.2862602931592,
+            "mse_improvement_percent": -3.4427430484844916,
+            "null_gain_bits": [
+              -104.98755218178201,
+              -505.1043886491863,
+              -48.038406480872254
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -796.1328090006836
+          }
+        },
+        "16": {
+          "field_fine": {
+            "gain_bits": -29.234837059968577,
+            "mean_only_bits": -24.591250837115098,
+            "mse_improvement_percent": -2.4646934377193017,
+            "null_gain_bits": [
+              -59.470484326517386,
+              -73.5142489366547,
+              -84.43678886174544
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -861.2348370599685
+          },
+          "field_meso": {
+            "gain_bits": -31.05207036106316,
+            "mean_only_bits": -38.16933044333197,
+            "mse_improvement_percent": -3.879458809841195,
+            "null_gain_bits": [
+              -38.710861724614944,
+              -65.53614298912387,
+              -41.0730526001056
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -863.0520703610632
+          },
+          "field_coarse": {
+            "gain_bits": -51.21824475063865,
+            "mean_only_bits": -74.9396312714997,
+            "mse_improvement_percent": -7.449823494400605,
+            "null_gain_bits": [
+              -87.50109475289285,
+              -47.08689624114372,
+              -108.3517031277856
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -883.2182447506386
+          },
+          "gru": {
+            "gain_bits": -571.597948108134,
+            "mean_only_bits": -1092.8486908822172,
+            "mse_improvement_percent": -88.10311779009643,
+            "null_gain_bits": [
+              -673.5735253582739,
+              -529.35085125023,
+              -477.58990767631684
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1403.597948108134
+          },
+          "host": {
+            "gain_bits": -27.967731750854625,
+            "mean_only_bits": -23.046604809906942,
+            "mse_improvement_percent": -1.7823584641754395,
+            "null_gain_bits": [
+              -45.769583661618846,
+              -17.317318741688354,
+              -11.222947817736554
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -859.9677317508547
+          },
+          "synthesis_phase": {
+            "gain_bits": -32.32556645759249,
+            "mean_only_bits": -41.6026176072631,
+            "mse_improvement_percent": -3.78374968644042,
+            "null_gain_bits": [
+              -89.98118887358595,
+              -100.66578369870977,
+              -62.91225722282968
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -864.3255664575925
+          }
+        },
+        "64": {
+          "field_fine": {
+            "gain_bits": -7.8465744714298395,
+            "mean_only_bits": -12.551528976878659,
+            "mse_improvement_percent": -0.719557797279562,
+            "null_gain_bits": [
+              -38.27446430865017,
+              -33.93685641337487,
+              -37.0128092187556
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -839.8465744714298
+          },
+          "field_meso": {
+            "gain_bits": -32.024681165995105,
+            "mean_only_bits": -29.496698001353067,
+            "mse_improvement_percent": -1.9448306473512547,
+            "null_gain_bits": [
+              -18.857366189730577,
+              -117.8104254925483,
+              -122.92767210077082
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -864.0246811659952
+          },
+          "field_coarse": {
+            "gain_bits": -85.16262885054005,
+            "mean_only_bits": -103.90880582743452,
+            "mse_improvement_percent": -9.542372463274942,
+            "null_gain_bits": [
+              -81.13878039608888,
+              -102.5557739322971,
+              -96.98358424027936
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -917.16262885054
+          },
+          "gru": {
+            "gain_bits": -635.6332819747632,
+            "mean_only_bits": -1548.5193220607744,
+            "mse_improvement_percent": -150.70120112645282,
+            "null_gain_bits": [
+              -610.3864950115271,
+              -388.5047716818542,
+              -345.88567529991053
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1467.6332819747631
+          },
+          "host": {
+            "gain_bits": 11.553432548701931,
+            "mean_only_bits": 10.122617611473267,
+            "mse_improvement_percent": 0.4137519795699032,
+            "null_gain_bits": [
+              -19.79441102798408,
+              -19.982148735256146,
+              -15.601506720551239
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -820.446567451298
+          },
+          "synthesis_phase": {
+            "gain_bits": -53.73635633986047,
+            "mean_only_bits": -57.57717554712278,
+            "mse_improvement_percent": -5.381192599109967,
+            "null_gain_bits": [
+              -50.81144580264663,
+              -94.17396554167563,
+              -27.73819568002753
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -885.7363563398604
+          }
+        }
+      },
+      "adaptation": {
+        "8": {
+          "gru": {
+            "strict_history_gain_bits": -500.31441647093925,
+            "adapted_history_gain_bits": -817.8078183999266,
+            "scaled_mse_unchanged": 2.0541248002961576,
+            "strict_mean_only_bits": -981.9513461898695,
+            "adapted_mean_only_bits": -969.7319841760003
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -194.06683711520066,
+            "adapted_history_gain_bits": -233.82296543169605,
+            "scaled_mse_unchanged": 1.3398117679589594,
+            "strict_mean_only_bits": -250.43130028928044,
+            "adapted_mean_only_bits": -267.5803547077129
+          },
+          "host": {
+            "strict_history_gain_bits": -28.68392292241108,
+            "adapted_history_gain_bits": 19.833447087301145,
+            "scaled_mse_unchanged": 1.076665737702009,
+            "strict_mean_only_bits": -35.86129550646303,
+            "adapted_mean_only_bits": -9.460583300586825
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": -63.67101880587257,
+            "adapted_history_gain_bits": -48.36259444588707,
+            "scaled_mse_unchanged": 1.1060218940578717,
+            "strict_mean_only_bits": -56.0874106104835,
+            "adapted_mean_only_bits": -49.59619338192065
+          }
+        },
+        "16": {
+          "gru": {
+            "strict_history_gain_bits": -550.2398929148076,
+            "adapted_history_gain_bits": -998.6184568322077,
+            "scaled_mse_unchanged": 2.209054429805707,
+            "strict_mean_only_bits": -1074.8124745138066,
+            "adapted_mean_only_bits": -1161.0711565065494
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -38.23376601372554,
+            "adapted_history_gain_bits": -77.84881253975391,
+            "scaled_mse_unchanged": 1.186774497818941,
+            "strict_mean_only_bits": -57.62477052314247,
+            "adapted_mean_only_bits": -68.66745870528155
+          },
+          "host": {
+            "strict_history_gain_bits": -0.5760380710288029,
+            "adapted_history_gain_bits": 20.012247809859055,
+            "scaled_mse_unchanged": 1.1031637671436927,
+            "strict_mean_only_bits": 1.591902916637081,
+            "adapted_mean_only_bits": -4.21899916018282
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": -17.152420957647767,
+            "adapted_history_gain_bits": -21.13945332222666,
+            "scaled_mse_unchanged": 1.136479888442946,
+            "strict_mean_only_bits": -22.75625866575338,
+            "adapted_mean_only_bits": -26.56719555198981
+          }
+        },
+        "64": {
+          "gru": {
+            "strict_history_gain_bits": -624.9594818641235,
+            "adapted_history_gain_bits": -1399.1313945909844,
+            "scaled_mse_unchanged": 3.145103458910038,
+            "strict_mean_only_bits": -1543.278733789526,
+            "adapted_mean_only_bits": -1715.0948209797343
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -70.2308470438146,
+            "adapted_history_gain_bits": -108.10703007366027,
+            "scaled_mse_unchanged": 1.2204358793509908,
+            "strict_mean_only_bits": -85.84765881851193,
+            "adapted_mean_only_bits": -73.1362833558115
+          },
+          "host": {
+            "strict_history_gain_bits": 8.92847647858034,
+            "adapted_history_gain_bits": -24.986649238659883,
+            "scaled_mse_unchanged": 1.1182424814861804,
+            "strict_mean_only_bits": 8.627421128507882,
+            "adapted_mean_only_bits": 5.128507440835595
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": -46.59270724600715,
+            "adapted_history_gain_bits": -108.44242123234318,
+            "scaled_mse_unchanged": 1.1763357303484943,
+            "strict_mean_only_bits": -43.13515147969241,
+            "adapted_mean_only_bits": -49.27058188083697
+          }
+        }
+      }
+    },
+    "w0_energy03": {
+      "scope": "host energy intervention transfer",
+      "source_fit_calibration_chunk_overlap": 0,
+      "state_gain_over_history": {
+        "8": {
+          "field_fine": {
+            "gain_bits": -29.559182463717292,
+            "mean_only_bits": -43.074427964924304,
+            "mse_improvement_percent": -4.2204342742343535,
+            "null_gain_bits": [
+              -21.782599057999597,
+              -29.525668670310058,
+              -60.42814492938249
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -861.5591824637173
+          },
+          "field_meso": {
+            "gain_bits": -27.27774454187293,
+            "mean_only_bits": -29.403634494611158,
+            "mse_improvement_percent": -3.4976167331561476,
+            "null_gain_bits": [
+              -30.833960869650976,
+              -29.903918258954803,
+              -8.497964510353407
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -859.277744541873
+          },
+          "field_coarse": {
+            "gain_bits": -314.59666543368326,
+            "mean_only_bits": -369.4988513352455,
+            "mse_improvement_percent": -35.59544286470477,
+            "null_gain_bits": [
+              -91.57634542795043,
+              -183.22364456670482,
+              -125.97371454210499
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1146.5966654336833
+          },
+          "gru": {
+            "gain_bits": -463.58005470733895,
+            "mean_only_bits": -807.5371838877635,
+            "mse_improvement_percent": -70.92897343194481,
+            "null_gain_bits": [
+              -567.6832003292577,
+              -372.8865998310838,
+              -230.4838674149522
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1295.580054707339
+          },
+          "host": {
+            "gain_bits": -102.49735666594978,
+            "mean_only_bits": -118.99635599292793,
+            "mse_improvement_percent": -9.659239859157081,
+            "null_gain_bits": [
+              -156.30217513261653,
+              -102.68323222824823,
+              -7.382638957648981
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -934.4973566659498
+          },
+          "synthesis_phase": {
+            "gain_bits": -65.47378886615189,
+            "mean_only_bits": -65.60456501955305,
+            "mse_improvement_percent": -6.703528304878005,
+            "null_gain_bits": [
+              -120.38132747091662,
+              -155.0859407366857,
+              -52.385343438506155
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -897.4737888661518
+          }
+        },
+        "128": {
+          "field_fine": {
+            "gain_bits": -136.3555850332174,
+            "mean_only_bits": -10.838233325818205,
+            "mse_improvement_percent": -1.3739552889309103,
+            "null_gain_bits": [
+              -55.27450032847001,
+              -9.507462734884657,
+              -2.778659037528681
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -968.3555850332174
+          },
+          "field_meso": {
+            "gain_bits": -45.76508730370381,
+            "mean_only_bits": -6.648271206920246,
+            "mse_improvement_percent": -1.5860439389704855,
+            "null_gain_bits": [
+              25.46135648969037,
+              61.98001657028821,
+              46.24318720271824
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -877.7650873037038
+          },
+          "field_coarse": {
+            "gain_bits": -95.49071099160781,
+            "mean_only_bits": -34.6141937280253,
+            "mse_improvement_percent": -6.3461599165696265,
+            "null_gain_bits": [
+              -48.69114674779802,
+              -137.50576975323588,
+              48.07129510867255
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -927.4907109916078
+          },
+          "gru": {
+            "gain_bits": -332.25731390560225,
+            "mean_only_bits": -577.8255633468012,
+            "mse_improvement_percent": -77.30983402733794,
+            "null_gain_bits": [
+              -43.17800820259936,
+              -310.4958689617136,
+              -215.9511758310024
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1164.2573139056021
+          },
+          "host": {
+            "gain_bits": -54.67848654859842,
+            "mean_only_bits": -68.51506570275517,
+            "mse_improvement_percent": -4.729593436883126,
+            "null_gain_bits": [
+              -72.65991795073572,
+              -122.46189656800209,
+              -79.99512433231804
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -886.6784865485985
+          },
+          "synthesis_phase": {
+            "gain_bits": 77.89917701874182,
+            "mean_only_bits": -17.58095669340969,
+            "mse_improvement_percent": -2.125135100838677,
+            "null_gain_bits": [
+              -112.25990584133014,
+              -557.6880814033125,
+              -75.52206916813316
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -754.1008229812581
+          }
+        },
+        "16": {
+          "field_fine": {
+            "gain_bits": -49.2218996208134,
+            "mean_only_bits": -42.26915339658164,
+            "mse_improvement_percent": -4.66464079535758,
+            "null_gain_bits": [
+              -61.7645522419847,
+              -51.08200906325243,
+              -62.26296581058121
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -881.2218996208134
+          },
+          "field_meso": {
+            "gain_bits": -57.30943407757954,
+            "mean_only_bits": -58.28425005223623,
+            "mse_improvement_percent": -5.923247737213429,
+            "null_gain_bits": [
+              -76.53548860670227,
+              -10.03726093533517,
+              -79.1915241577814
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -889.3094340775796
+          },
+          "field_coarse": {
+            "gain_bits": 2.469127781091119,
+            "mean_only_bits": 6.080836705314287,
+            "mse_improvement_percent": -0.5634174447390544,
+            "null_gain_bits": [
+              -59.133555755234624,
+              -97.03976201228424,
+              -84.42345191937042
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -829.5308722189088
+          },
+          "gru": {
+            "gain_bits": -528.5633739449045,
+            "mean_only_bits": -924.9929456207342,
+            "mse_improvement_percent": -77.67190903269874,
+            "null_gain_bits": [
+              -833.1085849939698,
+              -542.7189116383976,
+              -455.75606652083445
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1360.5633739449045
+          },
+          "host": {
+            "gain_bits": -71.8507150225708,
+            "mean_only_bits": -87.12835296125898,
+            "mse_improvement_percent": -7.822688003620799,
+            "null_gain_bits": [
+              -80.55900946637368,
+              -48.50414123061483,
+              -64.07514547774564
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -903.8507150225707
+          },
+          "synthesis_phase": {
+            "gain_bits": -54.490277264504726,
+            "mean_only_bits": -70.24450743584447,
+            "mse_improvement_percent": -6.441477996471755,
+            "null_gain_bits": [
+              -130.25178833143883,
+              -183.9318607433142,
+              -73.71353961340571
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -886.4902772645047
+          }
+        },
+        "64": {
+          "field_fine": {
+            "gain_bits": -11.307331700854848,
+            "mean_only_bits": -12.247588897429175,
+            "mse_improvement_percent": -1.0529314311267928,
+            "null_gain_bits": [
+              -35.11608078722347,
+              -33.04416771654539,
+              -18.835316201572518
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -843.3073317008549
+          },
+          "field_meso": {
+            "gain_bits": -26.32599397270571,
+            "mean_only_bits": -20.665687262338338,
+            "mse_improvement_percent": -2.3301384737898374,
+            "null_gain_bits": [
+              -12.326619448597977,
+              -19.397743238434675,
+              -70.95670713138273
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -858.3259939727058
+          },
+          "field_coarse": {
+            "gain_bits": -35.90698503230928,
+            "mean_only_bits": -44.168922947052984,
+            "mse_improvement_percent": -5.7074183067797275,
+            "null_gain_bits": [
+              -55.64964749368767,
+              -28.066221124616092,
+              -106.02796257026434
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -867.9069850323093
+          },
+          "gru": {
+            "gain_bits": -547.8685746206614,
+            "mean_only_bits": -1270.6519695284128,
+            "mse_improvement_percent": -129.88253759531824,
+            "null_gain_bits": [
+              -853.6004527466189,
+              -548.3743901849075,
+              -233.9125452863063
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1379.8685746206615
+          },
+          "host": {
+            "gain_bits": -8.582349397085917,
+            "mean_only_bits": -8.962877832913069,
+            "mse_improvement_percent": -1.1379471311413898,
+            "null_gain_bits": [
+              -104.4557783814189,
+              -71.49231512139326,
+              5.444473709704109
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -840.5823493970859
+          },
+          "synthesis_phase": {
+            "gain_bits": -47.236657834898224,
+            "mean_only_bits": -47.95114920829634,
+            "mse_improvement_percent": -4.523056052328743,
+            "null_gain_bits": [
+              -38.607131621664095,
+              -44.66043590809868,
+              -43.39240165605298
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -879.2366578348982
+          }
+        }
+      },
+      "adaptation": {
+        "8": {
+          "gru": {
+            "strict_history_gain_bits": -437.5311761584652,
+            "adapted_history_gain_bits": -621.4967941781176,
+            "scaled_mse_unchanged": 1.7527984067766866,
+            "strict_mean_only_bits": -785.888306243241,
+            "adapted_mean_only_bits": -785.9090347276323
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -249.61720722305682,
+            "adapted_history_gain_bits": -172.25132983232083,
+            "scaled_mse_unchanged": 1.292178473237884,
+            "strict_mean_only_bits": -291.6048536096586,
+            "adapted_mean_only_bits": -298.85541679269795
+          },
+          "host": {
+            "strict_history_gain_bits": -78.59874097243448,
+            "adapted_history_gain_bits": -59.06676391764917,
+            "scaled_mse_unchanged": 1.0548636447661264,
+            "strict_mean_only_bits": -95.1820566824891,
+            "adapted_mean_only_bits": -99.27194983006487
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": -66.58273174868248,
+            "adapted_history_gain_bits": -61.113110520988485,
+            "scaled_mse_unchanged": 1.0415961133056364,
+            "strict_mean_only_bits": -65.84580032427776,
+            "adapted_mean_only_bits": -69.61000397869093
+          }
+        },
+        "16": {
+          "gru": {
+            "strict_history_gain_bits": -493.66300182515243,
+            "adapted_history_gain_bits": -929.3019979054257,
+            "scaled_mse_unchanged": 1.91618924362074,
+            "strict_mean_only_bits": -904.2561486250178,
+            "adapted_mean_only_bits": -1207.7984775241825
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": 10.931772063722903,
+            "adapted_history_gain_bits": -1.0067686064748615,
+            "scaled_mse_unchanged": 1.0222228138629046,
+            "strict_mean_only_bits": 10.6829326448015,
+            "adapted_mean_only_bits": -0.4811397923148717
+          },
+          "host": {
+            "strict_history_gain_bits": -59.998875655019475,
+            "adapted_history_gain_bits": -28.44276085258859,
+            "scaled_mse_unchanged": 1.1018129150925569,
+            "strict_mean_only_bits": -72.88273862759453,
+            "adapted_mean_only_bits": -90.34433991486956
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": -52.30273050892308,
+            "adapted_history_gain_bits": -74.87809057012657,
+            "scaled_mse_unchanged": 1.0951487272907292,
+            "strict_mean_only_bits": -66.32162659315962,
+            "adapted_mean_only_bits": -77.23775947275557
+          }
+        },
+        "64": {
+          "gru": {
+            "strict_history_gain_bits": -525.4999756627818,
+            "adapted_history_gain_bits": -1892.989146068724,
+            "scaled_mse_unchanged": 2.73878984997767,
+            "strict_mean_only_bits": -1263.0302784081393,
+            "adapted_mean_only_bits": -2548.557655002281
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -30.54153072033769,
+            "adapted_history_gain_bits": -182.737661211763,
+            "scaled_mse_unchanged": 1.1337320832564082,
+            "strict_mean_only_bits": -45.02637589749388,
+            "adapted_mean_only_bits": -80.86524853434193
+          },
+          "host": {
+            "strict_history_gain_bits": -10.981492618489211,
+            "adapted_history_gain_bits": -8.888787872470074,
+            "scaled_mse_unchanged": 1.0865106725769573,
+            "strict_mean_only_bits": -11.968711317724674,
+            "adapted_mean_only_bits": -19.45007073076215
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": -49.9613413469807,
+            "adapted_history_gain_bits": -158.10216033529633,
+            "scaled_mse_unchanged": 1.1229741745988424,
+            "strict_mean_only_bits": -48.00328537743292,
+            "adapted_mean_only_bits": -69.52832717239548
+          }
+        }
+      }
+    },
+    "w128_energy01": {
+      "scope": "host energy intervention transfer",
+      "source_fit_calibration_chunk_overlap": 0,
+      "state_gain_over_history": {
+        "8": {
+          "field_fine": {
+            "gain_bits": -14.211822968454427,
+            "mean_only_bits": -10.495031357188324,
+            "mse_improvement_percent": -1.6408309171821605,
+            "null_gain_bits": [
+              -30.05775611489182,
+              -67.38441077770347,
+              -46.26551869756199
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -846.2118229684544
+          },
+          "field_meso": {
+            "gain_bits": -13.56650114474325,
+            "mean_only_bits": -4.8962574067661535,
+            "mse_improvement_percent": -1.3518795622394635,
+            "null_gain_bits": [
+              -55.660241592739496,
+              -8.429162860562304,
+              -54.294000059762325
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -845.5665011447433
+          },
+          "field_coarse": {
+            "gain_bits": -151.76654388719476,
+            "mean_only_bits": -164.25488681085324,
+            "mse_improvement_percent": -15.51306355726619,
+            "null_gain_bits": [
+              -34.38676035744771,
+              -83.35183754244746,
+              -35.21060463682894
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -983.7665438871948
+          },
+          "gru": {
+            "gain_bits": -690.4598629633797,
+            "mean_only_bits": -1268.2575898931605,
+            "mse_improvement_percent": -101.78983340353415,
+            "null_gain_bits": [
+              -888.2909831715017,
+              -577.6483325924514,
+              -468.270948269581
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1522.4598629633797
+          },
+          "host": {
+            "gain_bits": -129.62481697414367,
+            "mean_only_bits": -133.66231060953066,
+            "mse_improvement_percent": -10.41963685448766,
+            "null_gain_bits": [
+              -260.4063562866177,
+              -242.3044505269552,
+              -232.3684913976054
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -961.6248169741436
+          },
+          "synthesis_phase": {
+            "gain_bits": -40.57874929750676,
+            "mean_only_bits": -49.80106754351373,
+            "mse_improvement_percent": -3.922856846055632,
+            "null_gain_bits": [
+              -164.21366446592316,
+              -132.50826816177386,
+              -73.35576044623492
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -872.5787492975068
+          }
+        },
+        "128": {
+          "field_fine": {
+            "gain_bits": -142.19787156312478,
+            "mean_only_bits": -3.8181506618889465,
+            "mse_improvement_percent": -1.6870505443416466,
+            "null_gain_bits": [
+              -12.35192630044056,
+              31.163432301286303,
+              -10.66893910633891
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -974.1978715631247
+          },
+          "field_meso": {
+            "gain_bits": -15.445614064912338,
+            "mean_only_bits": 27.971896668337706,
+            "mse_improvement_percent": 0.1793892293701754,
+            "null_gain_bits": [
+              44.55713535518173,
+              50.67430327895601,
+              -1.981232539646797
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -847.4456140649123
+          },
+          "field_coarse": {
+            "gain_bits": -81.42602590604864,
+            "mean_only_bits": -19.005139586210937,
+            "mse_improvement_percent": -3.7530946104616447,
+            "null_gain_bits": [
+              -44.56927562955554,
+              -139.71651106082777,
+              48.94427058819688
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -913.4260259060486
+          },
+          "gru": {
+            "gain_bits": -450.07557157821805,
+            "mean_only_bits": -864.9810343066025,
+            "mse_improvement_percent": -108.81331471620912,
+            "null_gain_bits": [
+              -103.16638181302244,
+              -449.69568040450224,
+              -458.1178978251563
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1282.075571578218
+          },
+          "host": {
+            "gain_bits": -31.3481258668442,
+            "mean_only_bits": -55.60611436398663,
+            "mse_improvement_percent": -3.697980248972074,
+            "null_gain_bits": [
+              -131.90120651301726,
+              -164.9821290868764,
+              -166.20967403023795
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -863.3481258668442
+          },
+          "synthesis_phase": {
+            "gain_bits": 82.38028480488126,
+            "mean_only_bits": -33.6633036352396,
+            "mse_improvement_percent": -2.0278617516582065,
+            "null_gain_bits": [
+              -79.0596935693859,
+              -548.415319229543,
+              -27.12131464378226
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -749.6197151951187
+          }
+        },
+        "16": {
+          "field_fine": {
+            "gain_bits": -14.149988870603972,
+            "mean_only_bits": -4.569426090233457,
+            "mse_improvement_percent": -1.1941799450252228,
+            "null_gain_bits": [
+              -42.89534841166392,
+              -64.38010423130437,
+              -83.20339294901301
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -846.1499888706039
+          },
+          "field_meso": {
+            "gain_bits": -18.101101657068398,
+            "mean_only_bits": -17.33411385718647,
+            "mse_improvement_percent": -2.074271841671586,
+            "null_gain_bits": [
+              -57.11791029947427,
+              -64.6979238397617,
+              -58.1497473866199
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -850.1011016570684
+          },
+          "field_coarse": {
+            "gain_bits": 14.282955207617842,
+            "mean_only_bits": -4.203783226851801,
+            "mse_improvement_percent": -1.299438444892223,
+            "null_gain_bits": [
+              -43.92138380086111,
+              -45.74069398035853,
+              -90.97464241559669
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -817.7170447923821
+          },
+          "gru": {
+            "gain_bits": -745.061955785024,
+            "mean_only_bits": -1490.6387534530156,
+            "mse_improvement_percent": -113.11539343254873,
+            "null_gain_bits": [
+              -1000.9529160331963,
+              -830.1268628587629,
+              -599.773425300802
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1577.061955785024
+          },
+          "host": {
+            "gain_bits": -80.67721604771114,
+            "mean_only_bits": -80.69822663850879,
+            "mse_improvement_percent": -6.693366877911117,
+            "null_gain_bits": [
+              -221.1348033333192,
+              -135.3985656926833,
+              -227.14754378237666
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -912.6772160477111
+          },
+          "synthesis_phase": {
+            "gain_bits": -40.79865398118852,
+            "mean_only_bits": -65.58119848588237,
+            "mse_improvement_percent": -5.277241707637898,
+            "null_gain_bits": [
+              -66.54127048822988,
+              -112.12892847604431,
+              -70.65500098685101
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -872.7986539811885
+          }
+        },
+        "64": {
+          "field_fine": {
+            "gain_bits": -4.265160313504937,
+            "mean_only_bits": -1.1338903461776226,
+            "mse_improvement_percent": -0.1738447684233795,
+            "null_gain_bits": [
+              -28.830348050262568,
+              -15.545717784480868,
+              -13.802968145892834
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -836.2651603135049
+          },
+          "field_meso": {
+            "gain_bits": -8.85667114198021,
+            "mean_only_bits": -3.5219536524332256,
+            "mse_improvement_percent": -0.5753794753451569,
+            "null_gain_bits": [
+              3.8204284429053548,
+              -0.6138527424751992,
+              -83.12393337426315
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -840.8566711419802
+          },
+          "field_coarse": {
+            "gain_bits": -33.118446911345664,
+            "mean_only_bits": -41.24847849440954,
+            "mse_improvement_percent": -3.8676349048270606,
+            "null_gain_bits": [
+              -21.284082857400495,
+              -30.378608901709566,
+              -36.84458454049655
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -865.1184469113457
+          },
+          "gru": {
+            "gain_bits": -805.8010629534543,
+            "mean_only_bits": -2015.3295428451727,
+            "mse_improvement_percent": -198.62058292610627,
+            "null_gain_bits": [
+              -1095.6912343130707,
+              -758.1842465669416,
+              -494.05520492479394
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1637.8010629534542
+          },
+          "host": {
+            "gain_bits": -213.37792715996625,
+            "mean_only_bits": -200.41708011787182,
+            "mse_improvement_percent": -20.38024928778586,
+            "null_gain_bits": [
+              -104.91561867785296,
+              -314.3284399743976,
+              -103.7098462385386
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1045.3779271599662
+          },
+          "synthesis_phase": {
+            "gain_bits": -54.99151692896775,
+            "mean_only_bits": -72.0503346325905,
+            "mse_improvement_percent": -5.70390454666136,
+            "null_gain_bits": [
+              -84.08028344863223,
+              -115.95316001028982,
+              -17.67885508085817
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -886.9915169289677
+          }
+        }
+      },
+      "adaptation": {
+        "8": {
+          "gru": {
+            "strict_history_gain_bits": -670.9192464255553,
+            "adapted_history_gain_bits": -1462.9763715782335,
+            "scaled_mse_unchanged": 2.3674056263459344,
+            "strict_mean_only_bits": -1265.8756406265813,
+            "adapted_mean_only_bits": -1432.354152060609
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -128.91440302811077,
+            "adapted_history_gain_bits": -121.33178218373679,
+            "scaled_mse_unchanged": 1.2715862600793286,
+            "strict_mean_only_bits": -144.73681370183027,
+            "adapted_mean_only_bits": -185.74313107512154
+          },
+          "host": {
+            "strict_history_gain_bits": -110.98831751211192,
+            "adapted_history_gain_bits": -99.23418506848583,
+            "scaled_mse_unchanged": 1.211329053759866,
+            "strict_mean_only_bits": -112.36343396740978,
+            "adapted_mean_only_bits": -128.01703527426287
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": -34.92976209823206,
+            "adapted_history_gain_bits": -4.5921028492202485,
+            "scaled_mse_unchanged": 1.1383006709714416,
+            "strict_mean_only_bits": -42.9228210750561,
+            "adapted_mean_only_bits": -34.956551517529846
+          }
+        },
+        "16": {
+          "gru": {
+            "strict_history_gain_bits": -728.7345219884386,
+            "adapted_history_gain_bits": -1340.9443442781114,
+            "scaled_mse_unchanged": 2.6151584547039386,
+            "strict_mean_only_bits": -1484.4952487556407,
+            "adapted_mean_only_bits": -1452.2921466980201
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": 17.291185762569185,
+            "adapted_history_gain_bits": -4.999824050516575,
+            "scaled_mse_unchanged": 1.1477873282873596,
+            "strict_mean_only_bits": -1.0162799281059005,
+            "adapted_mean_only_bits": -7.074656037487502
+          },
+          "host": {
+            "strict_history_gain_bits": -73.25254487841237,
+            "adapted_history_gain_bits": -72.57748365468012,
+            "scaled_mse_unchanged": 1.2141474170873041,
+            "strict_mean_only_bits": -70.85226132238388,
+            "adapted_mean_only_bits": -75.01628158848584
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": -45.7915727485095,
+            "adapted_history_gain_bits": -63.4041261438921,
+            "scaled_mse_unchanged": 1.2054740736328406,
+            "strict_mean_only_bits": -68.23742995885942,
+            "adapted_mean_only_bits": -61.0457202823629
+          }
+        },
+        "64": {
+          "gru": {
+            "strict_history_gain_bits": -782.236924535451,
+            "adapted_history_gain_bits": -2035.261660184935,
+            "scaled_mse_unchanged": 3.7846268025994654,
+            "strict_mean_only_bits": -2006.2737050653923,
+            "adapted_mean_only_bits": -2532.2995369400187
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -23.780803381109575,
+            "adapted_history_gain_bits": 0.9025007319192788,
+            "scaled_mse_unchanged": 1.1844796131485065,
+            "strict_mean_only_bits": -32.2170918823693,
+            "adapted_mean_only_bits": -40.37010352856084
+          },
+          "host": {
+            "strict_history_gain_bits": -206.83045939762118,
+            "adapted_history_gain_bits": -279.42766126036344,
+            "scaled_mse_unchanged": 1.405790689537745,
+            "strict_mean_only_bits": -195.40295817264243,
+            "adapted_mean_only_bits": -253.0044817754154
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": -50.69495904629313,
+            "adapted_history_gain_bits": -60.323733312046684,
+            "scaled_mse_unchanged": 1.2142284111326904,
+            "strict_mean_only_bits": -67.25659395348998,
+            "adapted_mean_only_bits": -82.48254801166482
+          }
+        }
+      }
+    },
+    "w128_energy03": {
+      "scope": "host energy intervention transfer",
+      "source_fit_calibration_chunk_overlap": 0,
+      "state_gain_over_history": {
+        "8": {
+          "field_fine": {
+            "gain_bits": 39.631323475866836,
+            "mean_only_bits": 22.189734335668597,
+            "mse_improvement_percent": 2.024455022435658,
+            "null_gain_bits": [
+              -33.38176222210182,
+              -37.844012274974816,
+              -50.65092814979889
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -792.3686765241332
+          },
+          "field_meso": {
+            "gain_bits": 15.039417987759657,
+            "mean_only_bits": 12.692586667474462,
+            "mse_improvement_percent": 0.7794410544554784,
+            "null_gain_bits": [
+              -82.84312050789663,
+              6.384629433414933,
+              -45.53942363997304
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -816.9605820122404
+          },
+          "field_coarse": {
+            "gain_bits": -734.0665026562161,
+            "mean_only_bits": -872.3572482807893,
+            "mse_improvement_percent": -75.05918811184675,
+            "null_gain_bits": [
+              -214.8067388041947,
+              -744.6420743779909,
+              -570.7183708855144
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1566.066502656216
+          },
+          "gru": {
+            "gain_bits": -600.5990466614084,
+            "mean_only_bits": -1129.1028873862663,
+            "mse_improvement_percent": -90.15586520995929,
+            "null_gain_bits": [
+              -1094.0585854093533,
+              -588.6066271563266,
+              -428.5895474143439
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1432.5990466614085
+          },
+          "host": {
+            "gain_bits": -207.94968527395008,
+            "mean_only_bits": -210.96455633413538,
+            "mse_improvement_percent": -16.82221664661116,
+            "null_gain_bits": [
+              -417.8600795377858,
+              -125.21380467915992,
+              -162.6542828305307
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1039.94968527395
+          },
+          "synthesis_phase": {
+            "gain_bits": -22.646024844788887,
+            "mean_only_bits": -29.77561385459886,
+            "mse_improvement_percent": -2.584832408644865,
+            "null_gain_bits": [
+              -73.41161819175596,
+              -146.9795232145966,
+              -18.691156225971923
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -854.6460248447889
+          }
+        },
+        "128": {
+          "field_fine": {
+            "gain_bits": -212.4236003417156,
+            "mean_only_bits": -21.931741302373407,
+            "mse_improvement_percent": -1.103055334557085,
+            "null_gain_bits": [
+              -44.89898116016073,
+              41.49860272893277,
+              -10.149650136628269
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1044.4236003417157
+          },
+          "field_meso": {
+            "gain_bits": -48.019648512507075,
+            "mean_only_bits": 8.622711249502203,
+            "mse_improvement_percent": -1.0563255946824754,
+            "null_gain_bits": [
+              66.19862226687026,
+              79.6301645178632,
+              53.323241046197296
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -880.019648512507
+          },
+          "field_coarse": {
+            "gain_bits": -519.6459410940157,
+            "mean_only_bits": -411.31393708325476,
+            "mse_improvement_percent": -32.769633779813915,
+            "null_gain_bits": [
+              -332.1849010358236,
+              -392.5584124048144,
+              -101.56443580654712
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1351.6459410940156
+          },
+          "gru": {
+            "gain_bits": -318.08499982664364,
+            "mean_only_bits": -682.3520280832547,
+            "mse_improvement_percent": -83.28598221061041,
+            "null_gain_bits": [
+              -117.82309610789373,
+              -577.4245400407788,
+              -281.6416721930757
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1150.0849998266435
+          },
+          "host": {
+            "gain_bits": -82.40405136972579,
+            "mean_only_bits": -111.92733559523306,
+            "mse_improvement_percent": -6.622740324165982,
+            "null_gain_bits": [
+              -183.48115938582248,
+              -194.30073651417916,
+              -73.31313998838652
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -914.4040513697258
+          },
+          "synthesis_phase": {
+            "gain_bits": 77.90756750866508,
+            "mean_only_bits": -130.90018227373236,
+            "mse_improvement_percent": -7.147557546773962,
+            "null_gain_bits": [
+              -107.48427560307991,
+              -679.7957975137846,
+              -33.17577095828662
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -754.0924324913349
+          }
+        },
+        "16": {
+          "field_fine": {
+            "gain_bits": 8.23422335196763,
+            "mean_only_bits": 15.875785446365345,
+            "mse_improvement_percent": 0.7493067296161972,
+            "null_gain_bits": [
+              -53.33619359461075,
+              -37.135139423974564,
+              -78.01167831974863
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -823.7657766480323
+          },
+          "field_meso": {
+            "gain_bits": -22.164510403217584,
+            "mean_only_bits": -26.81643659314842,
+            "mse_improvement_percent": -2.80895748706242,
+            "null_gain_bits": [
+              -80.18233026540521,
+              -8.252630027583365,
+              -37.33087541456945
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -854.1645104032176
+          },
+          "field_coarse": {
+            "gain_bits": -97.62377129309914,
+            "mean_only_bits": -150.45599959496255,
+            "mse_improvement_percent": -11.520200639849248,
+            "null_gain_bits": [
+              -161.9999801562853,
+              -214.35311471510136,
+              -451.29114024011983
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -929.6237712930991
+          },
+          "gru": {
+            "gain_bits": -656.3739490550848,
+            "mean_only_bits": -1352.899493263867,
+            "mse_improvement_percent": -107.06703696055025,
+            "null_gain_bits": [
+              -898.6180513500763,
+              -703.2526417881937,
+              -553.2844903399368
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1488.3739490550847
+          },
+          "host": {
+            "gain_bits": -78.28270401050187,
+            "mean_only_bits": -71.27562658486445,
+            "mse_improvement_percent": -7.255663790320375,
+            "null_gain_bits": [
+              -217.72351816442674,
+              -159.45681934875233,
+              -286.73348368571214
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -910.2827040105019
+          },
+          "synthesis_phase": {
+            "gain_bits": 0.6397976983087599,
+            "mean_only_bits": -28.363814792510915,
+            "mse_improvement_percent": -1.9151813027910556,
+            "null_gain_bits": [
+              -82.39453208434698,
+              -109.85833992302832,
+              -43.23930612747431
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -831.3602023016913
+          }
+        },
+        "64": {
+          "field_fine": {
+            "gain_bits": 10.73564259785355,
+            "mean_only_bits": -2.8905741151629165,
+            "mse_improvement_percent": -0.21469935117942152,
+            "null_gain_bits": [
+              -94.82232541806607,
+              0.842865388619451,
+              -11.390593524177234
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -821.2643574021464
+          },
+          "field_meso": {
+            "gain_bits": 5.570443351688714,
+            "mean_only_bits": 0.1286966240345624,
+            "mse_improvement_percent": -0.12191929335652091,
+            "null_gain_bits": [
+              24.137760185251775,
+              -4.577379710398105,
+              -81.68060808636811
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -826.4295566483113
+          },
+          "field_coarse": {
+            "gain_bits": -204.1929843062247,
+            "mean_only_bits": -241.09955300147232,
+            "mse_improvement_percent": -25.167626266348314,
+            "null_gain_bits": [
+              -55.8583141611968,
+              -465.8510732834222,
+              -308.57968604340317
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1036.1929843062246
+          },
+          "gru": {
+            "gain_bits": -675.176176907837,
+            "mean_only_bits": -1783.480577941821,
+            "mse_improvement_percent": -174.37441238235104,
+            "null_gain_bits": [
+              -1053.8761721536584,
+              -786.9394090665761,
+              -400.5868945048425
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -1507.176176907837
+          },
+          "host": {
+            "gain_bits": -147.45747347568374,
+            "mean_only_bits": -142.31697234484434,
+            "mse_improvement_percent": -14.30372465395172,
+            "null_gain_bits": [
+              -184.9258337476471,
+              -104.07785881150048,
+              -93.48209608724707
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -979.4574734756837
+          },
+          "synthesis_phase": {
+            "gain_bits": -49.67506923182441,
+            "mean_only_bits": -72.54116729168629,
+            "mse_improvement_percent": -7.20387682750607,
+            "null_gain_bits": [
+              -50.67893615045742,
+              -28.698331400430177,
+              -7.897764521947925
+            ],
+            "net_bits_after_16bit_added_parameter_cost": -881.6750692318244
+          }
+        }
+      },
+      "adaptation": {
+        "8": {
+          "gru": {
+            "strict_history_gain_bits": -583.3098343033901,
+            "adapted_history_gain_bits": -1255.5191518944202,
+            "scaled_mse_unchanged": 2.253815009343378,
+            "strict_mean_only_bits": -1128.138370335994,
+            "adapted_mean_only_bits": -1286.0696579707308
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -731.5793888610966,
+            "adapted_history_gain_bits": -1017.1716278922677,
+            "scaled_mse_unchanged": 2.062584022676817,
+            "strict_mean_only_bits": -874.1007341684481,
+            "adapted_mean_only_bits": -970.287214669776
+          },
+          "host": {
+            "strict_history_gain_bits": -186.0927344812961,
+            "adapted_history_gain_bits": -114.33250634418229,
+            "scaled_mse_unchanged": 1.2993005008317913,
+            "strict_mean_only_bits": -185.03646111250123,
+            "adapted_mean_only_bits": -162.14198198143794
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": -9.597705868263889,
+            "adapted_history_gain_bits": 13.201108053819755,
+            "scaled_mse_unchanged": 1.1217537263307982,
+            "strict_mean_only_bits": -13.829513068116873,
+            "adapted_mean_only_bits": -12.433418691692728
+          }
+        },
+        "16": {
+          "gru": {
+            "strict_history_gain_bits": -629.3621407210911,
+            "adapted_history_gain_bits": -1521.1087474152478,
+            "scaled_mse_unchanged": 2.5168698569938113,
+            "strict_mean_only_bits": -1343.5473718313017,
+            "adapted_mean_only_bits": -1653.9451845387541
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -92.99344450527488,
+            "adapted_history_gain_bits": -162.54051077679503,
+            "scaled_mse_unchanged": 1.27855726046919,
+            "strict_mean_only_bits": -148.08598798981473,
+            "adapted_mean_only_bits": -186.53777180596063
+          },
+          "host": {
+            "strict_history_gain_bits": -74.31767682697578,
+            "adapted_history_gain_bits": -72.76476358627075,
+            "scaled_mse_unchanged": 1.219318110630119,
+            "strict_mean_only_bits": -64.85509663783884,
+            "adapted_mean_only_bits": -66.48639715141246
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": 4.048282428703195,
+            "adapted_history_gain_bits": -9.738587153167352,
+            "scaled_mse_unchanged": 1.1570645891757916,
+            "strict_mean_only_bits": -24.15886098872052,
+            "adapted_mean_only_bits": -20.13279511305365
+          }
+        },
+        "64": {
+          "gru": {
+            "strict_history_gain_bits": -632.9380797968387,
+            "adapted_history_gain_bits": -2228.705943992365,
+            "scaled_mse_unchanged": 3.5469662383250333,
+            "strict_mean_only_bits": -1767.3988208874496,
+            "adapted_mean_only_bits": -3112.026995718229
+          },
+          "field_coarse": {
+            "strict_history_gain_bits": -199.58886133521946,
+            "adapted_history_gain_bits": -225.06355023572274,
+            "scaled_mse_unchanged": 1.5305919000662755,
+            "strict_mean_only_bits": -238.40680884244296,
+            "adapted_mean_only_bits": -259.7101097702256
+          },
+          "host": {
+            "strict_history_gain_bits": -141.60549575893862,
+            "adapted_history_gain_bits": -377.59657536772573,
+            "scaled_mse_unchanged": 1.3801597193348976,
+            "strict_mean_only_bits": -137.20839952135034,
+            "adapted_mean_only_bits": -269.06271013140963
+          },
+          "synthesis_phase": {
+            "strict_history_gain_bits": -27.370981683215128,
+            "adapted_history_gain_bits": 114.67077830358252,
+            "scaled_mse_unchanged": 1.260449696800514,
+            "strict_mean_only_bits": -52.051185866771476,
+            "adapted_mean_only_bits": -93.10044568704845
+          }
+        }
+      }
+    }
+  },
+  "prior_source_v2_parity": true,
+  "actual_serialized_probe_bytes": 532264,
+  "elapsed_seconds": 110.3357327709964,
+  "peak_rss_mib": 285.6484375
+}

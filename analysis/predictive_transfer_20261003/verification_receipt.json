@@ -1,0 +1,11 @@
+{
+  "source_v2_code_parity": true,
+  "save_reload_exact": true,
+  "fixed_probes_unchanged": true,
+  "parent_unchanged": true,
+  "episodes": 11,
+  "peak_rss_mib": 285.6484375,
+  "elapsed_seconds": 110.3357327709964,
+  "source_sha256": "5371093f2627f47c5964e9a39ca17e76d51aa82df4bab877e13d5cdac69c2dd9",
+  "result_sha256": "c7a953471f1ba0d0beac9716fecb8c94da4aea98a45d0be2856e28f8848b9ee1"
+}

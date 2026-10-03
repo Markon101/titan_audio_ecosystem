@@ -1,0 +1,765 @@
+{
+  "schema": 1,
+  "source_fixed_normalization": true,
+  "episodes": {
+    "source_audit": {
+      "target": {
+        "rms_standardized_distance": 0.9727680269962136,
+        "clip_fraction": 0.0,
+        "outside_training_range_fraction": 0.019230769230769232
+      },
+      "views": {
+        "gru": {
+          "rms_standardized_distance": 3.25755835271249,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.6015625
+        },
+        "field_fine": {
+          "rms_standardized_distance": 0.985395862168632,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.02217371323529412
+        },
+        "field_meso": {
+          "rms_standardized_distance": 0.9921763132668859,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.012522977941176471
+        },
+        "field_coarse": {
+          "rms_standardized_distance": 0.9936582464033364,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.019761029411764705
+        },
+        "morphic_delta_l01": {
+          "rms_standardized_distance": 4.367837700578651,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.595458984375
+        },
+        "morphic_delta_l08": {
+          "rms_standardized_distance": 2.9062621343698116,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.59716796875
+        },
+        "morphic_delta_l16": {
+          "rms_standardized_distance": 2.3950779721209634,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.56982421875
+        },
+        "morphic_output": {
+          "rms_standardized_distance": 3.2420293136529397,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.6015625
+        },
+        "host": {
+          "rms_standardized_distance": 0.808249624737473,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.0146484375
+        },
+        "motif": {
+          "rms_standardized_distance": 2.3435631647828186,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.253125
+        },
+        "decoder_control": {
+          "rms_standardized_distance": 2.908792517358785,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.47770579268292684
+        },
+        "synthesis_phase": {
+          "rms_standardized_distance": 0.8662390903590664,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.0400390625
+        }
+      }
+    },
+    "overlap_w128": {
+      "target": {
+        "rms_standardized_distance": 0.9635666936539434,
+        "clip_fraction": 0.0,
+        "outside_training_range_fraction": 0.02283653846153846
+      },
+      "views": {
+        "gru": {
+          "rms_standardized_distance": 3.7311294396559576,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.7265625
+        },
+        "field_fine": {
+          "rms_standardized_distance": 0.9756146551226346,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.028722426470588234
+        },
+        "field_meso": {
+          "rms_standardized_distance": 0.989807761883752,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.01803768382352941
+        },
+        "field_coarse": {
+          "rms_standardized_distance": 0.9833028291088552,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.030215992647058824
+        },
+        "morphic_delta_l01": {
+          "rms_standardized_distance": 5.250726080838113,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.720458984375
+        },
+        "morphic_delta_l08": {
+          "rms_standardized_distance": 3.3323030268784968,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.72216796875
+        },
+        "morphic_delta_l16": {
+          "rms_standardized_distance": 2.7487862851512164,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.693603515625
+        },
+        "morphic_output": {
+          "rms_standardized_distance": 3.714181169834015,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.7265625
+        },
+        "host": {
+          "rms_standardized_distance": 0.789723214170314,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.0205078125
+        },
+        "motif": {
+          "rms_standardized_distance": 2.8700492745068042,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.30625
+        },
+        "decoder_control": {
+          "rms_standardized_distance": 3.3258670171893105,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.5788871951219512
+        },
+        "synthesis_phase": {
+          "rms_standardized_distance": 0.8662412371837125,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.0517578125
+        }
+      }
+    },
+    "L16_WP_SP": {
+      "target": {
+        "rms_standardized_distance": 1.0056467990883053,
+        "clip_fraction": 0.0,
+        "outside_training_range_fraction": 0.03365384615384615
+      },
+      "views": {
+        "gru": {
+          "rms_standardized_distance": 0.9399345120360189,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.007161458333333333
+        },
+        "field_fine": {
+          "rms_standardized_distance": 1.04439756590332,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.06525735294117647
+        },
+        "field_meso": {
+          "rms_standardized_distance": 1.0303446984266205,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.042279411764705885
+        },
+        "field_coarse": {
+          "rms_standardized_distance": 0.9706538569272368,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.0428921568627451
+        },
+        "morphic_delta_l01": {
+          "rms_standardized_distance": 0.9359580413996644,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.012369791666666666
+        },
+        "morphic_delta_l08": {
+          "rms_standardized_distance": 0.8383663018320916,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.0078125
+        },
+        "morphic_delta_l16": {
+          "rms_standardized_distance": 0.68019576535378,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.004557291666666667
+        },
+        "morphic_output": {
+          "rms_standardized_distance": 0.9388997818272887,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.008463541666666666
+        },
+        "host": {
+          "rms_standardized_distance": 0.8621719464881626,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.0625
+        },
+        "motif": {
+          "rms_standardized_distance": 0.7166445118652813,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.025
+        },
+        "decoder_control": {
+          "rms_standardized_distance": 0.9853058174409186,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.019817073170731708
+        },
+        "synthesis_phase": {
+          "rms_standardized_distance": 0.8661957323430298,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.013020833333333334
+        }
+      }
+    },
+    "L16_WP_SC": {
+      "target": {
+        "rms_standardized_distance": 1.0095900845427626,
+        "clip_fraction": 0.0,
+        "outside_training_range_fraction": 0.035256410256410256
+      },
+      "views": {
+        "gru": {
+          "rms_standardized_distance": 5.153939921397565,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.8639322916666666
+        },
+        "field_fine": {
+          "rms_standardized_distance": 1.0418824527066988,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.06801470588235294
+        },
+        "field_meso": {
+          "rms_standardized_distance": 1.0041890593370684,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.04136029411764706
+        },
+        "field_coarse": {
+          "rms_standardized_distance": 9.821746472684877,
+          "clip_fraction": 0.037377450980392156,
+          "outside_training_range_fraction": 0.3805147058823529
+        },
+        "morphic_delta_l01": {
+          "rms_standardized_distance": 22.148890759093366,
+          "clip_fraction": 0.059244791666666664,
+          "outside_training_range_fraction": 0.8951822916666666
+        },
+        "morphic_delta_l08": {
+          "rms_standardized_distance": 6.639155352408635,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.9153645833333334
+        },
+        "morphic_delta_l16": {
+          "rms_standardized_distance": 3.160409876188305,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.9049479166666666
+        },
+        "morphic_output": {
+          "rms_standardized_distance": 4.960133297608872,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.9290364583333334
+        },
+        "host": {
+          "rms_standardized_distance": 0.8325184016303595,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.059895833333333336
+        },
+        "motif": {
+          "rms_standardized_distance": 3605551.275493905,
+          "clip_fraction": 0.4,
+          "outside_training_range_fraction": 0.8166666666666667
+        },
+        "decoder_control": {
+          "rms_standardized_distance": 4.27824355496534,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.7494918699186992
+        },
+        "synthesis_phase": {
+          "rms_standardized_distance": 0.8666310584451943,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.09114583333333333
+        }
+      }
+    },
+    "L16_WC_SP": {
+      "target": {
+        "rms_standardized_distance": 1.2838644004234077,
+        "clip_fraction": 0.0,
+        "outside_training_range_fraction": 0.08012820512820513
+      },
+      "views": {
+        "gru": {
+          "rms_standardized_distance": 2.7520318704431155,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.654296875
+        },
+        "field_fine": {
+          "rms_standardized_distance": 1.5923516098796435,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.2763480392156863
+        },
+        "field_meso": {
+          "rms_standardized_distance": 1.3721025491281265,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.09252450980392157
+        },
+        "field_coarse": {
+          "rms_standardized_distance": 22.542132746299288,
+          "clip_fraction": 0.19117647058823528,
+          "outside_training_range_fraction": 0.5487132352941176
+        },
+        "morphic_delta_l01": {
+          "rms_standardized_distance": 122634.2390530019,
+          "clip_fraction": 1.0,
+          "outside_training_range_fraction": 1.0
+        },
+        "morphic_delta_l08": {
+          "rms_standardized_distance": 88491.5345980307,
+          "clip_fraction": 1.0,
+          "outside_training_range_fraction": 1.0
+        },
+        "morphic_delta_l16": {
+          "rms_standardized_distance": 98261.60189767738,
+          "clip_fraction": 1.0,
+          "outside_training_range_fraction": 1.0
+        },
+        "morphic_output": {
+          "rms_standardized_distance": 2986.5322295369892,
+          "clip_fraction": 0.96875,
+          "outside_training_range_fraction": 1.0
+        },
+        "host": {
+          "rms_standardized_distance": 5.942824472189206,
+          "clip_fraction": 0.015625,
+          "outside_training_range_fraction": 0.2630208333333333
+        },
+        "motif": {
+          "rms_standardized_distance": 0.8952569846522718,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.041666666666666664
+        },
+        "decoder_control": {
+          "rms_standardized_distance": 2844.01645161472,
+          "clip_fraction": 0.7560975609756098,
+          "outside_training_range_fraction": 0.7947154471544715
+        },
+        "synthesis_phase": {
+          "rms_standardized_distance": 0.8657209485496526,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.0078125
+        }
+      }
+    },
+    "L16_WC_SC": {
+      "target": {
+        "rms_standardized_distance": 1.2865927825411776,
+        "clip_fraction": 0.0,
+        "outside_training_range_fraction": 0.0641025641025641
+      },
+      "views": {
+        "gru": {
+          "rms_standardized_distance": 3.1882503801371365,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.7369791666666666
+        },
+        "field_fine": {
+          "rms_standardized_distance": 1.6143493985852357,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.28308823529411764
+        },
+        "field_meso": {
+          "rms_standardized_distance": 1.378970516378749,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.09436274509803921
+        },
+        "field_coarse": {
+          "rms_standardized_distance": 28.410746687026382,
+          "clip_fraction": 0.25,
+          "outside_training_range_fraction": 0.6749387254901961
+        },
+        "morphic_delta_l01": {
+          "rms_standardized_distance": 122646.25927362083,
+          "clip_fraction": 1.0,
+          "outside_training_range_fraction": 1.0
+        },
+        "morphic_delta_l08": {
+          "rms_standardized_distance": 88489.95101858478,
+          "clip_fraction": 1.0,
+          "outside_training_range_fraction": 1.0
+        },
+        "morphic_delta_l16": {
+          "rms_standardized_distance": 98259.06854654747,
+          "clip_fraction": 1.0,
+          "outside_training_range_fraction": 1.0
+        },
+        "morphic_output": {
+          "rms_standardized_distance": 2988.0438420335195,
+          "clip_fraction": 0.96875,
+          "outside_training_range_fraction": 1.0
+        },
+        "host": {
+          "rms_standardized_distance": 3.5132227920986616,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.171875
+        },
+        "motif": {
+          "rms_standardized_distance": 3605551.275493908,
+          "clip_fraction": 0.4,
+          "outside_training_range_fraction": 0.8
+        },
+        "decoder_control": {
+          "rms_standardized_distance": 2843.469376999426,
+          "clip_fraction": 0.7560975609756098,
+          "outside_training_range_fraction": 0.8114837398373984
+        },
+        "synthesis_phase": {
+          "rms_standardized_distance": 0.8663795483179527,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.09895833333333333
+        }
+      }
+    },
+    "L16_WE_SP": {
+      "target": {
+        "rms_standardized_distance": 14.04973458165935,
+        "clip_fraction": 0.07692307692307693,
+        "outside_training_range_fraction": 0.8285256410256411
+      },
+      "views": {
+        "gru": {
+          "rms_standardized_distance": 2205.0972825931754,
+          "clip_fraction": 0.9798177083333334,
+          "outside_training_range_fraction": 0.9986979166666666
+        },
+        "field_fine": {
+          "rms_standardized_distance": 64.8790761458939,
+          "clip_fraction": 0.5254289215686274,
+          "outside_training_range_fraction": 0.8700980392156863
+        },
+        "field_meso": {
+          "rms_standardized_distance": 15.868613959671825,
+          "clip_fraction": 0.015012254901960785,
+          "outside_training_range_fraction": 0.4169730392156863
+        },
+        "field_coarse": {
+          "rms_standardized_distance": 1098.9288663838379,
+          "clip_fraction": 0.961703431372549,
+          "outside_training_range_fraction": 0.9837622549019608
+        },
+        "morphic_delta_l01": {
+          "rms_standardized_distance": 582339.5719355767,
+          "clip_fraction": 1.0,
+          "outside_training_range_fraction": 1.0
+        },
+        "morphic_delta_l08": {
+          "rms_standardized_distance": 327249.63816405006,
+          "clip_fraction": 1.0,
+          "outside_training_range_fraction": 1.0
+        },
+        "morphic_delta_l16": {
+          "rms_standardized_distance": 246307.61322809308,
+          "clip_fraction": 1.0,
+          "outside_training_range_fraction": 1.0
+        },
+        "morphic_output": {
+          "rms_standardized_distance": 30703.60479311094,
+          "clip_fraction": 0.9986979166666666,
+          "outside_training_range_fraction": 1.0
+        },
+        "host": {
+          "rms_standardized_distance": 51031.27341124484,
+          "clip_fraction": 0.12760416666666666,
+          "outside_training_range_fraction": 0.5442708333333334
+        },
+        "motif": {
+          "rms_standardized_distance": 3.6494487511083666,
+          "clip_fraction": 0.008333333333333333,
+          "outside_training_range_fraction": 0.15
+        },
+        "decoder_control": {
+          "rms_standardized_distance": 20603.405856573678,
+          "clip_fraction": 0.7688008130081301,
+          "outside_training_range_fraction": 0.8414634146341463
+        },
+        "synthesis_phase": {
+          "rms_standardized_distance": 0.8646218836274296,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.09375
+        }
+      }
+    },
+    "w0_energy01": {
+      "target": {
+        "rms_standardized_distance": 0.9662945769939817,
+        "clip_fraction": 0.0,
+        "outside_training_range_fraction": 0.03245192307692308
+      },
+      "views": {
+        "gru": {
+          "rms_standardized_distance": 3.259363673796808,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.609375
+        },
+        "field_fine": {
+          "rms_standardized_distance": 1.0192024716257342,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.05376838235294118
+        },
+        "field_meso": {
+          "rms_standardized_distance": 1.0163805455686448,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.03917738970588235
+        },
+        "field_coarse": {
+          "rms_standardized_distance": 1.1816320850762074,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.1096047794117647
+        },
+        "morphic_delta_l01": {
+          "rms_standardized_distance": 4.368261941824508,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.599609375
+        },
+        "morphic_delta_l08": {
+          "rms_standardized_distance": 2.9060196426216964,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.60107421875
+        },
+        "morphic_delta_l16": {
+          "rms_standardized_distance": 2.395485791061163,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.5732421875
+        },
+        "morphic_output": {
+          "rms_standardized_distance": 3.243731925302157,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.60693359375
+        },
+        "host": {
+          "rms_standardized_distance": 0.7756483252324684,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.0302734375
+        },
+        "motif": {
+          "rms_standardized_distance": 2.3561230690130697,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.271875
+        },
+        "decoder_control": {
+          "rms_standardized_distance": 2.910277229331471,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.48666158536585363
+        },
+        "synthesis_phase": {
+          "rms_standardized_distance": 0.8662138033999959,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.044921875
+        }
+      }
+    },
+    "w0_energy03": {
+      "target": {
+        "rms_standardized_distance": 0.9633398733203578,
+        "clip_fraction": 0.0,
+        "outside_training_range_fraction": 0.029447115384615384
+      },
+      "views": {
+        "gru": {
+          "rms_standardized_distance": 3.2588663832241487,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.611083984375
+        },
+        "field_fine": {
+          "rms_standardized_distance": 0.9960428724208931,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.04021139705882353
+        },
+        "field_meso": {
+          "rms_standardized_distance": 0.996276292976727,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.02653952205882353
+        },
+        "field_coarse": {
+          "rms_standardized_distance": 1.0372960547264154,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.0646829044117647
+        },
+        "morphic_delta_l01": {
+          "rms_standardized_distance": 4.374854515007622,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.60107421875
+        },
+        "morphic_delta_l08": {
+          "rms_standardized_distance": 2.9069623923926007,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.602294921875
+        },
+        "morphic_delta_l16": {
+          "rms_standardized_distance": 2.394644288373544,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.574462890625
+        },
+        "morphic_output": {
+          "rms_standardized_distance": 3.2433831805394053,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.607666015625
+        },
+        "host": {
+          "rms_standardized_distance": 0.8009983722709161,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.0166015625
+        },
+        "motif": {
+          "rms_standardized_distance": 2.341357810697643,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.2625
+        },
+        "decoder_control": {
+          "rms_standardized_distance": 2.9173439003691573,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.48532774390243905
+        },
+        "synthesis_phase": {
+          "rms_standardized_distance": 0.8661997297338844,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.044921875
+        }
+      }
+    },
+    "w128_energy01": {
+      "target": {
+        "rms_standardized_distance": 0.9894760212619378,
+        "clip_fraction": 0.0,
+        "outside_training_range_fraction": 0.033052884615384616
+      },
+      "views": {
+        "gru": {
+          "rms_standardized_distance": 3.7316295530053583,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.734375
+        },
+        "field_fine": {
+          "rms_standardized_distance": 0.9805626848175978,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.03458180147058824
+        },
+        "field_meso": {
+          "rms_standardized_distance": 0.9941899834392314,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.025275735294117647
+        },
+        "field_coarse": {
+          "rms_standardized_distance": 1.0455699736099737,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.06824448529411764
+        },
+        "morphic_delta_l01": {
+          "rms_standardized_distance": 5.255760360439743,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.723876953125
+        },
+        "morphic_delta_l08": {
+          "rms_standardized_distance": 3.3332269467090656,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.725341796875
+        },
+        "morphic_delta_l16": {
+          "rms_standardized_distance": 2.7495634905609903,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.695556640625
+        },
+        "morphic_output": {
+          "rms_standardized_distance": 3.7146755468090285,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.732421875
+        },
+        "host": {
+          "rms_standardized_distance": 1.3867426015954485,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.0390625
+        },
+        "motif": {
+          "rms_standardized_distance": 2.8656775150647915,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.30625
+        },
+        "decoder_control": {
+          "rms_standardized_distance": 3.3345204998477294,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.5865091463414634
+        },
+        "synthesis_phase": {
+          "rms_standardized_distance": 0.8662761620148218,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.0537109375
+        }
+      }
+    },
+    "w128_energy03": {
+      "target": {
+        "rms_standardized_distance": 0.988245628480315,
+        "clip_fraction": 0.0,
+        "outside_training_range_fraction": 0.03064903846153846
+      },
+      "views": {
+        "gru": {
+          "rms_standardized_distance": 3.739643771084587,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.734130859375
+        },
+        "field_fine": {
+          "rms_standardized_distance": 1.0083614588595742,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.04790900735294118
+        },
+        "field_meso": {
+          "rms_standardized_distance": 1.0214490317519216,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.035386029411764705
+        },
+        "field_coarse": {
+          "rms_standardized_distance": 1.897607130137738,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.2532169117647059
+        },
+        "morphic_delta_l01": {
+          "rms_standardized_distance": 5.252906173051398,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.723388671875
+        },
+        "morphic_delta_l08": {
+          "rms_standardized_distance": 3.3412579808099023,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.7255859375
+        },
+        "morphic_delta_l16": {
+          "rms_standardized_distance": 2.7541277680859997,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.69677734375
+        },
+        "morphic_output": {
+          "rms_standardized_distance": 3.7219273749664192,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.73095703125
+        },
+        "host": {
+          "rms_standardized_distance": 1.1784285014696851,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.0498046875
+        },
+        "motif": {
+          "rms_standardized_distance": 2.867395693971942,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.3
+        },
+        "decoder_control": {
+          "rms_standardized_distance": 3.3792346570870078,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.5929878048780488
+        },
+        "synthesis_phase": {
+          "rms_standardized_distance": 0.8662755130331923,
+          "clip_fraction": 0.0,
+          "outside_training_range_fraction": 0.0595703125
+        }
+      }
+    }
+  }
+}

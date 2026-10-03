@@ -1,0 +1,5 @@
+runs/
+__pycache__/
+!curves.csv
+RESULTS.json
+!RESULTS.json.gz
