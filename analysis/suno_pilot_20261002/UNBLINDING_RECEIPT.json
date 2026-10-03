@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "condition_identities_released_after_anonymous_descriptors": true,
+  "completed_qualitative_blind_assessment": {
+    "preferred_input_ids": [
+      "S03",
+      "S01"
+    ],
+    "ordering_between_preferred_ids": null,
+    "numerical_dimension_ratings": null
+  },
+  "intake_receipt_sha256": "cd4a3e317f56c5edb619d4fc284b18b87aff3a8ccd7a1115fdacf4bbe4afdbd4",
+  "anonymous_results_sha256": "1f3b0f6d771eff33de70de9474a6cc2f684e724be29017353c703e5353c1ff08",
+  "overlap_check_sha256": "9015433c96965d52c8b5287da4d853246f8466e6c37e6bc02056782c441ca5cd",
+  "private_answer_key_sha256": "724d54ab00fe8f92475f81bfb330891c7b1c934ef829233b6452d954d02e2997",
+  "input_condition_mapping": {
+    "S01": "shared_phase_spectral_surrogate",
+    "S02": "short_block_time_order",
+    "S03": "intact_frozen_titan"
+  },
+  "input_hashes_verified": true,
+  "note": "qualitative assessment complete per user ready message and frozen note; no numerical ratings were fabricated"
+}

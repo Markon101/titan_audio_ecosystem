@@ -1,0 +1,102 @@
+{
+  "schema": 1,
+  "key_opened": false,
+  "files": [
+    {
+      "source": "/sdcard/Download/TITAN_Suno_Pilot_20261002/input_receipt.json",
+      "snapshot": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/suno_pilot_20261002/runs/intake_snapshot/input_receipt.json",
+      "bytes": 537,
+      "sha256": "474d690378a17b63d40870d41aa04d081b2e3c9eb85e4e3aa337a98093d863ed"
+    },
+    {
+      "source": "/sdcard/Download/TITAN_Suno_Pilot_20261002/README.md",
+      "snapshot": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/suno_pilot_20261002/runs/intake_snapshot/README.md",
+      "bytes": 684,
+      "sha256": "3d2ecfaddc48d8854e94c441c850760d728e500ec35fd7ebf68a1bd403024ce9"
+    },
+    {
+      "source": "/sdcard/Download/TITAN_Suno_Pilot_20261002/suggested_upload_order.csv",
+      "snapshot": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/suno_pilot_20261002/runs/intake_snapshot/suggested_upload_order.csv",
+      "bytes": 118,
+      "sha256": "3ab8be624d4c8680d0d1df8c3341c10345bcdd0b299901d0f770605d5df8659d"
+    },
+    {
+      "source": "/sdcard/Download/TITAN_Suno_Pilot_20261002/anonymous_inputs/S01.wav",
+      "snapshot": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/suno_pilot_20261002/runs/intake_snapshot/anonymous_inputs/S01.wav",
+      "bytes": 4194348,
+      "sha256": "472f3c0ce47d236e9fbea0a3fda17ab0487b2f3bfd53c3ea7f357646285df680"
+    },
+    {
+      "source": "/sdcard/Download/TITAN_Suno_Pilot_20261002/anonymous_inputs/S02.wav",
+      "snapshot": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/suno_pilot_20261002/runs/intake_snapshot/anonymous_inputs/S02.wav",
+      "bytes": 4194348,
+      "sha256": "ebe91d791bee061002c14136b101fe2e61025fd05f2add155d09e20617d69cfb"
+    },
+    {
+      "source": "/sdcard/Download/TITAN_Suno_Pilot_20261002/anonymous_inputs/S03.wav",
+      "snapshot": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/suno_pilot_20261002/runs/intake_snapshot/anonymous_inputs/S03.wav",
+      "bytes": 4194348,
+      "sha256": "6b6147183937c281cb756e87514e02428d2f0517997406146c6ddb9461cd9a2c"
+    },
+    {
+      "source": "/sdcard/Download/TITAN_Suno_Pilot_20261002/generated_wavs/Machinery Ethereal S03.wav",
+      "snapshot": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/suno_pilot_20261002/runs/intake_snapshot/generated_wavs/Machinery Ethereal S03.wav",
+      "bytes": 44941840,
+      "sha256": "88e0d5ad1269f28c24f7b75bf413a99f75f40443b665bc92248cdb7fa119bf17"
+    },
+    {
+      "source": "/sdcard/Download/TITAN_Suno_Pilot_20261002/generated_wavs/Máquina Ética - S02.wav",
+      "snapshot": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/suno_pilot_20261002/runs/intake_snapshot/generated_wavs/Máquina Ética - S02.wav",
+      "bytes": 41793040,
+      "sha256": "933a6b8cc80aec12c31a3ae558d83a6556026c1b0bfe3c3f2c3cc659663b6504"
+    },
+    {
+      "source": "/sdcard/Download/TITAN_Suno_Pilot_20261002/generated_wavs/Máquina Ética S03.wav",
+      "snapshot": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/suno_pilot_20261002/runs/intake_snapshot/generated_wavs/Máquina Ética S03.wav",
+      "bytes": 40833040,
+      "sha256": "06c31abb137b0b0e46ad4e522e1662fb65fa452e9bc16e05e032030847318599"
+    },
+    {
+      "source": "/sdcard/Download/TITAN_Suno_Pilot_20261002/notes/pilot_notes.md",
+      "snapshot": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/suno_pilot_20261002/runs/intake_snapshot/notes/pilot_notes.md",
+      "bytes": 1463,
+      "sha256": "44090ca125b52ee86eecb4cfed000f6fc143c30e4a40bcb4ef95b0481274a0f3"
+    }
+  ],
+  "output_input_mapping": {
+    "Machinery Ethereal S03.wav": "S01",
+    "Máquina Ética - S02.wav": "S02",
+    "Máquina Ética S03.wav": "S03"
+  },
+  "correction_source": "user explicitly corrected Machinery Ethereal S03.wav to S01",
+  "completed_blind_preference": {
+    "preferred_input_ids": [
+      "S03",
+      "S01"
+    ],
+    "ordering_between_preferred_ids": null,
+    "numerical_dimension_ratings": null
+  },
+  "selection": "one selected favorite from each two-track input batch; discarded siblings unavailable",
+  "provided_outputs": 3,
+  "actual_attempt_order": null,
+  "generation_seeds_exposed": false,
+  "prompt_only_provided": false,
+  "settings": {
+    "date": "2026-10-02",
+    "model": "Suno V6",
+    "custom_model": "V6 plain",
+    "mode": "cover",
+    "prompt": "Rich idm electronica mixed with beautiful synths, ethereal vibes, grandiose cinematics, large soundstage",
+    "audio_strength_percent": 25,
+    "style_strength_percent": 50,
+    "weirdness_percent": 50,
+    "lyrics_field": "empty",
+    "instrumental_requested": true,
+    "prompt_rewrite": false,
+    "input_trim": "full"
+  },
+  "declared_generation_batches": 3,
+  "declared_candidate_outputs": 6,
+  "unprovided_sibling_outputs": 3
+}

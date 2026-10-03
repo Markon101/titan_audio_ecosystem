@@ -1,0 +1,129 @@
+{
+  "schema": 1,
+  "condition_identities_inspected": false,
+  "rate": 3000,
+  "mono": true,
+  "anchor_seconds": [
+    20,
+    60,
+    100,
+    150
+  ],
+  "template_seconds": 4,
+  "pairs": {
+    "S01__S02": [
+      {
+        "anchor_seconds": 20,
+        "match_seconds": 106.42466666666667,
+        "normalized_correlation": 0.14626958874030507,
+        "absolute_correlation": 0.14626958874030507,
+        "match_offset_seconds": 86.42466666666667
+      },
+      {
+        "anchor_seconds": 60,
+        "match_seconds": 199.183,
+        "normalized_correlation": 0.2069582322533006,
+        "absolute_correlation": 0.2069582322533006,
+        "match_offset_seconds": 139.183
+      },
+      {
+        "anchor_seconds": 100,
+        "match_seconds": 99.04966666666667,
+        "normalized_correlation": 0.18002244982912624,
+        "absolute_correlation": 0.18002244982912624,
+        "match_offset_seconds": -0.950333333333333
+      },
+      {
+        "anchor_seconds": 150,
+        "match_seconds": 98.89533333333334,
+        "normalized_correlation": 0.2772677478775742,
+        "absolute_correlation": 0.2772677478775742,
+        "match_offset_seconds": -51.10466666666666
+      }
+    ],
+    "S01__S03": [
+      {
+        "anchor_seconds": 20,
+        "match_seconds": 64.99933333333334,
+        "normalized_correlation": -0.17003358178467662,
+        "absolute_correlation": 0.17003358178467662,
+        "match_offset_seconds": 44.99933333333334
+      },
+      {
+        "anchor_seconds": 60,
+        "match_seconds": 127.60133333333333,
+        "normalized_correlation": -0.2018786987044931,
+        "absolute_correlation": 0.2018786987044931,
+        "match_offset_seconds": 67.60133333333333
+      },
+      {
+        "anchor_seconds": 100,
+        "match_seconds": 65.85066666666667,
+        "normalized_correlation": 0.18110574604945537,
+        "absolute_correlation": 0.18110574604945537,
+        "match_offset_seconds": -34.14933333333333
+      },
+      {
+        "anchor_seconds": 150,
+        "match_seconds": 65.22066666666667,
+        "normalized_correlation": 0.21391859908933072,
+        "absolute_correlation": 0.21391859908933072,
+        "match_offset_seconds": -84.77933333333333
+      }
+    ],
+    "S02__S03": [
+      {
+        "anchor_seconds": 20,
+        "match_seconds": 125.736,
+        "normalized_correlation": -0.23545016455531956,
+        "absolute_correlation": 0.23545016455531956,
+        "match_offset_seconds": 105.736
+      },
+      {
+        "anchor_seconds": 60,
+        "match_seconds": 110.41666666666667,
+        "normalized_correlation": 0.187337782492427,
+        "absolute_correlation": 0.187337782492427,
+        "match_offset_seconds": 50.41666666666667
+      },
+      {
+        "anchor_seconds": 100,
+        "match_seconds": 130.623,
+        "normalized_correlation": -0.22771438483648082,
+        "absolute_correlation": 0.22771438483648082,
+        "match_offset_seconds": 30.62299999999999
+      },
+      {
+        "anchor_seconds": 150,
+        "match_seconds": 190.86566666666667,
+        "normalized_correlation": -0.16412148774971702,
+        "absolute_correlation": 0.16412148774971702,
+        "match_offset_seconds": 40.86566666666667
+      }
+    ]
+  },
+  "self_controls": {
+    "S01": {
+      "anchor_seconds": 20,
+      "match_seconds": 20.0,
+      "normalized_correlation": 0.9999999999999682,
+      "absolute_correlation": 0.9999999999999682,
+      "match_offset_seconds": 0.0
+    },
+    "S02": {
+      "anchor_seconds": 20,
+      "match_seconds": 20.0,
+      "normalized_correlation": 0.9999999999999526,
+      "absolute_correlation": 0.9999999999999526,
+      "match_offset_seconds": 0.0
+    },
+    "S03": {
+      "anchor_seconds": 20,
+      "match_seconds": 20.0,
+      "normalized_correlation": 0.9999999999999735,
+      "absolute_correlation": 0.9999999999999735,
+      "match_offset_seconds": 0.0
+    }
+  },
+  "interpretation": "search maxima diagnose audio overlap only; repeated musical patterns may match without duplicate files"
+}

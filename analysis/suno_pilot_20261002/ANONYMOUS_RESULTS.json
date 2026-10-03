@@ -1,0 +1,999 @@
+{
+  "schema": 1,
+  "condition_identities_inspected": false,
+  "declared_settings": {
+    "date": "2026-10-02",
+    "model": "Suno V6",
+    "custom_model": "V6 plain",
+    "mode": "cover",
+    "prompt": "Rich idm electronica mixed with beautiful synths, ethereal vibes, grandiose cinematics, large soundstage",
+    "audio_strength_percent": 25,
+    "style_strength_percent": 50,
+    "weirdness_percent": 50,
+    "lyrics_field": "empty",
+    "instrumental_requested": true,
+    "prompt_rewrite": false,
+    "input_trim": "full"
+  },
+  "selection": "one selected favorite from each two-track input batch; discarded siblings unavailable",
+  "completed_blind_preference": {
+    "preferred_input_ids": [
+      "S03",
+      "S01"
+    ],
+    "ordering_between_preferred_ids": null,
+    "numerical_dimension_ratings": null
+  },
+  "core_interval_seconds": [
+    20.0,
+    140.0
+  ],
+  "descriptor_rate": 24000,
+  "fft": 4096,
+  "fft_hop": 2048,
+  "feature_window_seconds": 1,
+  "shuffle_repetitions": 32,
+  "outputs": {
+    "S01": {
+      "observed_filename": "Machinery Ethereal S03.wav",
+      "corrected_input_id": "S01",
+      "sha256": "88e0d5ad1269f28c24f7b75bf413a99f75f40443b665bc92248cdb7fa119bf17",
+      "full": {
+        "duration_seconds": 234.0,
+        "rms": 0.156006485461816,
+        "mid_rms": 0.1409540097253017,
+        "peak_at_24k": 0.7420363426208496,
+        "crest_factor": 4.756445479969932,
+        "stereo_correlation": 0.6327143407996684,
+        "side_mid_ratio": 0.47432484396702446,
+        "spectral_centroid_hz": 585.2548583480121,
+        "spectral_flatness_above_20_hz": 0.07173927863501962,
+        "spectral_power_bands": {
+          "0_80": 0.4528143416221432,
+          "80_250": 0.18878128809215403,
+          "250_2000": 0.2953151546289948,
+          "2000_8000": 0.05396276496249425,
+          "8000_12000": 0.00912322110782085
+        },
+        "one_second_mid_rms_cv": 0.27247215110752904,
+        "one_second_stereo_correlation_median": 0.6438291043877113,
+        "one_second_stereo_correlation_iqr": 0.22978492452630717,
+        "median_per_second_stereo_correlation_change": 0.09401056828061971,
+        "median_per_second_log_channel_balance_change": 0.041457723889090865,
+        "dominant_envelope_modulation_0p5_to_4_hz": 1.0982905982905984,
+        "quiet_one_second_fraction_below_minus50_dbfs": 0.0,
+        "temporal_continuity_vs_window_shuffle": {
+          "1": {
+            "pairs": 233,
+            "observed_mean_squared_feature_change": 0.42466900384878786,
+            "shuffled_mean": 1.764278128220127,
+            "shuffled_q05": 1.7026528633342755,
+            "shuffled_q95": 1.82455960399236,
+            "observed_to_shuffle_ratio": 0.24070411408274422
+          },
+          "5": {
+            "pairs": 229,
+            "observed_mean_squared_feature_change": 1.3099581669430487,
+            "shuffled_mean": 1.7663983611090999,
+            "shuffled_q05": 1.6748228715092233,
+            "shuffled_q95": 1.8559086832311524,
+            "observed_to_shuffle_ratio": 0.7415983822134787
+          },
+          "10": {
+            "pairs": 224,
+            "observed_mean_squared_feature_change": 1.3192921222232292,
+            "shuffled_mean": 1.762694087436199,
+            "shuffled_q05": 1.6803862774181275,
+            "shuffled_q95": 1.8325538468207463,
+            "observed_to_shuffle_ratio": 0.7484521174868815
+          },
+          "30": {
+            "pairs": 204,
+            "observed_mean_squared_feature_change": 1.5073915734741603,
+            "shuffled_mean": 1.758924214214459,
+            "shuffled_q05": 1.658082729595791,
+            "shuffled_q95": 1.8793537025380889,
+            "observed_to_shuffle_ratio": 0.8569963170058273
+          }
+        },
+        "mean_normalized_logband": [
+          0.002398161603882731,
+          0.0886344852976942,
+          0.2103543286371833,
+          0.1027570156992085,
+          0.07631266281633378,
+          0.04530721270866497,
+          0.030002681309968,
+          0.08630562848166869,
+          0.0722579452250824,
+          0.1278294468652694,
+          0.07533708337713263,
+          0.03732831635040023,
+          0.020221021948878076,
+          0.010982811282625017,
+          0.006197724847372514,
+          0.007773473548635412
+        ],
+        "mean_chroma_power_distribution": [
+          0.11398633951743513,
+          0.06443377633333378,
+          0.11298828657987103,
+          0.09031797626635352,
+          0.06047035719431479,
+          0.08983290051550089,
+          0.03192788206222958,
+          0.12267371024907163,
+          0.019181471353473787,
+          0.10084478448575886,
+          0.16934022718565658,
+          0.024002288257000477
+        ]
+      },
+      "core": {
+        "duration_seconds": 120.0,
+        "rms": 0.1490655680508422,
+        "mid_rms": 0.13656875034357965,
+        "peak_at_24k": 0.7137032747268677,
+        "crest_factor": 4.787847952140383,
+        "stereo_correlation": 0.6787243948790748,
+        "side_mid_ratio": 0.4374753374840004,
+        "spectral_centroid_hz": 663.1464644711059,
+        "spectral_flatness_above_20_hz": 0.077433139350606,
+        "spectral_power_bands": {
+          "0_80": 0.4114860940332917,
+          "80_250": 0.18148370791963844,
+          "250_2000": 0.33389128824042236,
+          "2000_8000": 0.06418659442047298,
+          "8000_12000": 0.008949409993450508
+        },
+        "one_second_mid_rms_cv": 0.17043448231066582,
+        "one_second_stereo_correlation_median": 0.6826209013612068,
+        "one_second_stereo_correlation_iqr": 0.18199375653983862,
+        "median_per_second_stereo_correlation_change": 0.10409816734874777,
+        "median_per_second_log_channel_balance_change": 0.031579020636068315,
+        "dominant_envelope_modulation_0p5_to_4_hz": 1.1,
+        "quiet_one_second_fraction_below_minus50_dbfs": 0.0,
+        "temporal_continuity_vs_window_shuffle": {
+          "1": {
+            "pairs": 119,
+            "observed_mean_squared_feature_change": 0.6578797529013345,
+            "shuffled_mean": 1.7560780286921256,
+            "shuffled_q05": 1.665705998900799,
+            "shuffled_q95": 1.8563210846420946,
+            "observed_to_shuffle_ratio": 0.37463013724470073
+          },
+          "5": {
+            "pairs": 115,
+            "observed_mean_squared_feature_change": 1.5446064724978765,
+            "shuffled_mean": 1.7439134276976358,
+            "shuffled_q05": 1.661503380314518,
+            "shuffled_q95": 1.8510197416905705,
+            "observed_to_shuffle_ratio": 0.885712815765809
+          },
+          "10": {
+            "pairs": 110,
+            "observed_mean_squared_feature_change": 1.531785087421241,
+            "shuffled_mean": 1.744649795822745,
+            "shuffled_q05": 1.6505666982094074,
+            "shuffled_q95": 1.849522048361787,
+            "observed_to_shuffle_ratio": 0.8779900075584391
+          },
+          "30": {
+            "pairs": 90,
+            "observed_mean_squared_feature_change": 1.6571985030090381,
+            "shuffled_mean": 1.7662306292218921,
+            "shuffled_q05": 1.651447209458164,
+            "shuffled_q95": 1.902105872766827,
+            "observed_to_shuffle_ratio": 0.9382684659585551
+          }
+        },
+        "mean_normalized_logband": [
+          0.003440341152664253,
+          0.07752583477164313,
+          0.22803960281860217,
+          0.09054929860752746,
+          0.07539136320097907,
+          0.04447016414167906,
+          0.016421417562138333,
+          0.06068041602702653,
+          0.06797779025866378,
+          0.143788960296279,
+          0.09053148892195885,
+          0.045346344773030796,
+          0.025648281762847433,
+          0.01368460924494333,
+          0.007727139475685498,
+          0.008776946984331211
+        ],
+        "mean_chroma_power_distribution": [
+          0.1165677452142549,
+          0.0652355547573175,
+          0.11175033359858842,
+          0.09050282967418491,
+          0.058152148406322185,
+          0.07997106952525802,
+          0.03415231269827381,
+          0.11726032634340075,
+          0.021137408872259796,
+          0.10707389690316658,
+          0.17340506930944435,
+          0.024791304697528563
+        ]
+      },
+      "native_peaks": {
+        "peak": 0.7208251953125,
+        "exact_fullscale_sample_fraction": 0.0,
+        "longest_fullscale_run_samples_per_channel": 0,
+        "interpretation": "sample rails alone do not identify audible artifacts or limiter intent"
+      },
+      "core_spectrogram": {
+        "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/suno_pilot_20261002/runs/structure_v1/S01_core_spectrogram.png",
+        "sha256": "02a4c44d4b4fcd928ce0643a4054632bba12d073ef2820e345282360f4a76ebf",
+        "display_range_dbfs": [
+          -80,
+          0
+        ],
+        "mono_average": true,
+        "frequency_hz": [
+          20,
+          12000
+        ]
+      }
+    },
+    "S02": {
+      "observed_filename": "Máquina Ética - S02.wav",
+      "corrected_input_id": "S02",
+      "sha256": "933a6b8cc80aec12c31a3ae558d83a6556026c1b0bfe3c3f2c3cc659663b6504",
+      "full": {
+        "duration_seconds": 217.6,
+        "rms": 0.1600721533402333,
+        "mid_rms": 0.1473804769953229,
+        "peak_at_24k": 0.6192927956581116,
+        "crest_factor": 3.8688352891824036,
+        "stereo_correlation": 0.6954359008664573,
+        "side_mid_ratio": 0.42384654068845296,
+        "spectral_centroid_hz": 506.3604130621225,
+        "spectral_flatness_above_20_hz": 0.057748353648961526,
+        "spectral_power_bands": {
+          "0_80": 0.46817891056449673,
+          "80_250": 0.19043747300875496,
+          "250_2000": 0.28489114909992114,
+          "2000_8000": 0.05112217477635528,
+          "8000_12000": 0.005368408551428628
+        },
+        "one_second_mid_rms_cv": 0.27129963094240933,
+        "one_second_stereo_correlation_median": 0.7060896220592151,
+        "one_second_stereo_correlation_iqr": 0.17490049803659302,
+        "median_per_second_stereo_correlation_change": 0.09138908840351173,
+        "median_per_second_log_channel_balance_change": 0.031998396834604634,
+        "dominant_envelope_modulation_0p5_to_4_hz": 0.551470588235294,
+        "quiet_one_second_fraction_below_minus50_dbfs": 0.004608294930875576,
+        "temporal_continuity_vs_window_shuffle": {
+          "1": {
+            "pairs": 216,
+            "observed_mean_squared_feature_change": 0.5078955213847265,
+            "shuffled_mean": 1.7766707829520523,
+            "shuffled_q05": 1.6889006411651124,
+            "shuffled_q95": 1.8538478063956245,
+            "observed_to_shuffle_ratio": 0.2858692371474841
+          },
+          "5": {
+            "pairs": 212,
+            "observed_mean_squared_feature_change": 1.252880333315247,
+            "shuffled_mean": 1.7873563311577205,
+            "shuffled_q05": 1.7277762923317053,
+            "shuffled_q95": 1.85497584379843,
+            "observed_to_shuffle_ratio": 0.7009684143417119
+          },
+          "10": {
+            "pairs": 207,
+            "observed_mean_squared_feature_change": 1.3737962525183394,
+            "shuffled_mean": 1.7609120710872446,
+            "shuffled_q05": 1.6621010039482744,
+            "shuffled_q95": 1.843342769424716,
+            "observed_to_shuffle_ratio": 0.7801617554192315
+          },
+          "30": {
+            "pairs": 187,
+            "observed_mean_squared_feature_change": 1.300601074854647,
+            "shuffled_mean": 1.7711165910648101,
+            "shuffled_q05": 1.6884696895042868,
+            "shuffled_q95": 1.8784069372115366,
+            "observed_to_shuffle_ratio": 0.7343396145776686
+          }
+        },
+        "mean_normalized_logband": [
+          0.01908288291245842,
+          0.10076838043777131,
+          0.22173801739787843,
+          0.09074014614491338,
+          0.08308698593037321,
+          0.04812792831839109,
+          0.04848848787510282,
+          0.06471297639833823,
+          0.08879098348424325,
+          0.09815942693330079,
+          0.06555335344496999,
+          0.026344775176913107,
+          0.02132211973526603,
+          0.013088951017523916,
+          0.004848715714003026,
+          0.005145869078552897
+        ],
+        "mean_chroma_power_distribution": [
+          0.19481247210851116,
+          0.08757210338524644,
+          0.06839493052389584,
+          0.11636738343547882,
+          0.04611761071524797,
+          0.0810096070630375,
+          0.03260797880378794,
+          0.13940972317753506,
+          0.07316190659440176,
+          0.02521194479416484,
+          0.1097187411659415,
+          0.02561559823275121
+        ]
+      },
+      "core": {
+        "duration_seconds": 120.0,
+        "rms": 0.15052853119581466,
+        "mid_rms": 0.13875151114717843,
+        "peak_at_24k": 0.6185718774795532,
+        "crest_factor": 4.109333111573949,
+        "stereo_correlation": 0.6992974337145623,
+        "side_mid_ratio": 0.42066775297274395,
+        "spectral_centroid_hz": 597.2978199940566,
+        "spectral_flatness_above_20_hz": 0.06928864842040908,
+        "spectral_power_bands": {
+          "0_80": 0.4198434074598724,
+          "80_250": 0.207766262816759,
+          "250_2000": 0.302440183372324,
+          "2000_8000": 0.06269719894109554,
+          "8000_12000": 0.007250131758865113
+        },
+        "one_second_mid_rms_cv": 0.17185104795791362,
+        "one_second_stereo_correlation_median": 0.7118015930748773,
+        "one_second_stereo_correlation_iqr": 0.13758430083521211,
+        "median_per_second_stereo_correlation_change": 0.09403889671224641,
+        "median_per_second_log_channel_balance_change": 0.026887464463486596,
+        "dominant_envelope_modulation_0p5_to_4_hz": 0.55,
+        "quiet_one_second_fraction_below_minus50_dbfs": 0.0,
+        "temporal_continuity_vs_window_shuffle": {
+          "1": {
+            "pairs": 119,
+            "observed_mean_squared_feature_change": 0.6989461118016426,
+            "shuffled_mean": 1.7649149126778438,
+            "shuffled_q05": 1.680843829694418,
+            "shuffled_q95": 1.8344787542925707,
+            "observed_to_shuffle_ratio": 0.3960225542777901
+          },
+          "5": {
+            "pairs": 115,
+            "observed_mean_squared_feature_change": 1.6323657831409417,
+            "shuffled_mean": 1.7814898961127943,
+            "shuffled_q05": 1.7043588109045544,
+            "shuffled_q95": 1.8493486402822663,
+            "observed_to_shuffle_ratio": 0.9162924733408587
+          },
+          "10": {
+            "pairs": 110,
+            "observed_mean_squared_feature_change": 1.6412025343087082,
+            "shuffled_mean": 1.7760953031294355,
+            "shuffled_q05": 1.682705682349164,
+            "shuffled_q95": 1.8523166190458666,
+            "observed_to_shuffle_ratio": 0.9240509399562908
+          },
+          "30": {
+            "pairs": 90,
+            "observed_mean_squared_feature_change": 1.3633007012215712,
+            "shuffled_mean": 1.7508399094933176,
+            "shuffled_q05": 1.6580033180000322,
+            "shuffled_q95": 1.854104058070627,
+            "observed_to_shuffle_ratio": 0.7786552578734067
+          }
+        },
+        "mean_normalized_logband": [
+          0.005476756636834456,
+          0.09687657535456948,
+          0.22386418566642777,
+          0.10319019214117028,
+          0.08820920803899024,
+          0.05381949982345845,
+          0.03745085472631727,
+          0.04713116160047875,
+          0.07315314677687917,
+          0.11103341838774661,
+          0.07469249157388548,
+          0.030724200296185625,
+          0.02603244629461842,
+          0.015525945672066506,
+          0.005979489091099772,
+          0.006840427919271638
+        ],
+        "mean_chroma_power_distribution": [
+          0.17333570318181893,
+          0.07930684883821983,
+          0.0722800173806517,
+          0.11982381492652384,
+          0.04986803120862644,
+          0.1022292555648025,
+          0.03359060216977925,
+          0.14008759883785718,
+          0.07317364718509455,
+          0.024453121069130026,
+          0.10645488624731514,
+          0.025396473390180672
+        ]
+      },
+      "native_peaks": {
+        "peak": 0.6175537109375,
+        "exact_fullscale_sample_fraction": 0.0,
+        "longest_fullscale_run_samples_per_channel": 0,
+        "interpretation": "sample rails alone do not identify audible artifacts or limiter intent"
+      },
+      "core_spectrogram": {
+        "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/suno_pilot_20261002/runs/structure_v1/S02_core_spectrogram.png",
+        "sha256": "9a4a7af222d0beba7276fb2df5ef16be8cecc56af1e55393028ae08e467ae86d",
+        "display_range_dbfs": [
+          -80,
+          0
+        ],
+        "mono_average": true,
+        "frequency_hz": [
+          20,
+          12000
+        ]
+      }
+    },
+    "S03": {
+      "observed_filename": "Máquina Ética S03.wav",
+      "corrected_input_id": "S03",
+      "sha256": "06c31abb137b0b0e46ad4e522e1662fb65fa452e9bc16e05e032030847318599",
+      "full": {
+        "duration_seconds": 212.6,
+        "rms": 0.1485693344611029,
+        "mid_rms": 0.13654531152199742,
+        "peak_at_24k": 0.596962571144104,
+        "crest_factor": 4.018073940422715,
+        "stereo_correlation": 0.6893912091890302,
+        "side_mid_ratio": 0.4288030532211415,
+        "spectral_centroid_hz": 491.6065528721707,
+        "spectral_flatness_above_20_hz": 0.05758934068434798,
+        "spectral_power_bands": {
+          "0_80": 0.5077951811980547,
+          "80_250": 0.18266070838165527,
+          "250_2000": 0.255234486549955,
+          "2000_8000": 0.04883364959027945,
+          "8000_12000": 0.00547414266821032
+        },
+        "one_second_mid_rms_cv": 0.25730329087367704,
+        "one_second_stereo_correlation_median": 0.6923148688088575,
+        "one_second_stereo_correlation_iqr": 0.17493819012543732,
+        "median_per_second_stereo_correlation_change": 0.07156117043148652,
+        "median_per_second_log_channel_balance_change": 0.025667409229663263,
+        "dominant_envelope_modulation_0p5_to_4_hz": 0.5785512699905926,
+        "quiet_one_second_fraction_below_minus50_dbfs": 0.0,
+        "temporal_continuity_vs_window_shuffle": {
+          "1": {
+            "pairs": 211,
+            "observed_mean_squared_feature_change": 0.4363995352239044,
+            "shuffled_mean": 1.798706657656176,
+            "shuffled_q05": 1.695238609805263,
+            "shuffled_q95": 1.8847934284208467,
+            "observed_to_shuffle_ratio": 0.24261851334478268
+          },
+          "5": {
+            "pairs": 207,
+            "observed_mean_squared_feature_change": 1.2185433693358272,
+            "shuffled_mean": 1.7888017733295205,
+            "shuffled_q05": 1.709176755678778,
+            "shuffled_q95": 1.8660891321443918,
+            "observed_to_shuffle_ratio": 0.6812064855390524
+          },
+          "10": {
+            "pairs": 202,
+            "observed_mean_squared_feature_change": 1.4320123102836262,
+            "shuffled_mean": 1.7816369603409608,
+            "shuffled_q05": 1.6599659285443031,
+            "shuffled_q95": 1.8642114738001578,
+            "observed_to_shuffle_ratio": 0.8037621255957639
+          },
+          "30": {
+            "pairs": 182,
+            "observed_mean_squared_feature_change": 1.4147620927102529,
+            "shuffled_mean": 1.7983040897360927,
+            "shuffled_q05": 1.6995043598614406,
+            "shuffled_q95": 1.8940086373329363,
+            "observed_to_shuffle_ratio": 0.7867201663973717
+          }
+        },
+        "mean_normalized_logband": [
+          0.03584357949572299,
+          0.10593507213000615,
+          0.23960718814458415,
+          0.09271338556674787,
+          0.08483234671011984,
+          0.04758613451457813,
+          0.031709940852554,
+          0.0470428750284805,
+          0.07809160279334708,
+          0.09457696654042799,
+          0.07032232912417465,
+          0.030789429759846144,
+          0.019184829133276793,
+          0.011373200188949887,
+          0.005231925066172623,
+          0.005159194986777391
+        ],
+        "mean_chroma_power_distribution": [
+          0.1854314503297431,
+          0.08551128417916129,
+          0.069735078741146,
+          0.11759878431734742,
+          0.05311745780669075,
+          0.07351300363322989,
+          0.03206071809044367,
+          0.13648570433299834,
+          0.06631633305373856,
+          0.033432902983262576,
+          0.12179808010274795,
+          0.024999202429490743
+        ]
+      },
+      "core": {
+        "duration_seconds": 120.0,
+        "rms": 0.13391335376965913,
+        "mid_rms": 0.12384004366174096,
+        "peak_at_24k": 0.5666218996047974,
+        "crest_factor": 4.231257627819769,
+        "stereo_correlation": 0.7104836435411062,
+        "side_mid_ratio": 0.41145960498139994,
+        "spectral_centroid_hz": 571.1522484884954,
+        "spectral_flatness_above_20_hz": 0.07090434625373361,
+        "spectral_power_bands": {
+          "0_80": 0.46751192781179124,
+          "80_250": 0.19591309289877507,
+          "250_2000": 0.26885430031289187,
+          "2000_8000": 0.06069217398326973,
+          "8000_12000": 0.00702629817152123
+        },
+        "one_second_mid_rms_cv": 0.1502389929514568,
+        "one_second_stereo_correlation_median": 0.7113449347101438,
+        "one_second_stereo_correlation_iqr": 0.12610488799998187,
+        "median_per_second_stereo_correlation_change": 0.05692186743452865,
+        "median_per_second_log_channel_balance_change": 0.02671070068601404,
+        "dominant_envelope_modulation_0p5_to_4_hz": 1.4416666666666667,
+        "quiet_one_second_fraction_below_minus50_dbfs": 0.0,
+        "temporal_continuity_vs_window_shuffle": {
+          "1": {
+            "pairs": 119,
+            "observed_mean_squared_feature_change": 0.5159430359081196,
+            "shuffled_mean": 1.7650824778410932,
+            "shuffled_q05": 1.6986703542279757,
+            "shuffled_q95": 1.8627818368185314,
+            "observed_to_shuffle_ratio": 0.29230534118676404
+          },
+          "5": {
+            "pairs": 115,
+            "observed_mean_squared_feature_change": 1.5367019725881845,
+            "shuffled_mean": 1.7769544026463426,
+            "shuffled_q05": 1.639867121196798,
+            "shuffled_q95": 1.9060891296620703,
+            "observed_to_shuffle_ratio": 0.864795388277628
+          },
+          "10": {
+            "pairs": 110,
+            "observed_mean_squared_feature_change": 1.7356527181098795,
+            "shuffled_mean": 1.7684871235587218,
+            "shuffled_q05": 1.6879831702783663,
+            "shuffled_q95": 1.866618943387065,
+            "observed_to_shuffle_ratio": 0.9814336191587475
+          },
+          "30": {
+            "pairs": 90,
+            "observed_mean_squared_feature_change": 1.5512904122092461,
+            "shuffled_mean": 1.7972280052087322,
+            "shuffled_q05": 1.684750427757732,
+            "shuffled_q95": 1.9269204603335282,
+            "observed_to_shuffle_ratio": 0.863157266475534
+          }
+        },
+        "mean_normalized_logband": [
+          0.02585159408628298,
+          0.09344304947644703,
+          0.2560620556972295,
+          0.09529691967710147,
+          0.08704069092440755,
+          0.04415129223817059,
+          0.024643727358195137,
+          0.030295554261143817,
+          0.07302888184255281,
+          0.10502385709167306,
+          0.07859772004627501,
+          0.03482091805791554,
+          0.02418606546098183,
+          0.014301495014433873,
+          0.006661854525682761,
+          0.006594324241507037
+        ],
+        "mean_chroma_power_distribution": [
+          0.1836069142420656,
+          0.0751023143585506,
+          0.05958529089995646,
+          0.11341136567464559,
+          0.062273669608937966,
+          0.08691862476355093,
+          0.03669976914393813,
+          0.12271392212603648,
+          0.05369300891470368,
+          0.04116547467513062,
+          0.13746127607950756,
+          0.027368369512976536
+        ]
+      },
+      "native_peaks": {
+        "peak": 0.5986328125,
+        "exact_fullscale_sample_fraction": 0.0,
+        "longest_fullscale_run_samples_per_channel": 0,
+        "interpretation": "sample rails alone do not identify audible artifacts or limiter intent"
+      },
+      "core_spectrogram": {
+        "path": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/suno_pilot_20261002/runs/structure_v1/S03_core_spectrogram.png",
+        "sha256": "caffbb9d77aa0d9e675ca7e14e0257d16d75f4aa2125ae29ca95aed64c615b29",
+        "display_range_dbfs": [
+          -80,
+          0
+        ],
+        "mono_average": true,
+        "frequency_hz": [
+          20,
+          12000
+        ]
+      }
+    }
+  },
+  "inputs": {
+    "S01": {
+      "sha256": "472f3c0ce47d236e9fbea0a3fda17ab0487b2f3bfd53c3ea7f357646285df680",
+      "summary": {
+        "duration_seconds": 21.845333333333333,
+        "rms": 0.08417928661210872,
+        "mid_rms": 0.0814012815158508,
+        "peak_at_24k": 0.3842310905456543,
+        "crest_factor": 4.564437476361136,
+        "stereo_correlation": 0.8702015386427236,
+        "side_mid_ratio": 0.26347533232690906,
+        "spectral_centroid_hz": 456.9610291270543,
+        "spectral_flatness_above_20_hz": 0.04923855596933291,
+        "spectral_power_bands": {
+          "0_80": 0.022882802063850856,
+          "80_250": 0.4694193943222696,
+          "250_2000": 0.4792260889095655,
+          "2000_8000": 0.018794569490468947,
+          "8000_12000": 0.00967329751641124
+        },
+        "one_second_mid_rms_cv": 0.19572978646630196,
+        "one_second_stereo_correlation_median": 0.8736160784137845,
+        "one_second_stereo_correlation_iqr": 0.014301553757449237,
+        "median_per_second_stereo_correlation_change": 0.007993646899190243,
+        "median_per_second_log_channel_balance_change": 0.051432263679322215,
+        "dominant_envelope_modulation_0p5_to_4_hz": 0.5045871559633027,
+        "quiet_one_second_fraction_below_minus50_dbfs": 0.0,
+        "temporal_continuity_vs_window_shuffle": {
+          "1": {
+            "pairs": 20,
+            "observed_mean_squared_feature_change": 0.6482590042702552,
+            "shuffled_mean": 1.6874566572982803,
+            "shuffled_q05": 1.4544848921685052,
+            "shuffled_q95": 1.981671717377238,
+            "observed_to_shuffle_ratio": 0.38416335108017347
+          },
+          "5": {
+            "pairs": 16,
+            "observed_mean_squared_feature_change": 1.8540027222097943,
+            "shuffled_mean": 1.624782502989784,
+            "shuffled_q05": 1.3125604890871991,
+            "shuffled_q95": 1.965714410514423,
+            "observed_to_shuffle_ratio": 1.1410774788614595
+          },
+          "10": {
+            "pairs": 11,
+            "observed_mean_squared_feature_change": 2.35240780751573,
+            "shuffled_mean": 1.6622588104736227,
+            "shuffled_q05": 1.1960343585969244,
+            "shuffled_q95": 2.160539204902384,
+            "observed_to_shuffle_ratio": 1.4151874501693664
+          }
+        },
+        "mean_normalized_logband": [
+          0.005295462596810038,
+          0.004793126451742097,
+          0.005061555317116142,
+          0.210630156052575,
+          0.020442576941075683,
+          0.22393948070836242,
+          0.3064186454941064,
+          0.06251649676557415,
+          0.036747622752003,
+          0.047009668776891333,
+          0.03728609191831701,
+          0.0107676907199567,
+          0.005662439690049408,
+          0.0072627539940758835,
+          0.0052530102053928085,
+          0.010913221615951953
+        ],
+        "mean_chroma_power_distribution": [
+          0.1543791863402302,
+          0.1292122016648151,
+          0.01847713715731993,
+          0.03707955489961716,
+          0.13950038854686111,
+          0.110979946491478,
+          0.033795405962994025,
+          0.17554230628447035,
+          0.09020400657043004,
+          0.02137885511124432,
+          0.03429948464920202,
+          0.05515152632133778
+        ]
+      },
+      "native_peaks": {
+        "peak": 0.40509033203125,
+        "exact_fullscale_sample_fraction": 0.0,
+        "longest_fullscale_run_samples_per_channel": 0,
+        "interpretation": "sample rails alone do not identify audible artifacts or limiter intent"
+      }
+    },
+    "S02": {
+      "sha256": "ebe91d791bee061002c14136b101fe2e61025fd05f2add155d09e20617d69cfb",
+      "summary": {
+        "duration_seconds": 21.845333333333333,
+        "rms": 0.08417870854446587,
+        "mid_rms": 0.08140708020283077,
+        "peak_at_24k": 0.29728764295578003,
+        "crest_factor": 3.53162513533625,
+        "stereo_correlation": 0.870491263693017,
+        "side_mid_ratio": 0.26315816466480113,
+        "spectral_centroid_hz": 457.5452235276612,
+        "spectral_flatness_above_20_hz": 0.049936237905169455,
+        "spectral_power_bands": {
+          "0_80": 0.02694019035835464,
+          "80_250": 0.4752215848586337,
+          "250_2000": 0.4690826581882152,
+          "2000_8000": 0.01900618503458312,
+          "8000_12000": 0.00974541379339081
+        },
+        "one_second_mid_rms_cv": 0.009610775341260439,
+        "one_second_stereo_correlation_median": 0.87244641775407,
+        "one_second_stereo_correlation_iqr": 0.007066315386024202,
+        "median_per_second_stereo_correlation_change": 0.004300517525258951,
+        "median_per_second_log_channel_balance_change": 0.005088554646010778,
+        "dominant_envelope_modulation_0p5_to_4_hz": 3.3944954128440363,
+        "quiet_one_second_fraction_below_minus50_dbfs": 0.0,
+        "temporal_continuity_vs_window_shuffle": {
+          "1": {
+            "pairs": 20,
+            "observed_mean_squared_feature_change": 0.8901468214243127,
+            "shuffled_mean": 0.9055450627784498,
+            "shuffled_q05": 0.8204753185285674,
+            "shuffled_q95": 1.0076264215532447,
+            "observed_to_shuffle_ratio": 0.9829956100617552
+          },
+          "5": {
+            "pairs": 16,
+            "observed_mean_squared_feature_change": 0.8998800215805799,
+            "shuffled_mean": 0.9176030632732526,
+            "shuffled_q05": 0.8303032238739569,
+            "shuffled_q95": 1.0346558182193244,
+            "observed_to_shuffle_ratio": 0.9806855029129355
+          },
+          "10": {
+            "pairs": 11,
+            "observed_mean_squared_feature_change": 1.0299722366194715,
+            "shuffled_mean": 0.8938276774698246,
+            "shuffled_q05": 0.8198760418429599,
+            "shuffled_q95": 0.9742549575309386,
+            "observed_to_shuffle_ratio": 1.1523163385755002
+          }
+        },
+        "mean_normalized_logband": [
+          0.003983159469656407,
+          0.004048854939211054,
+          0.005194608313802492,
+          0.20729566508373448,
+          0.01956440877603555,
+          0.23002527387067187,
+          0.3377032645987803,
+          0.0543461464309873,
+          0.031197530417793617,
+          0.040004248290312024,
+          0.03245136540643508,
+          0.009264660788302393,
+          0.004854872731124505,
+          0.006170891011342748,
+          0.004511119356925849,
+          0.009383930514884318
+        ],
+        "mean_chroma_power_distribution": [
+          0.175300560809669,
+          0.14486029099174783,
+          0.016600997682104553,
+          0.035516472402190746,
+          0.12789068568656892,
+          0.10602620323662243,
+          0.03439746477030129,
+          0.17526101758752585,
+          0.08871393804407028,
+          0.018891224841786625,
+          0.02915540692835024,
+          0.04738573701906227
+        ]
+      },
+      "native_peaks": {
+        "peak": 0.304046630859375,
+        "exact_fullscale_sample_fraction": 0.0,
+        "longest_fullscale_run_samples_per_channel": 0,
+        "interpretation": "sample rails alone do not identify audible artifacts or limiter intent"
+      }
+    },
+    "S03": {
+      "sha256": "6b6147183937c281cb756e87514e02428d2f0517997406146c6ddb9461cd9a2c",
+      "summary": {
+        "duration_seconds": 21.845333333333333,
+        "rms": 0.08418179326724048,
+        "mid_rms": 0.08140479163325386,
+        "peak_at_24k": 0.28928226232528687,
+        "crest_factor": 3.4363993815971803,
+        "stereo_correlation": 0.870248422664531,
+        "side_mid_ratio": 0.2634211688609669,
+        "spectral_centroid_hz": 457.55316841060284,
+        "spectral_flatness_above_20_hz": 0.04953905056375061,
+        "spectral_power_bands": {
+          "0_80": 0.022631918683862186,
+          "80_250": 0.4773835337609173,
+          "250_2000": 0.4713216029782193,
+          "2000_8000": 0.018952986202180385,
+          "8000_12000": 0.009705827302970397
+        },
+        "one_second_mid_rms_cv": 0.009976972087332437,
+        "one_second_stereo_correlation_median": 0.8709189675228569,
+        "one_second_stereo_correlation_iqr": 0.007095896238037636,
+        "median_per_second_stereo_correlation_change": 0.0069144923965557825,
+        "median_per_second_log_channel_balance_change": 0.003673844266455926,
+        "dominant_envelope_modulation_0p5_to_4_hz": 3.440366972477064,
+        "quiet_one_second_fraction_below_minus50_dbfs": 0.0,
+        "temporal_continuity_vs_window_shuffle": {
+          "1": {
+            "pairs": 20,
+            "observed_mean_squared_feature_change": 0.9363909476831989,
+            "shuffled_mean": 0.929357595323394,
+            "shuffled_q05": 0.7901485960264061,
+            "shuffled_q95": 1.0289244031049773,
+            "observed_to_shuffle_ratio": 1.0075679721080424
+          },
+          "5": {
+            "pairs": 16,
+            "observed_mean_squared_feature_change": 0.9733817430413276,
+            "shuffled_mean": 0.9386295335459698,
+            "shuffled_q05": 0.816799343257098,
+            "shuffled_q95": 1.0665135569258875,
+            "observed_to_shuffle_ratio": 1.0370244151215553
+          },
+          "10": {
+            "pairs": 11,
+            "observed_mean_squared_feature_change": 0.7759766576822377,
+            "shuffled_mean": 0.9495910357737924,
+            "shuffled_q05": 0.8575212907048861,
+            "shuffled_q95": 1.0542994052541612,
+            "observed_to_shuffle_ratio": 0.8171693165257381
+          }
+        },
+        "mean_normalized_logband": [
+          0.0040411169452913495,
+          0.0038502375419142924,
+          0.0046707412467242365,
+          0.20786249012224328,
+          0.017516798058788467,
+          0.23045647116250484,
+          0.3397403497348619,
+          0.05400441535555849,
+          0.031151290905452596,
+          0.04018808373213113,
+          0.03249605280305036,
+          0.009172176358880664,
+          0.004820514284104934,
+          0.006157182731651604,
+          0.004527315415256166,
+          0.009344763601585596
+        ],
+        "mean_chroma_power_distribution": [
+          0.17587254675534464,
+          0.14691871839049822,
+          0.015930598204953204,
+          0.03169010277373452,
+          0.1322875125164339,
+          0.1070710079011814,
+          0.030290085671917145,
+          0.180232157144916,
+          0.0863348410936415,
+          0.017717915163777746,
+          0.028787497992824592,
+          0.0468670163907772
+        ]
+      },
+      "native_peaks": {
+        "peak": 0.303955078125,
+        "exact_fullscale_sample_fraction": 0.0,
+        "longest_fullscale_run_samples_per_channel": 0,
+        "interpretation": "sample rails alone do not identify audible artifacts or limiter intent"
+      }
+    }
+  },
+  "limitations": [
+    "one selected favorite per condition; no within-condition variance or independent batch replication",
+    "no prompt-only output; no causal separation from the Suno/prompt prior",
+    "within-track windows and shuffle repetitions are not generation replicates",
+    "temporal continuity describes the output and cannot establish source timing transfer",
+    "chroma/spectral descriptors do not rate beauty, preference, cleanliness, aliveness, or vocal interest"
+  ],
+  "aggregate_source_output_distances": {
+    "S01": {
+      "S01": {
+        "normalized_logband_js": 0.2255465328129856,
+        "chroma_js": 0.09672187502770697
+      },
+      "S02": {
+        "normalized_logband_js": 0.2436533901799646,
+        "chroma_js": 0.10321888124634337
+      },
+      "S03": {
+        "normalized_logband_js": 0.2465219491120739,
+        "chroma_js": 0.10663524179241513
+      }
+    },
+    "S02": {
+      "S01": {
+        "normalized_logband_js": 0.21805099122833624,
+        "chroma_js": 0.049758072178809315
+      },
+      "S02": {
+        "normalized_logband_js": 0.23469110654083583,
+        "chroma_js": 0.050197958896003175
+      },
+      "S03": {
+        "normalized_logband_js": 0.2375598756041427,
+        "chroma_js": 0.05357886203487368
+      }
+    },
+    "S03": {
+      "S01": {
+        "normalized_logband_js": 0.24157109357539233,
+        "chroma_js": 0.05257926557763602
+      },
+      "S02": {
+        "normalized_logband_js": 0.2584790067611364,
+        "chroma_js": 0.053866345050439496
+      },
+      "S03": {
+        "normalized_logband_js": 0.26139246162934937,
+        "chroma_js": 0.057288809012438435
+      }
+    }
+  },
+  "between_input_distances": {
+    "S01__S02": {
+      "normalized_logband_js": 0.0010648456534135611,
+      "chroma_js": 0.001037936775068387
+    },
+    "S01__S03": {
+      "normalized_logband_js": 0.0011884954568353269,
+      "chroma_js": 0.0013116067611953525
+    },
+    "S02__S03": {
+      "normalized_logband_js": 3.898751210992648e-05,
+      "chroma_js": 0.00018307502460815565
+    }
+  }
+}

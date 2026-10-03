@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "originals_unchanged": true,
+  "files": [
+    {
+      "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/suno_pilot_20261002/DOWNLOADS_SUMMARY.md",
+      "published": "/sdcard/Download/TITAN_Suno_Pilot_20261002/ANALYSIS_20261003.md",
+      "bytes": 3579,
+      "sha256": "7fdcfe011352cbbdf9fefaf4727005b7eeab95e4ceef035745bdfa1f2c80e59b"
+    },
+    {
+      "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/suno_pilot_20261002/runs/structure_v1/S01_core_spectrogram.png",
+      "published": "/sdcard/Download/TITAN_Suno_Pilot_20261002/analysis_figures/S01_core_spectrogram.png",
+      "bytes": 722046,
+      "sha256": "02a4c44d4b4fcd928ce0643a4054632bba12d073ef2820e345282360f4a76ebf"
+    },
+    {
+      "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/suno_pilot_20261002/runs/structure_v1/S02_core_spectrogram.png",
+      "published": "/sdcard/Download/TITAN_Suno_Pilot_20261002/analysis_figures/S02_core_spectrogram.png",
+      "bytes": 714553,
+      "sha256": "9a4a7af222d0beba7276fb2df5ef16be8cecc56af1e55393028ae08e467ae86d"
+    },
+    {
+      "source": "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/suno_pilot_20261002/runs/structure_v1/S03_core_spectrogram.png",
+      "published": "/sdcard/Download/TITAN_Suno_Pilot_20261002/analysis_figures/S03_core_spectrogram.png",
+      "bytes": 718449,
+      "sha256": "caffbb9d77aa0d9e675ca7e14e0257d16d75f4aa2125ae29ca95aed64c615b29"
+    }
+  ]
+}
