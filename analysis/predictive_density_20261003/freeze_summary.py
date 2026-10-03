@@ -27,7 +27,7 @@ def main():
                'no_supported_net_predictive_depth': True, 'qualitative_audio_ratings': None}
     novelty = {'schema': 1, 'descriptive_only_not_reward': True, 'candidates': {}}
     with (HERE/'density_curves.csv').open('x', newline='') as output:
-        writer = csv.writer(output)
+        writer = csv.writer(output, lineterminator='\n')
         writer.writerow(['snapshot','domain','probe','horizon_chunks','horizon_seconds','forecasts',
                          'gain_bits','gain_bits_per_feature_forecast','coefficient_cost_bits','net_gain_bits',
                          'pd_total','pd_per_feature_forecast','over_history_bits','over_unpenalized_baseline_bits'])
