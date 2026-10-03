@@ -99,6 +99,23 @@ def main():
               'motif_similarity_reject_delta':last['motif_rejected_similarity']-first['motif_rejected_similarity'],
               'motif_quality_reject_delta':last['motif_rejected_quality']-first['motif_rejected_quality'],
               'trajectory_views':views,'audio':geometry(wav)}
+        item['sampled_action_conditioned_reward_advantage']={}
+        for action in sorted({row['action'] for row in evaluated}):
+            group=[row['evaluation'] for row in evaluated if row['action']==action]
+            item['sampled_action_conditioned_reward_advantage'][action]={
+                'n':len(group),'reward_mean':float(np.mean([row['reward'] for row in group])),
+                'reward_std':float(np.std([row['reward'] for row in group])),
+                'advantage_mean':float(np.mean([row['advantage'] for row in group])),
+                'advantage_std':float(np.std([row['advantage'] for row in group]))}
+        item['largest_sampled_delta_events']={}
+        for label,key in [('fine','fine_delta_rms'),('hidden','recurrent_proposed_delta_rms')]:
+            ranked=sorted(evaluated,key=lambda row:row['evaluation'][key] if label=='fine' else row[key],reverse=True)[:5]
+            item['largest_sampled_delta_events'][label]=[{
+                'offset':row['rollout_offset'],'absolute_step':row['absolute_step'],
+                'delta_rms':row['evaluation'][key] if label=='fine' else row[key],
+                'radiation_realized':row['radiation_realized'],'shear_amplitude':row['shear_amplitude'],
+                'kick_amplitude':row['kick_amplitude'],'optimizer_updates':0,'backward_passes':0,
+                'first_transplanted_chunk':row['rollout_offset']==1} for row in ranked]
         if depth==16:
             observed=archive_summary(capture,cal)
             rng=np.random.default_rng(20261002);permutation=rng.permutation(len(capture));shuffled=copy.deepcopy(capture);gaussian=copy.deepcopy(capture)

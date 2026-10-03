@@ -36,6 +36,7 @@ def main():
     parser.add_argument('--no-lto',action='store_true')
     parser.add_argument('--light',action='store_true',help='optimize final crate at level 1 with smaller codegen units; keep cached dependencies')
     parser.add_argument('--thin',action='store_true',help='use Cargo-consistent ThinLTO')
+    parser.add_argument('--tests',action='store_true',help='run Rust tests sequentially with the same memory guard')
     args=parser.parse_args()
     if not args.name.replace('_','').isalnum():raise ValueError('invalid build name')
     runs=HERE/'runs';runs.mkdir(exist_ok=True)
@@ -52,6 +53,7 @@ def main():
         if args.thin:
             command=['cargo','build','--release','--locked','--offline','-j1']
             build_env['CARGO_PROFILE_RELEASE_LTO']='thin'
+        if args.tests:command=['cargo','test','--locked','--offline','-j1','--','--test-threads=1']
         process=subprocess.Popen(command,cwd=ROOT,
             stdout=stream,stderr=subprocess.STDOUT,start_new_session=True,env=build_env)
         peak=0;minimum=initial;stopped=False;start=time.monotonic()

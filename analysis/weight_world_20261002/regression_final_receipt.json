@@ -3,19 +3,19 @@
   "disabled_binary_raw_post_and_world_exact": true,
   "measurement_enabled_raw_post_and_world_exact": true,
   "runs": {
-    "legacy_flags_old": {
-      "report_sha256": "55ac77d8aef45800d7cf9de429b2d7b6b89f9d353345fb536a43ed18bdfd0f81",
-      "summary_sha256": "7147617b39bbe05421120c83269653fc5afcbdaff5ced9aa1325a31148a0d0d4",
+    "legacy_flags_old_final": {
+      "report_sha256": "74c57b99f1178100af45c6f9f56a7d9915e11acbcaffb8d7135362e48b1c0b13",
+      "summary_sha256": "82527677d83d0dc890c0b1b02849aef08b70c0c10fab191506cc87e2a8a6a961",
       "audio_sha256": "56e29f1d27ce23430321388356740ab81a353eca1e46bed9b8c210f47beaacd0",
       "no_op_exact": true,
       "resource": {
         "initial": {
-          "MemAvailable": 2145.8828125,
-          "SwapFree": 0.20703125
+          "MemAvailable": 2730.859375,
+          "SwapFree": 0.0
         },
-        "minimum_available_mib": 1875.734375,
-        "peak_rss_mib": 304.546875,
-        "elapsed_seconds": 18.03135697200196,
+        "minimum_available_mib": 2416.171875,
+        "peak_rss_mib": 303.80078125,
+        "elapsed_seconds": 16.52694436899037,
         "exit_code": 0,
         "safety_stop": false
       },
@@ -47,26 +47,26 @@
         "--analysis-stride",
         "8",
         "--analysis-dir",
-        "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/legacy_flags_old",
+        "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/legacy_flags_old_final",
         "--analysis-terminal",
         "quiet",
         "--threads",
         "2"
       ]
     },
-    "legacy_flags_new": {
-      "report_sha256": "af6ea15e726f1e055625daf2ac74c8d2c36f30ba08329eb9418a8345e9ee6089",
-      "summary_sha256": "58ed61f66fff5d9981789c1dd876e9f56948908bdb45feaa46f8e305935752c9",
+    "legacy_flags_new_final": {
+      "report_sha256": "ff3f4540546aca2eff9ecbe6e51bf08203f26c9c3bddb9777787c29df9be775a",
+      "summary_sha256": "ee6755f7074a73947008895a5998a918e7637d8e11c87c43c5470a0ef1103a7f",
       "audio_sha256": "56e29f1d27ce23430321388356740ab81a353eca1e46bed9b8c210f47beaacd0",
       "no_op_exact": true,
       "resource": {
         "initial": {
-          "MemAvailable": 2140.65234375,
-          "SwapFree": 0.265625
+          "MemAvailable": 2637.67578125,
+          "SwapFree": 0.33203125
         },
-        "minimum_available_mib": 1841.75,
-        "peak_rss_mib": 303.046875,
-        "elapsed_seconds": 21.10325421098969,
+        "minimum_available_mib": 2373.55859375,
+        "peak_rss_mib": 285.96875,
+        "elapsed_seconds": 18.042517024005065,
         "exit_code": 0,
         "safety_stop": false
       },
@@ -98,26 +98,26 @@
         "--analysis-stride",
         "8",
         "--analysis-dir",
-        "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/legacy_flags_new",
+        "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/legacy_flags_new_final",
         "--analysis-terminal",
         "quiet",
         "--threads",
         "2"
       ]
     },
-    "metrics_off_standardized": {
-      "report_sha256": "0b443a4dfebb5eae8245ea0e215c5be2c1b6b2692c8301bca80545f4e5b4dbe0",
-      "summary_sha256": "b00ac5d9c5602650d175db22004d3c97c71367178bf29cecf8e2eea1f4b889dc",
+    "metrics_off_standardized_final": {
+      "report_sha256": "7fbcca14205f984313b82e166df2fcab049df251ab57e866d4db777015247f19",
+      "summary_sha256": "f4dc3a6133781d3be447265bf231b209045fd5aad01f0ac7dee4460b59e4eb47",
       "audio_sha256": "28352789953ca2b64dfc6bdb5b04bcef419ce5b2954cdde1f46a88acb6ed4c1e",
       "no_op_exact": true,
       "resource": {
         "initial": {
-          "MemAvailable": 2088.24609375,
-          "SwapFree": 0.234375
+          "MemAvailable": 2773.6875,
+          "SwapFree": 0.921875
         },
-        "minimum_available_mib": 1822.1171875,
-        "peak_rss_mib": 278.171875,
-        "elapsed_seconds": 20.037165565998293,
+        "minimum_available_mib": 2436.20703125,
+        "peak_rss_mib": 287.26171875,
+        "elapsed_seconds": 18.539998742984608,
         "exit_code": 0,
         "safety_stop": false
       },
@@ -149,7 +149,7 @@
         "--analysis-stride",
         "8",
         "--analysis-dir",
-        "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/metrics_off_standardized",
+        "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/metrics_off_standardized_final",
         "--analysis-terminal",
         "quiet",
         "--threads",
@@ -163,8 +163,8 @@
     }
   },
   "binary_sha256_by_run": {
-    "legacy_flags_old": "e4e52288deec4dacd53404c4f29d8b83bfb9ecfa68848df86f4d8225c70f97f6",
-    "legacy_flags_new": "bc16b221193a0254e12f2f1b288103939e9b17b89542578435db626a4575f9c1",
-    "metrics_off_standardized": "bc16b221193a0254e12f2f1b288103939e9b17b89542578435db626a4575f9c1"
+    "legacy_flags_old_final": "e4e52288deec4dacd53404c4f29d8b83bfb9ecfa68848df86f4d8225c70f97f6",
+    "legacy_flags_new_final": "6dde973133d5a6d29811b54ac27093f3dbf15b9de7d8081836e9b82df644e261",
+    "metrics_off_standardized_final": "6dde973133d5a6d29811b54ac27093f3dbf15b9de7d8081836e9b82df644e261"
   }
 }

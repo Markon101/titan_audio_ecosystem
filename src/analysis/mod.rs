@@ -29,6 +29,7 @@ pub(crate) fn is_analysis_flag(argument: &str) -> bool {
             | "--analysis-target-origin"
             | "--analysis-active-depth"
             | "--analysis-evaluation-metrics"
+            | "--analysis-audio-probe"
             | "--analysis-substrate"
             | "--analysis-warmup"
             | "--analysis-target-schedule"
@@ -230,6 +231,27 @@ fn run(request: AnalysisRequest) -> Result<()> {
     }
 
     let mut rollout_reports = Vec::new();
+    let audio_probe_report = if !request.audio_probe_paths.is_empty() {
+        let value = evaluation::score_audio_files(
+            &origin,
+            &request.audio_probe_paths,
+            request.analysis_stride,
+        )?;
+        let path = output.join("audio_probe_scores.json");
+        report::write_json_atomic(&path, &value)?;
+        artifacts.push(report::artifact_entry(
+            &output,
+            &path,
+            "application/json",
+            None,
+            None,
+            None,
+            "strict fixed probes on external audio; no model forward or feedback",
+        )?);
+        Some(value)
+    } else {
+        None
+    };
     let mut primary_rollout: Option<rollout::RolloutRun> = None;
     if !request.frozen_rollouts.is_empty() {
         let full = step::Intervention::full();
@@ -640,6 +662,7 @@ fn run(request: AnalysisRequest) -> Result<()> {
         },
         "corpus_provenance": origin.corpus,
         "model_statistics": model_statistics,
+        "audio_probe_scoring": audio_probe_report,
         "rollouts": rollout_reports,
         "ablations": ablation_report,
         "perturbations": perturbation_report,

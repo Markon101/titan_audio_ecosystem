@@ -20,6 +20,11 @@ strict four-development/four-validation probe identities, and source-file
 non-mutation checks. All passed. The normal disabled path and measurement
 enabled/disabled paths also matched raw/post audio and final world fingerprint
 exactly against the preserved working binary.
+Controller RNG streams start identically, but branch-dependent draw consumption
+can diverge after decisions differ. Forcing draws use a common per-offset
+stream; state-dependent hazard thresholds and magnitudes can still differ.
+These are total closed-loop frozen effects, not direct readout effects under
+the earlier host-input clamp.
 
 This is conditional frozen inference, not a native resume of a crossed
 weight/world pair. The generic report's optimizer/world consistency refers
@@ -52,6 +57,9 @@ spectral error (-0.64%), +0.08058 in chroma error (+9.02%), and +0.003425 in
 self-prediction MSE (+191.7%). The world effect on spectral error is -0.00630
 and the interaction is -0.00386. Therefore both parameter and persistent-state
 changes influence the score, with no unambiguous overall later-learning win.
+The C world itself developed while weights were updating. The factorial
+separates their current frozen causal channels; it does not show that C's
+state could have developed identically in a no-SGD training control.
 The initial common-history MSE also worsens with C weights: 0.002078 to
 0.003246 in P world, and 0.000126 to 0.000301 in C world. NLL need not follow
 MSE because predicted variance changes. Full effects for development,
@@ -61,10 +69,11 @@ validation, stereo, health, advantage, field dynamics, and audio are in
 E-to-P shows a much larger predictor improvement under common history and
 common state. This supports learned predictor information in the parameters,
 limited to these recurrent/audio observations; it does not establish useful
-musical timing. E has much better aggregate chroma scores, even in the L1
+musical timing. The saved histories are endogenous organism observations,
+not an independently collected corpus-prediction test. E has much better aggregate chroma scores, even in the L1
 sensitivity pair. The apparent advantage could be a flat/noisy spectrum
-exploiting the proxy. Matched external waveform nulls are being scored before
-interpreting it as superior audio learning. Enabling E's untrained upper
+exploiting the proxy; the completed null test below confirms that concern.
+Enabling E's untrained upper
 layers at L16 and disabling P's trained upper layers at L1 each has its own
 coordinate-context limitation; neither is a native performance comparison.
 
@@ -88,6 +97,37 @@ make motif count a quality metric. The short-run archive often creates one
 candidate region for matched Gaussian descriptors as well as the observed
 trajectory, so its candidate count fails to distinguish those controls here.
 No organized-regime claim is based on that count.
+
+## Fixed-probe noise and phase controls
+
+The external scorer uses the exact same Rust bank/projectors, with no model
+forward, backward, optimizer, or feedback. Repeated scoring of the same clip
+is exact. Re-scored PCM16 raw WAVs differ from online values by at most
+3.0e-5 in chroma and 8.9e-6 in spectral error. Null RMS ratios are
+0.999969–0.999970 after encoding; channel covariance/stereo correlation is
+matched, and the shared-phase control preserves preprocessing global channel
+and cross-spectra. No peak-safety attenuation was needed.
+
+| External clip | Validation spectral | Validation chroma |
+| --- | ---: | ---: |
+| Parent raw | 0.79442 | 0.88833 |
+| Parent covariance-matched Gaussian | 0.86349 | 0.34261 |
+| Parent shared-phase surrogate | 0.77047 | 0.92125 |
+| Child raw | 0.79127 | 0.97466 |
+| Early raw | 0.79910 | 0.42530 |
+| Early covariance-matched Gaussian | 0.96560 | 0.33717 |
+| Early shared-phase surrogate | 0.80716 | 0.41869 |
+
+Gaussian noise obtains lower chroma distance than both early and mature
+signals, while worsening spectral distance. Therefore the early chroma
+advantage does not establish useful music learning. The parent phase
+surrogate improves spectral error by 0.02395, more than the small later
+weight effect, despite altering temporal structure. These proxies describe
+different local/statistical relations and do not certify long-range
+organization. Neither null dominates all metrics. The result weakens a simple
+loss-based account of useful maturation; it does not establish that Titan's
+music or downstream conditioning is poor. `NULL_RESULTS.json` preserves
+scores, hashes, matching properties, and serialization-error checks.
 
 ## Telemetry and manual pilot
 
@@ -125,6 +165,8 @@ python3 analysis/weight_world_20261002/run_matrix.py --smoke
 python3 analysis/weight_world_20261002/run_regression.py
 python3 analysis/weight_world_20261002/run_matrix.py
 python3 analysis/weight_world_20261002/analyze_matrix.py
+python3 analysis/weight_world_20261002/prepare_audio_nulls.py
+python3 analysis/weight_world_20261002/score_audio_nulls.py
 python3 analysis/weight_world_20261002/audit_existing.py
 python3 analysis/weight_world_20261002/ingest_suno_outputs.py --out analysis/weight_world_20261002/runs/suno_outputs_batch1
 ```
@@ -132,3 +174,17 @@ python3 analysis/weight_world_20261002/ingest_suno_outputs.py --out analysis/wei
 The runner verifies and preserves completed cells. It refuses partial output
 directories instead of overwriting them. Frozen copies, full WAVs, captures,
 logs, and private keys are ignored; compact reports and hashes are tracked.
+All 92 Rust tests passed sequentially under a resource guard after the final
+scorer change (peak process-tree RSS 564 MiB, minimum available RAM 1.91 GiB).
+The final disabled-binary and measurement-only regressions again matched
+raw/post audio and final world state exactly. The external WAV ingestion
+fixture passed without opening the answer key; it is explicitly marked as
+test data, not a Suno generation. Python compilation, Rust formatting, and
+diff checks passed.
+The matrix binary is preserved as `runs/matrix_titan`, corresponding to
+source commit `f5165cc`. A later binary adds only external audio scoring;
+missing matrix cells must use the preserved binary identity. Rechecking a
+completed cell leaves its resource and command receipts intact. To inspect
+or recover the original matrix, use `--binary
+analysis/weight_world_20261002/runs/matrix_titan`. Standalone score output
+directories are also preserved rather than overwritten.

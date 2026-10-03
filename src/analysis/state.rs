@@ -362,7 +362,7 @@ impl AnalysisWorld {
     }
 }
 
-fn read_only_target_loader(
+pub(crate) fn read_only_target_loader(
     wav_dir: &std::path::Path,
     manifest_path: &std::path::Path,
 ) -> Result<Option<super::super::TargetAudioLoader>> {

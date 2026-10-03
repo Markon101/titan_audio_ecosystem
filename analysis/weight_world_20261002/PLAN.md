@@ -80,3 +80,17 @@ requested Downloads intake. The answer key stays private until ratings end.
 Check live processes/RAM/swap/storage before each expensive build or rollout.
 Frozen inference has previously used about 0.3 GiB RSS; use two threads and
 sequential cells. Preserve partial runs and never overwrite completed cells.
+
+## Prespecified follow-up after the chroma surprise
+
+The completed matrix shows lower aggregate chroma error for E weights despite
+poor predictor performance. Before interpreting that result, score the same
+raw WAVs and matched external controls against the **identical Rust probe
+bank/projectors**. The controls match channel covariance/RMS or preserve
+global channel/cross-spectra through shared phase randomization. They are
+never fed into Titan. Score parent, child, early, parent-noise, early-noise,
+parent-phase and early-phase clips at the same offsets. Validate raw-WAV
+scores against their online metrics to quantify PCM16 serialization error.
+If noise or phase surrogates beat structured outputs, the affected probe
+metric cannot alone support useful audio learning. No checkpoint is selected
+or retrained from these scores.

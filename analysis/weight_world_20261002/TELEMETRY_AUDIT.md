@@ -70,3 +70,16 @@ older finalized metadata and an unfinished streamed field trace. This is not
 evidence that the autosave tensors are numerically corrupt. Its exact run
 provenance needs recovery before treating it as a promoted research parent.
 The inspection's pre/post hashes were unchanged.
+The model's tensor schema matches, but agreement of world/Adam step counters
+alone does not establish the model's exact joint-save/run provenance.
+
+The new frozen measurements provide exact sampled advantages: in P/P,
+RECALL has 24 samples, reward mean -0.0503, advantage mean +0.00240 and
+advantage standard deviation 0.01285; HOLD has eight samples and advantage
+standard deviation 0.00939. Negative absolute reward therefore coexists with
+variable, sometimes positive advantage. These are associations under the
+closed-loop policy, not randomized action-effect estimates. Single-sample
+actions cannot support a variance claim. `RESULTS.json` also records the
+largest sampled fine/hidden deltas with forcing events; all these frozen
+windows have zero backward/optimizer steps, and are not a test of training
+tape-boundary spike causation.

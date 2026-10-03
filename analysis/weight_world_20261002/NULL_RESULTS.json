@@ -1,0 +1,168 @@
+{
+  "backward_passes": 0,
+  "binary_sha256": "6dde973133d5a6d29811b54ac27093f3dbf15b9de7d8081836e9b82df644e261",
+  "clips": {
+    "child_raw": {
+      "pcm16_online_score_max_errors": {
+        "development_mean_chroma": 2.5153160095214844e-05,
+        "development_mean_spectral": 5.0067901611328125e-06,
+        "validation_mean_chroma": 2.9802322387695312e-05,
+        "validation_mean_spectral": 5.900859832763672e-06
+      },
+      "scores": {
+        "development_mean_chroma": 1.6601098985583693,
+        "development_mean_spectral": 0.7816941435966228,
+        "validation_mean_chroma": 0.974658613541612,
+        "validation_mean_spectral": 0.7912743086064303
+      },
+      "sha256": "4f08edec682fb7f4b493bf8e4472a277ac84eff9e4b4af98615de4f0898d894e"
+    },
+    "early_covariance_gaussian": {
+      "matching_properties": {
+        "identity": "early_covariance_gaussian",
+        "peak_safety_gain": 1,
+        "preencoding_covariance_max_error": 1.5178830414797062e-18,
+        "rms_ratio_to_source": 0.9999693965210068,
+        "sha256": "65d0acfaa9b28c8fbe265912ebdcf4822132e80cfb7790dda7ce0f6f7d266235",
+        "source_stereo_correlation": 0.765215921718578,
+        "stereo_correlation": 0.7652160290696771
+      },
+      "scores": {
+        "development_mean_chroma": 1.0411323797371652,
+        "development_mean_spectral": 1.0531991057925754,
+        "validation_mean_chroma": 0.33717050803480325,
+        "validation_mean_spectral": 0.9655976412748849
+      },
+      "sha256": "65d0acfaa9b28c8fbe265912ebdcf4822132e80cfb7790dda7ce0f6f7d266235"
+    },
+    "early_raw": {
+      "pcm16_online_score_max_errors": {
+        "development_mean_chroma": 1.4066696166992188e-05,
+        "development_mean_spectral": 8.821487426757812e-06,
+        "validation_mean_chroma": 1.430511474609375e-05,
+        "validation_mean_spectral": 7.3909759521484375e-06
+      },
+      "scores": {
+        "development_mean_chroma": 1.1285131281172787,
+        "development_mean_spectral": 0.8870690998931726,
+        "validation_mean_chroma": 0.4253018188669726,
+        "validation_mean_spectral": 0.7990953795335911
+      },
+      "sha256": "464bfeb13f3f9fa9cf45c363d663272f1e5afd4a2751ae2fcd83a0c457f2f9f3"
+    },
+    "early_shared_phase": {
+      "matching_properties": {
+        "identity": "early_shared_phase",
+        "peak_safety_gain": 1,
+        "preencoding_covariance_max_error": 8.131516293641283e-18,
+        "rms_ratio_to_source": 0.9999694561359445,
+        "sha256": "f011431fe2fc93abfe097f7812e0b248ef78aaf6473ffc17ad2c1b247e744723",
+        "source_stereo_correlation": 0.765215921718578,
+        "stereo_correlation": 0.7652159824814493
+      },
+      "scores": {
+        "development_mean_chroma": 1.1223776679899957,
+        "development_mean_spectral": 0.8939127739932801,
+        "validation_mean_chroma": 0.4186906740759258,
+        "validation_mean_spectral": 0.8071580556807695
+      },
+      "sha256": "f011431fe2fc93abfe097f7812e0b248ef78aaf6473ffc17ad2c1b247e744723"
+    },
+    "parent_covariance_gaussian": {
+      "matching_properties": {
+        "identity": "parent_covariance_gaussian",
+        "peak_safety_gain": 1,
+        "preencoding_covariance_max_error": 2.6020852139652106e-17,
+        "rms_ratio_to_source": 0.9999696122299102,
+        "sha256": "ef968448299584e0dfe61f7b93a0b236fbd0b877ae71b740a6d6114f6d642d92",
+        "source_stereo_correlation": 0.8697848107418039,
+        "stereo_correlation": 0.8697848139608874
+      },
+      "scores": {
+        "development_mean_chroma": 1.045781627021454,
+        "development_mean_spectral": 0.9421511619455284,
+        "validation_mean_chroma": 0.3426128892848889,
+        "validation_mean_spectral": 0.8634886282185713
+      },
+      "sha256": "ef968448299584e0dfe61f7b93a0b236fbd0b877ae71b740a6d6114f6d642d92"
+    },
+    "parent_raw": {
+      "pcm16_online_score_max_errors": {
+        "development_mean_chroma": 2.3126602172851562e-05,
+        "development_mean_spectral": 5.4836273193359375e-06,
+        "validation_mean_chroma": 2.7060508728027344e-05,
+        "validation_mean_spectral": 6.139278411865234e-06
+      },
+      "scores": {
+        "development_mean_chroma": 1.5582126241039347,
+        "development_mean_spectral": 0.795025643789106,
+        "validation_mean_chroma": 0.8883268990450436,
+        "validation_mean_spectral": 0.7944187479162658
+      },
+      "sha256": "9e69f879c6629ffbc145809afd882973f55b2b3d658241c7f82748f7985e30ac"
+    },
+    "parent_shared_phase": {
+      "matching_properties": {
+        "identity": "parent_shared_phase",
+        "peak_safety_gain": 1,
+        "preencoding_covariance_max_error": 2.42861286636753e-17,
+        "rms_ratio_to_source": 0.9999694996687438,
+        "sha256": "70a10230f8348678f111f9dbf27cab047e610b733ba20c9f6b086c02ac8352c3",
+        "source_stereo_correlation": 0.8697848107418039,
+        "stereo_correlation": 0.8697847975938858
+      },
+      "scores": {
+        "development_mean_chroma": 1.628364921443992,
+        "development_mean_spectral": 0.7710965707622193,
+        "validation_mean_chroma": 0.9212537009131024,
+        "validation_mean_spectral": 0.7704690922465588
+      },
+      "sha256": "70a10230f8348678f111f9dbf27cab047e610b733ba20c9f6b086c02ac8352c3"
+    }
+  },
+  "command": [
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/target/release/titan",
+    "--analysis-only",
+    "--analysis-substrate",
+    "msfield",
+    "--base-dir",
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/metastable_20261001/frozen_step_58107",
+    "--run-tag",
+    "v10-msfield-fresh-20260930-02",
+    "--corpus-dir",
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/corpus/a",
+    "--corpus-manifest",
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/matched_exposure_20261001/runs/corpus/a_manifest.json",
+    "--analysis-stride",
+    "8",
+    "--analysis-dir",
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/audio_probe_scoring",
+    "--analysis-terminal",
+    "quiet",
+    "--threads",
+    "2",
+    "--analysis-audio-probe",
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/audio_nulls/parent_raw.wav",
+    "--analysis-audio-probe",
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/audio_nulls/parent_covariance_gaussian.wav",
+    "--analysis-audio-probe",
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/audio_nulls/parent_shared_phase.wav",
+    "--analysis-audio-probe",
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/audio_nulls/child_raw.wav",
+    "--analysis-audio-probe",
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/audio_nulls/early_raw.wav",
+    "--analysis-audio-probe",
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/audio_nulls/early_covariance_gaussian.wav",
+    "--analysis-audio-probe",
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/audio_nulls/early_shared_phase.wav",
+    "--analysis-audio-probe",
+    "/data/data/com.termux/files/home/projects/titan_audio_ecosystem/analysis/weight_world_20261002/runs/audio_nulls/parent_raw.wav"
+  ],
+  "deterministic_repeat_exact": true,
+  "input_non_mutation": true,
+  "model_forward_passes": 0,
+  "optimizer_steps": 0,
+  "report_sha256": "f71e7551fc6f4e1cbf31af8c3ee62765188a6c9e9dedf90bf63b6ea030bc2990",
+  "same_probe_bank_as_matrix": true,
+  "schema": 1
+}

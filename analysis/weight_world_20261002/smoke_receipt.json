@@ -58,5 +58,7 @@
         "--analysis-evaluation-metrics"
       ]
     }
-  }
+  },
+  "binary_sha256": "bc16b221193a0254e12f2f1b288103939e9b17b89542578435db626a4575f9c1",
+  "source_archive_commit": "f5165cc"
 }

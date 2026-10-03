@@ -1,8 +1,9 @@
 //! Read-only fixed probes for opt-in frozen weight/world evaluation.
 use super::super::{ChromaProjector, FixedProbeBank, SpectralProjector, TargetAudioLoader};
 use anyhow::Result;
-use candle_core::{Device, Tensor};
+use candle_core::{DType, Device, Tensor};
 use serde_json::{json, Value};
+use std::path::PathBuf;
 
 pub(crate) struct Evaluation {
     spec: SpectralProjector,
@@ -118,4 +119,85 @@ impl Evaluation {
             "target_low_band_ratio": super::super::first_band_energy_ratio(&super::super::log_band_energy(&target_spectrum)?)?.to_scalar::<f32>()?,
         }))
     }
+}
+
+pub(crate) fn score_audio_files(
+    origin: &super::load::LoadedOrigin,
+    paths: &[PathBuf],
+    stride: usize,
+) -> Result<Value> {
+    let device = Device::Cpu;
+    let loader = super::state::read_only_target_loader(
+        &origin.paths.wav_dir,
+        &origin.paths.corpus_manifest,
+    )?;
+    let evaluation = Evaluation::new(loader.as_ref(), &device)?;
+    let dummy = Tensor::zeros((2, super::super::CHUNK_SIZE), DType::F32, &device)?;
+    let mut reports = Vec::new();
+    for path in paths {
+        let identity = super::super::provenance::identify_file(path)?;
+        let mut reader = hound::WavReader::open(path)?;
+        let spec = reader.spec();
+        anyhow::ensure!(
+            spec.channels == 2
+                && spec.sample_rate == 48_000
+                && spec.bits_per_sample == 16
+                && spec.sample_format == hound::SampleFormat::Int,
+            "audio-probe scoring requires stereo 48-kHz PCM16"
+        );
+        let frames = reader.duration() as usize;
+        let chunks = frames / super::super::CHUNK_SIZE;
+        anyhow::ensure!(chunks > 0, "audio probe contains no complete chunk");
+        let mut scores = Vec::new();
+        for offset in 1..=chunks {
+            if offset != 1 && !offset.is_multiple_of(stride) && offset != chunks {
+                continue;
+            }
+            let frame = (offset - 1) * super::super::CHUNK_SIZE;
+            reader.seek(frame as u32)?;
+            let interleaved = reader
+                .samples::<i16>()
+                .take(2 * super::super::CHUNK_SIZE)
+                .collect::<std::result::Result<Vec<_>, _>>()?;
+            anyhow::ensure!(
+                interleaved.len() == 2 * super::super::CHUNK_SIZE,
+                "short audio-probe read"
+            );
+            let mut values = Vec::with_capacity(interleaved.len());
+            values.extend(
+                interleaved
+                    .iter()
+                    .step_by(2)
+                    .map(|sample| *sample as f32 / 32768.0),
+            );
+            values.extend(
+                interleaved
+                    .iter()
+                    .skip(1)
+                    .step_by(2)
+                    .map(|sample| *sample as f32 / 32768.0),
+            );
+            let audio = Tensor::from_vec(values, (2, super::super::CHUNK_SIZE), &device)?;
+            let mut value = evaluation.measure(&audio, &dummy)?;
+            value.as_object_mut().unwrap().retain(|key, _| {
+                key.starts_with("validation_")
+                    || key.starts_with("development_")
+                    || key == "output_low_band_ratio"
+            });
+            value["offset"] = json!(offset);
+            value["frame"] = json!(frame);
+            scores.push(value);
+        }
+        anyhow::ensure!(
+            identity == super::super::provenance::identify_file(path)?,
+            "audio probe changed during scoring"
+        );
+        reports.push(
+            json!({"identity":identity, "frames":frames,"chunks":chunks,"sampled_metrics":scores}),
+        );
+    }
+    Ok(
+        json!({"schema":1,"model_forward_passes":0,"backward_passes":0,"optimizer_steps":0,
+        "probe_manifest":evaluation.manifest,"audio_files":reports}),
+    )
 }

@@ -100,8 +100,8 @@ def prepare():
     return path
 
 
-def command(name, weights, world, depth, chunks, output, metrics=True, common=True):
-    cmd = [str(ROOT / "target/release/titan"), "--analysis-only", "--analysis-substrate", "msfield",
+def command(name, weights, world, depth, chunks, output, metrics=True, common=True, binary=None):
+    cmd = [str(binary or ROOT / "target/release/titan"), "--analysis-only", "--analysis-substrate", "msfield",
            "--base-dir", str(world), "--model", str(artifact(weights,"model","safetensors")),
            "--state", str(artifact(world,"world","bin")), "--run-tag",TAG,
            "--corpus-dir",str(CORPUS / "a"),"--corpus-manifest",str(CORPUS / "a_manifest.json"),
@@ -119,7 +119,7 @@ def checked_complete(output, chunks, expected_command=None):
     full = json.loads((output / "ablations/full/summary.json").read_text())
     if expected_command is not None:
         provenance=json.loads((output/'provenance.json').read_text())
-        if provenance['analysis_configuration']['invocation']!=expected_command:
+        if provenance['analysis_configuration']['invocation'][1:]!=expected_command[1:]:
             raise RuntimeError('completed output invocation does not match requested cell')
     if (output / "INCOMPLETE").exists() or not (report["non_mutation"]["unchanged"] and suite["no_op_clone_exact"] and
           report["analysis"]["optimizer_steps"] == 0 and full["horizon_chunks"] == chunks):
@@ -133,10 +133,15 @@ def checked_complete(output, chunks, expected_command=None):
 def run(cmd, name, chunks):
     output = Path(cmd[cmd.index("--analysis-dir") + 1])
     if (output / "analysis_report.json").exists():
-        return checked_complete(output, chunks,cmd)
+        value=checked_complete(output, chunks,cmd)
+        resource_path=RUNS/f'{name}_resource.json'
+        if resource_path.exists():value['resource']=json.loads(resource_path.read_text())
+        value['command']=json.loads((output/'provenance.json').read_text())['analysis_configuration']['invocation']
+        return value
     if output.exists():
         raise RuntimeError(f"preserving partial output {output}; inspect before continuing")
     initial = mem()
+    executable_hash=sha(Path(cmd[0]))
     if initial["MemAvailable"] < 1500:
         raise RuntimeError(f"resource gate: only {initial['MemAvailable']:.0f} MiB available")
     log = RUNS / f"{name}.log"
@@ -153,7 +158,7 @@ def run(cmd, name, chunks):
             if current["MemAvailable"] < 768 and not stopped:
                 stopped = True; os.killpg(process.pid,signal.SIGTERM)
             time.sleep(0.5)
-    resource = {"initial":initial,"minimum_available_mib":minimum,"peak_rss_mib":peak,
+    resource = {"initial":initial,"binary_sha256":executable_hash,"minimum_available_mib":minimum,"peak_rss_mib":peak,
                 "elapsed_seconds":time.monotonic()-start,"exit_code":process.returncode,"safety_stop":stopped}
     (RUNS / f"{name}_resource.json").write_text(json.dumps(resource,indent=2)+"\n")
     if process.returncode or stopped: raise RuntimeError(f"{name} incomplete; see {log}")
@@ -165,15 +170,23 @@ def main():
     parser.add_argument("--prepare-only",action="store_true")
     parser.add_argument("--smoke",action="store_true")
     parser.add_argument("--cell",choices=[cell[0] for cell in CELLS])
+    parser.add_argument("--binary",type=Path,default=ROOT/'target/release/titan')
     args=parser.parse_args();prepare();RUNS.mkdir(exist_ok=True)
     if args.prepare_only: print("exact tensor-schema and source hashes verified; schedule prepared");return
     cells = CELLS[:1] if args.smoke else ([cell for cell in CELLS if cell[0]==args.cell] if args.cell else CELLS)
     receipt_path=HERE / ("smoke_receipt.json" if args.smoke else "matrix_receipt.json")
     receipt=json.loads(receipt_path.read_text()) if receipt_path.exists() else {"schema":1,"cells":{}}
+    current_binary_hash=sha(args.binary)
+    missing=any(not (RUNS/('smoke16' if args.smoke else cell[0])/'analysis_report.json').exists() for cell in cells)
+    if receipt.get('binary_sha256') and receipt['binary_sha256']!=current_binary_hash and missing:
+        raise RuntimeError('preserve matrix binary identity: use --binary runs/matrix_titan for missing cells')
+    if 'binary_sha256' not in receipt and receipt['cells'] and missing:
+        raise RuntimeError('existing partial campaign has no binary identity; recover provenance before adding cells')
+    if 'binary_sha256' not in receipt and not receipt['cells']:receipt['binary_sha256']=current_binary_hash
     for name,weights,world,depth in cells:
         cell_name = "smoke16" if args.smoke else name
         chunks=16 if args.smoke else 384
-        cmd=command(name,weights,world,depth,chunks,RUNS / cell_name)
+        cmd=command(name,weights,world,depth,chunks,RUNS / cell_name,binary=args.binary)
         receipt["cells"][cell_name]=run(cmd,cell_name,chunks)
         receipt_path.write_text(json.dumps(receipt,indent=2)+"\n")
         print(json.dumps({"cell":cell_name,"complete":True}),flush=True)

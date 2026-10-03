@@ -190,6 +190,15 @@ trajectory views, records predictor/action/health details, and checks exact
 parameter hashes before and after rollout. This standardized protocol is an
 artificial matched-state evaluation, not an exact replay of native training.
 
+`--analysis-audio-probe PATH` scores an external stereo 48-kHz PCM16 WAV
+against the identical strict fixed probe bank, with no model forward,
+backward, optimizer, or feedback. The controlled weight/world study found
+that covariance-matched Gaussian noise beats the organism on aggregate
+validation chroma distance, and phase randomization can improve spectral
+distance. These are individual statistical proxies, not tests of musical
+organization. See `analysis/weight_world_20261002/NULL_RESULTS.json` and its
+research note before treating a lower probe distance as beneficial learning.
+
 `--regime-capture --regime-stride N` writes a run-ID-specific JSONL sidecar
 for the isolated msfield substrate only. It samples pooled signed and RMS
 spatial maps at all three scales, seeded orthogonal sketches of GRU and

@@ -26,6 +26,7 @@ pub(crate) struct AnalysisRequest {
     pub target_origin: Option<u64>,
     pub active_depth: Option<usize>,
     pub evaluation_metrics: bool,
+    pub audio_probe_paths: Vec<PathBuf>,
     pub analysis_only: bool,
     pub help: bool,
     pub base_dir: PathBuf,
@@ -71,6 +72,7 @@ impl Default for AnalysisRequest {
             target_origin: None,
             active_depth: None,
             evaluation_metrics: false,
+            audio_probe_paths: Vec::new(),
             analysis_only: false,
             help: false,
             base_dir: PathBuf::from("/sdcard/Download"),
@@ -110,6 +112,9 @@ impl Default for AnalysisRequest {
 impl AnalysisRequest {
     pub(crate) fn requested_analyses(&self) -> Vec<&'static str> {
         let mut names = Vec::new();
+        if !self.audio_probe_paths.is_empty() {
+            names.push("audio_probe_scoring");
+        }
         if self.model_stats {
             names.push("model_stats");
         }
@@ -151,6 +156,9 @@ pub(crate) fn parse(args: &[String]) -> Result<AnalysisRequest> {
     while index < args.len() {
         let flag = args[index].as_str();
         match flag {
+            "--analysis-audio-probe" => request
+                .audio_probe_paths
+                .push(PathBuf::from(value(args, &mut index, flag)?)),
             "--analysis-common-rng" => {
                 request.common_rng = true;
                 index += 1;
@@ -343,7 +351,8 @@ pub(crate) fn parse(args: &[String]) -> Result<AnalysisRequest> {
     if (request.common_rng
         || request.target_origin.is_some()
         || request.active_depth.is_some()
-        || request.evaluation_metrics)
+        || request.evaluation_metrics
+        || !request.audio_probe_paths.is_empty())
         && request.substrate != super::super::SubstrateMode::MsField
     {
         anyhow::bail!("standardized weight/world evaluation requires msfield");
@@ -458,6 +467,7 @@ pub(crate) fn print_help() {
   --analysis-target-origin N   Relative schedule start; preserve world chronology\n\
   --analysis-active-depth N    Fixed Morphic prefix without changing tensors\n\
   --analysis-evaluation-metrics  Strict probes, trajectory views, parameter parity\n\
+  --analysis-audio-probe PATH  Score an external 48-kHz stereo PCM16 WAV read-only\n\
 Usage: titan --analysis-only [read-only inputs] [analyses]\n\n\
 Read-only inputs:\n\
   --base-dir DIR              Checkpoint/corpus root\n\

@@ -6,6 +6,600 @@
     "fine deltas are proposed learned field steps; current forcing and exact hidden deltas are not in these training CSVs",
     "no pathological threshold is invented from RMS or confidence alone"
   ],
+  "live_checkpoint_inspection": {
+    "checkpoint_files": [
+      {
+        "bytes": 58720256,
+        "modified_unix_ms": 1790920171325,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/.titan_audio_f32_v10-msfield-fresh-20260930-02.tmp",
+        "present": true,
+        "sha256": "784eb3bb2c5bc9647b4dfae7da0a9bf4a328b888cfcefc4b05d334c43b18d9b0"
+      },
+      {
+        "bytes": 38200,
+        "modified_unix_ms": 1790920092597,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/.titan_topology_index_spool_v10-msfield-fresh-20260930-02.jsonl.tmp",
+        "present": true,
+        "sha256": "e6f98a85d0fc5b7017b334c4a0814937b84e97f4f008e0dd002845fe67901f16"
+      },
+      {
+        "bytes": 762146,
+        "modified_unix_ms": 1790920173801,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/.titan_uncertainty_spool_v10-msfield-fresh-20260930-02.jsonl.tmp",
+        "present": true,
+        "sha256": "62e2c1a36df86c8761aad16befc4cbbd3ce813b34803a9aadc72b8253f3227fb"
+      },
+      {
+        "bytes": 54604,
+        "modified_unix_ms": 1790919370885,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/ca_topology_index_rust_v10-msfield-fresh-20260930-02.csv",
+        "present": true,
+        "sha256": "bcca6cddff1ca062e1f4447eb6ca8b24efe794097fef0f466ea4071cc1bc53a0"
+      },
+      {
+        "bytes": 7554436,
+        "modified_unix_ms": 1790829227930,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/ca_topology_rust_v10-msfield-fresh-20260930-02.csv",
+        "present": true,
+        "sha256": "500c15bbf0d43d110a31d94beb5e06366f1d121471d92e0f58ca94a01f410311"
+      },
+      {
+        "bytes": 2329095,
+        "modified_unix_ms": 1790920173801,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/ca_topology_rust_v10-msfield-fresh-20260930-02.csv.tmp",
+        "present": true,
+        "sha256": "493d92d2a7addfef413ecaded6eacb569ae2ca89acb1695d91d9a7e2dec72445"
+      },
+      {
+        "bytes": 168,
+        "modified_unix_ms": 1790919370885,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/morph_events_rust_v10-msfield-fresh-20260930-02.csv",
+        "present": true,
+        "sha256": "d1ba4596db5f89b7d0f02204948e7362abfd14367f5c60fee699159a84a12f96"
+      },
+      {
+        "bytes": 32768,
+        "modified_unix_ms": 1790920046657,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/msfield_trace_v10_v10-msfield-fresh-20260930-02.csv",
+        "present": true,
+        "sha256": "88fe5c40afc48726cee93ba51e1d2d49058dcd3810f0eb3ef581b41c6ef4c916"
+      },
+      {
+        "bytes": 95993900,
+        "modified_unix_ms": 1790762382045,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_004cf5f2719c.wav",
+        "present": true,
+        "sha256": "4d5ef8d82d60f37917d5342f8aa9b6089fdf19fc48c8e159014eca39002e14fd"
+      },
+      {
+        "bytes": 131116,
+        "modified_unix_ms": 1790750923022,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_0a58d0696ca2.wav",
+        "present": true,
+        "sha256": "9c05a2b52ec95e07834e8f7fce8bc7122f9219956f274ef933d439c2208da971"
+      },
+      {
+        "bytes": 1048620,
+        "modified_unix_ms": 1790750939610,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_1abeae8d26fa.wav",
+        "present": true,
+        "sha256": "5d91dfbfd3a40d69f0c06f0ca052afb7d2063ea4459997d4e1680d1fb731f923"
+      },
+      {
+        "bytes": 9158700,
+        "modified_unix_ms": 1790829228026,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_1c3b4f14d604.wav",
+        "present": true,
+        "sha256": "2140ba1478e7658ddbc353f3d180dced291a63415cea4a4832516e32967fdd96"
+      },
+      {
+        "bytes": 44,
+        "modified_unix_ms": 1790750949142,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_1d86d3b1bf5f.wav",
+        "present": true,
+        "sha256": "4872b61c768dff943f9e021453d816f06e35adc8edd88ef183301f03e31b94a5"
+      },
+      {
+        "bytes": 34553900,
+        "modified_unix_ms": 1790747425162,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_217fe140e19d.wav",
+        "present": true,
+        "sha256": "60f4840f5bfb042abebdd95938871dffcecd1ef488190264b637e062d021eb6f"
+      },
+      {
+        "bytes": 95993900,
+        "modified_unix_ms": 1790752815546,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_26cf0e44436d.wav",
+        "present": true,
+        "sha256": "91259ef2419cb55ad8c0c5ec39700b73a0823464e06fd754ba219a7d9093b0f6"
+      },
+      {
+        "bytes": 28753964,
+        "modified_unix_ms": 1790749212494,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_2b3eb4813247.wav",
+        "present": true,
+        "sha256": "5d25bb9d5f6371d3f0920a2998b2a4bdc7d564bab849646c81f09da3c8ef2582"
+      },
+      {
+        "bytes": 245804,
+        "modified_unix_ms": 1790750944514,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_2c0b0082df1d.wav",
+        "present": true,
+        "sha256": "6fa1da1c13082bb771d9dc299ffa057ac0eda1a29c8911146e89f0627076fa04"
+      },
+      {
+        "bytes": 95993900,
+        "modified_unix_ms": 1790768990910,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_39de8ee53964.wav",
+        "present": true,
+        "sha256": "fad433c29ac1245360b8ee4997caab9b4398698c378a07fb3dbbca109a8bece1"
+      },
+      {
+        "bytes": 11517996,
+        "modified_unix_ms": 1790743151318,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_45d72f73eb71.wav",
+        "present": true,
+        "sha256": "ed10cc56051f88f6bbbf7085cd2086649108278456312f9e89d109fd830608df"
+      },
+      {
+        "bytes": 13434924,
+        "modified_unix_ms": 1790750756538,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_4f4f282c8128.wav",
+        "present": true,
+        "sha256": "a44a26923f66ba4f7512f6409b80a7f0735d1062d5ad8abdcf6966a2f19d2534"
+      },
+      {
+        "bytes": 95993900,
+        "modified_unix_ms": 1790759206585,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_5bfde32e46fc.wav",
+        "present": true,
+        "sha256": "c9b5e5c32e7578606dd9452884329d419441bf8d2490e7ef709ba689fd43946f"
+      },
+      {
+        "bytes": 23986220,
+        "modified_unix_ms": 1790793883396,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_65215d32b088.wav",
+        "present": true,
+        "sha256": "b29e23e3498e489eae3dbdab126473bf488d6da6667289b53ba6ef7b026f0727"
+      },
+      {
+        "bytes": 95993900,
+        "modified_unix_ms": 1790755777342,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_69623b71e0e1.wav",
+        "present": true,
+        "sha256": "2810ad0d9a86b66bf374daf7ad1708db96ea967b88fb063c7b6803a657ac3e61"
+      },
+      {
+        "bytes": 16428,
+        "modified_unix_ms": 1790750946838,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_6ae323380380.wav",
+        "present": true,
+        "sha256": "30436ab6a2b246371760ea14671d2a2dc2adff9c6d73929cf8a35c4f24f57646"
+      },
+      {
+        "bytes": 23986220,
+        "modified_unix_ms": 1790794313792,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_6b6eb04b4749.wav",
+        "present": true,
+        "sha256": "1455dfb885a71664faccd7643ec2fc10daf6d2341bdcf0a4a9dee42e6786ed07"
+      },
+      {
+        "bytes": 27836460,
+        "modified_unix_ms": 1790849422042,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_6bca76ae3bb0.wav",
+        "present": true,
+        "sha256": "8160f874a99d9833dfd436c41afd6152668e89b3ab6f3630b46eb1fbab03e3b5"
+      },
+      {
+        "bytes": 1179692,
+        "modified_unix_ms": 1790750918950,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_6f7c59133d2e.wav",
+        "present": true,
+        "sha256": "afd240e0b6c147fa98c6017351659a4ae05bc0317057c0a6b0ee3ecd3c67788e"
+      },
+      {
+        "bytes": 95993900,
+        "modified_unix_ms": 1790919370857,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_730d4540ebb3.wav",
+        "present": true,
+        "sha256": "faf3e6c1d1460a057a3d1aba8baa6e3f8272f151d31347e8d68d18f31c91fb8c"
+      },
+      {
+        "bytes": 23035948,
+        "modified_unix_ms": 1790743878626,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_734a62dadabc.wav",
+        "present": true,
+        "sha256": "29c484cdcec5286c740a6a3582ba1d1e38c387d60bdaedd7b56c1b2ae7e580fe"
+      },
+      {
+        "bytes": 262188,
+        "modified_unix_ms": 1790749220978,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_739c44f22b15.wav",
+        "present": true,
+        "sha256": "99ff0d86b780a3dcd2a4b9b02cfda4e233ab179fa79657793361f1961abc3522"
+      },
+      {
+        "bytes": 34553900,
+        "modified_unix_ms": 1790748516690,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_8c7fef115c49.wav",
+        "present": true,
+        "sha256": "6163cf1d5817947ed0b49169e57e7868fa2b44a8a74551852df0652b1c42281a"
+      },
+      {
+        "bytes": 95993900,
+        "modified_unix_ms": 1790765607009,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_8d6ff06215d7.wav",
+        "present": true,
+        "sha256": "0edf686a904b94d4078c7fcf012a5afdd19f2cac39e6bb111940b19b3efe857f"
+      },
+      {
+        "bytes": 13893676,
+        "modified_unix_ms": 1790849923862,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_9e98b09375bd.wav",
+        "present": true,
+        "sha256": "06155a14be145f7369a4630664c8ec0e69e14aa2ff01ec3520437f9d67f71fba"
+      },
+      {
+        "bytes": 23986220,
+        "modified_unix_ms": 1790828460322,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_9fd1f003a06b.wav",
+        "present": true,
+        "sha256": "58d2ae51ee2c9f195d4d501d55749e283dec609ef1fb2f0673a9339ebc7bb9ec"
+      },
+      {
+        "bytes": 44,
+        "modified_unix_ms": 1790750924634,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_a2fd8b87fb05.wav",
+        "present": true,
+        "sha256": "4872b61c768dff943f9e021453d816f06e35adc8edd88ef183301f03e31b94a5"
+      },
+      {
+        "bytes": 23986220,
+        "modified_unix_ms": 1790829925606,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_b0d2af04473c.wav",
+        "present": true,
+        "sha256": "33d5d1bebd4a8155bfd281c452f5174d6ffb2c9686160d105e9fe9e279f8d452"
+      },
+      {
+        "bytes": 34553900,
+        "modified_unix_ms": 1790745060322,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_b5c33654cde3.wav",
+        "present": true,
+        "sha256": "972842a579fb126c5528f7f1e1bfe4fbd60dfb651d58b59c12a28517b28b2591"
+      },
+      {
+        "bytes": 4325420,
+        "modified_unix_ms": 1790848334470,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_b6e417ec12a3.wav",
+        "present": true,
+        "sha256": "a72dd9028faac912072286925d4a3d0c281fbb14b539c6c5ec5029d1f5967240"
+      },
+      {
+        "bytes": 11403308,
+        "modified_unix_ms": 1790750902202,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_dacdb6dae5f5.wav",
+        "present": true,
+        "sha256": "3e09d539b5590eea14c6a84197373f5b632d1da233f4820cea581a341dacd276"
+      },
+      {
+        "bytes": 23986220,
+        "modified_unix_ms": 1790829041414,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/rust_ecosystem_out_v10-msfield-fresh-20260930-02_e8de59349151.wav",
+        "present": true,
+        "sha256": "5a947ab20c51a8988c776f0980eb63e4f3d80e2afdc1acbec69506f110292e9e"
+      },
+      {
+        "bytes": 157,
+        "modified_unix_ms": 1790919370881,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/suno_priming_prompt_v10-msfield-fresh-20260930-02.txt",
+        "present": true,
+        "sha256": "550a1a3a3b806ef8f9c7e84c8fe4235266307e7ea4319bbff74c3bd5537d6436"
+      },
+      {
+        "bytes": 67327604,
+        "modified_unix_ms": 1790919125397,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_model_v10_msfield_v10-msfield-fresh-20260930-02.safetensors",
+        "present": true,
+        "sha256": "aca8cd3c8906613c566114fcf8393a30746bffeb86549a38da4717e2171480ce"
+      },
+      {
+        "bytes": 107,
+        "modified_unix_ms": 1790920070237,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_morph_state_v10_msfield_v10-msfield-fresh-20260930-02.json",
+        "present": true,
+        "sha256": "70eafdbc9cd9aa8a79e2ece1a38569b497d91daeefbbe4ed6886af5ae3b36c72"
+      },
+      {
+        "bytes": 134661384,
+        "modified_unix_ms": 1790919125557,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_optimizer_v10_msfield_v10-msfield-fresh-20260930-02.safetensors",
+        "present": true,
+        "sha256": "96575c21044e4f01228cb5f26a3bdf2a078ceaebdbd4e9caf4af47c34a79c7e0"
+      },
+      {
+        "bytes": 131116,
+        "modified_unix_ms": 1790750923022,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_0s_v10-msfield-fresh-20260930-02_0a58d0696ca2.wav",
+        "present": true,
+        "sha256": "4073d499f8260a55ee5f571fcf0ee667b86ee52735ca7cd6c94d5b7774c8a560"
+      },
+      {
+        "bytes": 44,
+        "modified_unix_ms": 1790750949142,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_0s_v10-msfield-fresh-20260930-02_1d86d3b1bf5f.wav",
+        "present": true,
+        "sha256": "4872b61c768dff943f9e021453d816f06e35adc8edd88ef183301f03e31b94a5"
+      },
+      {
+        "bytes": 16428,
+        "modified_unix_ms": 1790750946838,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_0s_v10-msfield-fresh-20260930-02_6ae323380380.wav",
+        "present": true,
+        "sha256": "8507b7915ed418a5dbe252deb02ddfbc564f0ae91103eee20b898a400d83c2ce"
+      },
+      {
+        "bytes": 44,
+        "modified_unix_ms": 1790750924634,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_0s_v10-msfield-fresh-20260930-02_a2fd8b87fb05.wav",
+        "present": true,
+        "sha256": "4872b61c768dff943f9e021453d816f06e35adc8edd88ef183301f03e31b94a5"
+      },
+      {
+        "bytes": 245804,
+        "modified_unix_ms": 1790750944514,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_1s_v10-msfield-fresh-20260930-02_2c0b0082df1d.wav",
+        "present": true,
+        "sha256": "cc7b3e7644fde1ca3eb7fda60115a77aa114d68fb61fb6e8b97f3f521b2799f6"
+      },
+      {
+        "bytes": 262188,
+        "modified_unix_ms": 1790749220978,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_1s_v10-msfield-fresh-20260930-02_739c44f22b15.wav",
+        "present": true,
+        "sha256": "24ed434fd750d8afa35fed7f186ae229f2d9f94b058091866ff575e4143a9687"
+      },
+      {
+        "bytes": 4325420,
+        "modified_unix_ms": 1790848334470,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_22s_v10-msfield-fresh-20260930-02_b6e417ec12a3.wav",
+        "present": true,
+        "sha256": "9b3409d6e8d5d77dd8dac847bd3c3bab8a82a13aee5dc88735047a1e07057626"
+      },
+      {
+        "bytes": 9158700,
+        "modified_unix_ms": 1790829228026,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_47s_v10-msfield-fresh-20260930-02_1c3b4f14d604.wav",
+        "present": true,
+        "sha256": "0be49099e0c2df3b266355296cf8efa07496b1de4ca04dcf54ff075cd0903efb"
+      },
+      {
+        "bytes": 11517996,
+        "modified_unix_ms": 1790743151282,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_59s_v10-msfield-fresh-20260930-02_45d72f73eb71.wav",
+        "present": true,
+        "sha256": "318d24a3ef62251a60b60eb483121fdbff11271c56c9680f0d81a28e47940bdd"
+      },
+      {
+        "bytes": 11403308,
+        "modified_unix_ms": 1790750902202,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_59s_v10-msfield-fresh-20260930-02_dacdb6dae5f5.wav",
+        "present": true,
+        "sha256": "4ebff1f02dd79af31456d6d01b5fcf58ef8d1103c49257c0556c88bf3ce7a891"
+      },
+      {
+        "bytes": 1048620,
+        "modified_unix_ms": 1790750939610,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_5s_v10-msfield-fresh-20260930-02_1abeae8d26fa.wav",
+        "present": true,
+        "sha256": "7fb1da4fbb2eda2790d939ac6ec3cbcef1a8e8c334446f14553351ea255fbff5"
+      },
+      {
+        "bytes": 11517996,
+        "modified_unix_ms": 1790762382045,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_60s_v10-msfield-fresh-20260930-02_004cf5f2719c.wav",
+        "present": true,
+        "sha256": "1d60493fd53bed83688470341d3f99c5069df785e00afa83f7a3d7c37a1425f0"
+      },
+      {
+        "bytes": 11517996,
+        "modified_unix_ms": 1790747425162,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_60s_v10-msfield-fresh-20260930-02_217fe140e19d.wav",
+        "present": true,
+        "sha256": "ea1183978bf5a3117c1c2179146cabd9100342a3314c2c6c5e49249a1c0bc6f1"
+      },
+      {
+        "bytes": 11517996,
+        "modified_unix_ms": 1790752815546,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_60s_v10-msfield-fresh-20260930-02_26cf0e44436d.wav",
+        "present": true,
+        "sha256": "cd5400fd466ab7aa35d901bf16549367793958a14fd314b6ad2aac04529de294"
+      },
+      {
+        "bytes": 11517996,
+        "modified_unix_ms": 1790749212494,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_60s_v10-msfield-fresh-20260930-02_2b3eb4813247.wav",
+        "present": true,
+        "sha256": "92a70b311bd50f39f232a4a33da17aa1593767b3db215f2aee78c15ba6ec660a"
+      },
+      {
+        "bytes": 11517996,
+        "modified_unix_ms": 1790768990910,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_60s_v10-msfield-fresh-20260930-02_39de8ee53964.wav",
+        "present": true,
+        "sha256": "e7ccb0e38a60e5283066696bf650fad69e144f0480dc7298ea7819fba4a3e6f8"
+      },
+      {
+        "bytes": 11517996,
+        "modified_unix_ms": 1790750756538,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_60s_v10-msfield-fresh-20260930-02_4f4f282c8128.wav",
+        "present": true,
+        "sha256": "d1c1c1c6e5d96590827fb2f7b5cdf08e39e2f9476bb7551a36bea2b2e7f88fdc"
+      },
+      {
+        "bytes": 11517996,
+        "modified_unix_ms": 1790759206585,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_60s_v10-msfield-fresh-20260930-02_5bfde32e46fc.wav",
+        "present": true,
+        "sha256": "814d9001c0ea3b39801a24632677e753e8077f8aea61182751dfce195b7ebbfc"
+      },
+      {
+        "bytes": 11517996,
+        "modified_unix_ms": 1790793883400,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_60s_v10-msfield-fresh-20260930-02_65215d32b088.wav",
+        "present": true,
+        "sha256": "8a4a90b464b365a7bbd5641ce53781e147c41668f1ea8450af318bc2284eb9f8"
+      },
+      {
+        "bytes": 11517996,
+        "modified_unix_ms": 1790755777342,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_60s_v10-msfield-fresh-20260930-02_69623b71e0e1.wav",
+        "present": true,
+        "sha256": "02faa5bdf97d7d3f571f14d4e9faeaa9487467be4fece081d56ccb565b68be9c"
+      },
+      {
+        "bytes": 11517996,
+        "modified_unix_ms": 1790794313792,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_60s_v10-msfield-fresh-20260930-02_6b6eb04b4749.wav",
+        "present": true,
+        "sha256": "d6423fe335b4f305fd89fa9cf395474bde1084de3e90a3e4d5eb023acb36d2ff"
+      },
+      {
+        "bytes": 11517996,
+        "modified_unix_ms": 1790849422042,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_60s_v10-msfield-fresh-20260930-02_6bca76ae3bb0.wav",
+        "present": true,
+        "sha256": "6da45c1bc57d22ed410e0a3c0a65275b91e9e3ccd1d7073ae2821d5e7edeb513"
+      },
+      {
+        "bytes": 11517996,
+        "modified_unix_ms": 1790919370861,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_60s_v10-msfield-fresh-20260930-02_730d4540ebb3.wav",
+        "present": true,
+        "sha256": "64a80ea8200c396bcd9cc5a77b1a8173b82a9387ddb7fb299b16eb1319b667b0"
+      },
+      {
+        "bytes": 11517996,
+        "modified_unix_ms": 1790743878626,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_60s_v10-msfield-fresh-20260930-02_734a62dadabc.wav",
+        "present": true,
+        "sha256": "278583c95ee4fe63bd5765af252fbdd04054927781d46276e96ed9a90ed1e821"
+      },
+      {
+        "bytes": 11517996,
+        "modified_unix_ms": 1790748516690,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_60s_v10-msfield-fresh-20260930-02_8c7fef115c49.wav",
+        "present": true,
+        "sha256": "0b27638bfaec46bda745c0d303a906465e400d9548f22bde7767be488d514629"
+      },
+      {
+        "bytes": 11517996,
+        "modified_unix_ms": 1790765607009,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_60s_v10-msfield-fresh-20260930-02_8d6ff06215d7.wav",
+        "present": true,
+        "sha256": "44b56e9d8708e64e2885e2fffada2891bc32a78cd0f6a56980ba84e9a350cb8e"
+      },
+      {
+        "bytes": 11517996,
+        "modified_unix_ms": 1790849923862,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_60s_v10-msfield-fresh-20260930-02_9e98b09375bd.wav",
+        "present": true,
+        "sha256": "684a99af11cacee6ec8fe53e83fdc83146e064e908dfe5524dcd2de48a06960d"
+      },
+      {
+        "bytes": 11517996,
+        "modified_unix_ms": 1790828460322,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_60s_v10-msfield-fresh-20260930-02_9fd1f003a06b.wav",
+        "present": true,
+        "sha256": "bf5b16ad362436d760563261e7f19ee5bb1900d66335cdf58d6d618ed4a93aca"
+      },
+      {
+        "bytes": 11517996,
+        "modified_unix_ms": 1790829925606,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_60s_v10-msfield-fresh-20260930-02_b0d2af04473c.wav",
+        "present": true,
+        "sha256": "68c79f9fa63e1e5813d6332cf0b1fdb20f3595fbb0360c704cd2743ec247bc4f"
+      },
+      {
+        "bytes": 11517996,
+        "modified_unix_ms": 1790745060322,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_60s_v10-msfield-fresh-20260930-02_b5c33654cde3.wav",
+        "present": true,
+        "sha256": "a824b6b992b1bdf17f8e2dc3c3383fadbe70a59402575d9ccfd0b40066f466d4"
+      },
+      {
+        "bytes": 11517996,
+        "modified_unix_ms": 1790829041414,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_60s_v10-msfield-fresh-20260930-02_e8de59349151.wav",
+        "present": true,
+        "sha256": "6fcae70f07440bb5411136ba4ba1a871fa5ff9b4accf9685de6dfa7bc4c64e81"
+      },
+      {
+        "bytes": 1179692,
+        "modified_unix_ms": 1790750918950,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_prime_6s_v10-msfield-fresh-20260930-02_6f7c59133d2e.wav",
+        "present": true,
+        "sha256": "54121723bc647c3da1fc3c6e0840b426bed2d6c865767798b0d2ada6f5f08556"
+      },
+      {
+        "bytes": 6120832,
+        "modified_unix_ms": 1790743151294,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_run_binary",
+        "present": true,
+        "sha256": "12e07821946cc17bdde1b3249b96cdb1023cfa1f610ef67fc24e272bd5efcc44"
+      },
+      {
+        "bytes": 8392,
+        "modified_unix_ms": 1790743151446,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_run_metadata_v10_msfield_v10-msfield-fresh-20260930-02.json",
+        "present": true,
+        "sha256": "3fc843cbf827775cc7ff008b2c6ac7651a9f0c6b3e2d420b8ed261164ffeea27"
+      },
+      {
+        "bytes": 1449283,
+        "modified_unix_ms": 1790919125593,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/titan_world_v10_msfield_v10-msfield-fresh-20260930-02.bin",
+        "present": true,
+        "sha256": "faaa5e56d43a107b22c8f194f697de8db8422216aa3eb754a39a1858002ea675"
+      },
+      {
+        "bytes": 19315,
+        "modified_unix_ms": 1790743151262,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/train.log",
+        "present": true,
+        "sha256": "514e617f0ece773c87dfd297a8f739909a9edc6754b93cbe2cf9b382feec2300"
+      },
+      {
+        "bytes": 1197919,
+        "modified_unix_ms": 1790919371029,
+        "path": "/sdcard/Download/TITAN_v10_msfield_fresh_20260930_02_cont/uncertainty_trace_rust_v10-msfield-fresh-20260930-02.csv",
+        "present": true,
+        "sha256": "f79e84739fd9cdf8745d4ed61199989ebba4af70011b44aea2d13fa4892bb722"
+      },
+      {
+        "bytes": 6973,
+        "modified_unix_ms": 1790574587692,
+        "path": "/sdcard/Download/titan_corpus_manifest_v7_sml.json",
+        "present": true,
+        "sha256": "0708ede659328f928f76db792d091b5b1eaaaed219754fb9820986f4d81f8228"
+      }
+    ],
+    "optimizer": {
+      "checkpoint_consistent_with_world": true,
+      "cumulative_updates": 1024,
+      "global_step": 65536,
+      "moment_tensors": 458,
+      "present": true,
+      "renderer_control_version": 1
+    },
+    "report_sha256": "b8b6ef8fa0a244eaf0e9f3001027e017d50560e43b8a3d3f0068b73032836438",
+    "source_files_unchanged": true,
+    "world": {
+      "active_depth": 16,
+      "global_step": 65536,
+      "seed": 44,
+      "version": 9
+    }
+  },
   "schema": 1,
   "scope": "provided Space Bunny checklist; original anonymous document was not supplied",
   "substrate_semantics": {

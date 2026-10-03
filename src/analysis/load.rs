@@ -208,6 +208,7 @@ pub(crate) fn load_origin(request: &AnalysisRequest) -> Result<LoadedOrigin> {
     let optimizer = inspect_optimizer(&paths.optimizer, world.as_ref())?;
     let corpus = inspect_corpus(&paths, request.fast_provenance)?;
     let mut canonical_paths = canonical_paths(&paths)?;
+    canonical_paths.extend(request.audio_probe_paths.iter().cloned());
     if let Some(path) = &request.target_schedule {
         canonical_paths.push(path.clone());
     }

@@ -124,6 +124,14 @@ def main():
                 'first_resume_sample':int(row['run_step'])==0} for row in top]
             item['sampling_modulo_tape_counts']={str(rem):sum((int(row['run_step'])+1)%tape==rem for row in f) for rem in range(tape)} if compatible else None
         out['trace_results'][root.name]=item
+    inspection=HERE/'runs/live_checkpoint_inspection'
+    if (inspection/'analysis_report.json').exists():
+        provenance=json.loads((inspection/'provenance.json').read_text())
+        report=json.loads((inspection/'analysis_report.json').read_text())
+        out['live_checkpoint_inspection']={'world':provenance['world'],'optimizer':provenance['optimizer'],
+            'report_sha256':sha(inspection/'analysis_report.json'),
+            'source_files_unchanged':report['non_mutation']['unchanged'],
+            'checkpoint_files':provenance['checkpoint_files']}
     (HERE/'telemetry_audit.json').write_text(json.dumps(out,indent=2,sort_keys=True)+'\n')
     for name,item in out['trace_results'].items():
         print(name,'rail max',item['field_rail_excess']['max'],'confidence clamp',round(item['confidence_at_upper_clamp_fraction'],3),
